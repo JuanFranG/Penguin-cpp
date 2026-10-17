@@ -2040,7 +2040,7 @@ begin
     NextNode := Node^.NextNode; // parent classname is encountered first
 
     // Is this statement part of this file? Remove
-    if SameText(Statement^._FileName, FileName) or SameText(Statement^._DefinitionFileName, FileName) then begin
+    if SameFileName(Statement^._FileName, FileName) or SameFileName(Statement^._DefinitionFileName, FileName) then begin
       if Statement^._Kind = skClass then // only classes have inheritance
         fInvalidatedStatements.Add(Statement);
 
@@ -2905,7 +2905,7 @@ var
 begin
   Result := nil;
   for I := 0 to fIncludesList.Count - 1 do
-    if SameText(PFileIncludes(fIncludesList[I])^.BaseFile, Filename) then begin
+    if SameFileName(PFileIncludes(fIncludesList[I])^.BaseFile, Filename) then begin
       Result := PFileIncludes(fIncludesList[I]);
       if DeleteIt then
         fIncludesList.Delete(I);

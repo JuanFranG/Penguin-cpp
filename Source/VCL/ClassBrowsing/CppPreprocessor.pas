@@ -977,7 +977,7 @@ var
 begin
   Result := nil;
   for I := 0 to fIncludesList.Count - 1 do begin
-    if SameText(PFileIncludes(fIncludesList[I])^.BaseFile, Filename) then begin
+    if SameFileName(PFileIncludes(fIncludesList[I])^.BaseFile, Filename) then begin
       Result := PFileIncludes(fIncludesList[I]);
       Exit;
     end;

@@ -107,6 +107,7 @@ begin
   inherited Create(AOwner);
 
   fIncludedFiles := TStringList.Create;
+  fIncludedFiles.CaseSensitive := {$IFDEF MSWINDOWS}False{$ELSE}True{$ENDIF}; // file names
   fIncludedFiles.Sorted := True;
   fIncludedFiles.Duplicates := dupIgnore;
 

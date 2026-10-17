@@ -111,7 +111,7 @@ function LastPos(const SubStr, S: String): integer;
 // Fast implementation of StringReplace which does not use AnsiX (MBCS ready) comparison
 function FastStringReplace(const S, OldPattern, NewPattern: String; Flags: TReplaceFlags): String;
 
-// Fast implementation of IndexOf which does not use AnsiX comparison
+// IndexOf for lists of file names: case-insensitive on Windows only
 function FastIndexOf(List: TStrings; const S: String): integer; overload;
 function FastIndexOf(List: TStringlist; const S: String): integer; overload;
 
@@ -163,7 +163,7 @@ function FastIndexOf(List: TStrings; const S: String): integer;
 begin
   with List do begin
     for Result := 0 to Count - 1 do
-      if CompareText(List[Result], S) = 0 then
+      if SameFileName(List[Result], S) then
         Exit;
     Result := -1;
   end;

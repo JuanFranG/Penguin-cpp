@@ -967,7 +967,7 @@ begin
   fdblFiles := FALSE;
   fConsolePause := TRUE;
   fShortenCompPaths := False;
-  fStyle := 1; // the flat icon set (the old one is style 0); themes come in phase 4b
+  fStyle := 0; // the colorful icon set; style 1 is the flat one. Themes come in phase 4b
   fTheme := 'NewLook';
 
   // TODO: retrieve directly from visual editor

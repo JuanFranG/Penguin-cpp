@@ -134,15 +134,16 @@ acentos se escriben bien en el editor.
 - Los paneles (bienvenida, proyecto, clases, mensajes) tienen los colores del
   icono, en versión oscura cuando el esquema del editor es oscuro.
 
-**2. Buscar, Reemplazar e Ir a línea no funcionan** (reportado en Mint). El
-código del diálogo se portó sin cambios de lógica y no se ve el error
-leyéndolo. Falta saber qué pasa exactamente: si la opción está gris, si no
-se abre la ventana, si se abre pero no encuentra nada, o si sale un error en
-la terminal de `./penguin-cpp-debug`.
+**2. Buscar, Reemplazar e Ir a línea "no aparecen o no están en su sitio"**
+(reportado en Mint). En el formulario siguen en el menú Buscar y en su barra,
+igual que en el original (se comparó la estructura completa), y el código del
+diálogo se portó sin cambios de lógica. Falta una captura del menú Buscar
+abierto y de la barra para ver qué se ve distinto.
 
-**3. Imprimir no aparece:** está oculto porque el SynEdit de Lazarus no trae
-impresión (fase 5). Se puede hacer con el paquete Printer4Lazarus, que en
-Linux imprime por CUPS (incluido "Imprimir a archivo PDF").
+**3. Imprimir** (nuevo, falta probarlo en Mint): Archivo → Imprimir y el botón
+de la barra principal. Probar con una impresora y con "Guardar como archivo
+PDF…", con y sin colores, números de línea, ajuste de línea y solo la
+selección.
 
 **4. Pasar a Qt6** (decisión: sí, si compila y abre bien en Mint). Ver el plan
 en la fase 4.
@@ -377,11 +378,23 @@ Falta:
 - **Buscar, Reemplazar e Ir a línea**: no funcionan en Mint; falta saber
   cómo fallan (ver "Siguiente ciclo de trabajo").
 - **Plegado de código para C++**: el resaltador C++ de Lazarus no lo trae.
-- **Impresión**: el menú Imprimir está oculto porque el SynEdit de Lazarus no
-  trae impresión. Plan: dibujar el texto con sus colores en la impresora con
-  Printer4Lazarus, que en Linux usa CUPS (y su "Imprimir a archivo PDF"),
-  con las opciones del diálogo original (números de línea, colores,
-  ajuste de líneas).
+- ✅ **Impresión** (falta probarla en Mint). El SynEdit de Lazarus no trae
+  impresión, así que:
+  - `PdfPrint.pas` arma páginas A4 en un PDF con fcl-pdf, que viene con Free
+    Pascal: encabezado con el nombre del archivo y "página / total", números
+    de línea, ajuste de líneas y tabulaciones.
+  - `EditorPrint.pas` toma el texto con los colores y estilos del resaltador
+    (o solo la selección).
+  - El PDF va a la impresora elegida con `lp` (CUPS), o se guarda con
+    "Guardar como archivo PDF…". Funciona igual con GTK2 y con Qt6.
+  - La fuente es la del editor si es TrueType; si no, DejaVu Sans Mono o
+    Liberation Mono (fcl-pdf 3.2.2 corre las tildes al recortar la fuente,
+    así que se incrusta completa). Sin ninguna de ellas usa la Courier del
+    PDF, que solo tiene ASCII.
+  - Se descartó Printer4Lazarus: tiene una versión distinta para cada
+    biblioteca gráfica y no compila sin interfaz, que es como se compila en
+    la Mac.
+  - Configurar impresión abre `system-config-printer`, si está instalado.
 - Exportar a RTF/TeX (la exportación a HTML sigue).
 - **Hecho cuando:** funciona todo lo anterior, como en el original.
 
@@ -469,8 +482,9 @@ El producto final del proyecto es un `.deb` que se instala con
     `Source/Images/AppIcon/hicolor`).
   - Asociación con archivos `.c`, `.cpp`, `.h` y proyectos `.dev`.
   - Fuentes Heebo y Source Code Pro en `/usr/share/fonts`.
-- **Dependencias del paquete**: `gcc`, `g++`, `make`, `gdb` y GTK2
-  (`libgtk2.0-0`). Recomendadas: `astyle` y `clang-format`.
+- **Dependencias del paquete**: `gcc`, `g++`, `make`, `gdb` y la biblioteca
+  gráfica (GTK2 o Qt6). Recomendadas: `astyle`, `clang-format`, `cups-client`
+  (`lp`, para imprimir) y `fonts-dejavu-core` (la fuente de los PDF).
 - **Construcción**: un script que compila con `lazbuild` y arma el paquete
   (`dpkg-deb` o debhelper). El paquete se revisa con `lintian`.
 - `sudo apt remove penguin-cpp` no debe dejar archivos. La configuración de

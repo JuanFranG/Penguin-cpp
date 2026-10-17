@@ -95,8 +95,8 @@ Pruebas de consola:
 
 ## Estado por fase
 
-Cada fase vive en su rama y parte de la anterior. `main` todavía solo tiene
-la importación del código original.
+Cada fase se trabaja en su rama, que parte de la anterior, y se pasa a `main`
+al publicarla. Hoy `main` incluye las fases 1 a 4 (`fase4/lazarus`).
 
 | Fase | Rama | Estado |
 |---|---|---|
@@ -269,8 +269,6 @@ El producto final del proyecto es un `.deb` que se instala con
 - **Avisos de compilación**: revisar los ~150 que da hoy.
 - **Fuentes de Windows** en los formularios (MS Sans Serif, Tahoma, Courier
   New, Segoe UI): cambiarlas por las del sistema.
-- **Ramas**: decidir cuándo fusionar las fases en `main`, por ejemplo con un
-  PR cuando el IDE abra en Linux.
 - Más adelante: probar con Lazarus 4.x.
 
 ---

@@ -113,7 +113,7 @@ al publicarla. Hoy `main` incluye las fases 1 a 4 (`fase4/lazarus`).
 | 4 · Port a Lazarus y formularios | `fase4/lazarus` | 🔄 Abre, funciona y cierra bien en Mint con Qt5; falta Buscar/Ir a línea |
 | 4b · Identidad visual y temas | `fase4/lazarus` | 🔄 Icono, esquemas del editor y paneles con la paleta listos; faltan menús y diálogos (con Qt5) |
 | 5 · Editor (SynEdit de Lazarus) | `fase5/editor` | ✅ Hecha, probada en Mint: impresión, exportación a RTF/TeX y plegado |
-| 6 · Compilación con el gcc de Linux | — | ⏳ Pendiente |
+| 6 · Compilación con el gcc de Linux | `fase6/compilador` | 🔄 gcc detectado, archivos sueltos compilan y corren en una terminal; faltan proyectos y Makefiles |
 | 7 · Depurador (GDB/MI) | — | ⏳ Pendiente |
 | 8 · Paquete `.deb` y pulido | — | ⏳ Pendiente |
 | 9 · macOS | — | ⏳ Después del `.deb` |
@@ -431,32 +431,54 @@ Falta:
     (`EditorPrint.CollectSource`).
 - **Hecho cuando:** funciona todo lo anterior, como en el original.
 
-### Fase 6 · Compilación con el gcc de Linux ⏳
-- `Compiler.pas`:
-  - Quitar `.exe` y `windres`; en Linux no hay archivos de recursos `.rc`.
-  - Generar Makefiles con rutas POSIX.
-  - Detectar `gcc`, `g++`, `clang` y `make` en el PATH.
-- Conjuntos de compilador por defecto para Linux, en lugar de los de
-  MinGW/TDM. Lo que hay que cambiar (revisado en el código):
-  - Los compiladores solo se buscan en el **primer arranque**
-    (`devData.First`). Quien ya abrió el IDE tiene la lista vacía guardada:
-    hay que buscarlos también cuando la lista está vacía.
-  - `FindSets` busca una carpeta `TDM-GCC-64` junto al programa; en Linux
-    hay que buscar `gcc`/`g++` en el PATH.
-  - `Version.pas` tiene los nombres de Windows: `gcc.exe`, `g++.exe`,
-    `mingw32-make.exe`, `gdb.exe`, `gdb32.exe`, `windres.exe` y `.exe`
-    como extensión de los ejecutables.
-  - La detección lee las macros con `cpp.exe … NUL`; en Linux es
-    `cpp … /dev/null`.
-  - Validar un compilador exige `windres`, que en Linux no existe.
-  - Se crean perfiles de 32 bits (`-m32`), que en Linux necesitan paquetes
-    aparte (`gcc-multilib`): crearlos solo si están instalados.
-  - Las opciones de enlazado traen `-static-libgcc`, pensado para que los
-    `.exe` funcionaran sin las DLL de MinGW; en Linux no hace falta.
-- Portar `ConsolePauser` (`Source/Tools/ConsolePauser`) a POSIX. Hoy
-  `Compiler.pas` ejecuta `ConsolePauser.exe`.
-- Ejecutar los programas en una terminal configurable
-  (`x-terminal-emulator`, `gnome-terminal`, `konsole`…).
+### Fase 6 · Compilación con el gcc de Linux 🔄
+Hecho en la rama `fase6/compilador` (falta probarlo en Mint):
+- ✅ **El gcc del sistema** (`devCFG.pas`, `Version.pas`):
+  - Se busca `gcc` en el PATH (en Mint, `/usr/bin/gcc` del paquete
+    `build-essential`) y se crean los perfiles *GCC 13.3.0 Release*, *Debug*
+    y *Profiling*. También cuando la configuración guardada no tiene
+    ninguno, como pasaba hasta ahora.
+  - Los programas se llaman `gcc`, `g++`, `make`, `gdb` y `gprof`; sin `.exe`
+    (`main.cpp` genera `main`), sin `windres` y con `.so` para las
+    bibliotecas compartidas.
+  - Ya no se pasan las carpetas propias de gcc con `-I`/`-L`: cambiaban el
+    orden de búsqueda y rompían los `#include_next` de las cabeceras de C++.
+  - Sin perfiles de 32 bits ni `-static-libgcc`, que eran para MinGW.
+  - La versión se lee de `gcc -v` (y de clang, para macOS).
+- ✅ **Compilar un archivo suelto** (`Compiler.pas`):
+  - Las carpetas van como `"-I…"`/`"-L…"`: Free Pascal parte los comandos
+    con `CommandToList`, que solo quita las comillas que rodean un
+    argumento completo, y `-I"…"` llegaba a gcc con las comillas.
+  - Probado con g++ real: ruta con espacios y apóstrofo, `-I` a una carpeta
+    con espacios, y el mensaje de error en el formato que lee la lista.
+  - Los mensajes de gcc en español (`aviso`, `nota`, `error fatal`) también
+    se reconocen.
+- ✅ **Ejecutar en una terminal** (`devPlatform.pas`, `devExec.pas`):
+  - Se abre la terminal del escritorio (`gnome-terminal`, `mate-terminal`,
+    `xfce4-terminal` o `konsole`, según `XDG_CURRENT_DESKTOP`; si no,
+    `x-terminal-emulator` o `xterm`), con la opción que la hace esperar a
+    que se cierre la ventana.
+  - Con "Pausar programas de consola", un script de `sh` reemplaza a
+    `ConsolePauser.exe`: corre el programa y muestra "El proceso terminó
+    después de X segundos con el valor de retorno N" hasta Enter.
+  - Los proyectos con interfaz gráfica se abren directamente.
+- ✅ **Seguridad de los nombres de archivo en los comandos:** un nombre con
+  `"` se rechaza con un aviso, porque cerraría el nombre y el resto pasaría
+  a gcc como opciones. En la terminal, el programa y sus argumentos llegan a
+  `sh` por separado: un nombre o argumento con `$(…)` es texto, no código.
+
+Falta:
+- **Proyectos y Makefiles** (`Compiler.pas`, `Project.pas`):
+  - Rutas POSIX y sin `windres` ni recursos `.rc`.
+  - **Citar cada nombre para el shell:** `make` ejecuta cada receta con
+    `/bin/sh`, así que ahí un archivo llamado `$(…).cpp` **sí ejecutaría
+    código**. Comillas simples, con `'` escrito como `'\''`.
+  - **`INTERNAL_DEL`:** hoy el IDE borra los archivos que le pasen (lo usa
+    `make clean`). Reemplazarlo por `rm -f` en los Makefiles y quitar ese
+    modo.
+  - **Proyectos de terceros (`.dev`):** un proyecto puede traer su propio
+    Makefile y opciones de compilación, y compilarlo es ejecutar lo que
+    diga. Avisar al abrir un proyecto ajeno que use Makefile propio.
 - Usar el AStyle y el clang-format instalados en el sistema (hoy busca
   `AStyle.exe` y `clang-format.exe`).
 - Plantillas (`Templates/`, 44 archivos): las de consola, biblioteca
@@ -466,24 +488,8 @@ Falta:
   muestra la lista antes de borrar.
 - Revisar las rutas con `\` escritas a mano que quedan (`main.pas`,
   `Compiler.pas`, `Project.pas`, `Utils.pas`).
-- Seguridad (pendiente):
-  - **Nombres de archivo en los comandos:** los comandos se arman como texto
-    con los nombres entre comillas dobles y se parten en argumentos sin shell.
-    Un archivo llamado `a" -o /home/u/.bashrc "b.cpp` (que puede venir en un
-    proyecto descargado) agregaría argumentos y gcc escribiría sobre ese
-    archivo. Pasar cada argumento por separado a `TProcess`, o rechazar
-    nombres con `"`.
-  - **Makefiles:** `make` ejecuta cada receta con `/bin/sh`, así que ahí un
-    archivo llamado `$(…).cpp` **sí ejecutaría código**. El generador de
-    Makefiles tiene que citar cada nombre para el shell (comillas simples,
-    con `'` escrito como `'\''`).
-  - **`INTERNAL_DEL`:** hoy el ejecutable borra los archivos que le pasen (lo
-    usa `make clean`). Solo borra los que se le indican, sin comodines ni
-    carpetas. Reemplazarlo por `rm -f` en los Makefiles y quitar ese modo.
-  - **Proyectos de terceros (`.dev`):** un proyecto puede traer su propio
-    Makefile y opciones de compilación, y compilarlo es ejecutar lo que
-    diga. Pasa en cualquier IDE, pero conviene avisar al abrir un proyecto
-    ajeno que use Makefile propio.
+- Elegir la terminal en las opciones (hoy se detecta sola).
+- clang como segundo compilador, si está instalado.
 - **Hecho cuando:** se compila y ejecuta un proyecto de consola y uno de
   varios archivos, y los errores del compilador aparecen en la lista y se
   pueden clicar.

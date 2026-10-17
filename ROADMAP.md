@@ -8,7 +8,7 @@ funciona en Windows.
 Este documento explica de dónde viene, qué se ha hecho hasta ahora y qué
 falta.
 
-*Última actualización: 16 de octubre de 2026.*
+*Última actualización: 17 de octubre de 2026. Versión 0.1.0.*
 
 ---
 
@@ -106,13 +106,48 @@ al publicarla. Hoy `main` incluye las fases 1 a 4 (`fase4/lazarus`).
 | 1 · Quitar lo que no se puede portar | `fase1/quitar-windows` | ✅ Hecha |
 | 2 · Parser de C++ en Free Pascal | `fase2/parser-fpc` | ✅ Hecha, probada en Mint |
 | 3 · Capa de sistema | `fase3/capa-sistema` | ✅ Hecha, probada en Mint |
-| 4 · Port a Lazarus y formularios | `fase4/lazarus` | 🔄 Compila; falta la primera ejecución |
-| 4b · Identidad visual y temas | `fase4/lazarus` | 🔄 Icono listo; temas después de la primera ejecución |
+| 4 · Port a Lazarus y formularios | `fase4/lazarus` | 🔄 Abre y funciona en Mint; quedan detalles |
+| 4b · Identidad visual y temas | `fase4/lazarus` | 🔄 Icono y esquemas de color del editor listos; faltan los temas de la interfaz |
 | 5 · Editor (SynEdit de Lazarus) | `fase4/lazarus` | 🔄 Adelantada dentro de la fase 4 |
 | 6 · Compilación con el gcc de Linux | — | ⏳ Pendiente |
 | 7 · Depurador (GDB/MI) | — | ⏳ Pendiente |
 | 8 · Paquete `.deb` y pulido | — | ⏳ Pendiente |
 | 9 · macOS | — | ⏳ Después del `.deb` |
+
+### Siguiente ciclo de trabajo
+
+Estado al 17 de octubre de 2026: el IDE abre en Linux Mint 22 (GTK2). Funciona
+en español y la configuración se conserva entre arranques. El editor tiene
+colores y números de línea, y las barras de herramientas son responsivas.
+Al cerrar no quedan fugas de memoria (heaptrc: 0 bloques sin liberar).
+
+**1. Verificar en Mint lo último que se cambió:**
+- El fondo de todo el editor toma el color del esquema (por ejemplo Twilight
+  oscuro de arriba abajo, no solo detrás del texto).
+- Las barras no dejan huecos y el margen del editor es más angosto.
+- El botón de cerrar: la X de la ventana y Archivo → Salir.
+- Opciones del entorno: qué errores aparecen al abrirla (falta una captura).
+
+**2. Terminar la fase 4:**
+- Los textos de la bienvenida ("WELCOME", "Hotkeys", "Open"…) están fijos en
+  inglés en el formulario: pasarlos a los archivos de idioma.
+- Decidir la biblioteca gráfica (GTK2 o Qt6), según el plan de abajo.
+- Lo que queda de la verificación de memoria: el editor con acentos y emoji, y
+  valgrind.
+
+**3. Fase 6, el siguiente paso grande:** la lista de compiladores está vacía
+porque el IDE solo busca TDM-GCC (el compilador para Windows que trae el
+original). Hay que:
+- detectar el `gcc`/`g++` del sistema y crear sus perfiles (Release, Debug,
+  Profiling);
+- compilar y ejecutar en una terminal, con los errores clicables;
+- reemplazar las plantillas de Windows;
+- corregir los nombres de archivo con comillas y la seguridad de los Makefiles.
+
+**4. Fase 4b:** hoy los esquemas de color cambian solo el editor; los menús,
+los paneles y los diálogos siguen el tema del escritorio. El tema claro y
+oscuro de toda la interfaz, y un selector entre los iconos coloridos y los
+planos, van en esa fase.
 
 ### Fase 0 · Preparación ✅
 - Repositorio en GitHub con el historial completo del original y el remoto

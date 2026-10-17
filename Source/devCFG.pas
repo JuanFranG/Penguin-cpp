@@ -2539,6 +2539,13 @@ begin
       TabWidth := fTabSize;
       Font.Assign(fFont);
 
+      // Background: Delphi's SynEdit painted the whole editor with the scheme's
+      // whitespace color, Lazarus' only the text; the rest stayed white
+      if Assigned(Highlighter) and (Highlighter.WhitespaceAttribute.Background <> clNone) then
+        Color := Highlighter.WhitespaceAttribute.Background
+      else
+        Color := clWindow;
+
       // Set selection color
       if Assigned(Highlighter) then begin
         pt := Point(clNavy, clWhite); // StrtoPoint leaves pt as is when the value is missing

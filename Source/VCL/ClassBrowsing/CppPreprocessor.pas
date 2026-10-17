@@ -371,6 +371,8 @@ begin
 
   SkipToEndOfPreprocessor;
   PreProcTo := fIndex;
+  if PreProcTo >= fBuffer.Count then // the file ends in a line continuation
+    PreProcTo := fBuffer.Count - 1;
 
   // Calculate index to insert defines in in result file
   fPreProcIndex := (fResult.Count - 1) + 1; // offset by one for #include rootfile
@@ -597,8 +599,10 @@ var
 
   // Expand any token that isn't a number
   function ExpandDefines(Line: String): String;
+  const
+    MaxExpansions = 1000; // a macro may expand to itself (#define stdin stdin) or a cycle
   var
-    SearchPos, Head, Tail, NameStart, NameEnd: integer;
+    SearchPos, Head, Tail, NameStart, NameEnd, Expansions: integer;
     Name, Args, InsertValue: String;
     Define: PDefine;
 
@@ -629,6 +633,7 @@ var
     end;
   begin
     SearchPos := 1;
+    Expansions := 0;
     while (SearchPos <= Length(Line)) do begin
 
       // We have found an identifier. It is not a number suffix. Try to expand it
@@ -666,8 +671,9 @@ var
 
           // Does it exist in the database?
           Define := GetDefine(Name,Dummy);
-          if not Assigned(Define) then begin
-            InsertValue := '0';
+          Inc(Expansions);
+          if not Assigned(Define) or (Expansions > MaxExpansions) then begin
+            InsertValue := '0'; // like C, what is left over evaluates to 0
           end else begin
             while (Head <= Length(Line)) and (Line[Head] in SpaceChars) do
               Inc(Head); // skip spaces
@@ -758,7 +764,8 @@ var
   function EvaluateExpression(Line: String): String;
   var
     Head, Tail, EquatStart, EquatEnd, OperatorPos: integer;
-    LeftOpValue, RightOpValue, ResultValue: Int64;
+    LeftOpValue, RightOpValue, ResultValue, Number: Int64;
+    Steps: integer;
     LeftOp, RightOp, OperatorToken, ResultLine: String;
 
     function GetNextOperator(var Offset: integer): String;
@@ -801,22 +808,28 @@ var
     end;
 
     // Then evaluate braceless part
+    Steps := 0;
     while true do begin
+      // Done when only a number is left; a negative one would otherwise be
+      // taken for a subtraction (0 - x) forever
+      Inc(Steps);
+      if TryStrToInt64(Trim(Line), Number) or (Steps > 10000) then
+        break;
       OperatorToken := GetNextOperator(OperatorPos);
       if OperatorPos > 0 then begin
 
         // Get left operand
         Tail := OperatorPos - 1;
-        while (Tail >= 0) and (Line[Tail] in SpaceChars) do
+        while (Tail >= 1) and (Line[Tail] in SpaceChars) do
           Dec(Tail); // skip spaces
         Head := Tail;
-        while (Head >= 0) and (Line[Head] in IdentChars) do
+        while (Head >= 1) and (Line[Head] in IdentChars) do
           Dec(Head); // step over identifier
         LeftOp := Copy(Line, Head + 1, Tail - Head);
         EquatStart := Head + 1; // marks begin of equation
 
         // Get right operand
-        Tail := OperatorPos + Length(OperatorToken) + 1;
+        Tail := OperatorPos + Length(OperatorToken);
         while (Tail <= Length(Line)) and (Line[Tail] in SpaceChars) do
           Inc(Tail); // skip spaces
         Head := Tail;
@@ -826,8 +839,10 @@ var
         EquatEnd := Head; // marks begin of equation
 
         // Evaluate after removing length suffixes...
-        LeftOpValue := StrToIntDef(RemoveSuffixes(LeftOp), 0);
-        RightOpValue := StrToIntDef(RemoveSuffixes(RightOp), 0);
+        LeftOpValue := StrToInt64Def(RemoveSuffixes(LeftOp), 0);
+        RightOpValue := StrToInt64Def(RemoveSuffixes(RightOp), 0);
+        // Like a C preprocessor, wrap around on overflow instead of failing
+        {$PUSH}{$Q-}{$R-}
         if OperatorToken = '*' then
           ResultValue := LeftOpValue * RightOpValue
         else if OperatorToken = '/' then begin
@@ -865,6 +880,7 @@ var
           ResultValue := integer(LeftOpValue or RightOpValue)
         else
           ResultValue := 0;
+        {$POP}
 
         // And replace by result in string form
         Delete(Line, EquatStart, EquatEnd - EquatStart);
@@ -879,7 +895,7 @@ var
   begin
     Line := ExpandDefines(Line); // replace FOO by numerical value of FOO
     Line := EvaluateDefines(Line); // replace all defined() by 1 or 0
-    Result := StrToIntDef(EvaluateExpression(Line), -1) > 0; // perform the remaining int arithmetic
+    Result := StrToInt64Def(Trim(EvaluateExpression(Line)), 0) <> 0; // perform the remaining int arithmetic
   end;
 begin
   if StartsStr('ifdef', Line) then begin

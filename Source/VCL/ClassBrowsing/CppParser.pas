@@ -58,6 +58,7 @@ type
     fLaterScanning: boolean;
     fOnStartParsing: TNotifyEvent;
     fOnEndParsing: TProgressEndEvent;
+    fLastError: String;
     fIsProjectFile: boolean;
     fInvalidatedStatements: TList;
     fPendingDeclarations: TList;
@@ -98,6 +99,8 @@ type
     procedure AddSoloClassLevel(Statement: PStatement); // adds new solo level
     procedure AddMultiClassLevel(StatementList: TList); // adds new multi level
     procedure RemoveClassLevel; // removes level
+    procedure ClearClassLevels; // removes all levels
+    function ExceptionText: String;
     procedure CheckForSkipStatement;
     function SkipBraces(StartAt: integer): integer;
     function CheckForPreprocessor: boolean;
@@ -126,6 +129,8 @@ type
     procedure DeleteTemporaries;
     function FindFileIncludes(const Filename: String; DeleteIt: boolean = False): PFileIncludes;
   public
+    // Why the last parse stopped early (the error is swallowed), '' if it didn't
+    property LastError: String read fLastError;
     procedure ResetDefines;
     procedure AddHardDefineByParts(const Name, Args, Value: String);
     procedure AddHardDefineByLine(const Line: String);
@@ -224,6 +229,7 @@ var
 begin
   FreeAndNil(fPendingDeclarations);
   FreeAndNil(fInvalidatedStatements);
+  ClearClassLevels;
   FreeAndNil(fCurrentClass);
   FreeAndNil(fSkipList);
   FreeAndNil(fProjectFiles);
@@ -567,6 +573,24 @@ begin
     fClassScope := scsPrivate // classes are private by default
   else
     fClassScope := scsPublic; // structs are public by default
+end;
+
+function TCppParser.ExceptionText: String;
+begin
+  if ExceptObject is Exception then
+    Result := ExceptObject.ClassName + ': ' + Exception(ExceptObject).Message
+  else
+    Result := 'unknown error';
+end;
+
+procedure TCppParser.ClearClassLevels;
+var
+  I: Integer;
+begin
+  // levels are owned lists; unbalanced braces leave some behind
+  for I := 0 to fCurrentClass.Count - 1 do
+    TList(fCurrentClass[I]).Free;
+  fCurrentClass.Clear;
 end;
 
 procedure TCppParser.RemoveClassLevel;
@@ -1751,6 +1775,8 @@ begin
   if (fTokenizer = nil) or (fPreprocessor = nil) then
     Exit;
 
+  fLastError := '';
+
   // Start a timer here
   if (not ManualUpdate) and Assigned(fOnStartParsing) then
     fOnStartParsing(Self);
@@ -1768,6 +1794,7 @@ begin
     else
       fPreprocessor.PreprocessFile(FileName); // load contents from disk
   except
+    fLastError := ExceptionText;
     if (not ManualUpdate) and Assigned(fOnEndParsing) then
       fOnEndParsing(Self, -1);
     fPreprocessor.Reset; // remove buffers from memory
@@ -1783,6 +1810,7 @@ begin
       Exit;
     end;
   except
+    fLastError := ExceptionText;
     if (not ManualUpdate) and Assigned(fOnEndParsing) then
       fOnEndParsing(Self, -1);
     fPreprocessor.Reset;
@@ -1798,7 +1826,7 @@ begin
     until not HandleStatement;
   finally
     fSkipList.Clear; // remove data from memory, but reuse structures
-    fCurrentClass.Clear;
+    ClearClassLevels;
     fPreprocessor.Reset;
     fTokenizer.Reset;
     if (not ManualUpdate) and Assigned(fOnEndParsing) then

@@ -689,7 +689,7 @@ var
       Head := Index;
       while (Head > 0) and (Output[Head] in BlankChars) do
         Dec(Head);
-      if (Head - 1 > 0) and (Output[Head + 1] in BlankChars) then begin
+      if (Head - 1 > 0) and (Head + 1 <= Length(Output)) and (Output[Head + 1] in BlankChars) then begin
         Delete(Output, Head, Index - Head);
         // update insert index due to removal
         Dec(InsertIndex, Index - Head);
@@ -792,6 +792,8 @@ procedure TCppTokenizer.CatString(var Dest: String; Source: PChar; Count: intege
 var
   OldLength: integer;
 begin
+  if Count <= 0 then
+    Exit; // @Dest[OldLength + 1] would point past the string
   OldLength := Length(Dest);
   SetLength(Dest, Length(Dest) + Count);
   StrLCopy(@Dest[OldLength + 1], Source, Count);

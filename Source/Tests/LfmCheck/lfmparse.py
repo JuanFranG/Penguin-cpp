@@ -6,7 +6,9 @@ usage: python3 lfmparse.py OUT_DIR SOURCE_DIR FILE.lfm...
   (FILE paths relative to SOURCE_DIR)
 
 Writes to OUT_DIR:
-  checks.tsv   one check per line (format described in LfmChecks.pas)
+  checks.tsv   one check per line (format described in LfmChecks.pas);
+               problems found here (image data the LCL can't read) are
+               passed on as X rows
   units.inc    the IDE's units, so lfmcheck links every form class
   classes.inc  every component class named in the forms, to register them
 """
@@ -20,6 +22,41 @@ EXTRA_UNITS = ['CodeCompletionForm', 'devShortcutsEditorForm', 'ClassBrowser', '
                'CppPreprocessor', 'CppTokenizer', 'CompOptionsList', 'devFileMonitor', 'devShortcuts']
 # Units lfmcheck.lpr already uses
 SKIP_UNITS = {'cthreads', 'Interfaces', 'Forms', 'SysUtils', 'Classes'}
+
+
+# Graphic classes TPicture can stream in the LCL; all are raster images
+LCL_GRAPHICS = {'TBitmap', 'TPixmap', 'TPortableNetworkGraphic', 'TPortableAnyMapGraphic', 'TJPEGImage',
+                'TGIFImage', 'TIcon', 'TCursorImage', 'TTiffImage', 'TIcnsIcon'}
+
+
+def check_image_data(prop, data):
+    """Return a problem with streamed image data, or None.
+
+    The LCL writes a raster image as a 4-byte little-endian size followed by
+    the file data; Delphi omits the size for icons and PNG images (TPngImage).
+    """
+    def sized(body):
+        return len(body) >= 4 and int.from_bytes(body[:4], 'little') == len(body) - 4
+    if prop == 'Picture.Data' or prop.endswith('.Picture.Data'):
+        n = data[0] if data else 0
+        cls = data[1:1 + n].decode('latin-1')
+        if cls not in LCL_GRAPHICS:
+            return f'{prop}: graphic class {cls} is not available in the LCL'
+        if not sized(data[1 + n:]):
+            return f'{prop}: {cls} data has no size prefix (Delphi format)'
+    elif prop in ('Icon.Data', 'Glyph.Data') or prop.endswith(('.Icon.Data', '.Glyph.Data')):
+        if not sized(data):
+            return f'{prop}: image data has no size prefix (Delphi format)'
+    return None
+
+
+def binary_value(lines, i, first):
+    """Bytes of a {...} value starting on line i."""
+    parts = [first.strip().lstrip('{')]
+    while not parts[-1].rstrip().endswith('}'):
+        i += 1
+        parts.append(lines[i].strip())
+    return bytes.fromhex(''.join(parts).replace('}', ''))
 
 
 def skip_value(lines, i, first):
@@ -105,6 +142,10 @@ def parse(path, name):
                     i += 1
                 continue
             out.append(('P', name, i + 1, root, cls, prop, val))
+            if val.startswith('{'):
+                problem = check_image_data(prop, binary_value(lines, i, val))
+                if problem:
+                    out.append(('X', name, i + 1, problem))
             i = skip_value(lines, i, val)
             continue
         i += 1

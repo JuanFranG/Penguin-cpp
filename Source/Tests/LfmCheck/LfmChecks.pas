@@ -10,6 +10,8 @@
       P  lfm  line  rootclass  class  path  value   a property or event
       I  lfm  line  rootclass  class  collection  path  value
                                                     a collection item property
+      X  lfm  line  message                         a problem lfmparse.py found
+                                                    (image data the LCL can't read)
     Every class, property, enumeration/set value and event handler must exist;
     otherwise the window would raise an exception when it is opened.
 }
@@ -181,7 +183,9 @@ begin
         Cls := GetClass(F[4]);
         if (RootCls <> nil) and (Cls <> nil) then
           CheckPath(Where, RootCls, Cls, F[5], F[6]);
-      end else if (F[0] = 'I') and (F.Count >= 8) then begin
+      end else if F[0] = 'X' then
+        Problem(Where, F[3])
+      else if (F[0] = 'I') and (F.Count >= 8) then begin
         RootCls := GetClass(F[3]);
         Cls := GetClass(F[4]);
         if (RootCls <> nil) and (Cls <> nil) then

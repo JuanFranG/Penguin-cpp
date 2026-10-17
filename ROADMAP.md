@@ -21,6 +21,8 @@ falta.
 - **Producto final: un paquete `.deb`** para Debian, Ubuntu, Linux Mint y
   derivadas. Se instala con `apt` y deja el IDE listo para compilar y
   depurar. Todas las fases apuntan a eso; la fase 8 arma el paquete.
+- **Después: macOS** (fase 9), con el mismo código. Se hace una vez que la
+  versión de Linux esté completa.
 
 ---
 
@@ -110,6 +112,7 @@ al publicarla. Hoy `main` incluye las fases 1 a 4 (`fase4/lazarus`).
 | 6 · Compilación con el gcc de Linux | — | ⏳ Pendiente |
 | 7 · Depurador (GDB/MI) | — | ⏳ Pendiente |
 | 8 · Paquete `.deb` y pulido | — | ⏳ Pendiente |
+| 9 · macOS | — | ⏳ Después del `.deb` |
 
 ### Fase 0 · Preparación ✅
 - Repositorio en GitHub con el historial completo del original y el remoto
@@ -261,6 +264,8 @@ Falta:
   (`--interpreter=mi`), que es estable.
 - La ventana CPU (desensamblado y registros) sale de gdb, así que se puede
   portar.
+- El IDE habla con el depurador a través de una interfaz propia, separada de
+  gdb, para poder agregar lldb en macOS (fase 9) sin rehacer esta fase.
 - **Hecho cuando:** funcionan los breakpoints, el paso a paso, las variables
   vigiladas, la pila de llamadas y ver valores al pasar el ratón.
 
@@ -292,6 +297,40 @@ El producto final del proyecto es un `.deb` que se instala con
   - El `.deb` se instala con `apt` y el IDE aparece en el menú.
   - Se compila, ejecuta y depura un "Hola mundo".
   - Se desinstala sin dejar rastros.
+
+### Fase 9 · macOS ⏳
+Lazarus también compila para macOS con la interfaz nativa (Cocoa), así que se
+usa el mismo código. Se reutilizan tal cual el parser, el editor, los
+proyectos, las plantillas, los formularios, `devPlatform` (que ya abre
+archivos con `open` en macOS), el monitor de archivos y los Makefiles.
+
+| Parte | Linux | macOS | Dificultad |
+|---|---|---|---|
+| Interfaz | GTK2 | Cocoa. Está menos pulido en Lazarus; el menú va en la barra superior, con *Preferencias* y *Salir* en el menú de la app | Media |
+| Atajos | Ctrl | ⌘ Cmd: traducir los atajos | Baja |
+| Compilador | gcc/g++ | El clang de Apple (`xcode-select --install`), con el mismo formato de errores | Baja |
+| **Depurador** | gdb | **gdb no funciona en Macs con Apple Silicon.** Hace falta otro motor sobre lldb (por ejemplo lldb-dap) | **Alta** |
+| Terminal | x-terminal-emulator | Terminal.app | Baja |
+| Configuración | `~/.config/penguin-cpp` | `~/Library/Application Support/penguin-cpp` | Baja |
+| Lista de procesos | `/proc` | No existe; se usa `ps` | Baja |
+| Distribución | `.deb` | `.app` dentro de un `.dmg`, para Apple Silicon e Intel | Media |
+
+- **Compilador de Pascal:** FPC 3.2.2 no puede enlazar apps Cocoa con el
+  linker actual de Apple (error "malformed method list"). Hace falta un FPC
+  más nuevo (la rama de correcciones de la 3.2) y probablemente Lazarus 4.
+- **Firma de Apple:**
+  - Para que macOS no muestre el aviso de "desarrollador no identificado",
+    hay que firmar y notarizar la app con una cuenta Apple Developer (99 USD
+    al año).
+  - Sin ella funciona igual, pero cada usuario tiene que autorizarla a mano
+    la primera vez.
+  - La App Store queda descartada: sus condiciones no son compatibles con la
+    GPL.
+- **Esfuerzo:** unas 4 a 6 semanas, casi todo en el depurador y en los
+  detalles de Cocoa.
+- **Hecho cuando:** en un Mac con Apple Silicon y en uno con Intel:
+  - El `.dmg` instala la app.
+  - Se compila, ejecuta y depura un "Hola mundo".
 
 ---
 

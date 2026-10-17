@@ -502,6 +502,8 @@ type
     N57: TMenuItem;
     Movetootherview1: TMenuItem;
     CloseAllBtn: TToolButton;
+    ToolButton7: TToolButton;
+    PrintBtn: TToolButton;
     N14: TMenuItem;
     MoveToOtherViewItem: TMenuItem;
     SwapHeaderSourceItem: TMenuItem;
@@ -946,7 +948,8 @@ uses
   CompOptionsFrm, EditorOptFrm, IncrementalFrm, EnviroFrm, SynEdit, ImageTheme, SynEditKeyCmds, Types, FindFrm, ProjectTypes, devExec, Tests, NewTemplateFrm, FunctionSearchFrm,
   NewFunctionFrm, NewVarFrm, NewClassFrm, ProfileAnalysisFrm, FilePropertiesFrm, AddToDoFrm,
   ViewToDoFrm, ImportMSVCFrm, ImportCBFrm, CPUFrm, TipOfTheDayFrm, WindowListFrm, RemoveUnitFrm,
-  ParamsFrm, ProcessListFrm, SynEditHighlighter, devPlatform, SynEditCompat, LCLProc;
+  ParamsFrm, ProcessListFrm, SynEditHighlighter, devPlatform, SynEditCompat, LCLProc,
+  EditorPrint, PdfPrint;
 
 {$R *.lfm}
 
@@ -2265,15 +2268,97 @@ begin
     fProject.ExportToHTML;
 end;
 
+// Lazarus' SynEdit has no printing: the file is laid out as a PDF and sent to
+// CUPS, or saved where the user picks (see EditorPrint and PdfPrint)
 procedure TMainForm.actPrintExecute(Sender: TObject);
+var
+  e: TEditor;
+  Options: TEditorPrintOptions;
+  Target, Error: String;
+  SaveDialog: TSaveDialog;
 begin
-  // Lazarus' SynEdit has no printing component; the Print actions are hidden
-  // until printing is reimplemented (e.g. with Printer4Lazarus)
+  e := fEditorList.GetEditor;
+  if not Assigned(e) then
+    Exit; // Action checks this...
+
+  with TPrintForm.Create(Self) do try
+    if ShowModal <> mrOk then
+      Exit;
+
+    Options.Title := ExtractFileName(e.FileName);
+    Options.Colors := cbColors.Checked;
+    Options.Highlight := cbHighlight.Checked;
+    Options.WordWrap := cbWordWrap.Checked;
+    Options.LineNumbers := rbLN.Checked or rbLNMargin.Checked;
+    Options.LineNumbersInMargin := rbLNMargin.Checked;
+    Options.SelectionOnly := cbSelection.Checked;
+    Options.TabWidth := devEditor.TabSize;
+
+    devData.PrintColors := cbColors.Checked;
+    devData.PrintHighlight := cbHighlight.Checked;
+    devData.PrintWordWrap := cbWordWrap.Checked;
+    devData.PrintLineNumbers := rbLN.Checked;
+    devData.PrintLineNumbersMargins := rbLNMargin.Checked;
+
+    if SaveAsPDF then begin
+      SaveDialog := TSaveDialog.Create(Self);
+      try
+        SaveDialog.Filter := Lang[ID_PRT_PDFFILES] + ' (*.pdf)|*.pdf';
+        SaveDialog.DefaultExt := 'pdf';
+        SaveDialog.Options := SaveDialog.Options + [ofOverwritePrompt];
+        SaveDialog.InitialDir := ExtractFilePath(e.FileName);
+        SaveDialog.FileName := ChangeFileExt(ExtractFileName(e.FileName), '.pdf');
+        if not SaveDialog.Execute then
+          Exit;
+        Target := SaveDialog.FileName;
+      finally
+        SaveDialog.Free;
+      end;
+    end else begin
+      // lp reads the file before it returns; the copy is removed below
+      Target := GetPrivateTempDir;
+      if Target = '' then
+        Target := IncludeTrailingPathDelimiter(GetTempDir(False));
+      Target := Target + 'print-' + IntToStr(GetProcessID) + '.pdf';
+    end;
+
+    Screen.Cursor := crHourGlass;
+    try
+      try
+        PrintEditorToPDF(e.Text, Options, Target);
+      except
+        on Ex: Exception do begin
+          Screen.Cursor := crDefault;
+          MessageDlg(Format(Lang[ID_PRT_FAILED], [Ex.Message]), mtError, [mbOK], 0);
+          Exit;
+        end;
+      end;
+
+      if SaveAsPDF then
+        SetStatusbarMessage(Format(Lang[ID_PRT_SAVED], [Target]))
+      else begin
+        if PrintPDF(Target, PrinterName, Options.Title, seCopies.Value, Error) then
+          SetStatusbarMessage(Format(Lang[ID_PRT_SENT], [PrinterName]))
+        else begin
+          Screen.Cursor := crDefault;
+          MessageDlg(Format(Lang[ID_PRT_FAILED], [Error]), mtError, [mbOK], 0);
+        end;
+        DeleteFile(Target);
+      end;
+    finally
+      Screen.Cursor := crDefault;
+    end;
+  finally
+    Free;
+  end;
 end;
 
+// The desktop's printer settings (Mint, Ubuntu and Debian use
+// system-config-printer)
 procedure TMainForm.actPrintSUExecute(Sender: TObject);
 begin
-  // see actPrintExecute
+  if not ExecuteFile('system-config-printer', '', '') then
+    MessageDlg(Lang[ID_PRT_NOSETUP], mtInformation, [mbOK], 0);
 end;
 
 procedure TMainForm.actExitExecute(Sender: TObject);
@@ -6183,6 +6268,9 @@ begin
   // Load bookmarks, captions and hints
   LoadText;
   ApplyPanelColors;
+
+  // Printer Setup opens the desktop's printer settings, if they are installed
+  actPrintSU.Visible := ExeSearch('system-config-printer', GetEnvironmentVariable('PATH')) <> '';
 
   // Load the current compiler set
   devCompilerSets.LoadSets;

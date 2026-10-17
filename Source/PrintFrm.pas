@@ -23,7 +23,7 @@ interface
 
 uses
   LCLIntf, LCLType, LMessages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs, StdCtrls,
-  Buttons, MultiLangSupport, Spin, DataFrm;
+  Buttons, ExtCtrls, MultiLangSupport, Spin, DataFrm;
 
 type
   TPrintForm = class(TForm)
@@ -40,15 +40,23 @@ type
     seCopies: TSpinEdit;
     cbSelection: TCheckBox;
     rbNoLN: TRadioButton;
+    pnlPrinter: TPanel;
+    lblPrinter: TLabel;
+    cboPrinter: TComboBox;
+    pnlButtons: TPanel;
     procedure FormCreate(Sender: TObject);
+  private
+    procedure LoadPrinters;
   public
     procedure LoadText;
+    function SaveAsPDF: Boolean; // the last entry of the printer list
+    function PrinterName: String;
   end;
 
 implementation
 
 uses
-  devCFG;
+  devCFG, PdfPrint;
 
 {$R *.lfm}
 
@@ -68,15 +76,40 @@ begin
   rbLNMargin.Caption:=      Lang[ID_PRT_PRTLINENUMMAR];
   rbNoLN.Caption:=          Lang[ID_PRT_NOPRTLINENUMMAR];
   lblCopies.Caption:=       Lang[ID_PRT_COPIES];
+  lblPrinter.Caption:=      Lang[ID_PRT_PRINTER];
   cbSelection.Caption:=     Lang[ID_PRT_SELONLY];
 
   btnOk.Caption:=           Lang[ID_BTN_OK];
   btnCancel.Caption:=       Lang[ID_BTN_CANCEL];
 end;
 
+// The CUPS printers, the default one selected, and "Save as PDF" last. Without
+// printers (or without CUPS) only the PDF is left.
+procedure TPrintForm.LoadPrinters;
+var
+  DefaultPrinter: String;
+begin
+  GetPrinters(cboPrinter.Items, DefaultPrinter);
+  cboPrinter.Items.Add(Lang[ID_PRT_SAVEPDF]);
+  cboPrinter.ItemIndex := cboPrinter.Items.IndexOf(DefaultPrinter);
+  if cboPrinter.ItemIndex < 0 then
+    cboPrinter.ItemIndex := 0;
+end;
+
+function TPrintForm.SaveAsPDF: Boolean;
+begin
+  Result := cboPrinter.ItemIndex = cboPrinter.Items.Count - 1;
+end;
+
+function TPrintForm.PrinterName: String;
+begin
+  Result := cboPrinter.Text;
+end;
+
 procedure TPrintForm.FormCreate(Sender: TObject);
 begin
   LoadText;
+  LoadPrinters;
   cbColors.Checked := devData.PrintColors;
   cbHighlight.Checked := devData.PrintHighlight;
   cbWordWrap.Checked := devData.PrintWordWrap;

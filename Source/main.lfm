@@ -470,6 +470,19 @@ object MainForm: TMainForm
         Top = 0
         Action = actCloseAll
       end
+      object ToolButton7: TToolButton
+        Left = 174
+        Top = 0
+        Width = 8
+        Caption = 'ToolButton7'
+        ImageIndex = 8
+        Style = tbsSeparator
+      end
+      object PrintBtn: TToolButton
+        Left = 182
+        Top = 0
+        Action = actPrint
+      end
     end
     object tbEdit: TToolBar
       Left = 235
@@ -7076,7 +7089,6 @@ object MainForm: TMainForm
       OnUpdate = actUpdateProject
     end
     object actPrint: TAction
-      Visible = False
       Tag = 8
       Category = 'File'
       Caption = '&Print'

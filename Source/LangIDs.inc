@@ -762,6 +762,13 @@ const
   ID_PRT_COPIES                         = 49010;
   ID_PRT_SELONLY                        = 49011;
   ID_PRT_NOPRTLINENUMMAR                = 49012;
+  ID_PRT_PRINTER                        = 49013;
+  ID_PRT_SAVEPDF                        = 49014;
+  ID_PRT_SENT                           = 49015;
+  ID_PRT_FAILED                         = 49016;
+  ID_PRT_SAVED                          = 49017;
+  ID_PRT_PDFFILES                       = 49018;
+  ID_PRT_NOSETUP                        = 49019;
 
   // Check form
   ID_UCF                                = 50001;

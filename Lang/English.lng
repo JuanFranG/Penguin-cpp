@@ -714,6 +714,13 @@ Ver=1
 49010=Number of Copies:
 49011=Print Selection Only
 49012=Don't Print Line Numbers
+49013=Printer:
+49014=Save as PDF file...
+49015=The file was sent to the printer %s.
+49016=Could not print:<CR><CR>%s
+49017=Saved as %s
+49018=PDF files
+49019=The printer settings tool (system-config-printer) is not installed. You can add printers from the system settings.
 
 
 50001=Check for Update of Dev-C++

@@ -656,7 +656,14 @@ Ver=1
 49009=Imprimir Números de Línea en Margen
 49010=Número de Copias:
 49011=Imprimir Solamente Selección
-49012=Don't Print Line Numbers
+49012=No imprimir líneas enumeradas
+49013=Impresora:
+49014=Guardar como archivo PDF...
+49015=Se envió el archivo a la impresora %s.
+49016=No se pudo imprimir:<CR><CR>%s
+49017=Se guardó en %s
+49018=Archivos PDF
+49019=La herramienta de impresoras (system-config-printer) no está instalada. Puedes agregar impresoras desde la configuración del sistema.
 
 
 50001=Revisar Actualizaciones de Dev-C++

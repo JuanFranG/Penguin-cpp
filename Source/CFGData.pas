@@ -145,17 +145,23 @@ begin
     if (not fINI.ValueExists(Section, PropName)) and (not fINI.SectionExists(Section + '.' + PropName)) then
       Continue;
 
+    // Free Pascal has kinds Delphi doesn't: AnsiString is tkAString, Boolean is
+    // tkBool; without them no string or boolean setting was saved or read
     case PropType(Obj, PropName) of
         tkString,
         tkLString,
+        tkAString,
         tkUString,
         tkWString: SetStrProp(Obj, PropName, fINI.ReadString(Section, PropName, ''));
 
       tkChar,
+        tkBool,
+        tkSet,
         tkEnumeration,
         tkInteger: SetOrdProp(Obj, PropName, fINI.ReadInteger(Section, PropName, 1));
 
-      tkInt64: SetInt64Prop(Obj, PropName, StrtoInt(fINI.ReadString(Section, PropName, '0')));
+      tkInt64,
+        tkQWord: SetInt64Prop(Obj, PropName, StrtoInt(fINI.ReadString(Section, PropName, '0')));
 
       tkFloat: SetFloatProp(Obj, PropName, StrtoFloat(fINI.ReadString(Section, PropName, '0.0')));
 
@@ -185,13 +191,17 @@ begin
         tkUString,
         tkString,
         tkLString,
+        tkAString,
         tkWString: fINI.WriteString(Section, PropName, '"' + GetStrProp(Obj, PropName) + '"');
 
       tkChar,
+        tkBool,
+        tkSet,
         tkEnumeration,
         tkInteger: fINI.WriteInteger(Section, PropName, GetOrdProp(Obj, PropName));
 
-      tkInt64: fINI.WriteString(Section, PropName, InttoStr(GetInt64Prop(Obj, PropName)));
+      tkInt64,
+        tkQWord: fINI.WriteString(Section, PropName, InttoStr(GetInt64Prop(Obj, PropName)));
 
       tkFloat: fINI.WriteString(Section, PropName, FloattoStr(GetFloatProp(Obj, PropName)));
 

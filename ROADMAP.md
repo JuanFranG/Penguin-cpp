@@ -440,6 +440,12 @@ Penguin cpp se distribuye bajo la **GNU GPL versión 2 o posterior**
 (`LICENSE`, `COPYING.txt`), la misma licencia del código del que parte. Si se
 distribuyen binarios, también hay que publicar el código fuente.
 
+Autor de Penguin cpp: **Juan Francisco Gonzalez Pacheco**: Ingeniería de Sistemas, Universidad
+del Magdalena.
+
+El port se desarrolló con la asistencia de **Claude Opus 5.5**, el modelo
+de inteligencia artificial de Anthropic.
+
 Créditos del código de origen:
 - Bloodshed Dev-C++: Colin Laplace y colaboradores.
 - Orwell Dev-C++: Johan Mes y colaboradores.

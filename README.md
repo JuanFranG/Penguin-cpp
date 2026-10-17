@@ -77,6 +77,14 @@ Las pruebas y más detalles están en [ROADMAP.md](ROADMAP.md#cómo-compilar-y-p
 
 ---
 
+## Autor
+
+**Juan Francisco Gonzalez Pacheco**: Ingeniería de Sistemas, Universidad
+del Magdalena.
+
+El port se desarrolló con la asistencia de **Claude Opus 5.5**, el modelo
+de inteligencia artificial de Anthropic.
+
 ## Origen
 
 Penguin cpp parte del código de **Embarcadero Dev-C++**

@@ -29,7 +29,7 @@ uses
   ActnList, ToolFrm, Debugger, ClassBrowser, CodeCompletion, CppParser, CppTokenizer, SyncObjs,
   StrUtils, SynEditTypes, devFileMonitor, devMonitorTypes, EditorList, devShortcuts, DebugReader,
   devCFG, SynEditTextBuffer, CppPreprocessor, CBUtils, StatementList, AStyleFormatterOptionsFrm,
-  ClangFormatterOptionsFrm, ExtDlgs;
+  ClangFormatterOptionsFrm, ExtDlgs, PenguinPalette;
 
 type
   TRunEndAction = (reaNone, reaProfile);
@@ -859,6 +859,7 @@ type
     fDebugger: TDebugger;
     fCompiler: TCompiler;
     fEditorList: TEditorList;
+    fPanelPalette: TPanelPalette;
     fCurrentPageHint: String;
     fLogOutputRawData: TStringList;
     fCriticalSection: TCriticalSection; // protects fFilesToOpen
@@ -901,6 +902,7 @@ type
     procedure OpenFileProject(s: string; AEncoding: TEncoding = nil);
     procedure ResizeWelcomeComponent;
     procedure SetHotkeyCaption(Panel: TPanel; const Caption: String);
+    procedure ApplyPanelColors;
 
 
   private
@@ -2453,6 +2455,9 @@ begin
           e1.InitCompletion;
         end;
       end;
+
+      // The panels follow the scheme too (light or dark)
+      ApplyPanelColors;
 
       // Repaint current editor to show new colors
       fEditorList.GetVisibleEditors(e1, e2);
@@ -5947,7 +5952,7 @@ begin
   else if StartsStr('[Error] ', Item.SubItems[2]) then
     Sender.Canvas.Font.Color := clRed
   else if StartsStr('[Hint] ', Item.SubItems[2]) then
-    Sender.Canvas.Font.Color := clYellow;
+    Sender.Canvas.Font.Color := fPanelPalette.Hint;
 
   // Make direction stuff bold
   lowersubitem := Trim(LowerCase(Item.SubItems[2]));
@@ -6177,6 +6182,7 @@ begin
 
   // Load bookmarks, captions and hints
   LoadText;
+  ApplyPanelColors;
 
   // Load the current compiler set
   devCompilerSets.LoadSets;
@@ -6265,7 +6271,7 @@ end;
 procedure TMainForm.OnInputEvalReady(const evalvalue: String);
 begin
   EvalOutput.Text := evalvalue;
-  EvalOutput.Font.Color := clWindowText;
+  EvalOutput.Font.Color := fPanelPalette.Text;
   MainForm.fDebugger.OnEvalReady := nil;
 end;
 
@@ -6284,7 +6290,7 @@ begin
         fDebugger.SendCommand('print', EvaluateInput.Text, true);
 
         // Tell the user we're updating...
-        EvalOutput.Font.Color := clGrayText;
+        EvalOutput.Font.Color := fPanelPalette.Secondary;
 
         // Add to history
         if EvaluateInput.Items.IndexOf(EvaluateInput.Text) = -1 then
@@ -6370,7 +6376,7 @@ begin
     if cdsSelected in State then
       Sender.Canvas.Font.Color := clWhite
     else
-      Sender.Canvas.Font.Color := clBlack;
+      Sender.Canvas.Font.Color := fPanelPalette.Text;
   end;
 end;
 
@@ -7069,6 +7075,73 @@ begin
     Panel.Width := Max(69, Bmp.Canvas.TextWidth(Caption) + 16);
   finally
     Bmp.Free;
+  end;
+end;
+
+// The welcome screen, the trees on the left and the message lists in the
+// colors of the icon: light, or dark when the editor's scheme is dark
+procedure TMainForm.ApplyPanelColors;
+var
+  I: integer;
+  Labels: array of TLabel;
+  Hotkeys: array of TPanel;
+  Trees: array of TCustomTreeView;
+  Lists: array of TListView;
+  Memos: array of TMemo;
+begin
+  dmMain.UpdateHighlighter;
+  fPanelPalette := PanelPaletteFor(dmMain.Cpp.WhitespaceAttribute.Background);
+
+  // Welcome screen
+  MainPanel.ParentBackground := False;
+  MainPanel.Color := fPanelPalette.Back;
+  PanelLeft.ParentBackground := False;
+  PanelLeft.Color := fPanelPalette.Back;
+  PanelRight.ParentBackground := False;
+  PanelRight.Color := fPanelPalette.Back;
+  Labels := [LabelWelcome, LabelVersion, LabelView, LabelHotkeys, LabelOpen, LabelSave, LabelZoom, LabelRun,
+    LabelCompile, LabelClear, LabelSponsor];
+  for I := 0 to High(Labels) do
+    Labels[I].Font.Color := fPanelPalette.Text;
+  LabelNumVersion.Font.Color := fPanelPalette.Link;
+  LabelDocumentation.Font.Color := fPanelPalette.Link;
+  LabelDocumentation.Color := fPanelPalette.Back;
+  Hotkeys := [PanelDescOpen, PanelDescSave, PanelDescZoom, PanelDescRun, PanelDescCompile, PanelDescClear];
+  for I := 0 to High(Hotkeys) do begin
+    Hotkeys[I].Color := fPanelPalette.Chip;
+    Hotkeys[I].Font.Color := fPanelPalette.ChipText;
+  end;
+  Memos := [RichEdit0, RichEdit1, RichEdit2, RichEdit3, RichEdit4]; // recent files
+  for I := 0 to High(Memos) do begin
+    Memos[I].Color := fPanelPalette.Back;
+    Memos[I].Font.Color := fPanelPalette.Text;
+  end;
+
+  // Project, classes and debug trees
+  Trees := [ProjectView, ClassBrowser, DebugView];
+  for I := 0 to High(Trees) do
+    with TTreeView(Trees[I]) do begin
+      Color := fPanelPalette.Back;
+      Font.Color := fPanelPalette.Text;
+      SelectionColor := fPanelPalette.Selection;
+      SelectionFontColor := fPanelPalette.SelectionText;
+      SelectionFontColorUsed := True;
+      TreeLineColor := fPanelPalette.Chip;
+      ExpandSignColor := fPanelPalette.Text;
+    end;
+  ClassBrowser.ArgsColor := fPanelPalette.Args;
+  ClassBrowser.SecondaryColor := fPanelPalette.Secondary;
+
+  // Messages
+  Lists := [CompilerOutput, ResourceOutput, FindOutput];
+  for I := 0 to High(Lists) do begin
+    Lists[I].Color := fPanelPalette.Back;
+    Lists[I].Font.Color := fPanelPalette.Text;
+  end;
+  Memos := [LogOutput, DebugOutput, EvalOutput];
+  for I := 0 to High(Memos) do begin
+    Memos[I].Color := fPanelPalette.Back;
+    Memos[I].Font.Color := fPanelPalette.Text;
   end;
 end;
 

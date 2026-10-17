@@ -69,6 +69,8 @@ type
     fProjectDir: String;
     fControlCanvas: TControlCanvas;
     fShowInheritedMembers: boolean;
+    fArgsColor: TColor;
+    fSecondaryColor: TColor;
     fIncludedFiles: TStringList;
     fIsIncludedCacheFileName: String;
     fIsIncludedCacheResult: boolean;
@@ -120,6 +122,9 @@ type
     property ProjectDir: String read fProjectDir write fProjectDir;
     property ShowInheritedMembers: boolean read fShowInheritedMembers write SetShowInheritedMembers;
     property TabVisible: boolean read fTabVisible write SetTabVisible;
+    // Function arguments, and types and inherited members, drawn after the names
+    property ArgsColor: TColor read fArgsColor write fArgsColor;
+    property SecondaryColor: TColor read fSecondaryColor write fSecondaryColor;
   end;
 
 const
@@ -142,6 +147,8 @@ end;
 constructor TClassBrowser.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
+  fArgsColor := clMaroon;
+  fSecondaryColor := clGray;
   OnMouseUp := OnNodeChange;
   OnMouseDown := OnNodeChanging;
   DragMode := dmAutomatic;
@@ -481,7 +488,7 @@ begin
   if Stage = cdPrePaint then begin
     Sender.Canvas.Font.Style := [fsBold];
     if bInherited then
-      Sender.Canvas.Font.Color := clGray;
+      Sender.Canvas.Font.Color := fSecondaryColor;
   end else if Stage = cdPostPaint then begin
     try
       st := Node.Data;
@@ -495,9 +502,9 @@ begin
       // Draw function arguments to the right of the already drawn text
       if st^._Args <> '' then begin
         if bInherited then
-          fControlCanvas.Font.Color := clGray
+          fControlCanvas.Font.Color := fSecondaryColor
         else
-          fControlCanvas.Font.Color := clMaroon;
+          fControlCanvas.Font.Color := fArgsColor;
 
         fControlCanvas.Brush.Color := Color;
         fControlCanvas.TextOut(DrawPoint.X, DrawPoint.Y + 2, st^._Args); // center vertically
@@ -511,7 +518,7 @@ begin
 
       // Then draw node type to the right of the arguments
       if TypeText <> '' then begin
-        fControlCanvas.Font.Color := clGray;
+        fControlCanvas.Font.Color := fSecondaryColor;
         fControlCanvas.Brush.Color := Color;
         fControlCanvas.TextOut(DrawPoint.X, DrawPoint.Y + 2, ': ' + TypeText); // center vertically
       end;

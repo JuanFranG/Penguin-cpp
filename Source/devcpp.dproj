@@ -130,7 +130,6 @@
         <RcCompile Include="DefaultFiles.rc">
             <Form>DefaultFiles.res</Form>
         </RcCompile>
-        <DCCReference Include="FastMM5.pas"/>
         <DCCReference Include="main.pas">
             <Form>MainForm</Form>
         </DCCReference>

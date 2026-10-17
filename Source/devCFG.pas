@@ -249,7 +249,7 @@ type
     procedure SaveSettings;
     procedure LoadSettings;
     function Validate: Boolean; // check if AStyle.exe can be found
-    function FormatMemory(Editor: TEditor; const OverrideCommand: String): String; // apply formatting
+    procedure FormatMemory(Editor: TEditor; const OverrideCommand: String); // apply formatting
     function FormatFile(const FileName, OverrideCommand: String): String; // apply formatting
     function GetVersion: String;
     function GetFullCommand: String;
@@ -297,7 +297,7 @@ type
     procedure SaveSettings;
     procedure LoadSettings;
     function Validate: Boolean; // check if clang-format.exe can be found
-    function FormatMemory(Editor: TEditor; const OverrideCommand: String): String; // apply formatting
+    procedure FormatMemory(Editor: TEditor; const OverrideCommand: String); // apply formatting
     function FormatFile(const FileName, OverrideCommand: String): String; // apply formatting
     function GetVersion: String;
     function GetFullCommand: String;
@@ -791,6 +791,11 @@ var
   devFormatterClang: TdevFormatterClang = nil;
 
   TDM_GCC_64_Folder: string = 'TDM-GCC-64';
+
+// Where a formatter works on a copy of an editor's text: the user's private
+// temp dir (devPlatform.GetPrivateTempDir), never the shared /tmp, where
+// another user could have placed a link under the same name
+function FormatterTempFile(const EditorFileName: String): String;
 
 implementation
 
@@ -2668,6 +2673,19 @@ end;
 
 { TdevFormatterAStyle }
 
+function FormatterTempFile(const EditorFileName: String): String;
+var
+  Dir, Name: String;
+begin
+  Dir := GetPrivateTempDir;
+  if Dir = '' then
+    raise EInOutError.Create('Cannot create the temporary directory');
+  Name := ExtractFileName(EditorFileName);
+  if Name = '' then
+    Name := 'untitled.cpp';
+  Result := Dir + Name;
+end;
+
 constructor TdevFormatterAStyle.Create;
 begin
   inherited Create;
@@ -2753,32 +2771,36 @@ begin
   Result := True;
 end;
 
-function TdevFormatterAStyle.FormatMemory(Editor: TEditor; const OverrideCommand: String): String;
+procedure TdevFormatterAStyle.FormatMemory(Editor: TEditor; const OverrideCommand: String);
 var
   FileName: String;
   DummyEditor: TSynEdit;
 begin
-  // Store file backup in AStyle dir and format that file
-  FileName := ConcatPaths([GetTempDir, ExtractFileName(Editor.FileName)]); //devDirs.Exec + fAStyleDir
-  Editor.Text.Lines.SaveToFile(FileName);
-  FormatFile(FileName, OverrideCommand);
-
-  // Load formatted file into dummy
-  DummyEditor := TSynEdit.Create(nil);
+  // Format a copy of the text in the private temp dir (not the shared /tmp)
+  FileName := FormatterTempFile(Editor.FileName);
   try
-    // Use replace selection trick to preserve undo list
-    DummyEditor.Lines.LoadFromFile(FileName);
+    Editor.Text.Lines.SaveToFile(FileName);
+    FormatFile(FileName, OverrideCommand);
 
-    // Use replace all functionality
-    Editor.Text.BeginUpdate;
+    // Load formatted file into dummy
+    DummyEditor := TSynEdit.Create(nil);
     try
-      Editor.Text.SelectAll;
-      Editor.Text.SelText := DummyEditor.Lines.Text; // do NOT use Lines.LoadFromFile which is not undo-able
+      // Use replace selection trick to preserve undo list
+      DummyEditor.Lines.LoadFromFile(FileName);
+
+      // Use replace all functionality
+      Editor.Text.BeginUpdate;
+      try
+        Editor.Text.SelectAll;
+        Editor.Text.SelText := DummyEditor.Lines.Text; // do NOT use Lines.LoadFromFile which is not undo-able
+      finally
+        Editor.Text.EndUpdate; // repaint once
+      end;
     finally
-      Editor.Text.EndUpdate; // repaint once
-    end;
+      DummyEditor.Free;
+    end;
   finally
-    DummyEditor.Free;
+    DeleteFile(FileName); // a copy of the user's code
   end;
 end;
 
@@ -2894,32 +2916,36 @@ begin
   Result := True;
 end;
 
-function TdevFormatterClang.FormatMemory(Editor: TEditor; const OverrideCommand: String): String;
+procedure TdevFormatterClang.FormatMemory(Editor: TEditor; const OverrideCommand: String);
 var
   FileName, Formatted: String;
   DummyEditor: TSynEdit;
 begin
-  // Store file backup in temporary directory
-  FileName := ConcatPaths([GetTempDir, ExtractFileName(Editor.FileName)]);
-  Editor.Text.Lines.SaveToFile(FileName);
-  Formatted := FormatFile(FileName, OverrideCommand);
-
-  // Load formatted file into dummy
-  DummyEditor := TSynEdit.Create(nil);
+  // Format a copy of the text in the private temp dir (not the shared /tmp)
+  FileName := FormatterTempFile(Editor.FileName);
   try
-    // Use replace selection trick to preserve undo list
-    DummyEditor.Lines.LoadFromFile(FileName);
+    Editor.Text.Lines.SaveToFile(FileName);
+    Formatted := FormatFile(FileName, OverrideCommand);
 
-    // Use replace all functionality
-    Editor.Text.BeginUpdate;
+    // Load formatted file into dummy
+    DummyEditor := TSynEdit.Create(nil);
     try
-      Editor.Text.SelectAll;
-      Editor.Text.SelText := Formatted; // do NOT use Lines.LoadFromFile which is not undo-able
+      // Use replace selection trick to preserve undo list
+      DummyEditor.Lines.LoadFromFile(FileName);
+
+      // Use replace all functionality
+      Editor.Text.BeginUpdate;
+      try
+        Editor.Text.SelectAll;
+        Editor.Text.SelText := Formatted; // do NOT use Lines.LoadFromFile which is not undo-able
+      finally
+        Editor.Text.EndUpdate; // repaint once
+      end;
     finally
-      Editor.Text.EndUpdate; // repaint once
-    end;
+      DummyEditor.Free;
+    end;
   finally
-    DummyEditor.Free;
+    DeleteFile(FileName); // a copy of the user's code
   end;
 end;
 

@@ -58,6 +58,12 @@ function GetConfigDir: String;
 // Default directory for new projects (the user's home on Linux)
 function GetDocumentsDir: String;
 
+// Directory for the IDE's temporary files, with trailing delimiter, e.g.
+// ~/.cache/penguin-cpp/tmp/ ($XDG_CACHE_HOME is honored). Unlike /tmp it
+// belongs to the user alone (mode 0700), so nobody else can place a link
+// where the IDE is about to write. Created if needed; '' if it can't be.
+function GetPrivateTempDir: String;
+
 // Running processes: Names receives each program name with its process ID
 // stored in Objects[] (to attach the debugger). Reads /proc on Linux.
 procedure ListProcesses(Names: TStrings);
@@ -218,6 +224,22 @@ end;
 function GetDocumentsDir: String;
 begin
   Result := IncludeTrailingPathDelimiter(GetUserDir);
+end;
+
+function GetPrivateTempDir: String;
+begin
+{$IFDEF UNIX}
+  Result := GetEnvironmentVariable('XDG_CACHE_HOME');
+  if Result = '' then
+    Result := IncludeTrailingPathDelimiter(GetUserDir) + '.cache';
+  Result := IncludeTrailingPathDelimiter(Result) + AppDirName + PathDelim + 'tmp' + PathDelim;
+  if not ForceDirectories(Result) or (FpChmod(Result, &700) <> 0) then
+    Result := '';
+{$ELSE}
+  Result := IncludeTrailingPathDelimiter(GetTempDir(False)) + AppDirName + PathDelim;
+  if not ForceDirectories(Result) then
+    Result := '';
+{$ENDIF}
 end;
 
 procedure ListProcesses(Names: TStrings);

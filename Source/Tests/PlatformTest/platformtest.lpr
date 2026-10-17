@@ -13,7 +13,7 @@ program platformtest;
 
 uses
   {$IFDEF UNIX}cthreads,{$ENDIF}
-  Classes, SysUtils, StrUtils, devPlatform, devFileMonitor, devMonitorTypes;
+  Classes, SysUtils, StrUtils, {$IFDEF UNIX}BaseUnix,{$ENDIF} devPlatform, devFileMonitor, devMonitorTypes;
 
 var
   Failures: Integer = 0;
@@ -140,6 +140,23 @@ begin
   Check(GetConfigDir = Expected, 'follows XDG (' + GetConfigDir + ')', 'expected ' + Expected);
 end;
 
+procedure TestPrivateTempDir;
+var
+  Dir: String;
+{$IFDEF UNIX}
+  Info: Stat;
+{$ENDIF}
+begin
+  WriteLn('GetPrivateTempDir:');
+  Dir := GetPrivateTempDir;
+  Check((Dir <> '') and DirectoryExists(Dir), 'exists (' + Dir + ')');
+  Check(Pos(IncludeTrailingPathDelimiter(GetTempDir), Dir) <> 1, 'is not in the shared temp dir');
+{$IFDEF UNIX}
+  Check((FpStat(Dir, Info) = 0) and (Info.st_mode and &777 = &700), 'only the user can use it (0700)',
+    'mode ' + OctStr(Info.st_mode and &777, 3));
+{$ENDIF}
+end;
+
 procedure TestProcessList;
 var
   Names: TStringList;
@@ -223,6 +240,7 @@ begin
   try
     TestProcesses;
     TestConfigDir;
+    TestPrivateTempDir;
     TestProcessList;
     TestExecuteFile(Dir);
     TestFileMonitor(Dir);

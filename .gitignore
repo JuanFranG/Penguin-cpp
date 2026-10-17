@@ -62,3 +62,4 @@ devcpp.exe
 *.ppu
 *.o
 Source/Tests/ParserTest/build/
+Source/Tests/PlatformTest/build/

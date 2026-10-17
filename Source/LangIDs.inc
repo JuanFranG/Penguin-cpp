@@ -45,6 +45,20 @@ const
   ID_ITEM_CHANGEFONT                    = 1011;
   ID_ITEM_CHANGELANGUAGE                = 1012;
 
+  // welcome screen
+  ID_WELCOME_TITLE                      = 1030;
+  ID_WELCOME_VERSION                    = 1031;
+  ID_WELCOME_VIEW                       = 1032;
+  ID_WELCOME_DOCUMENTATION              = 1033;
+  ID_WELCOME_HOTKEYS                    = 1034;
+  ID_WELCOME_OPEN                       = 1035;
+  ID_WELCOME_SAVE                       = 1036;
+  ID_WELCOME_ZOOM                       = 1037;
+  ID_WELCOME_RUN                        = 1038;
+  ID_WELCOME_COMPILE                    = 1039;
+  ID_WELCOME_CLOSE                      = 1040;
+  ID_WELCOME_WHEEL                      = 1041;
+
   ID_ITEM_OPEN                          = 2001;
   ID_SUB_REOPEN                         = 2002;
   ID_ITEM_CLEARHISTORY                  = 2003;

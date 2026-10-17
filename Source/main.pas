@@ -900,6 +900,7 @@ type
     procedure AddFileRTB(RBName: TMemo; aFileName: string; aDirection: string);
     procedure OpenFileProject(s: string; AEncoding: TEncoding = nil);
     procedure ResizeWelcomeComponent;
+    procedure SetHotkeyCaption(Panel: TPanel; const Caption: String);
 
 
   private
@@ -1397,6 +1398,26 @@ begin
   ButtonChangeTheme.Caption :=  Lang[ID_ITEM_CHANGETHEME];
   ButtonChangeFont.Caption := Lang[ID_ITEM_CHANGEFONT];
   ButtonChangeLanguage.Caption := Lang[ID_ITEM_CHANGELANGUAGE];
+  LabelWelcome.Caption := Lang[ID_WELCOME_TITLE];
+  LabelVersion.Caption := Lang[ID_WELCOME_VERSION];
+  LabelView.Caption := Lang[ID_WELCOME_VIEW];
+  LabelDocumentation.Caption := Lang[ID_WELCOME_DOCUMENTATION];
+  LabelHotkeys.Caption := Lang[ID_WELCOME_HOTKEYS];
+  LabelOpen.Caption := Lang[ID_WELCOME_OPEN];
+  LabelSave.Caption := Lang[ID_WELCOME_SAVE];
+  LabelZoom.Caption := Lang[ID_WELCOME_ZOOM];
+  LabelRun.Caption := Lang[ID_WELCOME_RUN];
+  LabelCompile.Caption := Lang[ID_WELCOME_COMPILE];
+  LabelClear.Caption := Lang[ID_WELCOME_CLOSE];
+
+  // The keys come from the actions, so they always match the menus
+  SetHotkeyCaption(PanelDescOpen, ShortCutToText(actOpen.ShortCut));
+  SetHotkeyCaption(PanelDescSave, ShortCutToText(actSave.ShortCut));
+  SetHotkeyCaption(PanelDescZoom, 'Ctrl + ' + Lang[ID_WELCOME_WHEEL]);
+  SetHotkeyCaption(PanelDescRun, ShortCutToText(actRun.ShortCut));
+  SetHotkeyCaption(PanelDescCompile, ShortCutToText(actCompile.ShortCut));
+  SetHotkeyCaption(PanelDescClear, ShortCutToText(actClose.ShortCut));
+  ResizeWelcomeComponent; // the labels are placed by their width
 
   BuildBookMarkMenus;
   SetHints;
@@ -7031,6 +7052,24 @@ begin
       OpenFile(s, AEncoding);
   end else
     MessageDlg(Format(Lang[ID_ERR_RENAMEDDELETED], [s]), mtInformation, [mbOK], 0);
+end;
+
+// The hotkey boxes of the welcome screen grow with their text (the Spanish
+// "Ctrl + rueda del mouse" does not fit in the form's 69 pixels)
+procedure TMainForm.SetHotkeyCaption(Panel: TPanel; const Caption: String);
+var
+  Bmp: TBitmap;
+begin
+  Panel.Caption := Caption;
+  // Measure on a bitmap: at startup the panel may have no window to measure on
+  Bmp := TBitmap.Create;
+  try
+    Bmp.SetSize(8, 8);
+    Bmp.Canvas.Font.Assign(Panel.Font);
+    Panel.Width := Max(69, Bmp.Canvas.TextWidth(Caption) + 16);
+  finally
+    Bmp.Free;
+  end;
 end;
 
 procedure TMainForm.ResizeWelcomeComponent;

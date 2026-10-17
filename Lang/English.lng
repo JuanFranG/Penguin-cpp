@@ -26,6 +26,18 @@ Ver=1
 1010=Change Theme
 1011=Change Font
 1012=Change Language
+1030=WELCOME
+1031=Version
+1032=View
+1033=Documentation
+1034=Hotkeys
+1035=Open
+1036=Save
+1037=Zoom
+1038=Run
+1039=Compile
+1040=Close
+1041=Wheel
 
 
 2001=&Open...

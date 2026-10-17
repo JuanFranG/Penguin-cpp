@@ -409,17 +409,17 @@ object MainForm: TMainForm
       ImageIndex = 6
     end
   end
-  object ToolbarDock: TControlBar
+  object ToolbarDock: TFlowPanel
     Left = 0
     Top = 0
     Width = 1285
     Height = 56
     Align = alTop
-    AutoDock = False
     AutoSize = True
     BevelInner = bvNone
     BevelOuter = bvNone
-    RowSize = 28
+    FlowStyle = fsLeftRightTopBottom
+    AutoWrap = True
     TabOrder = 0
     OnClick = ToolbarDockClick
     OnContextPopup = ToolbarDockContextPopup
@@ -483,6 +483,151 @@ object MainForm: TMainForm
         Left = 182
         Top = 0
         Action = actPrint
+      end
+    end
+    object tbEdit: TToolBar
+      Left = 235
+      Top = 2
+      Width = 58
+      Height = 24
+      AutoSize = True
+      ButtonHeight = 28
+      ButtonWidth = 29
+      Caption = 'Edit'
+      EdgeInner = esNone
+      EdgeOuter = esNone
+      Images = dmMain.MenuImages_NewLook
+      ParentShowHint = False
+      ShowHint = True
+      TabOrder = 3
+      Wrapable = False
+      object UndoBtn: TToolButton
+        Left = 0
+        Top = 0
+        Action = actUndo
+      end
+      object RedoBtn: TToolButton
+        Left = 29
+        Top = 0
+        Action = actRedo
+      end
+    end
+    object tbSearch: TToolBar
+      Left = 946
+      Top = 2
+      Width = 124
+      Height = 24
+      AutoSize = True
+      ButtonHeight = 28
+      ButtonWidth = 29
+      Caption = 'Search'
+      EdgeInner = esNone
+      EdgeOuter = esNone
+      Images = dmMain.MenuImages_NewLook
+      ParentShowHint = False
+      ShowHint = True
+      TabOrder = 4
+      Wrapable = False
+      object FindBtn: TToolButton
+        Left = 0
+        Top = 0
+        Action = actFind
+      end
+      object ReplaceBtn: TToolButton
+        Left = 29
+        Top = 0
+        Action = actReplace
+      end
+      object ToolButton1: TToolButton
+        Left = 58
+        Top = 0
+        Width = 8
+        Caption = 'ToolButton1'
+        ImageIndex = 25
+        Style = tbsSeparator
+      end
+      object FindNextBtn: TToolButton
+        Left = 66
+        Top = 0
+        Action = actGotoFunction
+      end
+      object GotoLineBtn: TToolButton
+        Left = 95
+        Top = 0
+        Action = actGotoLine
+      end
+    end
+    object tbProject: TToolBar
+      Left = 306
+      Top = 2
+      Width = 95
+      Height = 24
+      AutoSize = True
+      ButtonHeight = 28
+      ButtonWidth = 29
+      Caption = 'Project'
+      EdgeInner = esNone
+      EdgeOuter = esNone
+      Images = dmMain.MenuImages_NewLook
+      ParentShowHint = False
+      ShowHint = True
+      TabOrder = 2
+      Wrapable = False
+      object AddToProjectBtn: TToolButton
+        Left = 0
+        Top = 0
+        Action = actProjectAdd
+      end
+      object RemoveFromProjectBtn: TToolButton
+        Left = 29
+        Top = 0
+        Action = actProjectRemove
+      end
+      object ToolButton20: TToolButton
+        Left = 58
+        Top = 0
+        Width = 8
+        Caption = 'ToolButton20'
+        ImageIndex = 2
+        Style = tbsSeparator
+      end
+      object ProjectOptionsBtn: TToolButton
+        Left = 66
+        Top = 0
+        Action = actProjectOptions
+      end
+    end
+    object tbSpecials: TToolBar
+      Left = 11
+      Top = 30
+      Width = 87
+      Height = 24
+      AutoSize = True
+      ButtonHeight = 28
+      ButtonWidth = 29
+      Caption = 'Specials'
+      EdgeInner = esNone
+      EdgeOuter = esNone
+      Images = dmMain.MenuImages_NewLook
+      ParentShowHint = False
+      ShowHint = True
+      TabOrder = 5
+      Transparent = False
+      Wrapable = False
+      object InsertBtn: TToolButton
+        Left = 0
+        Top = 0
+        Action = actInsert
+      end
+      object ToggleBtn: TToolButton
+        Left = 29
+        Top = 0
+        Action = actToggle
+      end
+      object GotoBtn: TToolButton
+        Left = 58
+        Top = 0
+        Action = actGoto
       end
     end
     object tbCompile: TToolBar
@@ -567,149 +712,29 @@ object MainForm: TMainForm
         Action = actDeleteProfile
       end
     end
-    object tbProject: TToolBar
-      Left = 306
+    object tbCompilers: TToolBar
+      Left = 683
       Top = 2
-      Width = 95
+      Width = 250
       Height = 24
       AutoSize = True
-      ButtonHeight = 28
-      ButtonWidth = 29
-      Caption = 'Project'
+      ButtonHeight = 27
+      Caption = 'tbCompilers'
       EdgeInner = esNone
       EdgeOuter = esNone
-      Images = dmMain.MenuImages_NewLook
-      ParentShowHint = False
-      ShowHint = True
-      TabOrder = 2
+      TabOrder = 6
       Wrapable = False
-      object AddToProjectBtn: TToolButton
+      object cmbCompilers: TComboBox
         Left = 0
         Top = 0
-        Action = actProjectAdd
-      end
-      object RemoveFromProjectBtn: TToolButton
-        Left = 29
-        Top = 0
-        Action = actProjectRemove
-      end
-      object ToolButton20: TToolButton
-        Left = 58
-        Top = 0
-        Width = 8
-        Caption = 'ToolButton20'
-        ImageIndex = 2
-        Style = tbsSeparator
-      end
-      object ProjectOptionsBtn: TToolButton
-        Left = 66
-        Top = 0
-        Action = actProjectOptions
-      end
-    end
-    object tbEdit: TToolBar
-      Left = 235
-      Top = 2
-      Width = 58
-      Height = 24
-      AutoSize = True
-      ButtonHeight = 28
-      ButtonWidth = 29
-      Caption = 'Edit'
-      EdgeInner = esNone
-      EdgeOuter = esNone
-      Images = dmMain.MenuImages_NewLook
-      ParentShowHint = False
-      ShowHint = True
-      TabOrder = 3
-      Wrapable = False
-      object UndoBtn: TToolButton
-        Left = 0
-        Top = 0
-        Action = actUndo
-      end
-      object RedoBtn: TToolButton
-        Left = 29
-        Top = 0
-        Action = actRedo
-      end
-    end
-    object tbSearch: TToolBar
-      Left = 946
-      Top = 2
-      Width = 124
-      Height = 24
-      AutoSize = True
-      ButtonHeight = 28
-      ButtonWidth = 29
-      Caption = 'Search'
-      EdgeInner = esNone
-      EdgeOuter = esNone
-      Images = dmMain.MenuImages_NewLook
-      ParentShowHint = False
-      ShowHint = True
-      TabOrder = 4
-      Wrapable = False
-      object FindBtn: TToolButton
-        Left = 0
-        Top = 0
-        Action = actFind
-      end
-      object ReplaceBtn: TToolButton
-        Left = 29
-        Top = 0
-        Action = actReplace
-      end
-      object ToolButton1: TToolButton
-        Left = 58
-        Top = 0
-        Width = 8
-        Caption = 'ToolButton1'
-        ImageIndex = 25
-        Style = tbsSeparator
-      end
-      object FindNextBtn: TToolButton
-        Left = 66
-        Top = 0
-        Action = actGotoFunction
-      end
-      object GotoLineBtn: TToolButton
-        Left = 95
-        Top = 0
-        Action = actGotoLine
-      end
-    end
-    object tbSpecials: TToolBar
-      Left = 11
-      Top = 30
-      Width = 87
-      Height = 24
-      AutoSize = True
-      ButtonHeight = 28
-      ButtonWidth = 29
-      Caption = 'Specials'
-      EdgeInner = esNone
-      EdgeOuter = esNone
-      Images = dmMain.MenuImages_NewLook
-      ParentShowHint = False
-      ShowHint = True
-      TabOrder = 5
-      Transparent = False
-      Wrapable = False
-      object InsertBtn: TToolButton
-        Left = 0
-        Top = 0
-        Action = actInsert
-      end
-      object ToggleBtn: TToolButton
-        Left = 29
-        Top = 0
-        Action = actToggle
-      end
-      object GotoBtn: TToolButton
-        Left = 58
-        Top = 0
-        Action = actGoto
+        Width = 250
+        Height = 27
+        Style = csDropDownList
+        DropDownCount = 16
+        ParentColor = True
+        TabOrder = 0
+        OnChange = cmbCompilersChange
+        OnDropDown = cmbGenericDropDown
       end
     end
     object tbClasses: TToolBar
@@ -748,31 +773,6 @@ object MainForm: TMainForm
         Sorted = True
         TabOrder = 1
         OnChange = cmbMembersChange
-        OnDropDown = cmbGenericDropDown
-      end
-    end
-    object tbCompilers: TToolBar
-      Left = 683
-      Top = 2
-      Width = 250
-      Height = 24
-      AutoSize = True
-      ButtonHeight = 27
-      Caption = 'tbCompilers'
-      EdgeInner = esNone
-      EdgeOuter = esNone
-      TabOrder = 6
-      Wrapable = False
-      object cmbCompilers: TComboBox
-        Left = 0
-        Top = 0
-        Width = 250
-        Height = 27
-        Style = csDropDownList
-        DropDownCount = 16
-        ParentColor = True
-        TabOrder = 0
-        OnChange = cmbCompilersChange
         OnDropDown = cmbGenericDropDown
       end
     end

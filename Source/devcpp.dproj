@@ -234,7 +234,6 @@
         <DCCReference Include="CPUFrm.pas">
             <Form>CPUForm</Form>
         </DCCReference>
-        <DCCReference Include="FileAssocs.pas"/>
         <DCCReference Include="TipOfTheDayFrm.pas">
             <Form>TipOfTheDayForm</Form>
         </DCCReference>

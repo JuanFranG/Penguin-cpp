@@ -286,16 +286,6 @@ object EnviroForm: TEnviroForm
         ParentCtl3D = False
         TabOrder = 5
       end
-      object cbCheckAssocs: TCheckBox
-        Left = 16
-        Top = 143
-        Width = 265
-        Height = 17
-        Caption = 'Check file associations on startup'
-        Ctl3D = False
-        ParentCtl3D = False
-        TabOrder = 6
-      end
     end
     object tabPaths: TTabSheet
       Caption = 'Directories'
@@ -538,44 +528,6 @@ object EnviroForm: TEnviroForm
         ColWidths = (
           84
           329)
-      end
-    end
-    object tabAssocs: TTabSheet
-      Caption = 'File Associations'
-      ParentShowHint = False
-      ShowHint = False
-      DesignSize = (
-        476
-        395)
-      object lblAssocFileTypes: TLabel
-        Left = 8
-        Top = 8
-        Width = 53
-        Height = 15
-        Caption = 'File Types:'
-      end
-      object lblAssocDesc: TLabel
-        Left = 0
-        Top = 350
-        Width = 476
-        Height = 43
-        Alignment = taCenter
-        AutoSize = False
-        Caption = 
-          'Just check or un-check for which file types Embarcadero Dev-C++ ' +
-          'will be registered as the default application to open them...'
-        WordWrap = True
-      end
-      object lstAssocFileTypes: TCheckListBox
-        Left = 28
-        Top = 30
-        Width = 417
-        Height = 317
-        Anchors = [akLeft, akTop, akRight, akBottom]
-        Ctl3D = False
-        ItemHeight = 15
-        ParentCtl3D = False
-        TabOrder = 0
       end
     end
     object TabAppearance: TTabSheet

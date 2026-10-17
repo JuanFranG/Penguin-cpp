@@ -6638,11 +6638,6 @@ object MainForm: TMainForm
       OnClick = ClearallWatchPopClick
     end
   end
-  object DevCppDDEServer: TDdeServerConv
-    OnExecuteMacro = DevCppDDEServerExecuteMacro
-    Left = 468
-    Top = 248
-  end
   object CppPreprocessor: TCppPreprocessor
     Left = 60
     Top = 134

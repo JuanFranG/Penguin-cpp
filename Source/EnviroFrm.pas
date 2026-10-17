@@ -75,12 +75,7 @@ type
     btnExtAdd: TSpeedButton;
     btnExtDel: TSpeedButton;
     vleExternal: TValueListEditor;
-    tabAssocs: TTabSheet;
-    lblAssocFileTypes: TLabel;
-    lblAssocDesc: TLabel;
-    lstAssocFileTypes: TCheckListBox;
     cbPauseConsole: TCheckBox;
-    cbCheckAssocs: TCheckBox;
     edOptionsDir: TEdit;
     lblOptionsDir: TLabel;
     btnResetDev: TButton;
@@ -125,7 +120,7 @@ type
 implementation
 
 uses
-  System.UITypes, ShellAPI, Filectrl, devcfg, MultiLangSupport, version, DataFrm, utils, FileAssocs, ImageTheme, main,
+  System.UITypes, ShellAPI, Filectrl, devcfg, MultiLangSupport, version, DataFrm, utils, ImageTheme, main,
   StrUtils;
 
 {$R *.dfm}
@@ -179,7 +174,6 @@ begin
     BackUps := cbBackups.Checked;
     MinOnRun := cbMinOnRun.Checked;
     ConsolePause := cbPauseConsole.Checked;
-    CheckAssocs := cbCheckAssocs.Checked;
     MRUMax := seMRUMax.Value;
     if not MultiLineTab then begin
       if cboTabsTop.ItemIndex in [2, 3] then begin
@@ -209,19 +203,6 @@ begin
 
   MainForm.Font.Name := devData.InterfaceFont;
   MainForm.Font.Size := devData.InterfaceFontSize;
-
-  try
-
-    // Force update
-    for I := 0 to AssociationsCount - 1 do
-      if lstAssocFileTypes.Checked[I] then
-        Associate(I)
-      else
-        Unassociate(I);
-  except
-    MessageBox(application.handle, PChar(Lang[ID_ENV_UACERROR]), PChar(Lang[ID_ERROR]), MB_OK);
-    devData.CheckAssocs := false; // don't bother the user again on next startup
-  end;
 
   devDirs.Icons := IncludeTrailingPathDelimiter(ExpandFileto(edIcoLib.Text, devDirs.Exec));
   devDirs.Templates := IncludeTrailingPathDelimiter(ExpandFileto(edTemplatesDir.Text, devDirs.Exec));
@@ -253,7 +234,6 @@ begin
   //Tabs
   tabGeneral.Caption := Lang[ID_ENV_GENTAB];
   tabPaths.Caption := Lang[ID_ENV_PATHTAB];
-  tabAssocs.Caption := Lang[ID_ENV_FASSTAB];
   tabExternal.Caption := Lang[ID_ENV_EXTERNALS];
 
   //Buttons
@@ -268,7 +248,6 @@ begin
   cbBackups.Caption := Lang[ID_ENV_BACKUPS];
   cbMinOnRun.Caption := Lang[ID_ENV_MINONRUN];
   cbPauseConsole.Caption := Lang[ID_ENV_PAUSECONSOLE];
-  cbCheckAssocs.Caption := Lang[ID_ENV_CHECKASSOCS];
 
   gbProgress.Caption := Lang[ID_ENV_COMPPROGRESSWINDOW];
   cbShowProgress.Caption := Lang[ID_ENV_SHOWPROGRESS];
@@ -311,10 +290,6 @@ begin
 
   btnExtAdd.Caption := Lang[ID_BTN_ADD];
   btnExtDel.Caption := Lang[ID_BTN_DELETE];
-
-  // associations tab
-  lblAssocFileTypes.Caption := Lang[ID_ENV_FASSTYPES];
-  lblAssocDesc.Caption := Lang[ID_ENV_FASSDESC];
 end;
 
 procedure TEnviroForm.SpeedButton2Click(Sender: TObject);
@@ -341,7 +316,6 @@ begin
     cbShowBars.Checked := ShowBars;
     cbMultiLineTab.Checked := MultiLineTab;
     cbPauseConsole.Checked := ConsolePause;
-    cbCheckAssocs.Checked := CheckAssocs;
     cbWatchHint.Checked := WatchHint;
     cbShowProgress.Checked := ShowProgress;
     cbAutoCloseProgress.Checked := AutoCloseProgress;
@@ -402,14 +376,6 @@ begin
     vleExternal.Strings.Assign(devExternalPrograms.Programs);
     for I := 0 to vleExternal.Strings.Count - 1 do
       vleExternal.ItemProps[I].EditStyle := esEllipsis;
-
-    // File associations tab
-    CheckAssociations(false); // read only, don't try to fix them
-    lstAssocFileTypes.Clear;
-    for I := 0 to AssociationsCount - 1 do begin
-      lstAssocFileTypes.Items.Add(Format('%s  (*.%s)', [Associations[I, 1], Associations[I, 0]]));
-      lstAssocFileTypes.Checked[lstAssocFileTypes.Items.Count - 1] := IsAssociated(I);
-    end;
   end;
 end;
 

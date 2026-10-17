@@ -75,7 +75,6 @@ uses
   ImportMSVCFrm in 'ImportMSVCFrm.pas' {ImportMSVCForm},
   ImportCBFrm in 'ImportCBFrm.pas' {ImportCBForm},
   CPUFrm in 'CPUFrm.pas' {CPUForm},
-  FileAssocs in 'FileAssocs.pas',
   TipOfTheDayFrm in 'TipOfTheDayFrm.pas' {TipOfTheDayForm},
   ExceptionFrm in 'ExceptionFrm.pas' {ExceptionFrm},
   WindowListFrm in 'WindowListFrm.pas' {WindowListForm},

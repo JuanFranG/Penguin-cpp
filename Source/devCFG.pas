@@ -601,7 +601,7 @@ type
     fToolbarCompilersX: integer;
     fToolbarCompilersY: integer;
 
-    // file associations (see FileAssocs.pas)
+    // file associations (legacy settings, no longer applied)
     fAssociateC: boolean;
     fAssociateCpp: boolean;
     fAssociateCxx: boolean;
@@ -792,7 +792,7 @@ implementation
 
 uses
   MultiLangSupport, DataFrm, StrUtils, Forms, main, compiler, Controls, version, utils, SynEditMiscClasses,
-  FileAssocs, TypInfo, DateUtils, Types, System.IOUtils, Vcl.ExtDlgs;
+  TypInfo, DateUtils, Types, System.IOUtils, Vcl.ExtDlgs;
 
 procedure CreateOptions;
 var

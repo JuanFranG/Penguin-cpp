@@ -19,27 +19,27 @@
 
 unit devMonitorTypes;
 
+{$IFDEF FPC}{$MODE DELPHI}{$ENDIF}
+
 interface
 
 uses
-{$IFDEF WIN32}
-  Classes, Windows;
-{$ENDIF}
-{$IFDEF LINUX}
-Classes;
-{$ENDIF}
+  Classes;
 
 type
   TdevMonitorChangeType = (mctChanged, mctDeleted);
   TdevMonitorChange = procedure(Sender: TObject; ChangeType: TdevMonitorChangeType; Filename: String) of object;
 
+  // How the monitor thread reports a change to its owner (on the main thread)
+  TdevMonitorNotify = procedure(ChangeType: TdevMonitorChangeType; const FileName: String) of object;
+
   PdevMonitorFile = ^TdevMonitorFile;
   TdevMonitorFile = record
     FileName: String;
-    TimeStamp: integer;
+    TimeStamp: TDateTime; // last write time
+    Size: Int64;
   end;
 
 implementation
 
 end.
-

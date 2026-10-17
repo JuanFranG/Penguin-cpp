@@ -966,8 +966,6 @@ object MainForm: TMainForm
   object FileMonitor: TdevFileMonitor
     Left = 112
     Top = 152
-    Width = 0
-    Height = 0
     OnNotifyChange = FileMonitorNotifyChange
   end
   object LeftPageControl: TPageControl

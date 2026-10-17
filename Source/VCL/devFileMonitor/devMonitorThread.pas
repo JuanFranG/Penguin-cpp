@@ -19,195 +19,195 @@
 
 unit devMonitorThread;
 
+{$IFDEF FPC}{$MODE DELPHI}{$ENDIF}
+
+// Watches a list of files by polling their last write time and size. Polling
+// works the same on every platform and a few hundred open files cost little.
+
 interface
 
 uses
-{$IFDEF WIN32}
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, devMonitorTypes, Math, SyncObjs;
-{$ENDIF}
-{$IFDEF LINUX}
-SysUtils, Variants, Classes, QGraphics, QControls, QForms,
-QDialogs, QStdCtrls, devMonitorTypes, SyncObjs;
-{$ENDIF}
+  SysUtils, Classes, SyncObjs, devMonitorTypes;
 
 const
-  WM_NOTIFYFILECHANGED = WM_USER + 1;
+  MonitorPollInterval = 500; // ms
 
 type
+  // Receives changes on the main thread. The owner detaches it when it goes
+  // away, so notifications still queued at that point are dropped safely.
+  IdevMonitorTarget = interface
+    ['{6F1E1D2A-6C3B-4E55-9C2F-2B7E0B9A41D3}']
+    procedure Deliver(ChangeType: TdevMonitorChangeType; const FileName: String);
+    procedure Detach;
+  end;
+
+  TdevMonitorTarget = class(TInterfacedObject, IdevMonitorTarget)
+  private
+    fNotify: TdevMonitorNotify;
+  public
+    constructor Create(NotifyFunc: TdevMonitorNotify);
+    procedure Deliver(ChangeType: TdevMonitorChangeType; const FileName: String);
+    procedure Detach;
+  end;
+
   TdevMonitorThread = class(TThread)
   private
-    fOwner: TComponent;
-    fFileProperties: TList;
-    fFileNames: TStringList;
-    fMonitors: array[0..MAXIMUM_WAIT_OBJECTS - 1] of THandle;
-    fMonitorCount: integer;
-    fChangeType: TdevMonitorChangeType;
-    fFilename: String;
+    fTarget: IdevMonitorTarget;
+    fFiles: TList; // of PdevMonitorFile
     fShouldQuit: TEvent;
-    procedure Notify;
-    procedure CreateMonitors;
-    procedure DestroyMonitors;
+    procedure Notify(ChangeType: TdevMonitorChangeType; const FileName: String);
+    procedure CheckFiles;
   public
-    constructor Create(AOwner: TComponent; FileNames: TStringList);
+    constructor Create(Target: IdevMonitorTarget; FileNames: TStrings);
     destructor Destroy; override;
     procedure Execute; override;
   end;
 
+// Last write time and size of FileName; False if it doesn't exist
+function GetMonitorFileState(const FileName: String; var TimeStamp: TDateTime; var Size: Int64): Boolean;
+
 implementation
 
-uses devFileMonitor;
+type
+  // One queued notification; frees itself after delivery
+  TdevMonitorEvent = class
+  private
+    fTarget: IdevMonitorTarget;
+    fChangeType: TdevMonitorChangeType;
+    fFileName: String;
+  public
+    procedure Run;
+  end;
+
+procedure TdevMonitorEvent.Run;
+begin
+  try
+    fTarget.Deliver(fChangeType, fFileName);
+  finally
+    Free;
+  end;
+end;
+
+{ TdevMonitorTarget }
+
+constructor TdevMonitorTarget.Create(NotifyFunc: TdevMonitorNotify);
+begin
+  inherited Create;
+  fNotify := NotifyFunc;
+end;
+
+procedure TdevMonitorTarget.Deliver(ChangeType: TdevMonitorChangeType; const FileName: String);
+begin
+  if Assigned(fNotify) then
+    fNotify(ChangeType, FileName);
+end;
+
+procedure TdevMonitorTarget.Detach;
+begin
+  fNotify := nil;
+end;
+
+function GetMonitorFileState(const FileName: String; var TimeStamp: TDateTime; var Size: Int64): Boolean;
+var
+  SearchRec: TSearchRec;
+begin
+  Result := FindFirst(FileName, faAnyFile, SearchRec) = 0;
+  if Result then begin
+    TimeStamp := FileDateToDateTime(SearchRec.Time);
+    Size := SearchRec.Size;
+    FindClose(SearchRec);
+  end;
+end;
 
 { TdevMonitorThread }
 
-constructor TdevMonitorThread.Create(AOwner: TComponent; FileNames: TStringList);
+constructor TdevMonitorThread.Create(Target: IdevMonitorTarget; FileNames: TStrings);
+var
+  I: integer;
+  Item: PdevMonitorFile;
 begin
-  inherited Create(False); // start immediately
-  fOwner := AOwner;
-  fFileNames := TStringList.Create;
-  fFileNames.Assign(FileNames);
-  fFileProperties := TList.Create;
-  fMonitorCount := 0;
+  fTarget := Target;
+  fFiles := TList.Create;
   fShouldQuit := TEvent.Create(nil, false, false, '');
-  CreateMonitors;
+
+  // Remember the current state of every file that exists
+  for I := 0 to FileNames.Count - 1 do begin
+    Item := new(PdevMonitorFile);
+    Item^.FileName := FileNames[I];
+    if GetMonitorFileState(Item^.FileName, Item^.TimeStamp, Item^.Size) then
+      fFiles.Add(Item)
+    else
+      Dispose(Item);
+  end;
+
+  inherited Create(False); // start immediately, fields are ready
 end;
 
 destructor TdevMonitorThread.Destroy;
+var
+  I: integer;
 begin
-  // Ask the thread to stop (we're in another thread now)
+  // Ask the thread to stop and wait for it
+  Terminate;
   fShouldQuit.SetEvent;
-  Terminate; // set Terminated flag
-
-  // Wait for it
   WaitFor;
 
-  // Clear stuff
-  DestroyMonitors;
-  fFileProperties.Free;
-  fFileNames.Free;
+  for I := 0 to fFiles.Count - 1 do
+    Dispose(PdevMonitorFile(fFiles[I]));
+  fFiles.Free;
   fShouldQuit.Free;
   inherited;
 end;
 
-procedure TdevMonitorThread.CreateMonitors;
+procedure TdevMonitorThread.CheckFiles;
 var
   I: integer;
   Item: PdevMonitorFile;
-  SearchRec: TSearchRec;
-  ChangeID: Cardinal;
+  TimeStamp: TDateTime;
+  Size: Int64;
 begin
-  // Create structs of filename/timestamp
-  for I := 0 to Min(MAXIMUM_WAIT_OBJECTS - 2, fFileNames.Count - 1) do begin
-
-    // Does the file exist?
-    if FindFirst(fFileNames[I], faAnyFile, SearchRec) = 0 then begin
-
-      // Can we create a change notifier for it?
-      ChangeID := FindFirstChangeNotification(
-        PChar(ExtractFilePath(fFileNames[I])),
-        False,
-        FILE_NOTIFY_CHANGE_LAST_WRITE or FILE_NOTIFY_CHANGE_FILE_NAME // change contents or change filename
-        );
-      if ChangeID <> INVALID_HANDLE_VALUE then begin
-
-        // Add to separate HANDLE array to pass to WaitForMultipleObjects
-        fMonitors[fMonitorCount] := ChangeID;
-        Inc(fMonitorCount);
-
-        // Add to files list
-        Item := new(PdevMonitorFile);
-        Item^.FileName := fFileNames[i];
-        Item^.TimeStamp := SearchRec.Time;
-        fFileProperties.Add(Item);
-
-        // Free OS memory
-        FindClose(SearchRec);
+  for I := fFiles.Count - 1 downto 0 do begin
+    if Terminated then
+      Exit;
+    Item := PdevMonitorFile(fFiles[I]);
+    if GetMonitorFileState(Item^.FileName, TimeStamp, Size) then begin
+      if (TimeStamp <> Item^.TimeStamp) or (Size <> Item^.Size) then begin
+        Item^.TimeStamp := TimeStamp;
+        Item^.Size := Size;
+        Notify(mctChanged, Item^.FileName);
       end;
+    end else begin
+      // Deleted: report it once and stop watching it
+      Notify(mctDeleted, Item^.FileName);
+      fFiles.Delete(I);
+      Dispose(Item);
     end;
   end;
-
-  // Add a quit signal
-  fMonitors[fMonitorCount] := fShouldQuit.Handle;
-  Inc(fMonitorCount);
-end;
-
-procedure TdevMonitorThread.DestroyMonitors;
-var
-  I: integer;
-begin
-  // Stop monitoring files we have found
-  for I := 0 to fFileProperties.Count - 1 do
-    Dispose(PdevMonitorFile(fFileProperties[i]));
-  fFileProperties.Clear;
-
-  // Stop monitoring files
-  for I := 0 to fMonitorCount - 2 do // Do not destroy fShouldQuit.Handle...
-    FindCloseChangeNotification(THandle(fMonitors[I])); // TODO: EXCEPTION :(
-  fMonitorCount := 0;
 end;
 
 procedure TdevMonitorThread.Execute;
-var
-  FileNameIndex: integer;
-  WaitResult: Cardinal;
-  WaitObjectIndex: integer;
-  SearchRec: TSearchRec;
-  FileStruct: PdevMonitorFile;
 begin
-  // Wait for file changes and external commands
-  while not Terminated and not Suspended do begin
-    WaitResult := WaitForMultipleObjects(fMonitorCount, @fMonitors, False, INFINITE);
-    if WaitResult = WAIT_FAILED then // The function has failed.
+  while not Terminated do begin
+    if fShouldQuit.WaitFor(MonitorPollInterval) <> wrTimeout then
       Break;
-    if WaitResult = WAIT_TIMEOUT then // The time-out interval elapsed...
-      Break;
-    if (WaitResult >= WAIT_ABANDONED_0) and (WaitResult <= WAIT_ABANDONED_0 + Cardinal(fMonitorCount) - 1) then
-      Break;
-    if WaitResult = Cardinal(fMonitorCount-1) then // fShouldQuit
-      Break;
-
-    // Check timestamp of signaled file...
-    WaitObjectIndex := WaitResult - WAIT_OBJECT_0;
-    FileStruct := PdevMonitorFile(fFileProperties[WaitObjectIndex]);
-    if FindFirst(FileStruct^.FileName, faAnyFile, SearchRec) = 0 then begin
-
-      // Timstamp has changed. File has changed.
-      if FileStruct^.TimeStamp <> SearchRec.Time then begin
-        FileStruct^.TimeStamp := SearchRec.Time;
-        fChangeType := mctChanged;
-        fFilename := FileStruct^.FileName;
-        Notify;
-      end;
-      FindClose(SearchRec);
-
-      // Keep monitoring
-      FindNextChangeNotification(THandle(fMonitors[WaitObjectIndex]));
-
-      // File has been deleted. Rebuild array :(
-    end else begin
-      fChangeType := mctDeleted;
-      fFilename := FileStruct^.FileName;
-      Notify;
-
-      // Remove this one from the monitoring list
-      FileNameIndex := fFileNames.IndexOf(FileStruct^.FileName);
-      if FileNameIndex <> -1 then
-        fFileNames.Delete(FileNameIndex);
-
-      // Rebuild
-      DestroyMonitors;
-      CreateMonitors;
-    end;
+    CheckFiles;
   end;
 end;
 
-procedure TdevMonitorThread.Notify;
+procedure TdevMonitorThread.Notify(ChangeType: TdevMonitorChangeType; const FileName: String);
 var
-  P: PChar;
+  Event: TdevMonitorEvent;
 begin
-  P := StrNew(PChar(fFilename));
-  PostMessage(TdevFileMonitor(fOwner).Handle, WM_NOTIFYFILECHANGED, integer(fChangeType), LPARAM(P));
+  if not Assigned(fTarget) or Terminated then
+    Exit;
+  // Asynchronous on purpose: the handler may stop this very thread (the IDE
+  // calls BeginUpdate while it shows its dialog), which Synchronize would
+  // turn into a deadlock.
+  Event := TdevMonitorEvent.Create;
+  Event.fTarget := fTarget;
+  Event.fChangeType := ChangeType;
+  Event.fFileName := FileName;
+  TThread.Queue(nil, Event.Run);
 end;
 
 end.
-

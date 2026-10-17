@@ -906,6 +906,7 @@ type
 
   private
     procedure PopupMenuItemAt(Item: TMenuItem; const P: TPoint);
+    procedure FitToolbarDock(Data: PtrInt);
     procedure ForwardMenuClick(Sender: TObject);
   public
     procedure CloseTabProc(Sender: TObject);
@@ -1060,6 +1061,7 @@ end;
 
 procedure TMainForm.FormDestroy(Sender: TObject);
 begin
+  Application.RemoveAsyncCalls(Self); // queued FitToolbarDock calls
   FreeAndNil(fFilesToOpen);
   FreeAndNil(fCriticalSection);
   FreeAndNil(fLogOutputRawData);
@@ -1122,6 +1124,9 @@ begin
   // Set interface font
   Font.Name := devData.InterfaceFont;
   Font.Size := devData.InterfaceFontSize;
+
+  // Welcome screen version, from the one place it is defined
+  LabelNumVersion.Caption := DEVCPP_VERSION;
 
   // Menus
   FileMenu.Caption := Lang[ID_MNU_FILE];
@@ -3355,6 +3360,7 @@ begin
   tbSearch.Visible := ToolSearchItem.Checked;
   tbClasses.Visible := ToolClassesItem.Checked;
   tbCompilers.Visible := ToolCompilersItem.Checked;
+  Application.QueueAsyncCall(FitToolbarDock, 0);
 
   devData.ToolbarMain := ToolMainItem.Checked;
   devData.ToolbarEdit := ToolEditItem.Checked;
@@ -3777,6 +3783,21 @@ begin
   fItemPopup.Images := MainMenu.Images;
   AddItems(Item, fItemPopup.Items);
   fItemPopup.PopUp(P.X, P.Y);
+end;
+
+// Make the toolbar area exactly as tall as its rows. The flow panel's own
+// AutoSize left a large empty band below them on GTK. Queued, so it runs
+// after the panel has placed the toolbars for its new width.
+procedure TMainForm.FitToolbarDock(Data: PtrInt);
+var
+  I, Bottom: Integer;
+begin
+  Bottom := 0;
+  for I := 0 to ToolbarDock.ControlCount - 1 do
+    if ToolbarDock.Controls[I].Visible then
+      Bottom := Max(Bottom, ToolbarDock.Controls[I].Top + ToolbarDock.Controls[I].Height);
+  if (Bottom > 0) and (ToolbarDock.Height <> Bottom + 2) then
+    ToolbarDock.Height := Bottom + 2;
 end;
 
 procedure TMainForm.ForwardMenuClick(Sender: TObject);
@@ -5871,6 +5892,7 @@ end;
 procedure TMainForm.FormResize(Sender: TObject);
 begin
   ResizeWelcomeComponent;
+  Application.QueueAsyncCall(FitToolbarDock, 0); // rows change with the width
 end;
 
 procedure TMainForm.ImportCBCprojectClick(Sender: TObject);
@@ -6085,6 +6107,7 @@ begin
   tbSearch.Visible := devData.ToolbarSearch;
   tbClasses.Visible := devData.ToolbarClasses;
   tbCompilers.Visible := devData.ToolbarCompilers;
+  Application.QueueAsyncCall(FitToolbarDock, 0);
 
   // Set toolbars to previous state.
   // 3) UI components

@@ -415,7 +415,6 @@ object MainForm: TMainForm
     Width = 1285
     Height = 56
     Align = alTop
-    AutoSize = True
     BevelInner = bvNone
     BevelOuter = bvNone
     FlowStyle = fsLeftRightTopBottom
@@ -3239,7 +3238,7 @@ object MainForm: TMainForm
           Top = 309
           Width = 17
           Height = 19
-          Caption = '6.3'
+          Caption = '0.1.0'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clRed
           Font.Height = -13
@@ -6075,7 +6074,7 @@ object MainForm: TMainForm
           OnClick = actCompOptionsExecute
         end
         object ButtonChangeTheme: TBitBtn
-          Layout = blGlyphTop
+          Layout = blGlyphLeft
           Left = 70
           Top = 225
           Width = 138
@@ -6095,7 +6094,7 @@ object MainForm: TMainForm
           OnClick = actEnviroOptionsExecute
         end
         object ButtonChangeFont: TBitBtn
-          Layout = blGlyphTop
+          Layout = blGlyphLeft
           Left = 223
           Top = 225
           Width = 138
@@ -6115,7 +6114,7 @@ object MainForm: TMainForm
           OnClick = actEnviroOptionsExecute
         end
         object ButtonChangeLanguage: TBitBtn
-          Layout = blGlyphTop
+          Layout = blGlyphLeft
           Left = 375
           Top = 225
           Width = 138

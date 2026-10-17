@@ -67,6 +67,15 @@ function GetPrivateTempDir: String;
 // Running processes: Names receives each program name with its process ID
 // stored in Objects[] (to attach the debugger). Reads /proc on Linux.
 procedure ListProcesses(Names: TStrings);
+
+// The command that opens a terminal window running Command (the program and
+// its arguments, one per string) and waits until that window closes: Exe and
+// its arguments, added to Args. With Pause, the window stays open when the
+// program ends and shows its time and exit code (ExitFormat, with %s for the
+// seconds and %d for the code, as for printf) until Enter (PausePrompt).
+// False when no terminal is installed.
+function BuildTerminalCommand(Command: TStrings; Pause: Boolean; const ExitFormat, PausePrompt: String;
+  out Exe: String; Args: TStrings): Boolean;
 {$ENDIF}
 
 // Opens a file, directory or URL with the desktop's default application
@@ -277,6 +286,89 @@ end;
 {$ENDIF}
 
 {$IFDEF UNIX}
+type
+  TTerminal = record
+    Exe: String;
+    Options: array[0..1] of String; // before the command; '' for none
+  end;
+
+const
+  // Each with the option that makes it wait for its window: without it some
+  // (gnome-terminal, mate-terminal, xfce4-terminal) hand the window to a
+  // terminal server and return at once
+  Terminals: array[0..5] of TTerminal = (
+    (Exe: 'gnome-terminal'; Options: ('--wait', '--')),
+    (Exe: 'mate-terminal'; Options: ('--disable-factory', '-x')),
+    (Exe: 'xfce4-terminal'; Options: ('--disable-server', '-x')),
+    (Exe: 'konsole'; Options: ('--nofork', '-e')),
+    (Exe: 'x-terminal-emulator'; Options: ('-e', '')), // Debian's choice of terminal
+    (Exe: 'xterm'; Options: ('-e', ''))
+  );
+
+  // Runs "$@", then reports like Dev-C++'s ConsolePauser and waits for Enter.
+  // The program and its arguments arrive as separate arguments of sh, so
+  // nothing in them is read as shell code. date +%s%N is GNU (nanoseconds).
+  PauseScript =
+    'fmt=$1; prompt=$2; shift 2; ' +
+    'start=$(date +%s%N); "$@"; code=$?; finish=$(date +%s%N); ' +
+    'ms=$(( (finish - start) / 1000000 )); ' +
+    'printf ''\n--------------------------------\n''; ' +
+    'printf "$fmt\n" "$((ms / 1000)).$(printf %03d $((ms % 1000)))" "$code"; ' +
+    'printf ''%s'' "$prompt"; read dummy';
+
+// The desktop's own terminal first (XDG_CURRENT_DESKTOP: X-Cinnamon, MATE,
+// XFCE, KDE...), then the others in order
+function FindTerminal(out Terminal: TTerminal): Boolean;
+var
+  Desktop, Preferred: String;
+  I: Integer;
+begin
+  Desktop := UpperCase(GetEnvironmentVariable('XDG_CURRENT_DESKTOP'));
+  Preferred := '';
+  if Pos('MATE', Desktop) > 0 then
+    Preferred := 'mate-terminal'
+  else if Pos('XFCE', Desktop) > 0 then
+    Preferred := 'xfce4-terminal'
+  else if Pos('KDE', Desktop) > 0 then
+    Preferred := 'konsole';
+  for I := Low(Terminals) to High(Terminals) do
+    if (Terminals[I].Exe = Preferred) and (ExeSearch(Terminals[I].Exe, SearchPath) <> '') then begin
+      Terminal := Terminals[I];
+      Exit(True);
+    end;
+  for I := Low(Terminals) to High(Terminals) do
+    if ExeSearch(Terminals[I].Exe, SearchPath) <> '' then begin
+      Terminal := Terminals[I];
+      Exit(True);
+    end;
+  Result := False;
+end;
+
+function BuildTerminalCommand(Command: TStrings; Pause: Boolean; const ExitFormat, PausePrompt: String;
+  out Exe: String; Args: TStrings): Boolean;
+var
+  Terminal: TTerminal;
+  I: Integer;
+begin
+  Exe := '';
+  Result := FindTerminal(Terminal);
+  if not Result then
+    Exit;
+  Exe := ExeSearch(Terminal.Exe, SearchPath);
+  for I := Low(Terminal.Options) to High(Terminal.Options) do
+    if Terminal.Options[I] <> '' then
+      Args.Add(Terminal.Options[I]);
+  if Pause then begin
+    Args.Add('/bin/sh');
+    Args.Add('-c');
+    Args.Add(PauseScript);
+    Args.Add('penguin-cpp'); // $0
+    Args.Add(ExitFormat);
+    Args.Add(PausePrompt);
+  end;
+  Args.AddStrings(Command);
+end;
+
 function StartDetached(const Exe: String; const Params: array of String; const WorkDir: String): Boolean;
 var
   P: TProcess;
@@ -333,6 +425,15 @@ begin
   end;
 end;
 {$ENDIF UNIX}
+
+{$IFNDEF UNIX}
+function BuildTerminalCommand(Command: TStrings; Pause: Boolean; const ExitFormat, PausePrompt: String;
+  out Exe: String; Args: TStrings): Boolean;
+begin
+  Exe := '';
+  Result := False; // not implemented here
+end;
+{$ENDIF}
 
 {$ENDIF FPC}
 

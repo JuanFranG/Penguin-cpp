@@ -34,12 +34,15 @@ type
     fFile: String;
     fPath: String;
     fParams: String;
+    fArgs: TStringList; // when set, used instead of fParams
     fTimeOut: Cardinal;
     fProcess: TProcess; // only valid while the program runs
     fVisible: boolean;
     procedure ExecAndWait;
   public
+    destructor Destroy; override;
     procedure Execute; override;
+    property Args: TStringList read fArgs write fArgs; // owned
   published
     property FileName: String read fFile write fFile;
     property Path: String read fPath write fPath;
@@ -60,7 +63,10 @@ type
     destructor Destroy; override;
     procedure Reset;
     procedure ExecuteAndWatch(sFileName, sParams, sPath: String; bVisible: boolean; iTimeOut: Cardinal; OnTermEvent:
-      TNotifyEvent);
+      TNotifyEvent); overload;
+    // The arguments one per string, not as a command line to split
+    procedure ExecuteAndWatch(const sFileName: String; sArgs: TStrings; const sPath: String;
+      OnTermEvent: TNotifyEvent); overload;
   published
     property Running: boolean read fIsRunning;
   end;
@@ -73,6 +79,12 @@ uses
   main;
 
 { TExecThread }
+
+destructor TExecThread.Destroy;
+begin
+  fArgs.Free;
+  inherited;
+end;
 
 procedure TExecThread.Execute;
 begin
@@ -90,7 +102,10 @@ begin
   Args := TStringList.Create;
   try
     P.Executable := fFile;
-    CommandToList(fParams, Args);
+    if Assigned(fArgs) then
+      Args.Assign(fArgs)
+    else
+      CommandToList(fParams, Args);
     P.Parameters.Assign(Args);
     if fPath <> '' then
       P.CurrentDirectory := fPath;
@@ -155,6 +170,25 @@ begin
     Path := sPath;
     TimeOut := iTimeOut;
     Visible := bVisible;
+    OnTerminate := TerminateEvent;
+    FreeOnTerminate := True;
+    Start;
+  end;
+end;
+
+procedure TdevExecutor.ExecuteAndWatch(const sFileName: String; sArgs: TStrings; const sPath: String;
+  OnTermEvent: TNotifyEvent);
+begin
+  fIsRunning := True;
+  fOnTermEvent := OnTermEvent;
+  fExec := TExecThread.Create(True);
+  with fExec do begin
+    FileName := sFileName;
+    Args := TStringList.Create;
+    Args.Assign(sArgs);
+    Path := sPath;
+    TimeOut := INFINITE;
+    Visible := True;
     OnTerminate := TerminateEvent;
     FreeOnTerminate := True;
     Start;

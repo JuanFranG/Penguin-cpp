@@ -60,6 +60,7 @@ type
     function GetMakeFile: String;
     function GetCompiling: Boolean;
     procedure RunTerminate(Sender: TObject);
+    procedure RunConsoleProgram(const FileToRun, Params, Dir: String);
     procedure InitProgressForm;
     procedure ProcessProgressForm(const Line: String);
     procedure EndProgressForm;
@@ -119,7 +120,7 @@ type
 implementation
 
 uses
-  UITypes, MultiLangSupport, Macros, devExec, main, StrUtils;
+  UITypes, MultiLangSupport, Macros, devExec, main, StrUtils, Process, devPlatform;
 
 procedure TCompiler.DoLogEntry(const msg: String);
 begin
@@ -771,10 +772,36 @@ begin
   MainForm.UpdateAppTitle;
 end;
 
+// Console programs run in a terminal window: on Linux nothing shows their
+// output otherwise. Dev-C++'s ConsolePauser (Windows only) is a sh script
+// here (devPlatform.BuildTerminalCommand). Without a terminal the program
+// still runs, unseen, and the user is told.
+procedure TCompiler.RunConsoleProgram(const FileToRun, Params, Dir: String);
+var
+  Command, Args: TStringList;
+  Terminal: String;
+begin
+  Command := TStringList.Create;
+  Args := TStringList.Create;
+  try
+    Command.Add(FileToRun);
+    CommandToList(Params, Command); // appends the program's arguments
+    if BuildTerminalCommand(Command, devData.ConsolePause, Lang[ID_RUN_EXITED], Lang[ID_RUN_PRESSENTER],
+      Terminal, Args) then
+      devExecutor.ExecuteAndWatch(Terminal, Args, Dir, RunTerminate)
+    else begin
+      MessageDlg(Lang[ID_RUN_NOTERMINAL], mtWarning, [mbOK], 0);
+      devExecutor.ExecuteAndWatch(FileToRun, Params, Dir, True, INFINITE, RunTerminate);
+    end;
+  finally
+    Args.Free;
+    Command.Free;
+  end;
+end;
+
 procedure TCompiler.Run;
 var
   FileToRun: String;
-  Parameters: String;
 begin
   case fTarget of
     ctNone:
@@ -800,19 +827,9 @@ begin
             MessageDlg(Lang[ID_ERR_SRCNOTCOMPILED], mtWarning, [mbOK], 0);
         end else begin
 
-          // Pause programs if they contain a console
-          if devData.ConsolePause and ProgramHasConsole(FileToRun) then begin
-            Parameters := '"' + FileToRun + '" ' + fRunParams;
-            FileToRun := devDirs.Exec + 'ConsolePauser.exe';
-          end else begin
-            Parameters := fRunParams;
-            FileToRun := FileToRun;
-          end;
-
           if devData.MinOnRun then
             Application.Minimize;
-          devExecutor.ExecuteAndWatch(FileToRun, Parameters, ExtractFilePath(fSourceFile), True, INFINITE,
-            RunTerminate);
+          RunConsoleProgram(FileToRun, fRunParams, ExtractFilePath(fSourceFile));
           MainForm.UpdateAppTitle;
         end;
       end;
@@ -839,18 +856,13 @@ begin
             MainForm.UpdateAppTitle;
           end;
         end else begin // execute normally
-          if devData.ConsolePause and ProgramHasConsole(fProject.Executable) then begin
-            Parameters := '"' + fProject.Executable + '" ' + fProject.Options.CmdLineArgs;
-            FileToRun := devDirs.Exec + 'ConsolePauser.exe';
-          end else begin
-            Parameters := fRunParams;
-            FileToRun := fProject.Executable;
-          end;
-
           if devData.MinOnRun then
             Application.Minimize;
-          devExecutor.ExecuteAndWatch(FileToRun, Parameters, ExtractFileDir(fProject.Executable), True, INFINITE,
-            RunTerminate);
+          if fProject.Options.typ = dptGUI then // has its own windows
+            devExecutor.ExecuteAndWatch(fProject.Executable, fProject.Options.CmdLineArgs,
+              ExtractFileDir(fProject.Executable), True, INFINITE, RunTerminate)
+          else
+            RunConsoleProgram(fProject.Executable, fProject.Options.CmdLineArgs, ExtractFileDir(fProject.Executable));
           MainForm.UpdateAppTitle;
         end;
       end;

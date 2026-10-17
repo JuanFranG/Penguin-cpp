@@ -40,6 +40,9 @@ Ver=1
 1041=Wheel
 1050=The file name has a double quote ("), which the compiler commands cannot hold:<CR>%s<CR><CR>Rename the file to compile it.
 1051=Resource scripts (.rc) are for Windows programs; Linux has no resource compiler.
+1052=Process exited after %s seconds with return value %d
+1053=Press Enter to close this window... 
+1054=No terminal was found (gnome-terminal, mate-terminal, xfce4-terminal, konsole or xterm), so the program runs without a window for its output. Install one of them to see it.
 
 
 2001=&Open...

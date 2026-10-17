@@ -22,7 +22,7 @@ unit devRun;
 interface
 
 uses
-  Classes, Windows, Dialogs, utils;
+  Classes, Windows, Dialogs, Utils;
 
 type
   TLineOutputEvent = procedure(Sender: TObject; const Line: String) of object;

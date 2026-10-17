@@ -39,7 +39,7 @@ type
 implementation
 
 uses
-  MultiLangSupport, devcfg, main;
+  MultiLangSupport, devCFG, main;
 
 {$R *.dfm}
 

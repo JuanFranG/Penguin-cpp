@@ -53,7 +53,7 @@ type
 implementation
 
 uses
-  main, editor, devcfg, MultiLangSupport;
+  main, Editor, devCFG, MultiLangSupport;
 
 {$R *.dfm}
 

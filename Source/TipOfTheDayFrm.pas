@@ -63,7 +63,7 @@ type
 implementation
 
 uses
-  devcfg, MultiLangSupport;
+  devCFG, MultiLangSupport;
 
 {$R *.dfm}
 

@@ -23,7 +23,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs, CodeCompletion, CppParser, SynExportTeX,
-  SynEditExport, SynExportRTF, Menus, ImgList, ComCtrls, StdCtrls, ExtCtrls, SynEdit, SynEditKeyCmds, version,
+  SynEditExport, SynExportRTF, Menus, ImgList, ComCtrls, StdCtrls, ExtCtrls, SynEdit, SynEditKeyCmds, Version,
   SynEditCodeFolding, SynExportHTML, SynEditTextBuffer, Math, StrUtils, SynEditTypes, SynEditHighlighter, DateUtils,
   CodeToolTip, CBUtils, System.UITypes, System.Contnrs, SynEditPrint, Vcl.ExtDlgs;
 
@@ -237,8 +237,8 @@ type
 implementation
 
 uses
-  main, project, MultiLangSupport, devcfg, utils,
-  DataFrm, GotoLineFrm, Macros, debugreader, IncrementalFrm,
+  main, Project, MultiLangSupport, devCFG, Utils,
+  DataFrm, GotoLineFrm, Macros, DebugReader, IncrementalFrm,
   CodeCompletionForm, SynEditMiscClasses, CharUtils, Vcl.Printers, SynEditPrintTypes;
 
 { TCloseTabSheet }

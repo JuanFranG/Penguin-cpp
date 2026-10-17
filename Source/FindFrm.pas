@@ -22,7 +22,7 @@ unit FindFrm;
 interface
 
 uses
-  Windows, Messages, editor, SysUtils, Classes, Graphics, Controls, Forms,
+  Windows, Messages, Editor, SysUtils, Classes, Graphics, Controls, Forms,
   SynEdit, StdCtrls, SynEditTypes, SynEditSearch, Clipbrd, ComCtrls, Menus;
 
 type
@@ -93,7 +93,7 @@ var
 implementation
 
 uses
-  Main, Dialogs, MultiLangSupport, devcfg, utils, SynEditMiscClasses, Math;
+  main, Dialogs, MultiLangSupport, devCFG, Utils, SynEditMiscClasses, Math;
 
 {$R *.dfm}
 

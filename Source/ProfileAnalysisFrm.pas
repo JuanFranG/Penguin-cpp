@@ -80,8 +80,8 @@ var
 implementation
 
 uses
-  devcfg, version, utils, main, ShellAPI, StrUtils, MultiLangSupport, CppParser,
-  editor;
+  devCFG, Version, Utils, main, ShellAPI, StrUtils, MultiLangSupport, CppParser,
+  Editor;
 
 {$R *.dfm}
 

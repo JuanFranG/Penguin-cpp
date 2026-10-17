@@ -22,7 +22,7 @@ unit ProjectTypes;
 interface
 
 uses
-  Classes, editor, ComCtrls, Windows;
+  Classes, Editor, ComCtrls, Windows;
 
 const
   dptGUI = 0;
@@ -110,7 +110,7 @@ type
 implementation
 
 uses
-  devcfg, SysUtils;
+  devCFG, SysUtils;
 
 constructor TProjVersionInfo.Create;
 begin

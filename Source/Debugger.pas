@@ -23,7 +23,7 @@ interface
 
 uses
   Sysutils, Windows, Messages, Forms, Classes, Controls,
-  debugreader, version, editor, ComCtrls, Dialogs, MultiLangSupport;
+  DebugReader, Version, Editor, ComCtrls, Dialogs, MultiLangSupport;
 
 type
 
@@ -84,7 +84,7 @@ type
 implementation
 
 uses
-  System.UItypes, main, devcfg, utils, cpufrm;
+  System.UItypes, main, devCFG, Utils, CPUFrm;
 
 constructor TDebugger.Create;
 begin

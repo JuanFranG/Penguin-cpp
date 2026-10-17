@@ -22,7 +22,7 @@ unit devCFG;
 interface
 
 uses
-  Dialogs, Windows, Classes, Graphics, SynEdit, editor, CFGData, IniFiles, ProjectTypes, Math, ShellAPI, ShlObj,
+  Dialogs, Windows, Classes, Graphics, SynEdit, Editor, CFGData, IniFiles, ProjectTypes, Math, ShellAPI, ShlObj,
   ComCtrls, System.UITypes, Vcl.Themes, SynEditTextBuffer, System.SysUtils;
 
 const
@@ -791,7 +791,7 @@ var
 implementation
 
 uses
-  MultiLangSupport, DataFrm, StrUtils, Forms, main, compiler, Controls, version, utils, SynEditMiscClasses,
+  MultiLangSupport, DataFrm, StrUtils, Forms, main, Compiler, Controls, Version, Utils, SynEditMiscClasses,
   TypInfo, DateUtils, Types, System.IOUtils, Vcl.ExtDlgs;
 
 procedure CreateOptions;

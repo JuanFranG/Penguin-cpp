@@ -77,7 +77,7 @@ type
 implementation
 
 uses
-  Windows, Forms, SysUtils, version, utils, Dialogs, MultiLangSupport;
+  Windows, Forms, SysUtils, Version, Utils, Dialogs, MultiLangSupport;
 
 resourcestring
  cTemplate = 'Template';

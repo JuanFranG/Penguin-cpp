@@ -52,7 +52,7 @@ type
 
 implementation
 
-uses Version, MultiLangSupport, devcfg, utils;
+uses Version, MultiLangSupport, devCFG, Utils;
 
 {$R *.dfm}
 

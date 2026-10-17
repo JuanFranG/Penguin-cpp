@@ -63,8 +63,8 @@ type
 implementation
 
 uses
-  MultiLangSupport, utils, DataFrm, FileCtrl, devcfg, version,
-  project, ProjectTypes;
+  MultiLangSupport, Utils, DataFrm, FileCtrl, devCFG, Version,
+  Project, ProjectTypes;
 
 {$R *.dfm}
 

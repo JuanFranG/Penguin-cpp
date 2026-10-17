@@ -102,8 +102,8 @@ type
 implementation
 
 uses
-  ToolEditFrm, inifiles, devcfg, utils, MultiLangSupport, DataFrm,
-  version, main;
+  ToolEditFrm, inifiles, devCFG, Utils, MultiLangSupport, DataFrm,
+  Version, main;
 
 {$R *.dfm}
 

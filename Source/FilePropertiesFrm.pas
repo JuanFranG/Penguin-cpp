@@ -23,7 +23,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StrUtils, ExtCtrls, StdCtrls, SynEdit, utils,
+  Dialogs, StrUtils, ExtCtrls, StdCtrls, SynEdit, Utils,
   SynEditTypes, FileCtrl, Menus;
 
 type
@@ -94,7 +94,7 @@ type
 implementation
 
 uses
-  SynEditHighlighter, main, MultiLangSupport, DataFrm, project, editor, devcfg;
+  SynEditHighlighter, main, MultiLangSupport, DataFrm, Project, Editor, devCFG;
 
 {$R *.dfm}
 

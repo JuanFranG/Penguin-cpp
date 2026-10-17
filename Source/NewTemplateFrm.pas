@@ -24,7 +24,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, CheckLst, ExtCtrls, Buttons, ComCtrls,
-  project, ImgList, ExtDlgs, IniFiles, System.UITypes,DataFrm;
+  Project, ImgList, ExtDlgs, IniFiles, System.UITypes,DataFrm;
 
 type
   TNewTemplateForm = class(TForm)
@@ -86,7 +86,7 @@ type
 implementation
 
 uses
-  utils, IconFrm, devcfg, version, Templates, main, MultiLangSupport, ProjectTypes;
+  Utils, IconFrm, devCFG, Version, Templates, main, MultiLangSupport, ProjectTypes;
 
 {$R *.dfm}
 

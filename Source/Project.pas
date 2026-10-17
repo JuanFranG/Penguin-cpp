@@ -23,7 +23,7 @@ interface
 
 uses
   IniFiles, SysUtils, Dialogs, ComCtrls, Editor, Contnrs, SynExportHTML,
-  Classes, Controls, version, Forms, Templates, ProjectTypes,
+  Classes, Controls, Version, Forms, Templates, ProjectTypes,
   Windows, System.UITypes;
 
 type
@@ -157,7 +157,7 @@ type
 implementation
 
 uses
-  main, MultiLangSupport, devcfg, ProjectOptionsFrm, DataFrm, utils,
+  main, MultiLangSupport, devCFG, ProjectOptionsFrm, DataFrm, Utils,
   RemoveUnitFrm, SynEdit, EditorList;
 
 { TProjUnit }

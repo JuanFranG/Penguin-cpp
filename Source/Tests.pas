@@ -41,7 +41,7 @@ type
 implementation
 
 uses
-  Main, EditorList, Editor, Version;
+  main, EditorList, Editor, Version;
 
 procedure TTestClass.ShowUpdate(Delay: Integer);
 begin

@@ -63,7 +63,7 @@ type
 implementation
 
 uses
-  FileCtrl, MultiLangSupport, devcfg, utils, main;
+  FileCtrl, MultiLangSupport, devCFG, Utils, main;
 
 {$R *.dfm}
 

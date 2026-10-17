@@ -23,7 +23,7 @@ interface
 
 uses
   Windows, SysUtils, Dialogs, StdCtrls, Controls, ComCtrls, Forms,
-  devRun, version, project, utils, ProjectTypes, Classes, Graphics, devCFG;
+  devRun, Version, Project, Utils, ProjectTypes, Classes, Graphics, devCFG;
 
 type
   TLogEntryEvent = procedure(const Msg: String) of object;

@@ -22,7 +22,7 @@ unit devExec;
 interface
 
 uses
-  Windows, Classes, Forms, devcfg, utils;
+  Windows, Classes, Forms, devCFG, Utils;
 
 type
   {$M+}

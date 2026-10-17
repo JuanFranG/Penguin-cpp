@@ -48,7 +48,7 @@ type
 implementation
 
 uses 
-  devcfg;
+  devCFG;
 
 {$R *.dfm}
 

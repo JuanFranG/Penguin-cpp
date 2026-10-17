@@ -120,7 +120,7 @@ type
 implementation
 
 uses
-  System.UITypes, ShellAPI, Filectrl, devcfg, MultiLangSupport, version, DataFrm, utils, ImageTheme, main,
+  System.UITypes, ShellAPI, Filectrl, devCFG, MultiLangSupport, Version, DataFrm, Utils, ImageTheme, main,
   StrUtils;
 
 {$R *.dfm}

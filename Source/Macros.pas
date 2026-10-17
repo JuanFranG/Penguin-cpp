@@ -22,14 +22,14 @@ unit Macros;
 interface
 
 uses
-  SysUtils, devCfg, Version;
+  SysUtils, devCFG, Version;
 
 function ParseMacros(Str: String): String;
 
 implementation
 
 uses
-  Main, editor, Dialogs, Utils, Classes;
+  main, Editor, Dialogs, Utils, Classes;
 
 procedure Replace(var Str: String; Old, New: String);
 begin

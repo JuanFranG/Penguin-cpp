@@ -24,7 +24,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, Buttons, ExtCtrls, Menus, FileCtrl, SynEdit, ToolWin, ComCtrls,
-  svgColor, Vcl.VirtualImage;
+  SVGColor, Vcl.VirtualImage;
 
 type
   TLangForm = class(TForm)
@@ -64,7 +64,7 @@ type
 implementation
 
 uses
-  MultiLangSupport, DataFrm, devcfg, utils, main, version, ImageTheme, SynEditTypes;
+  MultiLangSupport, DataFrm, devCFG, Utils, main, Version, ImageTheme, SynEditTypes;
 
 {$R *.dfm}
 

@@ -73,7 +73,7 @@ type
 implementation
 
 uses
-  System.IOUtils, System.UITypes, ShellAPI, Main, FileCtrl, version, devcfg, utils, MultiLangSupport, DataFrm;
+  System.IOUtils, System.UITypes, ShellAPI, main, FileCtrl, Version, devCFG, Utils, MultiLangSupport, DataFrm;
 
 {$R *.dfm}
 

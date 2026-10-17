@@ -47,7 +47,7 @@ type
 implementation
 
 uses
-  MultiLangSupport, devcfg;
+  MultiLangSupport, devCFG;
 
 {$R *.dfm}
 

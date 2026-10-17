@@ -47,7 +47,7 @@ var
 implementation
 
 uses 
-  tlhelp32, devcfg;
+  tlhelp32, devCFG;
 
 {$R *.dfm}
 

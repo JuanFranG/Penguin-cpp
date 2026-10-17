@@ -81,7 +81,7 @@ type
 implementation
 
 uses
-  System.UITypes, IniFiles, StrUtils, version, MultiLangSupport, devcfg, utils;
+  System.UITypes, IniFiles, StrUtils, Version, MultiLangSupport, devCFG, Utils;
 
 {$R *.dfm}
 

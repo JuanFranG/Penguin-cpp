@@ -23,7 +23,7 @@ interface
 
 uses
   SysUtils, Classes, Windows, Messages, Graphics, Controls, Forms,
-  SynEdit, SynEditHighlighter, utils, CppParser;
+  SynEdit, SynEditHighlighter, Utils, CppParser;
 
 type
   TCustomCodeToolTipButton = class(TPersistent)
@@ -120,7 +120,7 @@ type
 implementation
 
 uses
-  System.Types, devcfg;
+  System.Types, devCFG;
 
 // contains the up/down buttons
 // I tried to draw them using DrawFrameControl first,

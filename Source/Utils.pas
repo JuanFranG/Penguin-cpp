@@ -157,7 +157,7 @@ function FastStringReplace(const S, OldPattern, NewPattern: String; Flags: TRepl
 implementation
 
 uses
-  devcfg, version, Graphics, StrUtils, MultiLangSupport, main, editor, ShlObj, ActiveX, System.IOUtils, CharUtils;
+  devCFG, Version, Graphics, StrUtils, MultiLangSupport, main, Editor, ShlObj, ActiveX, System.IOUtils, CharUtils;
 
 function FastStringReplace(const S, OldPattern, NewPattern: String; Flags: TReplaceFlags): String;
 var

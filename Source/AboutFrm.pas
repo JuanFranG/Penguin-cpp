@@ -22,7 +22,7 @@ unit AboutFrm;
 interface
 
 uses
-  Windows, SysUtils, Classes, version, Graphics, Controls, Forms, Dialogs,
+  Windows, SysUtils, Classes, Version, Graphics, Controls, Forms, Dialogs,
   StdCtrls, Buttons, ExtCtrls, Vcl.Imaging.pngimage,DataFrm;
 
 type
@@ -86,7 +86,7 @@ type
 implementation
 
 uses
-  System.UITypes, ShellAPI, devcfg, utils, MultiLangSupport, main;
+  System.UITypes, ShellAPI, devCFG, Utils, MultiLangSupport, main;
 
 {$R *.dfm}
 

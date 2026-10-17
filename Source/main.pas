@@ -25,11 +25,11 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs, System.UITypes,
-  Menus, StdCtrls, ComCtrls, ToolWin, ExtCtrls, Buttons, utils, SynEditPrint,
-  Project, editor, DateUtils, compiler, ActnList, ToolFrm, AppEvnts,
-  debugger, ClassBrowser, CodeCompletion, CppParser, CppTokenizer, SyncObjs,
+  Menus, StdCtrls, ComCtrls, ToolWin, ExtCtrls, Buttons, Utils, SynEditPrint,
+  Project, Editor, DateUtils, Compiler, ActnList, ToolFrm, AppEvnts,
+  Debugger, ClassBrowser, CodeCompletion, CppParser, CppTokenizer, SyncObjs,
   StrUtils, SynEditTypes, devFileMonitor, devMonitorTypes, EditorList,
-  devShortcuts, debugreader, CommCtrl, devcfg, SynEditTextBuffer,
+  devShortcuts, DebugReader, CommCtrl, devCFG, SynEditTextBuffer,
   CppPreprocessor, CBUtils, StatementList, AStyleFormatterOptionsFrm, ClangFormatterOptionsFrm, System.Actions,
   SVGColor, Vcl.Imaging.pngimage, Vcl.WinXCtrls, Vcl.WinXPanels, Vcl.ExtDlgs,
   Vcl.VirtualImage
@@ -962,7 +962,7 @@ var
 implementation
 
 uses
-  System.Threading, System.Math, ShellAPI, IniFiles, Clipbrd, MultiLangSupport, version,
+  System.Threading, System.Math, ShellAPI, IniFiles, Clipbrd, MultiLangSupport, Version,
   DataFrm, NewProjectFrm, AboutFrm, PrintFrm,
   CompOptionsFrm, EditorOptFrm, IncrementalFrm, EnviroFrm,
   SynEdit, ImageTheme, SynEditKeyCmds, Instances,

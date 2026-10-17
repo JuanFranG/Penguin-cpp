@@ -112,7 +112,7 @@ const
 implementation
 
 uses
-  devcfg, utils, version, math, MultiLangSupport;
+  devCFG, Utils, Version, math, MultiLangSupport;
 
 {$R *.dfm}
 

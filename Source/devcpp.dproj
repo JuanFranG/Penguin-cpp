@@ -61,7 +61,7 @@
         <DCC_MaxStackSize>8388608</DCC_MaxStackSize>
         <DCC_ExeOutput>..</DCC_ExeOutput>
         <DCC_DcuOutput>Units</DCC_DcuOutput>
-        <DCC_UnitSearchPath>VCL\SVGIconImageList\Svg;VCL\SVGIconImageList\Source;VCL\ClassBrowsing;VCL\devFileMonitor;VCL\devShortcuts;VCL\CompOptionsList;VCL\SynEdit\Source;VCL\vcl-styles-utils\Common;VCL\DDetours\Source;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <DCC_UnitSearchPath>VCL\SVGIconImageList\Svg;VCL\SVGIconImageList\Source;VCL\ClassBrowsing;VCL\devFileMonitor;VCL\devShortcuts;VCL\CompOptionsList;VCL\SynEdit\Source;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <DebugSourcePath>C:\Program Files (x86)\Dev-Cpp\Source\VCL\SynEdit\Source\;C:\Program Files (x86)\Dev-Cpp\Source\VCL\ClassBrowsing\;$(DebugSourcePath)</DebugSourcePath>
         <DCC_UsePackage>vcl;rtl;vclactnband;vclx;vcldb;dbrtl;dbexpress;vclie;xmlrtl;inet;inetdbbde;inetdbxpress;dsnap;VclSmp;dbxcds;soaprtl;vclshlctrls;SynEdit_R7;$(DCC_UsePackage)</DCC_UsePackage>
         <DCC_SYMBOL_PLATFORM>false</DCC_SYMBOL_PLATFORM>

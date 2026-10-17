@@ -23,7 +23,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, Buttons, ExtCtrls, Menus, FileCtrl, SynEdit, ToolWin, ComCtrls, Themes,
+  StdCtrls, Buttons, ExtCtrls, Menus, FileCtrl, SynEdit, ToolWin, ComCtrls,
   svgColor, Vcl.VirtualImage;
 
 type
@@ -59,7 +59,6 @@ type
     procedure HandleEditPanel;
     procedure UpdateLangList(List: TStrings);
     procedure LoadText;
-    procedure FormCreate(Sender: TObject); // call after selecting a language of course
   end;
 
 implementation
@@ -216,12 +215,6 @@ end;
 procedure TLangForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   Action := caFree;
-end;
-
-procedure TLangForm.FormCreate(Sender: TObject);
-begin
-  //if devData.Style <> 0 then
-    TStyleManager.TrySetStyle(cDelphiStyle[devData.Style]);
 end;
 
 procedure TLangForm.cmbThemeChange(Sender: TObject);

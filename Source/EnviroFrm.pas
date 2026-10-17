@@ -24,7 +24,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, Spin, ExtCtrls, ExtDlgs, Buttons,
-  CheckLst, Grids, ValEdit, ComCtrls, vcl.Themes, Vcl.BaseImageCollection,
+  CheckLst, Grids, ValEdit, ComCtrls, Vcl.BaseImageCollection,
   Vcl.ImageCollection, Vcl.VirtualImage, System.ImageList, Vcl.ImgList;
 
 type
@@ -202,11 +202,9 @@ begin
     InterfaceFont := cbUIFont.Text;
     InterfaceFontSize := StrToIntDef(cbUIfontsize.Text, 9);
 
-    //Set Delphi Style
+    // Theme only selects the icon set; widget styling comes from the desktop
     StyleChange := ListBoxStyle.ItemIndex <> devData.Style;
     Style := ListBoxStyle.ItemIndex;
-    if Style > 0 then
-      TStyleManager.TrySetStyle(cDelphiStyle[Style]);
   end;
 
   MainForm.Font.Name := devData.InterfaceFont;
@@ -239,21 +237,9 @@ end;
 
 procedure TEnviroForm.ListBoxStyleClick(Sender: TObject);
 begin
-  if devData.Style = 0 then
-  begin
-    Panel1.Visible := false;
-    viThemePreview.Visible := true;
-    viThemePreview.ImageIndex := ListBoxStyle.ItemIndex;
-  end
-  else
-  begin
-    Panel1.Visible := true;
-    viThemePreview.Visible := false;
-    Panel1.StyleName := cDelphiStyle[ListBoxStyle.ItemIndex];
-    Panel1.Repaint;
-    for var I := 0 to Panel1.ControlCount-1 do
-     Panel1.Controls[i].Repaint;
-    end;
+  Panel1.Visible := false;
+  viThemePreview.Visible := true;
+  viThemePreview.ImageIndex := ListBoxStyle.ItemIndex;
 end;
 
 procedure TEnviroForm.LoadText;

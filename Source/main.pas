@@ -31,15 +31,8 @@ uses
   StrUtils, SynEditTypes, devFileMonitor, devMonitorTypes, DdeMan, EditorList,
   devShortcuts, debugreader, ExceptionFrm, CommCtrl, devcfg, SynEditTextBuffer,
   CppPreprocessor, CBUtils, StatementList, AStyleFormatterOptionsFrm, ClangFormatterOptionsFrm, System.Actions,
-  vcl.Themes, SVGColor, Vcl.Imaging.pngimage, Vcl.WinXCtrls, Vcl.WinXPanels, Vcl.ExtDlgs,
-  Vcl.Styles.Hooks,
-  Vcl.Styles.Utils.Menus, //Style Popup and Shell Menus (class #32768)
-  Vcl.Styles.Utils.Forms, //Style dialogs box (class #32770)
-  Vcl.Styles.Utils.StdCtrls, //Style buttons, static, and so on
-  Vcl.Styles.Utils.ComCtrls, //Style SysTreeView32, SysListView32
-  Vcl.Styles.Utils.ScreenTips, //Style the tooltips_class32 class
-  Vcl.Styles.Utils.SysControls,
-  Vcl.Styles.Utils.SysStyleHook, Vcl.VirtualImage
+  SVGColor, Vcl.Imaging.pngimage, Vcl.WinXCtrls, Vcl.WinXPanels, Vcl.ExtDlgs,
+  Vcl.VirtualImage
   ;
 
 type
@@ -1122,13 +1115,6 @@ begin
 
   SaveOptions;
 
-  //  --  --  --  --  --  --  --  --  --  --  --  --  --
-  //      This is a cheat.    Also don't hard-code 'Windows10'.
-  //  --  --  --  --  --  --  --  --  --  --  --  --  --
-      MainForm.Visible := false;
-      TStyleManager.TrySetStyle('Windows10');
-  //  --  --  --  --  --  --  --  --  --  --  --  --  --
-
   Action := caFree;
 end;
 
@@ -2182,7 +2168,6 @@ end;
 procedure TMainForm.actOpenExecute(Sender: TObject);
 begin
   with TOpenTextFileDialog.Create(Self) do try
-    FixStyle;
     Filter := BuildFilter([FLT_PROJECTS, FLT_CS, FLT_CPPS, FLT_RES, FLT_HEADS]);
     Title := Lang[ID_NV_OPENFILE];
     Options := Options + [ofAllowMultiSelect];
@@ -7290,7 +7275,6 @@ end;
 
 procedure TMainForm.LoadStyle;
 begin
-  TStyleManager.TrySetStyle(cDelphiStyle[devData.Style]);
   LabelNumVersion.Font.Color := clRed;
   case devData.Style of
     2, 3, 4, 5, 6: ImageEmbarcadero.ImageIndex := 1;
@@ -7481,8 +7465,6 @@ var
   TabSheet: TCloseTabSheet;
   TabCaption: TPoint;
   CloseBtnRect: TRect;
-  //CloseBtnDrawState: Cardinal;
-  //CloseBtnDrawDetails: TThemedElementDetails;
 begin
   PageControl := Control as TPageControl;
   TabCaption.Y := Rect.Top + 3;
@@ -7511,68 +7493,35 @@ begin
     PageControl.Canvas.Brush.Style := bsSolid;
     if Active then
       begin
-          PageControl.Canvas.Brush.Color := StyleServices.GetStyleColor(scTreeView);
+          PageControl.Canvas.Brush.Color := clWindow;
       end
     else
-      PageControl.Canvas.Brush.Color := StyleServices.GetStyleColor(scGenericBackground);
+      PageControl.Canvas.Brush.Color := clBtnFace;
 
     PageControl.Canvas.FillRect(Rect);
-    PageControl.Canvas.Font.Color := StyleServices.GetStyleFontColor(sfButtonTextNormal);
+    PageControl.Canvas.Font.Color := clBtnText;
     PageControl.Canvas.TextOut(TabCaption.X, TabCaption.Y,
             PageControl.Pages[TabIndex].Caption);
 
-    PageControl.Canvas.Pen.Color := StyleServices.GetStyleColor(scGenericBackground);
+    PageControl.Canvas.Pen.Color := clBtnFace;
     PageControl.Canvas.Pen.Width := 1;
-    PageControl.Canvas.Brush.Color := StyleServices.GetStyleColor(scGenericBackground);
+    PageControl.Canvas.Brush.Color := clBtnFace;
     PageControl.Canvas.Brush.Style := bsSolid;
     PageControl.Canvas.Polygon([Point(CloseBtnRect.Left-4+25, CloseBtnRect.Top-4), Point(CloseBtnRect.Right+4+25, CloseBtnRect.Top-4), Point(CloseBtnRect.Right+4+25, CloseBtnRect.Bottom+4)]);
 
-    PageControl.Canvas.Pen.Color := StyleServices.GetStyleColor(scButtonDisabled);
-    PageControl.Canvas.Brush.Color := StyleServices.GetStyleColor(scButtonDisabled);
+    PageControl.Canvas.Pen.Color := clGrayText;
+    PageControl.Canvas.Brush.Color := clGrayText;
     PageControl.Canvas.Ellipse(CloseBtnRect);
 
     PageControl.Canvas.Pen.Width := 1;
-    PageControl.Canvas.Pen.Color := StyleServices.GetStyleFontColor(sfButtonTextNormal);
+    PageControl.Canvas.Pen.Color := clBtnText;
 
     PageControl.Canvas.MoveTo(CloseBtnRect.Left+3, CloseBtnRect.Top+3);
     PageControl.Canvas.LineTo(CloseBtnRect.Right-2, CloseBtnRect.Bottom-2);
 
     PageControl.Canvas.MoveTo(CloseBtnRect.Left+3, CloseBtnRect.Bottom-3);
     PageControl.Canvas.LineTo(CloseBtnRect.Right-2, CloseBtnRect.Top+2);
-
- {   if not StyleServices.Enabled then
-    begin
-      if (FCloseButtonMouseDownTab = TabSheet) and FCloseButtonShowPushed then
-        CloseBtnDrawState := DFCS_CAPTIONCLOSE + DFCS_PUSHED
-      else
-        CloseBtnDrawState := DFCS_CAPTIONCLOSE;
-
-      //Windows.DrawFrameControl(PageControl.Canvas.Handle,
-      //  TabSheet.FCloseButtonRect, DFC_CAPTION, CloseBtnDrawState);
-    end
-    else
-    begin
-      Dec(TabSheet.FCloseButtonRect.Left);
-
-      if (FCloseButtonMouseDownTab = TabSheet) and FCloseButtonShowPushed then
-        CloseBtnDrawDetails := StyleServices.GetElementDetails(twCloseButtonPushed)
-      else
-        CloseBtnDrawDetails := StyleServices.GetElementDetails(twCloseButtonNormal);
-
-      //StyleServices.DrawElement(PageControl.Canvas.Handle, CloseBtnDrawDetails,
-      //          TabSheet.FCloseButtonRect);
-    end;   }
-  end;{ else begin
-    PageControl.Canvas.Brush.Style := bsSolid;
-    if Active then
-      PageControl.Canvas.Brush.Color := StyleServices.GetStyleColor(scButtonPressed)
-    else
-      PageControl.Canvas.Brush.Color := StyleServices.GetStyleColor(scButtonDisabled);
-    PageControl.Canvas.FillRect(Rect);
-    PageControl.Canvas.Font.Color := StyleServices.GetStyleFontColor(sfButtonTextNormal);
-    PageControl.Canvas.TextOut(TabCaption.X, TabCaption.Y,
-                 PageControl.Pages[TabIndex].Caption);
-  end;}
+  end;
 end;
 
 procedure TMainForm.PageControlCloseButtonMouseDown(Sender: TObject;

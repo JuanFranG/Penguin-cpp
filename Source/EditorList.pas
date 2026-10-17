@@ -369,14 +369,19 @@ begin
   // Redraw once after the whole ordeal
   BeginUpdate;
   try
-    // Keep closing the first one to prevent redrawing
+    // Keep closing the first one to prevent redrawing. A tab without an
+    // editor can't be asked to close; remove it, or quitting would stop here.
     while fLeftPageControl.PageCount > 0 do
-      if not CloseEditor(GetEditor(0, fLeftPageControl)) then
+      if not Assigned(GetEditor(0, fLeftPageControl)) then
+        fLeftPageControl.Pages[0].Free
+      else if not CloseEditor(GetEditor(0, fLeftPageControl)) then
         Exit;
 
     // Same for the right page control
     while fRightPageControl.PageCount > 0 do
-      if not CloseEditor(GetEditor(0, fRightPageControl)) then
+      if not Assigned(GetEditor(0, fRightPageControl)) then
+        fRightPageControl.Pages[0].Free
+      else if not CloseEditor(GetEditor(0, fRightPageControl)) then
         Exit;
 
   finally

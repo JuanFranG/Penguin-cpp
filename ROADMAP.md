@@ -106,8 +106,8 @@ al publicarla. Hoy `main` incluye las fases 1 a 4 (`fase4/lazarus`).
 | 1 · Quitar lo que no se puede portar | `fase1/quitar-windows` | ✅ Hecha |
 | 2 · Parser de C++ en Free Pascal | `fase2/parser-fpc` | ✅ Hecha, probada en Mint |
 | 3 · Capa de sistema | `fase3/capa-sistema` | ✅ Hecha, probada en Mint |
-| 4 · Port a Lazarus y formularios | `fase4/lazarus` | 🔄 Abre y funciona en Mint; quedan detalles |
-| 4b · Identidad visual y temas | `fase4/lazarus` | 🔄 Icono y esquemas de color del editor listos; faltan los temas de la interfaz |
+| 4 · Port a Lazarus y formularios | `fase4/lazarus` | 🔄 Abre y funciona en Mint; faltan Buscar/Ir a línea y pasar a Qt6 |
+| 4b · Identidad visual y temas | `fase4/lazarus` | 🔄 Icono, esquemas del editor y paneles con la paleta listos; faltan menús y diálogos (con Qt6) |
 | 5 · Editor (SynEdit de Lazarus) | `fase4/lazarus` | 🔄 Adelantada dentro de la fase 4 |
 | 6 · Compilación con el gcc de Linux | — | ⏳ Pendiente |
 | 7 · Depurador (GDB/MI) | — | ⏳ Pendiente |
@@ -119,35 +119,37 @@ al publicarla. Hoy `main` incluye las fases 1 a 4 (`fase4/lazarus`).
 Estado al 17 de octubre de 2026: el IDE abre en Linux Mint 22 (GTK2). Funciona
 en español y la configuración se conserva entre arranques. El editor tiene
 colores y números de línea, y las barras de herramientas son responsivas.
-Al cerrar no quedan fugas de memoria (heaptrc: 0 bloques sin liberar).
+Al cerrar no quedan fugas de memoria (heaptrc: 0 bloques sin liberar). Los
+acentos se escriben bien en el editor.
 
-**1. Verificar en Mint lo último que se cambió:**
-- El fondo de todo el editor toma el color del esquema (por ejemplo Twilight
-  oscuro de arriba abajo, no solo detrás del texto).
-- Las barras no dejan huecos y el margen del editor es más angosto.
-- El botón de cerrar: la X de la ventana y Archivo → Salir.
-- Opciones del entorno: qué errores aparecen al abrirla (falta una captura).
+**1. Verificar en Mint lo que se corrigió en esta iteración:**
+- Los esquemas oscuros (Twilight, Ocean, Borland, Matrix, Obsidian, Monokai,
+  Monokai Fresh) se ven completos: fondo oscuro y texto legible. Los colores
+  se asignaban corridos (ver la fase 4b). La configuración guardada se repara
+  sola al abrir el IDE.
+- Las vistas previas de Opciones del editor toman el fondo del esquema.
+- La lista de fuentes ya no ofrece Noto Color Emoji ni MathJax_Vector.
+- La pantalla de bienvenida está en español (BIENVENIDO, Atajos de teclado…),
+  y los atajos salen de los menús.
+- Los paneles (bienvenida, proyecto, clases, mensajes) tienen los colores del
+  icono, en versión oscura cuando el esquema del editor es oscuro.
 
-**2. Terminar la fase 4:**
-- Los textos de la bienvenida ("WELCOME", "Hotkeys", "Open"…) están fijos en
-  inglés en el formulario: pasarlos a los archivos de idioma.
-- Decidir la biblioteca gráfica (GTK2 o Qt6), según el plan de abajo.
-- Lo que queda de la verificación de memoria: el editor con acentos y emoji, y
-  valgrind.
+**2. Buscar, Reemplazar e Ir a línea no funcionan** (reportado en Mint). El
+código del diálogo se portó sin cambios de lógica y no se ve el error
+leyéndolo. Falta saber qué pasa exactamente: si la opción está gris, si no
+se abre la ventana, si se abre pero no encuentra nada, o si sale un error en
+la terminal de `./penguin-cpp-debug`.
 
-**3. Fase 6, el siguiente paso grande:** la lista de compiladores está vacía
-porque el IDE solo busca TDM-GCC (el compilador para Windows que trae el
-original). Hay que:
-- detectar el `gcc`/`g++` del sistema y crear sus perfiles (Release, Debug,
-  Profiling);
-- compilar y ejecutar en una terminal, con los errores clicables;
-- reemplazar las plantillas de Windows;
-- corregir los nombres de archivo con comillas y la seguridad de los Makefiles.
+**3. Imprimir no aparece:** está oculto porque el SynEdit de Lazarus no trae
+impresión (fase 5). Se puede hacer con el paquete Printer4Lazarus, que en
+Linux imprime por CUPS (incluido "Imprimir a archivo PDF").
 
-**4. Fase 4b:** hoy los esquemas de color cambian solo el editor; los menús,
-los paneles y los diálogos siguen el tema del escritorio. El tema claro y
-oscuro de toda la interfaz, y un selector entre los iconos coloridos y los
-planos, van en esa fase.
+**4. Pasar a Qt6** (decisión: sí, si compila y abre bien en Mint). Ver el plan
+en la fase 4.
+
+**5. Fase 6, el siguiente paso grande:** compilar y ejecutar con el gcc del
+sistema. La lista de compiladores está vacía porque el IDE solo busca TDM-GCC
+(el compilador para Windows que trae el original). Detalles en la fase 6.
 
 ### Fase 0 · Preparación ✅
 - Repositorio en GitHub con el historial completo del original y el remoto
@@ -211,19 +213,29 @@ Hecho:
   - Los archivos de idioma (`.lng`) se convierten desde su página de
     códigos de Windows.
   - La pantalla completa y el arrastrar y soltar archivos usan la LCL.
+- **Primera ejecución en Linux Mint** (GTK2): el IDE abre, guarda el idioma y
+  la configuración, y al cerrar no deja fugas. Lo que falló al arrancar se
+  corrigió:
+  - Los iconos no cargaban ("Bitmap with unknown compression"): diez listas
+    de imágenes seguían en el formato de Windows/Delphi. Se convirtieron, y
+    el verificador de formularios ahora lo detecta.
+  - Los esquemas de color salían vacíos (todo negro): venían de un recurso de
+    Windows que Linux no lee (`ColorSchemes.pas`).
+  - El idioma no se guardaba: la lectura de la configuración no conocía los
+    tipos de Free Pascal para textos y booleanos.
+  - Las barras de herramientas quedaban desordenadas: pasaron a un
+    `TFlowPanel` que acomoda las barras según el ancho.
+- La pantalla de bienvenida se traduce desde los archivos de idioma.
 
 Falta:
-- **Primera ejecución en Linux Mint** y corregir lo que falle al arrancar y
-  al abrir cada ventana.
-  - Intento 1: se detuvo al cargar los iconos ("Bitmap with unknown
-    compression"). Diez listas de imágenes seguían en el formato de
-    Windows/Delphi y Lazarus leía mal su máscara; se convirtieron al formato
-    de Lazarus, y el verificador de formularios ahora lo detecta.
+- **Buscar, Reemplazar e Ir a línea** no funcionan en Mint (ver "Siguiente
+  ciclo de trabajo").
 - **Verificación de memoria y seguridad:** lo que se puede hacer sin
-  interfaz gráfica está hecho; quedan las pruebas en Mint (ver abajo).
-- **Decidir la biblioteca gráfica: GTK2 o Qt6** (pendiente, ver abajo).
-- **Hecho cuando:** el IDE abre, se ven los menús, se puede abrir, editar y
-  guardar un archivo, y quedó decidida la biblioteca gráfica.
+  interfaz gráfica está hecho; los acentos en el editor funcionan. Queda
+  valgrind, opcional (ver abajo).
+- **Pasar a Qt6** (decidido, falta probarlo en Mint; ver abajo).
+- **Hecho cuando:** el IDE abre, se ven los menús, se puede abrir, editar,
+  buscar y guardar un archivo, y corre con Qt6 (o se decidió seguir con GTK2).
 
 #### Verificación de memoria y seguridad
 Free Pascal protege más que C (las cadenas se manejan solas y puede comprobar
@@ -239,10 +251,10 @@ Memoria:
 | 1 | Modo de compilación **Debug** con comprobaciones (`-Cr -Co -Ct -CR -Sa -gh -gl`) | ✅ `lazbuild --bm=Debug Source/penguin-cpp.lpi` genera `penguin-cpp-debug`: un índice fuera de rango es un error con archivo y línea, y al cerrar lista la memoria no liberada. Queda **usarlo en las primeras ejecuciones en Mint** |
 | 2 | **31 conversiones entre punteros y enteros** | ✅ Todas guardaban números (índices, PIDs), ninguna un objeto; pasaron a `PtrInt`, el entero del tamaño de un puntero |
 | 3 | **El parser de C++** con comprobaciones y entradas dañadas | ✅ Se corrigieron 4 lecturas fuera de la cadena, 3 cuelgues (macros recursivas, resultados negativos en `#if`) y una fuga en cada análisis. Con la lectura fuera de rango corregida, el parser encuentra 10 698 declaraciones en las cabeceras del sistema (se cortaba en 247). `Tests/ParserTest/fuzz.py` prueba 39 casos dañados y cientos de mutaciones; todos pasan |
-| 4 | **Conversiones de posiciones del editor** (texto ↔ pantalla) | ⏳ Mint, con el modo Debug: tabulaciones y caracteres UTF-8 de varios bytes (á, ñ, emoji) |
+| 4 | **Conversiones de posiciones del editor** (texto ↔ pantalla) | ✅ Los acentos (á, ñ) se escriben bien en Mint. Pendiente menor: pegar un emoji y moverse con las flechas a su alrededor |
 | 5 | **Hilos y su ciclo de vida** | ✅ El lector de gdb podía leer de un pipe ya liberado al cerrar el IDE o al reiniciar la depuración; ahora se espera a que termine. El monitor de archivos y los menús emergentes se revisaron y están bien. ⏳ Probar una sesión de depuración en Mint (fase 7) |
 | 6 | **Funciones que podían devolver basura** | ✅ `Templates` (borraba registros con cadenas usando `FillChar`), `FormatList`, `GetForInit` y `FormatMemory` |
-| 7 | **Fugas y errores en la parte de GTK** | ⏳ Mint: valgrind sobre una sesión corta del IDE (con la unidad `cmem`, para que valgrind vea las asignaciones) |
+| 7 | **Fugas y errores en la parte de GTK** | ⏳ Opcional, antes del `.deb`: valgrind (una herramienta que vigila cada lectura y escritura de memoria del programa) sobre una sesión corta del IDE, con la unidad `cmem` para que vea las asignaciones. heaptrc ya da 0 fugas |
 
 Seguridad:
 
@@ -266,7 +278,7 @@ Los pendientes de seguridad de otras fases están en su lugar: la instancia
 única (fase 3), los nombres de archivo en los comandos, `INTERNAL_DEL` y los
 proyectos de terceros (fase 6), y el mantenimiento de GTK2 (abajo).
 
-#### Biblioteca gráfica: GTK2 o Qt6 (pendiente)
+#### Biblioteca gráfica: GTK2 o Qt6 (decidido: Qt6, falta probarlo)
 La biblioteca gráfica es la que dibuja las ventanas, botones y menús. En
 Lazarus el código y los formularios son los mismos para todas; se elige al
 compilar (`--ws=gtk2`, `--ws=qt6`…). Cambiarla no es reescribir nada, pero sí
@@ -283,11 +295,15 @@ rarezas de cada una, así que hay que volver a probar todo.
 | Dependencia extra | Normalmente ya instalada | Ninguna | `libqt5pas` | `libqt6pas` + Qt6 |
 
 Plan:
-1. **Primera ejecución con GTK2.** Si algo falla, sabemos que es nuestro
-   código y no la biblioteca gráfica.
-2. **Justo después, compilar con Qt6** en Mint y comparar las dos versiones:
-   - `apt policy libqt6pas-dev` dice si el paquete está disponible.
-   - `lazbuild --ws=qt6 Source/penguin-cpp.lpi` compila la versión Qt6.
+1. ✅ **Primera ejecución con GTK2.** Lo que falló era de nuestro código y ya
+   está corregido.
+2. **Ahora, compilar con Qt6** en Mint y comparar las dos versiones:
+   - `apt policy libqt6pas-dev` dice si el paquete está disponible, y
+     `sudo apt install libqt6pas-dev` lo instala.
+   - `lazbuild -B --ws=qt6 Source/penguin-cpp.lpi` compila la versión Qt6
+     (`-B` vuelve a compilar todo para la otra biblioteca).
+   - Se prueba lo mismo que con GTK2: arranque, menús, barras, editor,
+     opciones, bienvenida y cerrar.
 3. **Si Qt6 funciona bien, queda como la oficial** antes de los ajustes
    visuales, los temas (fase 4b) y el `.deb`. Razones:
    - Se mantiene, y el `.deb` tiene que servir por años.
@@ -314,33 +330,35 @@ Hecho:
 - Las imágenes de los formularios venían en formato Delphi (`TPngImage`,
   iconos sin tamaño) y Lazarus no las habría cargado. Se convirtieron, y el
   verificador de formularios ahora revisa también esos datos.
+- **Esquemas de color del editor** completos: los 14 que trae (Classic,
+  Twilight, Monokai, Visual Studio Dark…) pintan todo el editor y las vistas
+  previas. El resaltador C++ de Lazarus tiene 10 atributos y el de Delphi 14,
+  así que los colores se asignaban por posición y quedaban corridos (el fondo
+  recibía los de "Number"); ahora se asignan por nombre, y la configuración
+  guardada con los colores corridos se repara sola.
+- **Iconos coloridos** (los del original): elegidos como los únicos; no hace
+  falta selector.
+- **Paleta del icono en los paneles** (`PenguinPalette.pas`): bienvenida,
+  árboles de proyecto, clases y depuración, y listas de mensajes. Si el
+  esquema del editor es oscuro, los paneles usan la versión oscura, así que
+  el tema claro u oscuro se elige con el esquema.
 
-Falta: **tema claro y tema oscuro** con los tonos del icono.
+| Color | Hex | Uso en el tema claro | Uso en el tema oscuro |
+|---|---|---|---|
+| Azul claro | `#DAEEFC` | Fondo de los paneles | Texto |
+| Azul marino | `#18395E` | Versión, enlaces, avisos "Hint" | — |
+| Tinta marina | `#092543` | Texto | Fondo de los paneles |
+| Azul medio | `#5789C2` | Atajos, selección, líneas del árbol | Igual, y los tipos del navegador de clases |
+| Amarillo | `#FDB50B` | — | Versión, enlaces, avisos "Hint", argumentos |
 
-| Color | Hex | Uso |
-|---|---|---|
-| Azul claro | `#DAEEFC` | Fondos de paneles (claro) |
-| Azul marino | `#18395E` | Barras y encabezados; base del oscuro |
-| Tinta marina | `#092543` | Texto y contornos |
-| Azul medio | `#5789C2` | Selección, acentos |
-| Amarillo | `#FDB50B` | Acento: pestaña activa, marcadores |
-| Blanco | `#FFFFFF` | Fondo del editor (claro) |
-
-- Esquemas de color del editor **"Penguin claro"** y **"Penguin oscuro"**,
-  junto a los 15 que ya trae (Classic, Monokai, Visual Studio Dark…).
-- Colores propios en los paneles del IDE: bienvenida, árbol del proyecto,
-  navegador de clases y mensajes.
-- Variante clara de las tiras de iconos para el tema oscuro.
-- Menús, botones y diálogos los dibuja la biblioteca gráfica. Con Qt6 la
-  paleta se aplica a toda la app; con GTK2 siguen el tema del escritorio
-  (o un tema GTK2 propio). Por eso los temas van después de decidir entre
-  GTK2 y Qt6 (fase 4).
-- El selector "Tema" de Opciones del entorno elige entre *Claro / Oscuro / Del
-  sistema*.
-- Se hace después de la primera ejecución en Mint: hay que ver el IDE
-  funcionando para ajustar los colores.
-- **Hecho cuando:** se cambia entre claro y oscuro desde Opciones del entorno
-  y todo el IDE (editor, paneles, iconos) se ve con la paleta.
+Falta:
+- Esquemas del editor **"Penguin claro"** y **"Penguin oscuro"** con esta
+  paleta, junto a los 14 que ya trae.
+- Menús, botones y diálogos los dibuja la biblioteca gráfica: con GTK2 siguen
+  el tema del escritorio. Con Qt6 la paleta se puede aplicar a toda la app;
+  se hace después de pasar a Qt6 (fase 4).
+- **Hecho cuando:** con un esquema claro u oscuro, todo el IDE (editor,
+  paneles, menús y diálogos) se ve con la paleta.
 
 ### Fase 5 · Editor 🔄
 Gran parte se adelantó en la fase 4:
@@ -355,9 +373,16 @@ Gran parte se adelantó en la fase 4:
   guarda en la misma codificación.
 
 Falta:
-- Probar el resaltado, el autocompletado, los tooltips y buscar/reemplazar.
+- Probar el autocompletado y los tooltips. El resaltado ya funciona.
+- **Buscar, Reemplazar e Ir a línea**: no funcionan en Mint; falta saber
+  cómo fallan (ver "Siguiente ciclo de trabajo").
 - **Plegado de código para C++**: el resaltador C++ de Lazarus no lo trae.
-- **Impresión** y exportar a RTF/TeX (la exportación a HTML sigue).
+- **Impresión**: el menú Imprimir está oculto porque el SynEdit de Lazarus no
+  trae impresión. Plan: dibujar el texto con sus colores en la impresora con
+  Printer4Lazarus, que en Linux usa CUPS (y su "Imprimir a archivo PDF"),
+  con las opciones del diálogo original (números de línea, colores,
+  ajuste de líneas).
+- Exportar a RTF/TeX (la exportación a HTML sigue).
 - **Hecho cuando:** funciona todo lo anterior, como en el original.
 
 ### Fase 6 · Compilación con el gcc de Linux ⏳
@@ -366,11 +391,33 @@ Falta:
   - Generar Makefiles con rutas POSIX.
   - Detectar `gcc`, `g++`, `clang` y `make` en el PATH.
 - Conjuntos de compilador por defecto para Linux, en lugar de los de
-  MinGW/TDM.
-- Portar `ConsolePauser` (`Source/Tools/ConsolePauser`) a POSIX.
+  MinGW/TDM. Lo que hay que cambiar (revisado en el código):
+  - Los compiladores solo se buscan en el **primer arranque**
+    (`devData.First`). Quien ya abrió el IDE tiene la lista vacía guardada:
+    hay que buscarlos también cuando la lista está vacía.
+  - `FindSets` busca una carpeta `TDM-GCC-64` junto al programa; en Linux
+    hay que buscar `gcc`/`g++` en el PATH.
+  - `Version.pas` tiene los nombres de Windows: `gcc.exe`, `g++.exe`,
+    `mingw32-make.exe`, `gdb.exe`, `gdb32.exe`, `windres.exe` y `.exe`
+    como extensión de los ejecutables.
+  - La detección lee las macros con `cpp.exe … NUL`; en Linux es
+    `cpp … /dev/null`.
+  - Validar un compilador exige `windres`, que en Linux no existe.
+  - Se crean perfiles de 32 bits (`-m32`), que en Linux necesitan paquetes
+    aparte (`gcc-multilib`): crearlos solo si están instalados.
+  - Las opciones de enlazado traen `-static-libgcc`, pensado para que los
+    `.exe` funcionaran sin las DLL de MinGW; en Linux no hace falta.
+- Portar `ConsolePauser` (`Source/Tools/ConsolePauser`) a POSIX. Hoy
+  `Compiler.pas` ejecuta `ConsolePauser.exe`.
 - Ejecutar los programas en una terminal configurable
   (`x-terminal-emulator`, `gnome-terminal`, `konsole`…).
-- Usar el AStyle y el clang-format instalados en el sistema.
+- Usar el AStyle y el clang-format instalados en el sistema (hoy busca
+  `AStyle.exe` y `clang-format.exe`).
+- Plantillas (`Templates/`, 44 archivos): las de consola, biblioteca
+  estática, OpenMP, hilos y vacía sirven en Linux. Las de Windows (WinApp,
+  DLL, Direct3D, FileEditor, MDIEditor, WinAnim, OpenGL con WinAPI) se
+  reemplazan o se adaptan; la DLL pasa a biblioteca compartida `.so`. Se
+  muestra la lista antes de borrar.
 - Revisar las rutas con `\` escritas a mano que quedan (`main.pas`,
   `Compiler.pas`, `Project.pas`, `Utils.pas`).
 - Seguridad (pendiente):
@@ -476,10 +523,8 @@ archivos con `open` en macOS), el monitor de archivos y los Makefiles.
 
 - **Identidad propia** (la GPL cubre el código, no las marcas; "Embarcadero" y
   "Delphi" son marcas registradas):
-  - El enlace "buscar actualizaciones" de *Acerca de* todavía apunta a
-    Embarcadero.
-  - Los textos de *Acerca de* todavía dicen "About Embarcadero Dev-C++" y
-    "fork by". Vienen de los archivos de idioma (`Lang/*.lng`).
+  - ✅ *Acerca de* y los archivos de idioma dicen Penguin cpp, y los enlaces
+    llevan a este repositorio.
   - `SECURITY.md` todavía es el del proyecto original (versiones 6.x y un
     contacto del equipo de Embarcadero).
 - **Limpieza**, preguntando antes de borrar:

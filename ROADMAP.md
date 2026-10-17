@@ -56,7 +56,7 @@ la GPL (ver [Licencia y créditos](#licencia-y-créditos)).
 | Lenguaje | Free Pascal 3.2.2 en `{$MODE DELPHI}`, para cambiar lo mínimo la sintaxis del código original |
 | Entorno | Lazarus 3.0, la versión que trae Linux Mint 22 / Ubuntu 24.04 |
 | Delphi | **Solo Lazarus.** El proyecto ya no compila con Delphi. Algunas unidades todavía tienen ramas `{$IFDEF FPC} … {$ELSE}` que se pueden limpiar |
-| Interfaz | LCL con **GTK2**, el widgetset por defecto de Lazarus en Linux y el más maduro. Qt5/Qt6 quedan como opción futura |
+| Interfaz | LCL con **GTK2** para la primera ejecución (el widgetset por defecto de Lazarus en Linux y el más probado). Apenas el IDE abra se prueba **Qt6**, y si funciona bien queda como el oficial (ver fase 4) |
 | Editor | SynEdit de Lazarus en lugar del SynEdit de Delphi, con una capa de compatibilidad (`SynEditCompat.pas`, `TSynEditEx` en `Editor.pas`) |
 | Iconos | Las listas SVG se renderizaron una sola vez a tiras PNG (`Source/Images/IconLists`), que se incrustan como recursos |
 | Configuración | `~/.config/penguin-cpp/` (respeta `$XDG_CONFIG_HOME`), o `config/` junto al programa en modo portable |
@@ -157,7 +157,9 @@ Se quitó todo lo que solo existe en Windows:
 - Prueba de consola `PlatformTest`.
 - Pendiente de la tabla original: **instancia única** (abrir un archivo en el
   IDE que ya está abierto). `Instances.pas` se quitó y falta reemplazarlo con
-  un socket local o similar.
+  un socket local o similar. El socket tiene que ser privado del usuario
+  (en `$XDG_RUNTIME_DIR`, permisos 0700); si no, otro usuario podría mandarle
+  archivos a abrir.
 
 ### Fase 4 · Port a Lazarus y formularios 🔄
 Hecho:
@@ -178,8 +180,72 @@ Hecho:
 Falta:
 - **Primera ejecución en Linux Mint** y corregir lo que falle al arrancar y
   al abrir cada ventana.
-- **Hecho cuando:** el IDE abre, se ven los menús y se puede abrir, editar y
-  guardar un archivo.
+- **Verificación de memoria y seguridad** (pendiente, ver abajo).
+- **Decidir la biblioteca gráfica: GTK2 o Qt6** (pendiente, ver abajo).
+- **Hecho cuando:** el IDE abre, se ven los menús, se puede abrir, editar y
+  guardar un archivo, y quedó decidida la biblioteca gráfica.
+
+#### Verificación de memoria y seguridad (pendiente)
+Free Pascal protege más que C (las cadenas se manejan solas y puede comprobar
+rangos), pero el código portado tiene puntos débiles: punteros, hilos,
+código de 64 bits y procesos externos. Lo marcado "Mac" se puede hacer sin
+interfaz gráfica; lo marcado "Mint" necesita el IDE corriendo.
+
+Memoria:
+
+| # | Qué revisar | Por qué | Dónde |
+|---|---|---|---|
+| 1 | Un modo de compilación **Debug** con comprobaciones (`-Cr -Co -Ct -CR -Sa -gh -gl`) | Hoy se compila sin comprobaciones: un índice fuera de rango lee memoria ajena en silencio. Con `-Cr` se vuelve un error con archivo y línea; `-gh` lista las fugas de memoria al cerrar | Crear: Mac. Usar en las primeras ejecuciones: Mint |
+| 2 | **31 conversiones entre punteros y enteros** (15 en `main.pas`, 6 en `Project.pas`, 5 en `ProjectOptionsFrm.pas`, 3 en `NewProjectFrm.pas`, 1 en `CompOptionsFrame.pas`, 1 en `EditorList.pas`) | La mayoría guardan un índice en `Node.Data`, y eso es seguro. Si alguna guarda un objeto en un `Integer`, en 64 bits el puntero se corta a la mitad y el programa se cae | Mac |
+| 3 | **El parser de C++ con punteros crudos** (cientos de usos de `PChar` y `^`) | Analiza cualquier archivo que se abra, con sus cabeceras. Hay que correr `ParserTest` con comprobaciones y con entradas dañadas: binarios, comentarios sin cerrar, `#include` que se incluyen a sí mismos, macros recursivas, líneas enormes | Mac |
+| 4 | **Conversiones de posiciones del editor** (texto ↔ pantalla) | Con tabulaciones y caracteres UTF-8 de varios bytes (á, ñ, emoji) puede haber errores de uno; el modo Debug los atrapa | Mint |
+| 5 | **Hilos y su ciclo de vida** | El lector de gdb lee del pipe del proceso: el hilo debe terminar antes de liberar el proceso. También el monitor de archivos y los ítems sustitutos de los menús emergentes | Revisión: Mac. Prueba: Mint |
+| 6 | **Funciones que pueden devolver basura** | El compilador avisa de resultados sin asignar (`devCFG.pas` líneas 2756 y 2897) y sin inicializar (`Utils.pas` 764, `Templates.pas` 230 y 287) | Mac |
+| 7 | **Fugas y errores en la parte de GTK** | valgrind sobre una sesión corta del IDE (con la unidad `cmem`, para que valgrind vea las asignaciones) | Mint |
+
+Seguridad:
+
+| # | Qué revisar | Por qué | Dónde |
+|---|---|---|---|
+| 1 | **Archivo temporal con nombre fijo**: la vista previa de los formateadores escribe `/tmp/DummyInput.txt` | En `/tmp`, otro usuario puede crear antes ese nombre como enlace y hacer que se sobrescriba un archivo tuyo. Hay que usar un nombre único o una carpeta privada (`~/.cache/penguin-cpp`) | Mac |
+| 2 | **Cómo se lanzan los programas** | Hoy ningún comando pasa por `/bin/sh`: todo usa `TProcess` con argumentos, y hay que mantenerlo así. Probar nombres de archivo con espacios, comillas, `$`, `;` y saltos de línea | Mac + Mint |
+
+Los pendientes de seguridad de otras fases están en su lugar: la instancia
+única (fase 3), `INTERNAL_DEL` y los proyectos de terceros (fase 6), y el
+mantenimiento de GTK2 (abajo).
+
+#### Biblioteca gráfica: GTK2 o Qt6 (pendiente)
+La biblioteca gráfica es la que dibuja las ventanas, botones y menús. En
+Lazarus el código y los formularios son los mismos para todas; se elige al
+compilar (`--ws=gtk2`, `--ws=qt6`…). Cambiarla no es reescribir nada, pero sí
+cambia las dependencias del `.deb`, algunos tamaños de los controles y las
+rarezas de cada una, así que hay que volver a probar todo.
+
+| | GTK2 (hoy) | GTK3 | Qt5 | Qt6 |
+|---|---|---|---|---|
+| Estado en Lazarus | El más probado | Verde en 3.0; mejor en 4.x, con detalles | Maduro | Maduro (comparte código con Qt5) |
+| Mantenimiento de la biblioteca | Abandonada desde 2020 (sigue funcionando y viene en Mint 22) | Mantenida | Sin soporte libre desde 2023; las distribuciones la parchean | Activa |
+| Wayland | Solo a través de XWayland | Nativo | Nativo | Nativo |
+| Pantallas HiDPI | Pobre | Bien | Bien | La mejor |
+| Temas con la paleta del icono | Formato viejo (`gtkrc`); depende del tema del escritorio | Lazarus lo expone poco | Paleta y hojas de estilo para toda la app | Igual que Qt5 |
+| Dependencia extra | Normalmente ya instalada | Ninguna | `libqt5pas` | `libqt6pas` + Qt6 |
+
+Plan:
+1. **Primera ejecución con GTK2.** Si algo falla, sabemos que es nuestro
+   código y no la biblioteca gráfica.
+2. **Justo después, compilar con Qt6** en Mint y comparar las dos versiones:
+   - `apt policy libqt6pas-dev` dice si el paquete está disponible.
+   - `lazbuild --ws=qt6 Source/penguin-cpp.lpi` compila la versión Qt6.
+3. **Si Qt6 funciona bien, queda como la oficial** antes de los ajustes
+   visuales, los temas (fase 4b) y el `.deb`. Razones:
+   - Se mantiene, y el `.deb` tiene que servir por años.
+   - Funciona nativo en Wayland y en pantallas HiDPI.
+   - Permite aplicar la paleta de Penguin cpp a toda la app, igual en
+     cualquier escritorio.
+4. **Si no, se queda GTK2** (o Qt5 como alternativa), y se vuelve a evaluar
+   más adelante.
+
+GTK3 no se recomienda todavía en Lazarus.
 
 ### Fase 4b · Identidad visual y temas 🔄
 Hecho:
@@ -213,8 +279,10 @@ Falta: **tema claro y tema oscuro** con los tonos del icono.
 - Colores propios en los paneles del IDE: bienvenida, árbol del proyecto,
   navegador de clases y mensajes.
 - Variante clara de las tiras de iconos para el tema oscuro.
-- Menús, botones y diálogos los dibuja GTK: por defecto siguen el tema del
-  escritorio. Como opción se puede cargar un tema GTK2 propio con esta paleta.
+- Menús, botones y diálogos los dibuja la biblioteca gráfica. Con Qt6 la
+  paleta se aplica a toda la app; con GTK2 siguen el tema del escritorio
+  (o un tema GTK2 propio). Por eso los temas van después de decidir entre
+  GTK2 y Qt6 (fase 4).
 - El selector "Tema" de Opciones del entorno elige entre *Claro / Oscuro / Del
   sistema*.
 - Se hace después de la primera ejecución en Mint: hay que ver el IDE
@@ -253,6 +321,14 @@ Falta:
 - Usar el AStyle y el clang-format instalados en el sistema.
 - Revisar las rutas con `\` escritas a mano que quedan (`main.pas`,
   `Compiler.pas`, `Project.pas`, `Utils.pas`).
+- Seguridad (pendiente):
+  - **`INTERNAL_DEL`:** hoy el ejecutable borra los archivos que le pasen (lo
+    usa `make clean`). Solo borra los que se le indican, sin comodines ni
+    carpetas. Reemplazarlo por `rm -f` en los Makefiles y quitar ese modo.
+  - **Proyectos de terceros (`.dev`):** un proyecto puede traer su propio
+    Makefile y opciones de compilación, y compilarlo es ejecutar lo que
+    diga. Pasa en cualquier IDE, pero conviene avisar al abrir un proyecto
+    ajeno que use Makefile propio.
 - **Hecho cuando:** se compila y ejecuta un proyecto de consola y uno de
   varios archivos, y los errores del compilador aparecen en la lista y se
   pueden clicar.

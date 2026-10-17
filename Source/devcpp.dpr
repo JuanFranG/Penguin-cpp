@@ -86,7 +86,6 @@ uses
   ImageTheme in 'ImageTheme.pas',
   Instances in 'Instances.pas',
   CharUtils in 'CharUtils.pas',
-  ConsoleAppHostFrm in 'ConsoleAppHostFrm.pas' {ConsoleAppHost},
   AStyleFormatterOptionsFrm in 'AStyleFormatterOptionsFrm.pas' {AStyleFormatterOptionsForm},
   ClangFormatterOptionsFrm in 'ClangFormatterOptionsFrm.pas' {ClangFormatterOptionsForm};
 

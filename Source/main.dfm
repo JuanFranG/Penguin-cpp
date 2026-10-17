@@ -187,7 +187,7 @@ object MainForm: TMainForm
     Top = 500
     Width = 1285
     Height = 169
-    ActivePage = tsConsole
+    ActivePage = CompSheet
     Align = alBottom
     Images = dmMain.MenuImages_NewLook
     MultiLine = True
@@ -556,84 +556,6 @@ object MainForm: TMainForm
         OnDeletion = FindOutputDeletion
         OnKeyDown = FindOutputKeyDown
         OnSelectItem = FindOutputSelectItem
-      end
-    end
-    object tsConsole: TTabSheet
-      Caption = 'Console'
-      Highlighted = True
-      ImageIndex = 5
-      object pcConsoleHost: TPageControl
-        Left = 33
-        Top = 0
-        Width = 1244
-        Height = 135
-        Align = alClient
-        MultiLine = True
-        PopupMenu = ConsolePopupMenu
-        Style = tsButtons
-        TabOrder = 0
-      end
-      object ConsolePanel: TPanel
-        Left = 0
-        Top = 0
-        Width = 33
-        Height = 135
-        Align = alLeft
-        BevelOuter = bvNone
-        TabOrder = 1
-        object CMDSpeedButton: TSpeedButton
-          Left = 0
-          Top = 0
-          Width = 33
-          Height = 33
-          Action = actCMD
-          Align = alTop
-        end
-        object PSSpeedButton: TSpeedButton
-          Left = 0
-          Top = 33
-          Width = 33
-          Height = 33
-          Action = actPowerShell
-          Align = alTop
-          ExplicitLeft = 7
-          ExplicitTop = 64
-        end
-        object G1SpeedButton: TSpeedButton
-          Tag = 1
-          Left = 0
-          Top = 66
-          Width = 33
-          Height = 33
-          Action = actGeneric1CMD
-          Align = alTop
-          PopupMenu = GenericCMDPopupMenu
-          ExplicitLeft = 7
-          ExplicitTop = 105
-        end
-        object G2SpeedButton: TSpeedButton
-          Tag = 2
-          Left = 0
-          Top = 99
-          Width = 33
-          Height = 33
-          Action = actGeneric2CMD
-          Align = alTop
-          PopupMenu = GenericCMDPopupMenu
-          ExplicitLeft = -6
-          ExplicitTop = 92
-        end
-        object G3SpeedButton: TSpeedButton
-          Tag = 3
-          Left = 0
-          Top = 132
-          Width = 33
-          Height = 33
-          Action = actGeneric3CMD
-          Align = alTop
-          PopupMenu = GenericCMDPopupMenu
-          ExplicitTop = 131
-        end
       end
     end
     object CloseSheet: TTabSheet
@@ -6445,38 +6367,6 @@ object MainForm: TMainForm
       Caption = 'Donate :)'
       ImageIndex = 41
     end
-    object actCMD: TAction
-      Caption = 'CMD'
-      Hint = 'CMD'
-      OnExecute = actCMDExecute
-    end
-    object actPowerShell: TAction
-      Caption = 'PS'
-      Hint = 'PowerShell'
-      OnExecute = actPowerShellExecute
-    end
-    object actConsoleClose: TAction
-      Caption = 'Close'
-      OnExecute = actConsoleCloseExecute
-    end
-    object actGeneric1CMD: TAction
-      Tag = 1
-      Caption = '$1'
-      OnExecute = actGeneric1CMDExecute
-    end
-    object actGeneric2CMD: TAction
-      Tag = 2
-      Caption = '$2'
-      OnExecute = actGeneric2CMDExecute
-    end
-    object actGeneric3CMD: TAction
-      Tag = 3
-      Caption = '$3'
-      OnExecute = actGeneric3CMDExecute
-    end
-    object actGenericSet: TAction
-      Caption = 'Set'
-    end
     object actAStyleFormatCurrentFile: TAction
       Category = 'Format'
       Caption = '&Format Current File'
@@ -6672,26 +6562,5 @@ object MainForm: TMainForm
   object PopupMenu1: TPopupMenu
     Left = 476
     Top = 126
-  end
-  object ConsolePopupMenu: TPopupMenu
-    Left = 76
-    Top = 323
-    object CloseCMDMNU: TMenuItem
-      Action = actConsoleClose
-    end
-  end
-  object OpenConsoleDialog: TOpenDialog
-    DefaultExt = 'exe'
-    Filter = 'Executables (*.exe)|*.EXE'
-    Left = 60
-    Top = 275
-  end
-  object GenericCMDPopupMenu: TPopupMenu
-    Left = 76
-    Top = 379
-    object SetCMDMNU: TMenuItem
-      Caption = 'Set'
-      OnClick = SetCMDMNUClick
-    end
   end
 end

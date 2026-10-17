@@ -260,9 +260,6 @@
         <DCCReference Include="ImageTheme.pas"/>
         <DCCReference Include="Instances.pas"/>
         <DCCReference Include="CharUtils.pas"/>
-        <DCCReference Include="ConsoleAppHostFrm.pas">
-            <Form>ConsoleAppHost</Form>
-        </DCCReference>
         <DCCReference Include="AStyleFormatterOptionsFrm.pas">
             <Form>AStyleFormatterOptionsForm</Form>
             <FormType>dfm</FormType>

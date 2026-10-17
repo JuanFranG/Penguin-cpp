@@ -159,12 +159,19 @@ begin
   devEditor.AssignEditor(synExample, 'main.cpp');
 
   // Font options
-  cmbFont.Items.Assign(Screen.Fonts);
+  GetMonospaceFonts(cmbFont.Items);
   FontIndex := cmbFont.Items.IndexOf('Source Code Pro');
   if FontIndex = -1 then
     FontIndex := cmbFont.Items.IndexOf('Consolas');
   if FontIndex = -1 then
     FontIndex := cmbFont.Items.IndexOf('Courier');
+  // usual monospaced fonts on Linux
+  if FontIndex = -1 then
+    FontIndex := cmbFont.Items.IndexOf('DejaVu Sans Mono');
+  if FontIndex = -1 then
+    FontIndex := cmbFont.Items.IndexOf('Liberation Mono');
+  if FontIndex = -1 then
+    FontIndex := cmbFont.Items.IndexOf('Ubuntu Mono');
   cmbFont.ItemIndex := FontIndex; // set ItemIndex once
 
   // Populate language list

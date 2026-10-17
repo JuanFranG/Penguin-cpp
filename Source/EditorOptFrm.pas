@@ -521,7 +521,7 @@ end;
 procedure TEditorOptForm.LoadFonts;
 begin
   // Sum up all the available fonts
-  cboEditorFont.Items.Assign(Screen.Fonts);
+  GetMonospaceFonts(cboEditorFont.Items);
   cboGutterFont.Items := cboEditorFont.Items;
 
   cbLineNumClick(nil);

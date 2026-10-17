@@ -79,6 +79,11 @@ function ExpandFileto(const FileName, BasePath: String): String;
 function FileSamePath(const FileName, TestPath: String): boolean;
 procedure CloneMenu(FromMenu, ToMenu: TMenuItem);
 
+// The installed fonts whose characters all have the same width, for the editor.
+// Screen.Fonts also lists proportional and symbol fonts; on Linux there are
+// hundreds, and the GTK2 drop-down shows them all at once.
+procedure GetMonospaceFonts(List: TStrings);
+
 function FindComplement(const s: String; fromtoken, totoken: char; var curpos: integer; increment: integer):
   boolean;
 
@@ -818,6 +823,28 @@ begin
     result := TRUE
   else if (s1 = '') then
     result := FileExists(s2 + FileName);
+end;
+
+procedure GetMonospaceFonts(List: TStrings);
+var
+  Bmp: TBitmap;
+  I: Integer;
+begin
+  List.Clear;
+  Bmp := TBitmap.Create;
+  try
+    for I := 0 to Screen.Fonts.Count - 1 do begin
+      Bmp.Canvas.Font.Name := Screen.Fonts[I];
+      Bmp.Canvas.Font.Size := 12;
+      if (Bmp.Canvas.TextWidth('iiiiii') > 0) and
+        (Bmp.Canvas.TextWidth('iiiiii') = Bmp.Canvas.TextWidth('WWWWWW')) then
+        List.Add(Screen.Fonts[I]);
+    end;
+  finally
+    Bmp.Free;
+  end;
+  if List.Count = 0 then // could not measure: offer everything
+    List.Assign(Screen.Fonts);
 end;
 
 procedure CloneMenu(FromMenu, ToMenu: TMenuItem);

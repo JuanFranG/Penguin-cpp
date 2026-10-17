@@ -1,0 +1,18 @@
+[Template]
+ver=1
+Name=Hello World
+Icon=Communication.ico
+svg=Communication.svg
+Description=A classic Hello World program
+Category=Console
+
+[Unit0]
+CName=main.c
+CppName=main.cpp
+C=Hello_c.txt
+Cpp=Hello_cpp.txt
+
+[Project]
+UnitCount=1
+Type=1
+Icon=Communication.ico

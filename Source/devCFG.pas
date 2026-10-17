@@ -967,7 +967,7 @@ begin
   fdblFiles := FALSE;
   fConsolePause := TRUE;
   fShortenCompPaths := False;
-  fStyle := 0;
+  fStyle := 1; // the flat icon set (the old one is style 0); themes come in phase 4b
   fTheme := 'NewLook';
 
   // TODO: retrieve directly from visual editor
@@ -2541,6 +2541,7 @@ begin
 
       // Set selection color
       if Assigned(Highlighter) then begin
+        pt := Point(clNavy, clWhite); // StrtoPoint leaves pt as is when the value is missing
         StrtoPoint(pt, devEditor.Syntax.Values[cSel]);
         SelectedColor.Background := pt.X;
         SelectedColor.Foreground := pt.Y;
@@ -2567,6 +2568,7 @@ begin
       Gutter.RightOffset := 21;
       ApplyGutter(Editor, fShowGutter, fGutterAuto, fLineNumbers, fLeadZero, fFirstisZero, fGutterSize);
       if Assigned(Highlighter) then begin
+        pt := Point(clBtnFace, clBlack);
         StrtoPoint(pt, fSyntax.Values[cGut]);
         SetGutterColors(Editor, pt.x, pt.y);
       end else // editor not colored, pick defaults

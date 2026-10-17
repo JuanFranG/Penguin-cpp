@@ -205,10 +205,11 @@ var
   a,
     idx: integer;
 begin
-  // Settings saved while the color schemes could not be read (before ColorSchemes)
-  // have empty colors: everything black. Start over from the Classic scheme.
-  if (devEditor.Syntax.IndexOfName(cGut) <> -1) and (Trim(devEditor.Syntax.Values[cGut]) = '') then
-    InitHighlighterFirstTime(0);
+  // No scheme yet (before the first time configuration), or settings saved
+  // while the color schemes could not be read (empty colors, everything
+  // black): use Classic Plus, the first time configuration's default
+  if Trim(devEditor.Syntax.Values[cGut]) = '' then
+    InitHighlighterFirstTime(1);
 
   for idx := 0 to pred(cpp.AttrCount) do begin
     aName := cpp.Attribute[idx].Name;

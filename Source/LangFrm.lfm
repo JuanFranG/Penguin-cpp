@@ -163,6 +163,7 @@ object LangForm: TLangForm
       Caption = 'Select your theme:'
       TabOrder = 0
       object lblTheme: TLabel
+        Visible = False
         Left = 8
         Top = 104
         Width = 39
@@ -191,6 +192,7 @@ object LangForm: TLangForm
         Height = 103
       end
       object cmbTheme: TComboBox
+        Visible = False
         Left = 56
         Top = 102
         Width = 201

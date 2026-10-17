@@ -1,14 +1,8 @@
 object dmMain: TdmMain
-  OldCreateOrder = False
   OnCreate = DataModuleCreate
   OnDestroy = DataModuleDestroy
-  Height = 354
-  Width = 488
   object Cpp: TSynCppSyn
     DefaultFilter = 'C++ files (*.cpp,*.h,*.hpp)|*.cpp;*.h;*.hpp'
-    Options.AutoDetectEnabled = False
-    Options.AutoDetectLineLimit = 0
-    Options.Visible = False
     AsmAttri.Foreground = clBlue
     CommentAttri.Foreground = clHighlight
     DirecAttri.Foreground = clGreen

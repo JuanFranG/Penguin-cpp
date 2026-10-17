@@ -7,7 +7,6 @@ object FindForm: TFindForm
   ClientHeight = 330
   ClientWidth = 330
   Color = clWindow
-  Ctl3D = False
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
@@ -15,18 +14,13 @@ object FindForm: TFindForm
   Font.Style = []
   FormStyle = fsStayOnTop
   KeyPreview = True
-  OldCreateOrder = False
   PopupMenu = FindPopup
   Position = poMainFormCenter
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnShow = FormShow
-  DesignSize = (
-    330
-    330)
   PixelsPerInch = 96
-  TextHeight = 13
   object btnExecute: TButton
     Left = 8
     Top = 300

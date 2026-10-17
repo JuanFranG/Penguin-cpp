@@ -6,17 +6,14 @@ object NewTemplateForm: TNewTemplateForm
   ClientHeight = 321
   ClientWidth = 358
   Color = clWindow
-  Ctl3D = False
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = []
-  OldCreateOrder = False
   Position = poMainFormCenter
   OnShow = FormShow
   PixelsPerInch = 96
-  TextHeight = 13
   object devPages1: TPageControl
     Left = 0
     Top = 0
@@ -105,7 +102,6 @@ object NewTemplateForm: TNewTemplateForm
           Hint = 'Select a icon from Embarcadero Dev-C++'#39's icon collection'
           Caption = 'Library'
           ImageIndex = 63
-          ImageName = 'iconsnew-69'
           Images = dmMain.SVGImageListMenuStyle
           NumGlyphs = 2
           TabOrder = 1
@@ -119,7 +115,6 @@ object NewTemplateForm: TNewTemplateForm
           Hint = 'Select a custom icon'
           Caption = 'Browse...'
           ImageIndex = 61
-          ImageName = 'iconsnew-67'
           Images = dmMain.SVGImageListMenuStyle
           NumGlyphs = 2
           TabOrder = 2
@@ -134,7 +129,6 @@ object NewTemplateForm: TNewTemplateForm
           Caption = 'Remove'
           Enabled = False
           ImageIndex = 5
-          ImageName = 'iconsnew-31'
           Images = dmMain.SVGImageListMenuStyle
           TabOrder = 3
           OnClick = btnRemoveClick

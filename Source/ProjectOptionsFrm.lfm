@@ -7,18 +7,15 @@ object ProjectOptionsFrm: TProjectOptionsFrm
   ClientHeight = 382
   ClientWidth = 534
   Color = clWindow
-  Ctl3D = False
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -12
   Font.Name = 'Segoe UI'
   Font.Style = []
-  OldCreateOrder = False
   Position = poMainFormCenter
   OnClose = FormClose
   OnCreate = FormCreate
   PixelsPerInch = 96
-  TextHeight = 15
   object btnOk: TBitBtn
     Left = 260
     Top = 350
@@ -128,11 +125,8 @@ object ProjectOptionsFrm: TProjectOptionsFrm
           Hint = 'Select a custom icon'
           Caption = 'Browse...'
           ImageIndex = 59
-          ImageName = 'iconsnew-65'
           Images = dmMain.SVGImageListMenuStyle
           TabOrder = 0
-          WordWrap = True
-          StyleElements = [seFont, seClient]
           OnClick = btnIconBrowseClick
         end
         object btnIconLib: TBitBtn
@@ -143,7 +137,6 @@ object ProjectOptionsFrm: TProjectOptionsFrm
           Hint = 'Select a icon from Dev-C++'#39's icon collection'
           Caption = 'Library'
           ImageIndex = 58
-          ImageName = 'iconsnew-64'
           Images = dmMain.SVGImageListMenuStyle
           TabOrder = 1
           OnClick = btnIconLibClick
@@ -157,7 +150,6 @@ object ProjectOptionsFrm: TProjectOptionsFrm
           Caption = 'Remove'
           Enabled = False
           ImageIndex = 5
-          ImageName = 'iconsnew-31'
           Images = dmMain.SVGImageListMenuStyle
           TabOrder = 2
           OnClick = btnRemoveIconClick
@@ -231,10 +223,6 @@ object ProjectOptionsFrm: TProjectOptionsFrm
     end
     object tabFiles: TTabSheet
       Caption = 'Files'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object lvFiles: TTreeView
         Left = 8
         Top = 8
@@ -380,24 +368,14 @@ object ProjectOptionsFrm: TProjectOptionsFrm
         HorzScrollBar.Visible = False
         VertScrollBar.Visible = False
         TabOrder = 0
-        ExplicitTop = 78
-        ExplicitWidth = 526
-        ExplicitHeight = 187
         inherited tabs: TTabControl
           Width = 526
           Height = 187
-          ExplicitWidth = 526
-          ExplicitHeight = 187
           inherited vle: TCompOptionsList
             Width = 518
             Height = 177
             DefaultColWidth = 215
             ParentShowHint = False
-            ExplicitWidth = 518
-            ExplicitHeight = 177
-            ColWidths = (
-              215
-              215)
           end
         end
       end
@@ -413,10 +391,6 @@ object ProjectOptionsFrm: TProjectOptionsFrm
     end
     object tabCompOpts: TTabSheet
       Caption = 'Options'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object lblAdditions: TLabel
         Left = 6
         Top = 6
@@ -483,7 +457,6 @@ object ProjectOptionsFrm: TProjectOptionsFrm
         Height = 30
         Caption = 'Add Library or Object'
         ImageIndex = 59
-        ImageName = 'iconsnew-65'
         Images = dmMain.SVGImageListMenuStyle
         TabOrder = 3
         OnClick = btnAddLibClick
@@ -491,10 +464,6 @@ object ProjectOptionsFrm: TProjectOptionsFrm
     end
     object tabFilesDir: TTabSheet
       Caption = 'Directories'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object SubTabs: TTabControl
         Left = 0
         Top = 0
@@ -514,7 +483,6 @@ object ProjectOptionsFrm: TProjectOptionsFrm
           Width = 23
           Height = 22
           ImageIndex = 57
-          ImageName = 'iconsnew-53'
           Images = dmMain.SVGImageListMenuStyle
           Enabled = False
           Flat = True
@@ -526,7 +494,6 @@ object ProjectOptionsFrm: TProjectOptionsFrm
           Width = 23
           Height = 22
           ImageIndex = 56
-          ImageName = 'iconsnew-52'
           Images = dmMain.SVGImageListMenuStyle
           Enabled = False
           Flat = True
@@ -538,7 +505,6 @@ object ProjectOptionsFrm: TProjectOptionsFrm
           Width = 23
           Height = 22
           ImageIndex = 59
-          ImageName = 'iconsnew-65'
           Images = dmMain.SVGImageListMenuStyle
           Flat = True
           OnClick = BrowseClick
@@ -607,10 +573,6 @@ object ProjectOptionsFrm: TProjectOptionsFrm
     end
     object tabOutputDir: TTabSheet
       Caption = 'Output'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object lblOverrideOutput: TLabel
         Left = 10
         Top = 234
@@ -624,7 +586,6 @@ object ProjectOptionsFrm: TProjectOptionsFrm
         Width = 23
         Height = 22
         ImageIndex = 59
-        ImageName = 'iconsnew-65'
         Images = dmMain.SVGImageListMenuStyle
         Flat = True
         OnClick = BrowseExecutableOutDirClick
@@ -635,7 +596,6 @@ object ProjectOptionsFrm: TProjectOptionsFrm
         Width = 23
         Height = 22
         ImageIndex = 59
-        ImageName = 'iconsnew-65'
         Images = dmMain.SVGImageListMenuStyle
         Flat = True
         OnClick = btnLogOutputDirClick
@@ -646,7 +606,6 @@ object ProjectOptionsFrm: TProjectOptionsFrm
         Width = 23
         Height = 22
         ImageIndex = 59
-        ImageName = 'iconsnew-65'
         Images = dmMain.SVGImageListMenuStyle
         Flat = True
         OnClick = BrowseLogDirClick
@@ -722,17 +681,12 @@ object ProjectOptionsFrm: TProjectOptionsFrm
     end
     object tabMakefile: TTabSheet
       Caption = 'Makefile'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object btnCustomMakeBrowse: TSpeedButton
         Left = 490
         Top = 54
         Width = 23
         Height = 22
         ImageIndex = 59
-        ImageName = 'iconsnew-65'
         Images = dmMain.SVGImageListMenuStyle
         Flat = True
         OnClick = btnCustomMakeBrowseClick
@@ -743,7 +697,6 @@ object ProjectOptionsFrm: TProjectOptionsFrm
         Width = 23
         Height = 22
         ImageIndex = 57
-        ImageName = 'iconsnew-53'
         Images = dmMain.SVGImageListMenuStyle
         Enabled = False
         Flat = True
@@ -755,7 +708,6 @@ object ProjectOptionsFrm: TProjectOptionsFrm
         Width = 23
         Height = 22
         ImageIndex = 59
-        ImageName = 'iconsnew-65'
         Images = dmMain.SVGImageListMenuStyle
         Flat = True
         OnClick = btnMakeBrowseClick
@@ -766,7 +718,6 @@ object ProjectOptionsFrm: TProjectOptionsFrm
         Width = 23
         Height = 22
         ImageIndex = 56
-        ImageName = 'iconsnew-52'
         Images = dmMain.SVGImageListMenuStyle
         Enabled = False
         Flat = True
@@ -786,7 +737,6 @@ object ProjectOptionsFrm: TProjectOptionsFrm
         Height = 25
         Caption = 'Information about customizing the Makefile...'
         ImageIndex = 46
-        ImageName = 'iconsnew-29'
         Images = dmMain.SVGImageListMenuStyle
         Flat = True
         NumGlyphs = 2
@@ -979,9 +929,6 @@ object ProjectOptionsFrm: TProjectOptionsFrm
           FixedCols = 1
           Options = [goVertLine, goHorzLine, goColSizing, goEditing, goAlwaysShowEditor, goThumbTracking]
           TabOrder = 7
-          ColWidths = (
-            150
-            323)
         end
         object cmbLangID: TComboBox
           Left = 280

@@ -6,23 +6,17 @@ object CompOptForm: TCompOptForm
   ClientHeight = 512
   ClientWidth = 484
   Color = clWindow
-  Ctl3D = False
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -12
   Font.Name = 'Segoe UI'
   Font.Style = []
-  OldCreateOrder = False
   Position = poMainFormCenter
   ShowHint = True
   OnClose = FormClose
   OnCreate = FormCreate
   OnShow = InterfaceSave
-  DesignSize = (
-    484
-    512)
   PixelsPerInch = 96
-  TextHeight = 15
   object btnOk: TBitBtn
     Left = 210
     Top = 480
@@ -69,13 +63,6 @@ object CompOptForm: TCompOptForm
     TabOrder = 0
     object tabCompiler: TTabSheet
       Caption = 'General'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
-      DesignSize = (
-        476
-        375)
       object cbCompAdd: TCheckBox
         Left = 10
         Top = 6
@@ -83,8 +70,6 @@ object CompOptForm: TCompOptForm
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Add the following commands when calling the compiler:'
-        Ctl3D = False
-        ParentCtl3D = False
         TabOrder = 0
         OnClick = cbCompAddClick
       end
@@ -94,8 +79,6 @@ object CompOptForm: TCompOptForm
         Width = 443
         Height = 150
         Anchors = []
-        Ctl3D = False
-        ParentCtl3D = False
         ScrollBars = ssVertical
         TabOrder = 1
         WantReturns = False
@@ -108,8 +91,6 @@ object CompOptForm: TCompOptForm
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Add these commands to the linker command line'
-        Ctl3D = False
-        ParentCtl3D = False
         TabOrder = 2
         OnClick = cbLinkerAddClick
       end
@@ -119,8 +100,6 @@ object CompOptForm: TCompOptForm
         Width = 443
         Height = 150
         Anchors = []
-        Ctl3D = False
-        ParentCtl3D = False
         ScrollBars = ssVertical
         TabOrder = 3
         WantReturns = False
@@ -165,28 +144,18 @@ object CompOptForm: TCompOptForm
         HorzScrollBar.Visible = False
         VertScrollBar.Visible = False
         TabOrder = 0
-        ExplicitWidth = 476
-        ExplicitHeight = 333
         inherited tabs: TTabControl
           Width = 476
           Height = 333
-          ExplicitWidth = 476
-          ExplicitHeight = 333
           inherited vle: TCompOptionsList
             Width = 468
             Height = 323
-            ExplicitWidth = 468
-            ExplicitHeight = 323
           end
         end
       end
     end
     object tabDirectories: TTabSheet
       Caption = 'Directories'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object DirTabs: TTabControl
         Left = 0
         Top = 0
@@ -201,9 +170,6 @@ object CompOptForm: TCompOptForm
           'C++ Includes')
         TabIndex = 0
         OnChange = DirTabsChange
-        DesignSize = (
-          476
-          375)
         object btnUp: TSpeedButton
           Left = 445
           Top = 140
@@ -211,7 +177,6 @@ object CompOptForm: TCompOptForm
           Height = 22
           Anchors = [akRight, akBottom]
           ImageIndex = 56
-          ImageName = 'iconsnew-52'
           Images = dmMain.SVGImageListMenuStyle
           Enabled = False
           Flat = True
@@ -224,7 +189,6 @@ object CompOptForm: TCompOptForm
           Height = 22
           Anchors = [akRight, akBottom]
           ImageIndex = 57
-          ImageName = 'iconsnew-53'
           Images = dmMain.SVGImageListMenuStyle
           Enabled = False
           Flat = True
@@ -236,7 +200,6 @@ object CompOptForm: TCompOptForm
           Width = 23
           Height = 22
           ImageIndex = 59
-          ImageName = 'iconsnew-65'
           Images = dmMain.SVGImageListMenuStyle
           Flat = True
           OnClick = btnBrowseClick
@@ -246,9 +209,7 @@ object CompOptForm: TCompOptForm
           Top = 26
           Width = 435
           Height = 280
-          Ctl3D = False
           ItemHeight = 15
-          ParentCtl3D = False
           ScrollWidth = 600
           TabOrder = 0
           OnClick = lstDirsClick
@@ -260,8 +221,6 @@ object CompOptForm: TCompOptForm
           Width = 435
           Height = 21
           Anchors = [akLeft, akRight, akBottom]
-          Ctl3D = False
-          ParentCtl3D = False
           TabOrder = 1
           OnChange = edEntryChange
           OnKeyUp = edEntryKeyUp
@@ -317,10 +276,6 @@ object CompOptForm: TCompOptForm
     end
     object tabPrograms: TTabSheet
       Caption = 'Programs'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object lblProgramsText: TLabel
         Left = 24
         Top = 16
@@ -380,7 +335,6 @@ object CompOptForm: TCompOptForm
         Width = 23
         Height = 22
         ImageIndex = 59
-        ImageName = 'iconsnew-65'
         Images = dmMain.SVGImageListMenuStyle
         Flat = True
         OnClick = btnBrws1Click
@@ -392,7 +346,6 @@ object CompOptForm: TCompOptForm
         Width = 23
         Height = 22
         ImageIndex = 59
-        ImageName = 'iconsnew-65'
         Images = dmMain.SVGImageListMenuStyle
         Flat = True
         OnClick = btnBrws1Click
@@ -404,7 +357,6 @@ object CompOptForm: TCompOptForm
         Width = 23
         Height = 22
         ImageIndex = 59
-        ImageName = 'iconsnew-65'
         Images = dmMain.SVGImageListMenuStyle
         Flat = True
         OnClick = btnBrws1Click
@@ -416,7 +368,6 @@ object CompOptForm: TCompOptForm
         Width = 23
         Height = 22
         ImageIndex = 59
-        ImageName = 'iconsnew-65'
         Images = dmMain.SVGImageListMenuStyle
         Flat = True
         OnClick = btnBrws1Click
@@ -428,7 +379,6 @@ object CompOptForm: TCompOptForm
         Width = 23
         Height = 22
         ImageIndex = 59
-        ImageName = 'iconsnew-65'
         Images = dmMain.SVGImageListMenuStyle
         Flat = True
         OnClick = btnBrws1Click
@@ -440,7 +390,6 @@ object CompOptForm: TCompOptForm
         Width = 23
         Height = 22
         ImageIndex = 59
-        ImageName = 'iconsnew-65'
         Images = dmMain.SVGImageListMenuStyle
         Flat = True
         OnClick = btnBrws1Click
@@ -450,8 +399,6 @@ object CompOptForm: TCompOptForm
         Top = 68
         Width = 329
         Height = 21
-        Ctl3D = False
-        ParentCtl3D = False
         TabOrder = 0
         OnChange = InterfaceChange
       end
@@ -460,8 +407,6 @@ object CompOptForm: TCompOptForm
         Top = 112
         Width = 329
         Height = 21
-        Ctl3D = False
-        ParentCtl3D = False
         TabOrder = 1
         OnChange = InterfaceChange
       end
@@ -470,8 +415,6 @@ object CompOptForm: TCompOptForm
         Top = 156
         Width = 329
         Height = 21
-        Ctl3D = False
-        ParentCtl3D = False
         TabOrder = 2
         OnChange = InterfaceChange
       end
@@ -480,8 +423,6 @@ object CompOptForm: TCompOptForm
         Top = 200
         Width = 329
         Height = 21
-        Ctl3D = False
-        ParentCtl3D = False
         TabOrder = 3
         OnChange = InterfaceChange
       end
@@ -490,8 +431,6 @@ object CompOptForm: TCompOptForm
         Top = 244
         Width = 329
         Height = 21
-        Ctl3D = False
-        ParentCtl3D = False
         TabOrder = 4
         OnChange = InterfaceChange
       end
@@ -500,8 +439,6 @@ object CompOptForm: TCompOptForm
         Top = 288
         Width = 329
         Height = 21
-        Ctl3D = False
-        ParentCtl3D = False
         TabOrder = 5
         OnChange = InterfaceChange
       end
@@ -513,8 +450,6 @@ object CompOptForm: TCompOptForm
     Width = 461
     Height = 53
     Caption = 'Compiler set to configure'
-    Ctl3D = False
-    ParentCtl3D = False
     TabOrder = 4
     object btnAddBlankCompilerSet: TSpeedButton
       Left = 360
@@ -523,7 +458,6 @@ object CompOptForm: TCompOptForm
       Height = 22
       Hint = 'Add a new compiler set'
       ImageIndex = 78
-      ImageName = 'Plus'
       Images = dmMain.SVGImageListMenuStyle
       Flat = True
       OnClick = btnAddBlankCompilerSetClick
@@ -535,7 +469,6 @@ object CompOptForm: TCompOptForm
       Height = 22
       Hint = 'Delete the selected compiler set'
       ImageIndex = 5
-      ImageName = 'iconsnew-31'
       Images = dmMain.SVGImageListMenuStyle
       Flat = True
       OnClick = btnDelCompilerSetClick
@@ -547,7 +480,6 @@ object CompOptForm: TCompOptForm
       Height = 22
       Hint = 'Rename the selected compiler set'
       ImageIndex = 14
-      ImageName = 'iconsnew-10'
       Images = dmMain.SVGImageListMenuStyle
       Flat = True
       OnClick = btnRenameCompilerSetClick
@@ -559,7 +491,6 @@ object CompOptForm: TCompOptForm
       Height = 22
       Hint = 'Find and automatically configure compilers'
       ImageIndex = 41
-      ImageName = 'iconsnew-49'
       Images = dmMain.SVGImageListMenuStyle
       Flat = True
       Font.Charset = DEFAULT_CHARSET
@@ -577,7 +508,6 @@ object CompOptForm: TCompOptForm
       Height = 22
       Hint = 'Add a new compiler set'
       ImageIndex = 78
-      ImageName = 'Plus'
       Images = dmMain.SVGImageListMenuStyle
       Flat = True
       OnClick = btnAddFilledCompilerSetClick

@@ -6,19 +6,16 @@ object WindowListForm: TWindowListForm
   ClientHeight = 399
   ClientWidth = 600
   Color = clWindow
-  Ctl3D = False
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = []
-  OldCreateOrder = True
   Position = poMainFormCenter
   OnClose = FormClose
   OnCreate = FormCreate
   OnShow = FormShow
   PixelsPerInch = 96
-  TextHeight = 13
   object Panel: TPanel
     Left = 0
     Top = 364
@@ -27,9 +24,6 @@ object WindowListForm: TWindowListForm
     Align = alBottom
     BevelOuter = bvNone
     TabOrder = 0
-    DesignSize = (
-      600
-      35)
     object OkBtn: TBitBtn
       Left = 412
       Top = 4
@@ -63,15 +57,11 @@ object WindowListForm: TWindowListForm
     Columns = <
       item
         Caption = 'Name'
-        Width = -1
-        WidthType = (
-          -1)
+        AutoSize = True
       end
       item
         Caption = 'Path'
-        Width = -1
-        WidthType = (
-          -1)
+        AutoSize = True
       end>
     ReadOnly = True
     RowSelect = True

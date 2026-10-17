@@ -8,18 +8,15 @@ object RemoveUnitForm: TRemoveUnitForm
   Color = clWindow
   Constraints.MinHeight = 90
   Constraints.MinWidth = 180
-  Ctl3D = False
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = []
-  OldCreateOrder = True
   Position = poMainFormCenter
   OnClose = FormClose
   OnCreate = FormCreate
   PixelsPerInch = 96
-  TextHeight = 13
   object UnitList: TListBox
     Left = 0
     Top = 0
@@ -39,9 +36,6 @@ object RemoveUnitForm: TRemoveUnitForm
     Align = alBottom
     BevelOuter = bvNone
     TabOrder = 1
-    DesignSize = (
-      342
-      27)
     object DelBtn: TButton
       Left = 136
       Top = 1

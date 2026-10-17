@@ -6,21 +6,15 @@ object EditorOptForm: TEditorOptForm
   ClientHeight = 492
   ClientWidth = 484
   Color = clWindow
-  Ctl3D = False
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -12
   Font.Name = 'Segoe UI'
   Font.Style = []
-  OldCreateOrder = False
   Position = poMainFormCenter
   OnClose = FormClose
   OnCreate = FormCreate
-  DesignSize = (
-    484
-    492)
   PixelsPerInch = 96
-  TextHeight = 15
   object PagesMain: TPageControl
     Left = 0
     Top = 0
@@ -37,8 +31,6 @@ object EditorOptForm: TEditorOptForm
         Width = 201
         Height = 92
         Caption = '  Right Margin  '
-        Ctl3D = False
-        ParentCtl3D = False
         TabOrder = 2
         object lblMarginWidth: TLabel
           Left = 8
@@ -88,8 +80,6 @@ object EditorOptForm: TEditorOptForm
         Width = 456
         Height = 222
         Caption = '  Editor Options  '
-        Ctl3D = False
-        ParentCtl3D = False
         TabOrder = 0
         object lbNewDocEncoding: TLabel
           Left = 8
@@ -241,8 +231,6 @@ object EditorOptForm: TEditorOptForm
         Width = 248
         Height = 92
         Caption = '  Caret  '
-        Ctl3D = False
-        ParentCtl3D = False
         TabOrder = 1
         object lblInsertCaret: TLabel
           Left = 8
@@ -299,8 +287,6 @@ object EditorOptForm: TEditorOptForm
         Width = 201
         Height = 84
         Caption = 'Highlight current line'
-        Ctl3D = False
-        ParentCtl3D = False
         TabOrder = 4
         object cbHighlightColor: TLabel
           Left = 99
@@ -334,8 +320,6 @@ object EditorOptForm: TEditorOptForm
         Width = 248
         Height = 84
         Caption = '  Tabs  '
-        Ctl3D = False
-        ParentCtl3D = False
         TabOrder = 3
         object lblTabSize: TLabel
           Left = 176
@@ -392,9 +376,6 @@ object EditorOptForm: TEditorOptForm
         Height = 189
         Caption = '  Gutter  '
         TabOrder = 1
-        DesignSize = (
-          456
-          189)
         object lblGutterFont: TLabel
           Left = 8
           Top = 95
@@ -402,7 +383,6 @@ object EditorOptForm: TEditorOptForm
           Height = 15
           Anchors = [akLeft, akRight, akBottom]
           Caption = 'Font:'
-          ExplicitTop = 91
         end
         object lblGutterWidth: TLabel
           Left = 360
@@ -513,9 +493,6 @@ object EditorOptForm: TEditorOptForm
         Height = 141
         Caption = '  Editor Font  '
         TabOrder = 0
-        DesignSize = (
-          456
-          141)
         object lblEditorSize: TLabel
           Left = 360
           Top = 16
@@ -597,7 +574,6 @@ object EditorOptForm: TEditorOptForm
         Height = 23
         Hint = 'Save color theme'
         ImageIndex = 6
-        ImageName = 'iconsnew-04'
         Images = dmMain.SVGImageListMenuStyle
         Flat = True
         ParentShowHint = False
@@ -610,8 +586,6 @@ object EditorOptForm: TEditorOptForm
         Width = 329
         Height = 343
         Align = alCustom
-        Ctl3D = False
-        ParentCtl3D = False
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -13
@@ -619,21 +593,10 @@ object EditorOptForm: TEditorOptForm
         Font.Style = []
         Font.Quality = fqClearTypeNatural
         TabOrder = 3
-        CodeFolding.ShowCollapsedLine = True
-        UseCodeFolding = False
         Gutter.AutoSize = True
-        Gutter.BorderStyle = gbsNone
-        Gutter.DigitCount = 2
-        Gutter.Font.Charset = DEFAULT_CHARSET
-        Gutter.Font.Color = clWindowText
-        Gutter.Font.Height = -12
-        Gutter.Font.Name = 'Courier New'
-        Gutter.Font.Style = []
         Gutter.LeftOffset = 4
         Gutter.RightOffset = 21
-        Gutter.ShowLineNumbers = True
         Gutter.Width = 32
-        Gutter.GradientEndColor = clBackground
         HideSelection = True
         Highlighter = cpp
         Lines.Strings = (
@@ -656,34 +619,17 @@ object EditorOptForm: TEditorOptForm
         Options = [eoAutoIndent, eoDisableScrollArrows, eoHideShowScrollbars, eoNoCaret, eoNoSelection, eoSmartTabs, eoTrimTrailingSpaces]
         ReadOnly = True
         RightEdge = 0
-        ScrollHintFormat = shfTopToBottom
         TabWidth = 4
         WantTabs = True
         OnGutterClick = OnGutterClick
         OnSpecialLineColors = CppEditSpecialLineColors
         OnStatusChange = cppEditStatusChange
-        RemovedKeystrokes = <
-          item
-            Command = ecDeleteLastChar
-            ShortCut = 8200
-          end
-          item
-            Command = ecLineBreak
-            ShortCut = 8205
-          end
-          item
-            Command = ecContextHelp
-            ShortCut = 112
-          end>
-        AddedKeystrokes = <>
       end
       object ElementList: TListBox
         Left = 7
         Top = 7
         Width = 130
         Height = 167
-        Ctl3D = False
-        ImeName = 'CN'#177'??i(CN'#177'U)'
         IntegralHeight = True
         ItemHeight = 15
         Items.Strings = (
@@ -696,7 +642,6 @@ object EditorOptForm: TEditorOptForm
           'Symbol'
           'WhiteSpace'
           'Directives')
-        ParentCtl3D = False
         TabOrder = 0
         OnClick = ElementListClick
       end
@@ -706,8 +651,6 @@ object EditorOptForm: TEditorOptForm
         Width = 110
         Height = 77
         Caption = '  Style:  '
-        Ctl3D = False
-        ParentCtl3D = False
         TabOrder = 2
         object cbBold: TCheckBox
           Left = 8
@@ -715,8 +658,6 @@ object EditorOptForm: TEditorOptForm
           Width = 100
           Height = 17
           Caption = 'Bold'
-          Ctl3D = False
-          ParentCtl3D = False
           TabOrder = 0
           OnClick = StyleChange
         end
@@ -726,8 +667,6 @@ object EditorOptForm: TEditorOptForm
           Width = 100
           Height = 17
           Caption = 'Italic'
-          Ctl3D = False
-          ParentCtl3D = False
           TabOrder = 1
           OnClick = StyleChange
         end
@@ -737,8 +676,6 @@ object EditorOptForm: TEditorOptForm
           Width = 100
           Height = 17
           Caption = 'Underlined'
-          Ctl3D = False
-          ParentCtl3D = False
           TabOrder = 2
           OnClick = StyleChange
         end
@@ -749,8 +686,6 @@ object EditorOptForm: TEditorOptForm
         Width = 133
         Height = 23
         Style = csDropDownList
-        Ctl3D = False
-        ParentCtl3D = False
         TabOrder = 1
         OnSelect = cboQuickColorSelect
         Items.Strings = (
@@ -774,8 +709,6 @@ object EditorOptForm: TEditorOptForm
         Top = 386
         Width = 285
         Height = 21
-        Ctl3D = False
-        ParentCtl3D = False
         TabOrder = 4
       end
       object cbSyntaxHighlight: TCheckBox
@@ -784,8 +717,6 @@ object EditorOptForm: TEditorOptForm
         Width = 300
         Height = 17
         Caption = 'Use Syntax Highlighting'
-        Ctl3D = False
-        ParentCtl3D = False
         TabOrder = 5
         OnClick = cbSyntaxHighlightClick
       end
@@ -795,8 +726,6 @@ object EditorOptForm: TEditorOptForm
         Width = 110
         Height = 22
         Style = [cbStandardColors, cbCustomColor, cbPrettyNames]
-        Ctl3D = False
-        ParentCtl3D = False
         TabOrder = 6
         OnChange = StyleChange
       end
@@ -806,8 +735,6 @@ object EditorOptForm: TEditorOptForm
         Width = 110
         Height = 22
         Style = [cbStandardColors, cbCustomColor, cbPrettyNames]
-        Ctl3D = False
-        ParentCtl3D = False
         TabOrder = 7
         OnChange = StyleChange
       end
@@ -848,8 +775,6 @@ object EditorOptForm: TEditorOptForm
             Width = 469
             Height = 211
             Align = alBottom
-            Ctl3D = False
-            ParentCtl3D = False
             Font.Charset = DEFAULT_CHARSET
             Font.Color = clWindowText
             Font.Height = -13
@@ -858,33 +783,14 @@ object EditorOptForm: TEditorOptForm
             Font.Quality = fqClearTypeNatural
             TabOrder = 2
             TabStop = False
-            CodeFolding.ShowCollapsedLine = True
-            UseCodeFolding = False
             Gutter.AutoSize = True
-            Gutter.BorderStyle = gbsNone
-            Gutter.Font.Charset = DEFAULT_CHARSET
-            Gutter.Font.Color = clWindowText
-            Gutter.Font.Height = -12
-            Gutter.Font.Name = 'Courier New'
-            Gutter.Font.Style = []
             Gutter.LeftOffset = 4
             Gutter.RightOffset = 21
-            Gutter.ShowLineNumbers = True
             Highlighter = cpp
             Options = [eoAutoIndent, eoHideShowScrollbars, eoKeepCaretX, eoSmartTabs, eoTabIndent, eoTrimTrailingSpaces]
             TabWidth = 4
             WantTabs = True
             OnStatusChange = CodeInsStatusChange
-            RemovedKeystrokes = <
-              item
-                Command = ecContextHelp
-                ShortCut = 112
-              end>
-            AddedKeystrokes = <
-              item
-                Command = ecContextHelp
-                ShortCut = 16496
-              end>
           end
           object lvCodeIns: TStringGrid
             Left = 8
@@ -892,13 +798,11 @@ object EditorOptForm: TEditorOptForm
             Width = 369
             Height = 137
             ColCount = 3
-            Ctl3D = False
             DefaultColWidth = 115
             DefaultRowHeight = 18
             FixedCols = 0
             RowCount = 2
             Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goEditing, goTabs, goAlwaysShowEditor]
-            ParentCtl3D = False
             ScrollBars = ssVertical
             TabOrder = 3
             OnSelectCell = lvCodeInsSelectCell
@@ -912,8 +816,6 @@ object EditorOptForm: TEditorOptForm
             Width = 461
             Height = 17
             Caption = 'Insert Default Code into Empty Projects'
-            Ctl3D = False
-            ParentCtl3D = False
             TabOrder = 0
           end
           object seDefault: TSynEdit
@@ -921,8 +823,6 @@ object EditorOptForm: TEditorOptForm
             Top = 24
             Width = 468
             Height = 331
-            Ctl3D = False
-            ParentCtl3D = False
             Font.Charset = DEFAULT_CHARSET
             Font.Color = clWindowText
             Font.Height = -13
@@ -931,33 +831,14 @@ object EditorOptForm: TEditorOptForm
             Font.Quality = fqClearTypeNatural
             TabOrder = 1
             TabStop = False
-            CodeFolding.ShowCollapsedLine = True
-            UseCodeFolding = False
             Gutter.AutoSize = True
-            Gutter.BorderStyle = gbsNone
-            Gutter.Font.Charset = DEFAULT_CHARSET
-            Gutter.Font.Color = clWindowText
-            Gutter.Font.Height = -12
-            Gutter.Font.Name = 'Courier New'
-            Gutter.Font.Style = []
             Gutter.LeftOffset = 4
             Gutter.RightOffset = 21
-            Gutter.ShowLineNumbers = True
             Highlighter = cpp
             Options = [eoAutoIndent, eoHideShowScrollbars, eoKeepCaretX, eoSmartTabs, eoTabIndent, eoTrimTrailingSpaces]
             TabWidth = 4
             WantTabs = True
             OnStatusChange = CodeInsStatusChange
-            RemovedKeystrokes = <
-              item
-                Command = ecContextHelp
-                ShortCut = 112
-              end>
-            AddedKeystrokes = <
-              item
-                Command = ecContextHelp
-                ShortCut = 16496
-              end>
           end
         end
       end
@@ -995,8 +876,6 @@ object EditorOptForm: TEditorOptForm
             Width = 457
             Height = 17
             Caption = 'Enable code-completion'
-            Ctl3D = False
-            ParentCtl3D = False
             TabOrder = 0
             OnClick = chkEnableCompletionClick
           end
@@ -1007,8 +886,6 @@ object EditorOptForm: TEditorOptForm
             Height = 22
             DefaultColorColor = clWhite
             Style = [cbStandardColors, cbCustomColor, cbPrettyNames]
-            Ctl3D = False
-            ParentCtl3D = False
             TabOrder = 1
           end
           object gbCBEngine: TGroupBox
@@ -1024,8 +901,6 @@ object EditorOptForm: TEditorOptForm
               Width = 345
               Height = 17
               Caption = 'Scan local files referenced in #include'#39's'
-              Ctl3D = False
-              ParentCtl3D = False
               TabOrder = 0
             end
             object chkCBParseGlobalH: TCheckBox
@@ -1034,8 +909,6 @@ object EditorOptForm: TEditorOptForm
               Width = 345
               Height = 17
               Caption = 'Scan global files referenced in #include'#39's'
-              Ctl3D = False
-              ParentCtl3D = False
               TabOrder = 1
             end
           end
@@ -1044,10 +917,8 @@ object EditorOptForm: TEditorOptForm
             Top = 132
             Width = 297
             Height = 37
-            Ctl3D = False
             Max = 2000
             Min = 1
-            ParentCtl3D = False
             ParentShowHint = False
             Frequency = 50
             Position = 1000
@@ -1066,8 +937,6 @@ object EditorOptForm: TEditorOptForm
             Width = 273
             Height = 201
             Caption = 'Specific completion options'
-            Ctl3D = False
-            ParentCtl3D = False
             TabOrder = 1
             object cbParenth: TCheckBox
               Left = 16
@@ -1075,8 +944,6 @@ object EditorOptForm: TEditorOptForm
               Width = 240
               Height = 17
               Caption = 'Complete parentheses '#39'()'#39
-              Ctl3D = False
-              ParentCtl3D = False
               TabOrder = 1
             end
             object cbBraces: TCheckBox
@@ -1085,8 +952,6 @@ object EditorOptForm: TEditorOptForm
               Width = 240
               Height = 17
               Caption = 'Complete braces '#39'{}'#39
-              Ctl3D = False
-              ParentCtl3D = False
               TabOrder = 0
             end
             object cbInclude: TCheckBox
@@ -1095,8 +960,6 @@ object EditorOptForm: TEditorOptForm
               Width = 240
               Height = 17
               Caption = 'Complete includes '#39'<>'#39
-              Ctl3D = False
-              ParentCtl3D = False
               TabOrder = 2
             end
             object cbComments: TCheckBox
@@ -1105,8 +968,6 @@ object EditorOptForm: TEditorOptForm
               Width = 240
               Height = 17
               Caption = 'Complete multiline comments '#39'/**/'#39
-              Ctl3D = False
-              ParentCtl3D = False
               TabOrder = 4
             end
             object cbArray: TCheckBox
@@ -1115,8 +976,6 @@ object EditorOptForm: TEditorOptForm
               Width = 240
               Height = 17
               Caption = 'Complete square braces '#39'[]'#39
-              Ctl3D = False
-              ParentCtl3D = False
               TabOrder = 3
             end
             object cbSingleQuotes: TCheckBox
@@ -1125,8 +984,6 @@ object EditorOptForm: TEditorOptForm
               Width = 240
               Height = 17
               Caption = 'Complete single quotes '#39#39#39#39
-              Ctl3D = False
-              ParentCtl3D = False
               TabOrder = 5
             end
             object cbDoubleQuotes: TCheckBox
@@ -1135,8 +992,6 @@ object EditorOptForm: TEditorOptForm
               Width = 240
               Height = 17
               Caption = 'Complete double quotes '#39'""'#39
-              Ctl3D = False
-              ParentCtl3D = False
               TabOrder = 6
             end
           end
@@ -1146,8 +1001,6 @@ object EditorOptForm: TEditorOptForm
             Width = 465
             Height = 17
             Caption = 'Enable symbol completion'
-            Ctl3D = False
-            ParentCtl3D = False
             TabOrder = 0
             OnClick = cbSymbolCompleteClick
           end
@@ -1157,8 +1010,6 @@ object EditorOptForm: TEditorOptForm
             Width = 449
             Height = 17
             Caption = 'Delete completed symbols as pairs'
-            Ctl3D = False
-            ParentCtl3D = False
             TabOrder = 2
           end
         end
@@ -1173,8 +1024,6 @@ object EditorOptForm: TEditorOptForm
         Width = 457
         Height = 17
         Caption = 'Enable editor autosave'
-        Ctl3D = False
-        ParentCtl3D = False
         TabOrder = 0
         OnClick = cbAutoSaveClick
       end
@@ -1184,8 +1033,6 @@ object EditorOptForm: TEditorOptForm
         Width = 457
         Height = 385
         Caption = ' Options '
-        Ctl3D = False
-        ParentCtl3D = False
         TabOrder = 1
         object SaveInterval: TLabel
           Left = 16
@@ -1280,9 +1127,6 @@ object EditorOptForm: TEditorOptForm
   end
   object cpp: TSynCppSyn
     DefaultFilter = 'C++ Files (*.c,*.cpp,*.h,*.hpp)|*.c;*.cpp;*.h;*.hpp'
-    Options.AutoDetectEnabled = False
-    Options.AutoDetectLineLimit = 0
-    Options.Visible = False
     Left = 5
     Top = 458
   end

@@ -13,20 +13,17 @@ object CPUForm: TCPUForm
   Font.Name = 'Segoe UI'
   Font.Style = []
   FormStyle = fsStayOnTop
-  OldCreateOrder = False
   PopupMenu = CPUPopup
   Position = poMainFormCenter
   OnClose = FormClose
   OnCreate = FormCreate
   OnShow = FormShow
   PixelsPerInch = 96
-  TextHeight = 15
   object VertSplit: TSplitter
     Left = 528
     Top = 0
     Height = 518
     Align = alRight
-    ExplicitHeight = 519
   end
   object RegPanel: TPanel
     Left = 531
@@ -35,12 +32,7 @@ object CPUForm: TCPUForm
     Height = 518
     Align = alRight
     BevelOuter = bvNone
-    Ctl3D = False
-    ParentCtl3D = False
     TabOrder = 0
-    DesignSize = (
-      200
-      518)
     object RegisterListbox: TListView
       Left = 4
       Top = 4
@@ -82,7 +74,6 @@ object CPUForm: TCPUForm
       Height = 3
       Cursor = crVSplit
       Align = alBottom
-      ExplicitTop = 349
     end
     object DisasPanel: TPanel
       Left = 0
@@ -91,12 +82,7 @@ object CPUForm: TCPUForm
       Height = 348
       Align = alClient
       BevelOuter = bvNone
-      Ctl3D = False
-      ParentCtl3D = False
       TabOrder = 0
-      DesignSize = (
-        528
-        348)
       object lblFunc: TLabel
         Left = 8
         Top = 11
@@ -110,8 +96,6 @@ object CPUForm: TCPUForm
         Width = 322
         Height = 23
         Anchors = [akLeft, akTop, akRight]
-        Ctl3D = False
-        ParentCtl3D = False
         TabOrder = 0
         OnKeyPress = edFuncKeyPress
       end
@@ -121,8 +105,6 @@ object CPUForm: TCPUForm
         Width = 520
         Height = 309
         Anchors = [akLeft, akTop, akRight, akBottom]
-        Ctl3D = False
-        ParentCtl3D = False
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -13
@@ -131,13 +113,6 @@ object CPUForm: TCPUForm
         Font.Style = []
         Font.Quality = fqClearTypeNatural
         TabOrder = 1
-        CodeFolding.ShowCollapsedLine = True
-        UseCodeFolding = False
-        Gutter.Font.Charset = DEFAULT_CHARSET
-        Gutter.Font.Color = clWindowText
-        Gutter.Font.Height = -11
-        Gutter.Font.Name = 'Terminal'
-        Gutter.Font.Style = []
         Gutter.RightOffset = 21
         Gutter.Visible = False
         Gutter.Width = 0
@@ -145,16 +120,6 @@ object CPUForm: TCPUForm
         ReadOnly = True
         RightEdge = 0
         WantTabs = True
-        RemovedKeystrokes = <
-          item
-            Command = ecContextHelp
-            ShortCut = 112
-          end>
-        AddedKeystrokes = <
-          item
-            Command = ecContextHelp
-            ShortCut = 16496
-          end>
       end
       object RadioATT: TRadioButton
         Left = 414
@@ -164,8 +129,6 @@ object CPUForm: TCPUForm
         Anchors = [akTop, akRight]
         Caption = 'AT&&T'
         Checked = True
-        Ctl3D = False
-        ParentCtl3D = False
         TabOrder = 2
         TabStop = True
         OnClick = gbSyntaxClick
@@ -177,8 +140,6 @@ object CPUForm: TCPUForm
         Height = 17
         Anchors = [akTop, akRight]
         Caption = 'Intel'
-        Ctl3D = False
-        ParentCtl3D = False
         TabOrder = 3
         OnClick = gbSyntaxClick
       end
@@ -190,12 +151,7 @@ object CPUForm: TCPUForm
       Height = 167
       Align = alBottom
       BevelOuter = bvNone
-      Ctl3D = False
-      ParentCtl3D = False
       TabOrder = 1
-      DesignSize = (
-        528
-        167)
       object lblBacktrace: TLabel
         Left = 8
         Top = 0

@@ -7,7 +7,6 @@ object MainForm: TMainForm
   ClientHeight = 689
   ClientWidth = 1285
   Color = clWindow
-  Ctl3D = False
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -13
@@ -149,7 +148,6 @@ object MainForm: TMainForm
     0000000000000000000000000000000000000000000000000000000000000000
     00000000000080000001C0000003C0000003E0000007F800001FFC00003F}
   Menu = MainMenu
-  OldCreateOrder = False
   Position = poScreenCenter
   ShowHint = True
   OnClose = FormClose
@@ -160,15 +158,12 @@ object MainForm: TMainForm
   OnResize = FormResize
   OnShow = FormShow
   PixelsPerInch = 96
-  TextHeight = 19
   object SplitterLeft: TSplitter
     Left = 209
     Top = 56
     Height = 441
     MinSize = 45
     ResizeStyle = rsUpdate
-    ExplicitLeft = 193
-    ExplicitHeight = 418
   end
   object SplitterBottom: TSplitter
     Left = 0
@@ -179,8 +174,6 @@ object MainForm: TMainForm
     Align = alBottom
     ResizeStyle = rsUpdate
     OnMoved = SplitterBottomMoved
-    ExplicitTop = 474
-    ExplicitWidth = 999
   end
   object MessageControl: TPageControl
     Left = 0
@@ -202,7 +195,6 @@ object MainForm: TMainForm
         Width = 1277
         Height = 135
         Align = alClient
-        BevelOuter = bvNone
         BorderStyle = bsNone
         Columns = <
           item
@@ -246,7 +238,6 @@ object MainForm: TMainForm
         Width = 1277
         Height = 135
         Align = alClient
-        BevelOuter = bvNone
         BorderStyle = bsNone
         Columns = <
           item
@@ -292,9 +283,6 @@ object MainForm: TMainForm
         Align = alLeft
         BevelOuter = bvNone
         TabOrder = 0
-        DesignSize = (
-          156
-          135)
         object btnAbortCompilation: TSpeedButton
           Left = 4
           Top = 4
@@ -360,9 +348,6 @@ object MainForm: TMainForm
         Align = alClient
         BevelOuter = bvNone
         TabOrder = 0
-        DesignSize = (
-          688
-          135)
         object lblSendCommandGdb: TLabel
           Left = 4
           Top = 7
@@ -400,9 +385,6 @@ object MainForm: TMainForm
         BiDiMode = bdLeftToRight
         ParentBiDiMode = False
         TabOrder = 1
-        DesignSize = (
-          589
-          135)
         object DDebugBtn: TSpeedButton
           Left = 4
           Top = 8
@@ -520,7 +502,6 @@ object MainForm: TMainForm
         Width = 1277
         Height = 135
         Align = alClient
-        BevelOuter = bvNone
         BorderStyle = bsNone
         Columns = <
           item
@@ -573,7 +554,6 @@ object MainForm: TMainForm
     AutoSize = True
     BevelInner = bvNone
     BevelOuter = bvNone
-    BevelKind = bkNone
     RowSize = 28
     TabOrder = 0
     OnClick = ToolbarDockClick
@@ -905,10 +885,8 @@ object MainForm: TMainForm
         Width = 350
         Height = 27
         Style = csDropDownList
-        Ctl3D = False
         DropDownCount = 16
         ParentColor = True
-        ParentCtl3D = False
         Sorted = True
         TabOrder = 1
         OnChange = cmbMembersChange
@@ -934,10 +912,8 @@ object MainForm: TMainForm
         Width = 250
         Height = 27
         Style = csDropDownList
-        Ctl3D = False
         DropDownCount = 16
         ParentColor = True
-        ParentCtl3D = False
         TabOrder = 0
         OnChange = cmbCompilersChange
         OnDropDown = cmbGenericDropDown
@@ -988,10 +964,7 @@ object MainForm: TMainForm
         Height = 407
         Align = alClient
         Anchors = [akLeft, akTop, akBottom]
-        BevelInner = bvNone
-        BevelOuter = bvNone
         BorderStyle = bsNone
-        ChangeDelay = 1
         DragMode = dmAutomatic
         HideSelection = False
         HotTrack = True
@@ -1057,10 +1030,7 @@ object MainForm: TMainForm
         Width = 201
         Height = 407
         Align = alClient
-        BevelInner = bvNone
-        BevelOuter = bvNone
         BorderStyle = bsNone
-        ChangeDelay = 1
         Images = dmMain.MenuImages_NewLook
         Indent = 19
         MultiSelectStyle = []
@@ -1090,8 +1060,6 @@ object MainForm: TMainForm
       Align = alRight
       ResizeStyle = rsUpdate
       Visible = False
-      ExplicitLeft = 803
-      ExplicitHeight = 418
     end
     object EditorPageControlLeft: TPageControl
       Left = 0
@@ -1139,13 +1107,10 @@ object MainForm: TMainForm
         Width = 545
         Height = 439
         Align = alLeft
-        Ctl3D = False
         DoubleBuffered = True
-        ParentCtl3D = False
         ParentDoubleBuffered = False
         TabOrder = 0
         object ImageLogo: TImage
-          AlignWithMargins = True
           Left = 194
           Top = 84
           Width = 130
@@ -1538,7 +1503,6 @@ object MainForm: TMainForm
           Stretch = True
         end
         object LabelWelcome: TLabel
-          AlignWithMargins = True
           Left = 213
           Top = 240
           Width = 83
@@ -1577,7 +1541,6 @@ object MainForm: TMainForm
           Font.Name = 'Heebo'
           Font.Style = []
           ParentFont = False
-          StyleElements = [seClient, seBorder]
         end
         object LabelView: TLabel
           Left = 194
@@ -1607,11 +1570,9 @@ object MainForm: TMainForm
           Font.Style = []
           ParentColor = False
           ParentFont = False
-          StyleElements = [seClient, seBorder]
           OnClick = LabelDocumentationClick
         end
         object LabelHotkeys: TLabel
-          AlignWithMargins = True
           Left = 221
           Top = 356
           Width = 54
@@ -1704,7 +1665,7 @@ object MainForm: TMainForm
           ParentFont = False
         end
         object ImageBackGround: TImage
-          AlignWithMargins = True
+          BorderSpacing.Around = 3
           Left = 4
           Top = -1985
           Width = 537
@@ -4226,8 +4187,6 @@ object MainForm: TMainForm
             E80000000049454E44AE426082}
           Proportional = True
           ShowHint = False
-          ExplicitLeft = 2
-          ExplicitTop = -1984
         end
         object ImageEmbarcadero: TImage
           Visible = False
@@ -4260,7 +4219,6 @@ object MainForm: TMainForm
           Color = clBtnShadow
           ParentBackground = False
           TabOrder = 0
-          StyleElements = [seFont, seBorder]
         end
         object PanelDescSave: TPanel
           Left = 245
@@ -4272,7 +4230,6 @@ object MainForm: TMainForm
           Color = clBtnShadow
           ParentBackground = False
           TabOrder = 1
-          StyleElements = [seFont, seBorder]
         end
         object PanelDescZoom: TPanel
           Left = 245
@@ -4284,7 +4241,6 @@ object MainForm: TMainForm
           Color = clBtnShadow
           ParentBackground = False
           TabOrder = 2
-          StyleElements = [seFont, seBorder]
         end
         object PanelDescRun: TPanel
           Left = 245
@@ -4296,7 +4252,6 @@ object MainForm: TMainForm
           Color = clBtnShadow
           ParentBackground = False
           TabOrder = 3
-          StyleElements = [seFont, seBorder]
         end
         object PanelDescCompile: TPanel
           Left = 245
@@ -4308,7 +4263,6 @@ object MainForm: TMainForm
           Color = clBtnShadow
           ParentBackground = False
           TabOrder = 4
-          StyleElements = [seFont, seBorder]
         end
         object PanelDescClear: TPanel
           Left = 245
@@ -4320,7 +4274,6 @@ object MainForm: TMainForm
           Color = clBtnShadow
           ParentBackground = False
           TabOrder = 5
-          StyleElements = [seFont, seBorder]
         end
       end
       object PanelRight: TPanel
@@ -4331,8 +4284,6 @@ object MainForm: TMainForm
         Height = 439
         Align = alClient
         AutoSize = True
-        Ctl3D = False
-        ParentCtl3D = False
         TabOrder = 1
         object SpeedButton0: TSpeedButton
           Left = 70
@@ -4385,17 +4336,11 @@ object MainForm: TMainForm
           Top = 73
           Width = 138
           Height = 121
-          Margins.Left = 0
-          Margins.Top = 0
-          Margins.Right = 0
-          Margins.Bottom = 0
           BiDiMode = bdRightToLeft
           Caption = 'New Document'
-          DoubleBuffered = True
           ImageIndex = 0
           Images = dmMain.SVGIconImageWelcomeScreen
           ParentBiDiMode = False
-          ParentDoubleBuffered = False
           TabOrder = 0
           OnClick = actNewSourceExecute
         end
@@ -4405,12 +4350,10 @@ object MainForm: TMainForm
           Top = 73
           Width = 138
           Height = 121
-          Margins.Top = 10
           Caption = 'Open Document'
           ImageIndex = 1
           Images = dmMain.SVGIconImageWelcomeScreen
           TabOrder = 1
-          WordWrap = True
           OnClick = actOpenExecute
         end
         object ButtonOptions: TBitBtn
@@ -4423,7 +4366,6 @@ object MainForm: TMainForm
           ImageIndex = 2
           Images = dmMain.SVGIconImageWelcomeScreen
           TabOrder = 2
-          WordWrap = True
           OnClick = actCompOptionsExecute
         end
         object ButtonChangeTheme: TBitBtn
@@ -4432,13 +4374,8 @@ object MainForm: TMainForm
           Top = 225
           Width = 138
           Height = 26
-          Margins.Left = 0
-          Margins.Top = 0
-          Margins.Right = 0
-          Margins.Bottom = 0
           BiDiMode = bdRightToLeft
           Caption = 'Change Theme'
-          DoubleBuffered = True
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
           Font.Height = -11
@@ -4447,7 +4384,6 @@ object MainForm: TMainForm
           ImageIndex = 80
           Images = dmMain.SVGImageListMenuStyle
           ParentBiDiMode = False
-          ParentDoubleBuffered = False
           ParentFont = False
           TabOrder = 3
           OnClick = actEnviroOptionsExecute
@@ -4458,13 +4394,8 @@ object MainForm: TMainForm
           Top = 225
           Width = 138
           Height = 26
-          Margins.Left = 0
-          Margins.Top = 0
-          Margins.Right = 0
-          Margins.Bottom = 0
           BiDiMode = bdRightToLeft
           Caption = 'Change Font'
-          DoubleBuffered = True
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
           Font.Height = -11
@@ -4473,7 +4404,6 @@ object MainForm: TMainForm
           ImageIndex = 81
           Images = dmMain.SVGImageListMenuStyle
           ParentBiDiMode = False
-          ParentDoubleBuffered = False
           ParentFont = False
           TabOrder = 4
           OnClick = actEnviroOptionsExecute
@@ -4484,13 +4414,8 @@ object MainForm: TMainForm
           Top = 225
           Width = 138
           Height = 26
-          Margins.Left = 0
-          Margins.Top = 0
-          Margins.Right = 0
-          Margins.Bottom = 0
           BiDiMode = bdRightToLeft
           Caption = 'Change Language'
-          DoubleBuffered = True
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
           Font.Height = -11
@@ -4499,7 +4424,6 @@ object MainForm: TMainForm
           ImageIndex = 82
           Images = dmMain.SVGImageListMenuStyle
           ParentBiDiMode = False
-          ParentDoubleBuffered = False
           ParentFont = False
           TabOrder = 5
           OnClick = actEnviroOptionsExecute
@@ -4511,7 +4435,6 @@ object MainForm: TMainForm
           Width = 443
           Height = 41
           BorderStyle = bsNone
-          Ctl3D = False
           Enabled = False
           Font.Charset = ANSI_CHARSET
           Font.Color = clWindowText
@@ -4519,7 +4442,6 @@ object MainForm: TMainForm
           Font.Name = 'Heebo'
           Font.Style = []
           ParentColor = True
-          ParentCtl3D = False
           ParentFont = False
           ReadOnly = True
           TabOrder = 6
@@ -4532,7 +4454,6 @@ object MainForm: TMainForm
           Width = 443
           Height = 41
           BorderStyle = bsNone
-          Ctl3D = False
           Enabled = False
           Font.Charset = ANSI_CHARSET
           Font.Color = clWindowText
@@ -4540,7 +4461,6 @@ object MainForm: TMainForm
           Font.Name = 'Heebo'
           Font.Style = []
           ParentColor = True
-          ParentCtl3D = False
           ParentFont = False
           ReadOnly = True
           TabOrder = 7
@@ -4553,7 +4473,6 @@ object MainForm: TMainForm
           Width = 443
           Height = 41
           BorderStyle = bsNone
-          Ctl3D = False
           Enabled = False
           Font.Charset = ANSI_CHARSET
           Font.Color = clWindowText
@@ -4561,7 +4480,6 @@ object MainForm: TMainForm
           Font.Name = 'Heebo'
           Font.Style = []
           ParentColor = True
-          ParentCtl3D = False
           ParentFont = False
           ReadOnly = True
           TabOrder = 8
@@ -4574,7 +4492,6 @@ object MainForm: TMainForm
           Width = 443
           Height = 41
           BorderStyle = bsNone
-          Ctl3D = False
           Enabled = False
           Font.Charset = ANSI_CHARSET
           Font.Color = clWindowText
@@ -4582,7 +4499,6 @@ object MainForm: TMainForm
           Font.Name = 'Heebo'
           Font.Style = []
           ParentColor = True
-          ParentCtl3D = False
           ParentFont = False
           ReadOnly = True
           TabOrder = 9
@@ -4594,7 +4510,6 @@ object MainForm: TMainForm
           Width = 443
           Height = 41
           BorderStyle = bsNone
-          Ctl3D = False
           Enabled = False
           Font.Charset = ANSI_CHARSET
           Font.Color = clWindowText
@@ -4602,7 +4517,6 @@ object MainForm: TMainForm
           Font.Name = 'Heebo'
           Font.Style = []
           ParentColor = True
-          ParentCtl3D = False
           ParentFont = False
           ReadOnly = True
           TabOrder = 10
@@ -4612,7 +4526,6 @@ object MainForm: TMainForm
     end
   end
   object MainMenu: TMainMenu
-    AutoLineReduction = maManual
     Images = dmMain.MenuImages_NewLook
     Left = 206
     Top = 79
@@ -4762,8 +4675,6 @@ object MainForm: TMainForm
       end
       object CutItem: TMenuItem
         Action = actCut
-        AutoHotkeys = maAutomatic
-        AutoLineReduction = maAutomatic
       end
       object CopyItem: TMenuItem
         Action = actCopy

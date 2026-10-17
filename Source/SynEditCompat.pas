@@ -29,7 +29,8 @@ unit SynEditCompat;
 interface
 
 uses
-  Types, Graphics, SynEdit, SynGutterLineNumber;
+  Types, Graphics, SynEdit, SynGutterBase, SynGutter, SynGutterLineNumber, SynGutterChanges,
+  SynGutterCodeFolding;
 
 type
   TBufferCoord = record
@@ -76,17 +77,28 @@ begin
       Part.LeadingZeros := ALeadingZeros;
       Part.ZeroStart := AZeroStart;
       Part.DigitCount := ADigitCount;
-    end;
+    end else if Editor.Gutter.Parts[I] is TSynGutterCodeFolding then
+      // Lazarus' C++ highlighter has no folding: the part would only take room
+      Editor.Gutter.Parts[I].Visible := False;
 end;
 
 procedure SetGutterColors(Editor: TCustomSynEdit; Background, Foreground: TColor);
 var
   I: Integer;
+  Part: TSynGutterPartBase;
 begin
+  // Every part has its own colors; the Delphi gutter had one background
   Editor.Gutter.Color := Background;
-  for I := 0 to Editor.Gutter.Parts.Count - 1 do
-    if Editor.Gutter.Parts[I] is TSynGutterLineNumber then
-      TSynGutterLineNumber(Editor.Gutter.Parts[I]).MarkupInfo.Foreground := Foreground;
+  for I := 0 to Editor.Gutter.Parts.Count - 1 do begin
+    Part := Editor.Gutter.Parts[I];
+    if Part is TSynGutterChanges then
+      Continue; // keeps its modified/saved line colors
+    Part.MarkupInfo.Background := Background;
+    if Part is TSynGutterSeparator then
+      Part.MarkupInfo.Foreground := Foreground // the line itself
+    else if Part is TSynGutterLineNumber then
+      Part.MarkupInfo.Foreground := Foreground;
+  end;
 end;
 
 function BufferCoord(AChar, ALine: Integer): TBufferCoord;

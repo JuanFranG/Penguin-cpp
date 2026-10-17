@@ -107,7 +107,7 @@ const
 implementation
 
 uses
-  devCFG, Utils, Version, math, MultiLangSupport;
+  devCFG, Utils, Version, math, MultiLangSupport, ColorSchemes;
 
 {$R *.lfm}
 
@@ -167,9 +167,9 @@ procedure TdmMain.InitHighlighterFirstTime(index: integer);
   begin
     a := devEditor.Syntax.IndexofName(AttrName);
     if a = -1 then
-      devEditor.Syntax.Append(format('%s=%s', [AttrName, LoadStr(offset)]))
+      devEditor.Syntax.Append(format('%s=%s', [AttrName, ColorSchemeString(offset)]))
     else
-      devEditor.Syntax.Values[AttrName] := LoadStr(offset);
+      devEditor.Syntax.Values[AttrName] := ColorSchemeString(offset);
   end;
 var
   i, a, offset: integer;
@@ -179,7 +179,7 @@ begin
   for i := 0 to pred(cpp.AttrCount) do begin
     attr := TSynHighlighterAttributes.Create(cpp.Attribute[i].Name,cpp.Attribute[i].Name);
     try
-      StrtoAttr(Attr, LoadStr(i + offset + 1));
+      StrtoAttr(Attr, ColorSchemeString(i + offset + 1));
       cpp.Attribute[i].Assign(Attr);
       a := devEditor.Syntax.IndexOfName(cpp.Attribute[i].Name);
       if a = -1 then
@@ -205,6 +205,11 @@ var
   a,
     idx: integer;
 begin
+  // Settings saved while the color schemes could not be read (before ColorSchemes)
+  // have empty colors: everything black. Start over from the Classic scheme.
+  if (devEditor.Syntax.IndexOfName(cGut) <> -1) and (Trim(devEditor.Syntax.Values[cGut]) = '') then
+    InitHighlighterFirstTime(0);
+
   for idx := 0 to pred(cpp.AttrCount) do begin
     aName := cpp.Attribute[idx].Name;
     a := devEditor.Syntax.IndexOfName(aName);

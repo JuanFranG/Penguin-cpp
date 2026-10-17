@@ -217,7 +217,7 @@ implementation
 
 uses
   Types, ExtDlgs, MultiLangSupport, devCFG, Version, Utils, math, DateUtils, CodeInsList, DataFrm,
-  IniFiles, Editor, main;
+  IniFiles, Editor, main, ColorSchemes;
 
 {$R *.lfm}
 const
@@ -1113,7 +1113,7 @@ begin
     for i := 0 to pred(cpp.AttrCount) do begin
       attr := TSynHighlighterAttributes.Create(cpp.Attribute[i].Name, cpp.Attribute[i].Name);
       try
-        StrtoAttr(Attr, LoadStr(i + offset + 1));
+        StrtoAttr(Attr, ColorSchemeString(i + offset + 1));
         cpp.Attribute[i].Assign(Attr);
 
         if SameText(Attr.Name, 'WhiteSpace') or SameText(Attr.Name, 'Space') then begin
@@ -1127,12 +1127,12 @@ begin
       end;
     end;
 
-    StrtoPoint(fBPColor, LoadStr(offset + 17)); // breakpoints
-    StrtoPoint(fErrColor, LoadStr(offset + 18)); // error line
-    StrtoPoint(fABPColor, LoadStr(offset + 19)); // active breakpoint
-    StrtoPoint(fgutColor, LoadStr(offset + 20)); // gutter
-    StrtoPoint(fSelColor, LoadStr(offset + 21)); // selected text
-    StrtoPoint(fFoldColor, LoadStr(offset + 22)); // folding bar lines
+    StrtoPoint(fBPColor, ColorSchemeString(offset + 17)); // breakpoints
+    StrtoPoint(fErrColor, ColorSchemeString(offset + 18)); // error line
+    StrtoPoint(fABPColor, ColorSchemeString(offset + 19)); // active breakpoint
+    StrtoPoint(fgutColor, ColorSchemeString(offset + 20)); // gutter
+    StrtoPoint(fSelColor, ColorSchemeString(offset + 21)); // selected text
+    StrtoPoint(fFoldColor, ColorSchemeString(offset + 22)); // folding bar lines
   end;
 
   SetGutter;

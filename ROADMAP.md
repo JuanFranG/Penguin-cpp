@@ -105,6 +105,7 @@ al publicarla. Hoy `main` incluye las fases 1 a 4 (`fase4/lazarus`).
 | 2 · Parser de C++ en Free Pascal | `fase2/parser-fpc` | ✅ Hecha, probada en Mint |
 | 3 · Capa de sistema | `fase3/capa-sistema` | ✅ Hecha, probada en Mint |
 | 4 · Port a Lazarus y formularios | `fase4/lazarus` | 🔄 Compila; falta la primera ejecución |
+| 4b · Identidad visual y temas | `fase4/lazarus` | 🔄 Icono listo; temas después de la primera ejecución |
 | 5 · Editor (SynEdit de Lazarus) | `fase4/lazarus` | 🔄 Adelantada dentro de la fase 4 |
 | 6 · Compilación con el gcc de Linux | — | ⏳ Pendiente |
 | 7 · Depurador (GDB/MI) | — | ⏳ Pendiente |
@@ -177,6 +178,47 @@ Falta:
 - **Hecho cuando:** el IDE abre, se ven los menús y se puede abrir, editar y
   guardar un archivo.
 
+### Fase 4b · Identidad visual y temas 🔄
+Hecho:
+- **Icono propio** en dos versiones (`Source/Images/AppIcon/`):
+  - El dibujo completo (pingüino frente al monitor) de 48 px en adelante.
+  - Una versión simplificada (cabeza del pingüino y "C++") de 16 a 32 px,
+    porque a esos tamaños el dibujo completo no se distingue.
+  - Fondo transparente, y tamaños del estándar de Linux en
+    `hicolor/<N>x<N>/apps/penguin-cpp.png`, listos para el `.deb`.
+- El ejecutable lleva el icono (`penguin-cpp.ico` junto al proyecto), y todas
+  las ventanas lo usan.
+- La pantalla de bienvenida muestra el icono en lugar del logo de Dev-C++, y
+  *Acerca de* tiene un banner de Penguin cpp. Se quitó el logo de Embarcadero.
+- Las imágenes de los formularios venían en formato Delphi (`TPngImage`,
+  iconos sin tamaño) y Lazarus no las habría cargado. Se convirtieron, y el
+  verificador de formularios ahora revisa también esos datos.
+
+Falta: **tema claro y tema oscuro** con los tonos del icono.
+
+| Color | Hex | Uso |
+|---|---|---|
+| Azul claro | `#DAEEFC` | Fondos de paneles (claro) |
+| Azul marino | `#18395E` | Barras y encabezados; base del oscuro |
+| Tinta marina | `#092543` | Texto y contornos |
+| Azul medio | `#5789C2` | Selección, acentos |
+| Amarillo | `#FDB50B` | Acento: pestaña activa, marcadores |
+| Blanco | `#FFFFFF` | Fondo del editor (claro) |
+
+- Esquemas de color del editor **"Penguin claro"** y **"Penguin oscuro"**,
+  junto a los 15 que ya trae (Classic, Monokai, Visual Studio Dark…).
+- Colores propios en los paneles del IDE: bienvenida, árbol del proyecto,
+  navegador de clases y mensajes.
+- Variante clara de las tiras de iconos para el tema oscuro.
+- Menús, botones y diálogos los dibuja GTK: por defecto siguen el tema del
+  escritorio. Como opción se puede cargar un tema GTK2 propio con esta paleta.
+- El selector "Tema" de Opciones del entorno elige entre *Claro / Oscuro / Del
+  sistema*.
+- Se hace después de la primera ejecución en Mint: hay que ver el IDE
+  funcionando para ajustar los colores.
+- **Hecho cuando:** se cambia entre claro y oscuro desde Opciones del entorno
+  y todo el IDE (editor, paneles, iconos) se ve con la paleta.
+
 ### Fase 5 · Editor 🔄
 Gran parte se adelantó en la fase 4:
 - `TSynEditEx` mantiene la API del editor original, que trabaja con
@@ -233,7 +275,8 @@ El producto final del proyecto es un `.deb` que se instala con
     Otra opción es instalar todo en `/usr/lib/penguin-cpp/` con un enlace
     en `/usr/bin`.
   - Lanzador `.desktop` en `/usr/share/applications`.
-  - Iconos en `/usr/share/icons/hicolor`.
+  - Iconos en `/usr/share/icons/hicolor` (ya generados en
+    `Source/Images/AppIcon/hicolor`).
   - Asociación con archivos `.c`, `.cpp`, `.h` y proyectos `.dev`.
   - Fuentes Heebo y Source Code Pro en `/usr/share/fonts`.
 - **Dependencias del paquete**: `gcc`, `g++`, `make`, `gdb` y GTK2
@@ -258,7 +301,8 @@ El producto final del proyecto es un `.deb` que se instala con
   "Delphi" son marcas registradas):
   - El enlace "buscar actualizaciones" de *Acerca de* todavía apunta a
     Embarcadero.
-  - Faltan logo e iconos propios (`devcpp.ico`, pantalla de bienvenida).
+  - Los textos de *Acerca de* todavía dicen "About Embarcadero Dev-C++" y
+    "fork by". Vienen de los archivos de idioma (`Lang/*.lng`).
   - `SECURITY.md` todavía es el del proyecto original (versiones 6.x y un
     contacto del equipo de Embarcadero).
 - **Limpieza**, preguntando antes de borrar:
@@ -266,6 +310,8 @@ El producto final del proyecto es un `.deb` que se instala con
   - Los proyectos de Delphi (`devcpp.dpr/.dproj`, `DevCpp.dpk/.dproj`,
     `ClassBrowsing.dpk/.dproj`).
   - `FormatterOptionsFrm`, que no lo usa nada.
+  - Los iconos e imágenes del original que ya no se usan (`devcpp.ico`,
+    `Source/devcpp_Icon.ico`, `Source/Images/devcpplogo.png`…).
 - **Avisos de compilación**: revisar los ~150 que da hoy.
 - **Fuentes de Windows** en los formularios (MS Sans Serif, Tahoma, Courier
   New, Segoe UI): cambiarlas por las del sistema.

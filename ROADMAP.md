@@ -180,39 +180,56 @@ Hecho:
 Falta:
 - **Primera ejecución en Linux Mint** y corregir lo que falle al arrancar y
   al abrir cada ventana.
-- **Verificación de memoria y seguridad** (pendiente, ver abajo).
+  - Intento 1: se detuvo al cargar los iconos ("Bitmap with unknown
+    compression"). Diez listas de imágenes seguían en el formato de
+    Windows/Delphi y Lazarus leía mal su máscara; se convirtieron al formato
+    de Lazarus, y el verificador de formularios ahora lo detecta.
+- **Verificación de memoria y seguridad:** lo que se puede hacer sin
+  interfaz gráfica está hecho; quedan las pruebas en Mint (ver abajo).
 - **Decidir la biblioteca gráfica: GTK2 o Qt6** (pendiente, ver abajo).
 - **Hecho cuando:** el IDE abre, se ven los menús, se puede abrir, editar y
   guardar un archivo, y quedó decidida la biblioteca gráfica.
 
-#### Verificación de memoria y seguridad (pendiente)
+#### Verificación de memoria y seguridad
 Free Pascal protege más que C (las cadenas se manejan solas y puede comprobar
-rangos), pero el código portado tiene puntos débiles: punteros, hilos,
-código de 64 bits y procesos externos. Lo marcado "Mac" se puede hacer sin
-interfaz gráfica; lo marcado "Mint" necesita el IDE corriendo.
+rangos), pero el código portado tenía puntos débiles: punteros, hilos,
+código de 64 bits y procesos externos. Lo que se puede hacer sin interfaz
+gráfica ya se hizo en la Mac; lo que necesita el IDE corriendo queda para
+Mint.
 
 Memoria:
 
-| # | Qué revisar | Por qué | Dónde |
-|---|---|---|---|
-| 1 | Un modo de compilación **Debug** con comprobaciones (`-Cr -Co -Ct -CR -Sa -gh -gl`) | Hoy se compila sin comprobaciones: un índice fuera de rango lee memoria ajena en silencio. Con `-Cr` se vuelve un error con archivo y línea; `-gh` lista las fugas de memoria al cerrar | Crear: Mac. Usar en las primeras ejecuciones: Mint |
-| 2 | **31 conversiones entre punteros y enteros** (15 en `main.pas`, 6 en `Project.pas`, 5 en `ProjectOptionsFrm.pas`, 3 en `NewProjectFrm.pas`, 1 en `CompOptionsFrame.pas`, 1 en `EditorList.pas`) | La mayoría guardan un índice en `Node.Data`, y eso es seguro. Si alguna guarda un objeto en un `Integer`, en 64 bits el puntero se corta a la mitad y el programa se cae | Mac |
-| 3 | **El parser de C++ con punteros crudos** (cientos de usos de `PChar` y `^`) | Analiza cualquier archivo que se abra, con sus cabeceras. Hay que correr `ParserTest` con comprobaciones y con entradas dañadas: binarios, comentarios sin cerrar, `#include` que se incluyen a sí mismos, macros recursivas, líneas enormes | Mac |
-| 4 | **Conversiones de posiciones del editor** (texto ↔ pantalla) | Con tabulaciones y caracteres UTF-8 de varios bytes (á, ñ, emoji) puede haber errores de uno; el modo Debug los atrapa | Mint |
-| 5 | **Hilos y su ciclo de vida** | El lector de gdb lee del pipe del proceso: el hilo debe terminar antes de liberar el proceso. También el monitor de archivos y los ítems sustitutos de los menús emergentes | Revisión: Mac. Prueba: Mint |
-| 6 | **Funciones que pueden devolver basura** | El compilador avisa de resultados sin asignar (`devCFG.pas` líneas 2756 y 2897) y sin inicializar (`Utils.pas` 764, `Templates.pas` 230 y 287) | Mac |
-| 7 | **Fugas y errores en la parte de GTK** | valgrind sobre una sesión corta del IDE (con la unidad `cmem`, para que valgrind vea las asignaciones) | Mint |
+| # | Qué | Resultado |
+|---|---|---|
+| 1 | Modo de compilación **Debug** con comprobaciones (`-Cr -Co -Ct -CR -Sa -gh -gl`) | ✅ `lazbuild --bm=Debug Source/penguin-cpp.lpi` genera `penguin-cpp-debug`: un índice fuera de rango es un error con archivo y línea, y al cerrar lista la memoria no liberada. Queda **usarlo en las primeras ejecuciones en Mint** |
+| 2 | **31 conversiones entre punteros y enteros** | ✅ Todas guardaban números (índices, PIDs), ninguna un objeto; pasaron a `PtrInt`, el entero del tamaño de un puntero |
+| 3 | **El parser de C++** con comprobaciones y entradas dañadas | ✅ Se corrigieron 4 lecturas fuera de la cadena, 3 cuelgues (macros recursivas, resultados negativos en `#if`) y una fuga en cada análisis. Con la lectura fuera de rango corregida, el parser encuentra 10 698 declaraciones en las cabeceras del sistema (se cortaba en 247). `Tests/ParserTest/fuzz.py` prueba 39 casos dañados y cientos de mutaciones; todos pasan |
+| 4 | **Conversiones de posiciones del editor** (texto ↔ pantalla) | ⏳ Mint, con el modo Debug: tabulaciones y caracteres UTF-8 de varios bytes (á, ñ, emoji) |
+| 5 | **Hilos y su ciclo de vida** | ✅ El lector de gdb podía leer de un pipe ya liberado al cerrar el IDE o al reiniciar la depuración; ahora se espera a que termine. El monitor de archivos y los menús emergentes se revisaron y están bien. ⏳ Probar una sesión de depuración en Mint (fase 7) |
+| 6 | **Funciones que podían devolver basura** | ✅ `Templates` (borraba registros con cadenas usando `FillChar`), `FormatList`, `GetForInit` y `FormatMemory` |
+| 7 | **Fugas y errores en la parte de GTK** | ⏳ Mint: valgrind sobre una sesión corta del IDE (con la unidad `cmem`, para que valgrind vea las asignaciones) |
 
 Seguridad:
 
-| # | Qué revisar | Por qué | Dónde |
-|---|---|---|---|
-| 1 | **Archivo temporal con nombre fijo**: la vista previa de los formateadores escribe `/tmp/DummyInput.txt` | En `/tmp`, otro usuario puede crear antes ese nombre como enlace y hacer que se sobrescriba un archivo tuyo. Hay que usar un nombre único o una carpeta privada (`~/.cache/penguin-cpp`) | Mac |
-| 2 | **Cómo se lanzan los programas** | Hoy ningún comando pasa por `/bin/sh`: todo usa `TProcess` con argumentos, y hay que mantenerlo así. Probar nombres de archivo con espacios, comillas, `$`, `;` y saltos de línea | Mac + Mint |
+| # | Qué | Resultado |
+|---|---|---|
+| 1 | **Archivos temporales con nombre fijo en `/tmp`** | ✅ Los formateadores copiaban tu código a `/tmp/<nombre del archivo>` (y `DummyInput.txt`), sin borrarlo; otro usuario podía dejar un enlace con ese nombre. Ahora usan `~/.cache/penguin-cpp/tmp/` (permisos 0700) y borran la copia |
+| 2 | **Cómo se lanzan los programas** | ✅ Ningún comando pasa por `/bin/sh`, así que `$(...)`, `;` y comillas invertidas en nombres de archivo son texto literal. ⚠️ Pero un nombre con `"` puede agregar argumentos, y los Makefiles sí pasan por el shell: ver fase 6 |
+
+Para probar en Mint con el modo Debug:
+
+```bash
+lazbuild --bm=Debug Source/penguin-cpp.lpi
+./penguin-cpp-debug
+```
+
+Al cerrarlo, la terminal muestra la memoria no liberada con archivo y línea.
+Si lazbuild da un "Internal error" del compilador después de cambios, se
+compila todo de nuevo con `-B`.
 
 Los pendientes de seguridad de otras fases están en su lugar: la instancia
-única (fase 3), `INTERNAL_DEL` y los proyectos de terceros (fase 6), y el
-mantenimiento de GTK2 (abajo).
+única (fase 3), los nombres de archivo en los comandos, `INTERNAL_DEL` y los
+proyectos de terceros (fase 6), y el mantenimiento de GTK2 (abajo).
 
 #### Biblioteca gráfica: GTK2 o Qt6 (pendiente)
 La biblioteca gráfica es la que dibuja las ventanas, botones y menús. En
@@ -322,6 +339,16 @@ Falta:
 - Revisar las rutas con `\` escritas a mano que quedan (`main.pas`,
   `Compiler.pas`, `Project.pas`, `Utils.pas`).
 - Seguridad (pendiente):
+  - **Nombres de archivo en los comandos:** los comandos se arman como texto
+    con los nombres entre comillas dobles y se parten en argumentos sin shell.
+    Un archivo llamado `a" -o /home/u/.bashrc "b.cpp` (que puede venir en un
+    proyecto descargado) agregaría argumentos y gcc escribiría sobre ese
+    archivo. Pasar cada argumento por separado a `TProcess`, o rechazar
+    nombres con `"`.
+  - **Makefiles:** `make` ejecuta cada receta con `/bin/sh`, así que ahí un
+    archivo llamado `$(…).cpp` **sí ejecutaría código**. El generador de
+    Makefiles tiene que citar cada nombre para el shell (comillas simples,
+    con `'` escrito como `'\''`).
   - **`INTERNAL_DEL`:** hoy el ejecutable borra los archivos que le pasen (lo
     usa `make clean`). Solo borra los que se le indican, sin comodines ni
     carpetas. Reemplazarlo por `rm -f` en los Makefiles y quitar ese modo.

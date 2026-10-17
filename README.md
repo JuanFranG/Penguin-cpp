@@ -1,6 +1,10 @@
-# Penguin cpp
+<p align="center">
+  <img src="Source/Images/AppIcon/hicolor/256x256/apps/penguin-cpp.png" alt="Icono de Penguin cpp" width="180">
+</p>
 
-**Un IDE de C/C++ sencillo, libre y nativo para Linux.**
+<h1 align="center">Penguin cpp</h1>
+
+<p align="center"><strong>Un IDE de C/C++ sencillo, libre y nativo para Linux.</strong></p>
 
 Penguin cpp expande Embarcadero Dev-C++ a Linux. Es el mismo entorno ligero
 con el que mucha gente aprende C y C++, ahora como programa nativo de Linux,

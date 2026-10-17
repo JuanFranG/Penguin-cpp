@@ -1,5 +1,3 @@
-CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "..\devcpp.exe.manifest"
-
 English lng ..\lang\English.lng
 
 /* default order of highlighter component

@@ -202,6 +202,8 @@ type
     procedure GotoLine;
     procedure SetCaretPosAndActivate(Line, Col: integer); // needs to activate in order to place cursor properly
     procedure ExportToHTML;
+    procedure ExportToRTF;
+    procedure ExportToTEX;
     procedure InsertString(Value: String; MoveCursor: boolean);
     procedure SetErrorFocus(Col, Line: integer);
     procedure GotoActiveBreakpoint;
@@ -234,7 +236,7 @@ implementation
 
 uses
   main, Project, MultiLangSupport, devCFG, Utils, DataFrm, GotoLineFrm, Macros, DebugReader,
-  IncrementalFrm, CodeCompletionForm, SynEditMiscClasses, CharUtils;
+  IncrementalFrm, CodeCompletionForm, SynEditMiscClasses, CharUtils, EditorPrint, PdfPrint, CodeExport;
 
 { TCloseTabSheet }
 constructor TCloseTabSheet.Create(AOwner:TComponent);
@@ -769,6 +771,57 @@ begin
   finally
     SynExporterHTML.Free;
   end;
+end;
+
+// Asks where to save an export; '' when the user cancels
+function AskExportFileName(const SourceFile, AExt, AFilter: String): String;
+begin
+  Result := '';
+  with TSaveDialog.Create(nil) do try
+    Filter := AFilter;
+    Title := Lang[ID_NV_EXPORT];
+    DefaultExt := AExt;
+    Options := Options + [ofOverwritePrompt];
+    FileName := ChangeFileExt(ExtractFileName(SourceFile), AExt);
+    InitialDir := ExtractFilePath(SourceFile);
+    if Execute then
+      Result := FileName;
+  finally
+    Free;
+  end;
+end;
+
+// RTF and TeX: Lazarus' SynEdit has no exporters for them (see CodeExport)
+procedure TEditor.ExportToRTF;
+var
+  SaveFileName: String;
+  Options: TExportOptions;
+begin
+  SaveFileName := AskExportFileName(fFileName, RTF_EXT, 'Rich Text Format (*.rtf)|*.rtf');
+  if SaveFileName = '' then
+    Exit;
+  Options.Title := ExtractFileName(fFileName);
+  Options.FontName := fText.Font.Name;
+  Options.FontSize := Max(6, devEditor.Font.Size); // the editor's Font.Size may be 0, "default"
+  Options.TabWidth := devEditor.TabSize;
+  ExportRTF(CollectSource(SourceOfEditor(fText), True, True, False, Options.TextRGB, Options.BackRGB),
+    Options, SaveFileName);
+end;
+
+procedure TEditor.ExportToTEX;
+var
+  SaveFileName: String;
+  Options: TExportOptions;
+begin
+  SaveFileName := AskExportFileName(fFileName, TEX_EXT, 'TeX (*.tex)|*.tex');
+  if SaveFileName = '' then
+    Exit;
+  Options.Title := ExtractFileName(fFileName);
+  Options.FontName := fText.Font.Name;
+  Options.FontSize := Max(6, devEditor.Font.Size); // the editor's Font.Size may be 0, "default"
+  Options.TabWidth := devEditor.TabSize;
+  ExportTeX(CollectSource(SourceOfEditor(fText), True, True, False, Options.TextRGB, Options.BackRGB),
+    Options, SaveFileName);
 end;
 
 procedure TEditor.GotoLine;

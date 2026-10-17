@@ -6319,6 +6319,12 @@ object MainForm: TMainForm
         object HTMLItem: TMenuItem
           Action = actExportHTML
         end
+        object RTFItem: TMenuItem
+          Action = actExportRTF
+        end
+        object TEXItem: TMenuItem
+          Action = actExportTex
+        end
         object N19: TMenuItem
           Caption = '-'
         end
@@ -7079,6 +7085,20 @@ object MainForm: TMainForm
       Category = 'File'
       Caption = 'to &HTML'
       OnExecute = actExportHTMLExecute
+      OnUpdate = actUpdateEmptyEditor
+    end
+    object actExportRTF: TAction
+      Tag = 2
+      Category = 'File'
+      Caption = 'to &RTF'
+      OnExecute = actExportRTFExecute
+      OnUpdate = actUpdateEmptyEditor
+    end
+    object actExportTex: TAction
+      Tag = 3
+      Category = 'File'
+      Caption = 'to &Tex'
+      OnExecute = actExportTexExecute
       OnUpdate = actUpdateEmptyEditor
     end
     object actExportProject: TAction

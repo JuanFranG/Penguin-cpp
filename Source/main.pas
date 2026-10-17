@@ -179,6 +179,10 @@ type
     actCloseAll: TAction;
     actCloseProject: TAction;
     actExportHTML: TAction;
+    actExportRTF: TAction;
+    actExportTex: TAction;
+    RTFItem: TMenuItem;
+    TEXItem: TMenuItem;
     actExportProject: TAction;
     actPrint: TAction;
     actPrintSU: TAction;
@@ -593,6 +597,8 @@ type
     procedure actCloseAllExecute(Sender: TObject);
     procedure actCloseProjectExecute(Sender: TObject);
     procedure actExportHTMLExecute(Sender: TObject);
+    procedure actExportRTFExecute(Sender: TObject);
+    procedure actExportTexExecute(Sender: TObject);
     procedure actExportProjectExecute(Sender: TObject);
     procedure actPrintExecute(Sender: TObject);
     procedure actPrintSUExecute(Sender: TObject);
@@ -1185,6 +1191,8 @@ begin
   // Exprt submenu
   ExportItem.Caption := Lang[ID_SUB_EXPORT];
   actExportHTML.Caption := Lang[ID_ITEM_EXPORTHTML];
+  actExportRTF.Caption := Lang[ID_ITEM_EXPORTRTF];
+  actExportTex.Caption := Lang[ID_ITEM_EXPORTTEX];
   actExportProject.Caption := Lang[ID_ITEM_EXPORTPROJECT];
 
   // Top level
@@ -2273,6 +2281,24 @@ begin
   e := fEditorList.GetEditor;
   if assigned(e) then
     e.ExportToHTML;
+end;
+
+procedure TMainForm.actExportRTFExecute(Sender: TObject);
+var
+  e: TEditor;
+begin
+  e := fEditorList.GetEditor;
+  if Assigned(e) then
+    e.ExportToRTF;
+end;
+
+procedure TMainForm.actExportTexExecute(Sender: TObject);
+var
+  e: TEditor;
+begin
+  e := fEditorList.GetEditor;
+  if Assigned(e) then
+    e.ExportToTEX;
 end;
 
 procedure TMainForm.actExportProjectExecute(Sender: TObject);

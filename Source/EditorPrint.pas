@@ -39,6 +39,15 @@ type
     SelStart, SelEnd: TPoint; // logical (byte) positions, from 1
   end;
 
+// An editor's text, highlighter, colors and selection
+function SourceOfEditor(Editor: TCustomSynEdit): TPrintSource;
+
+// The lines (or the selected part) as runs of one color and style. Without
+// Colors every run is black; without Highlight none is bold or italic.
+// TextRGB and BackRGB are the colors where the highlighter gives none.
+function CollectSource(const Source: TPrintSource; Colors, Highlight, SelectionOnly: Boolean;
+  out TextRGB, BackRGB: Cardinal): TPrintLines;
+
 // Writes the editor's text (or its selection) to a PDF; returns the pages
 function PrintEditorToPDF(Editor: TCustomSynEdit; const Options: TEditorPrintOptions; const FileName: String): Integer;
 
@@ -58,22 +67,25 @@ begin
   Result := ((C and $FF) shl 16) or (C and $FF00) or ((C shr 16) and $FF);
 end;
 
-function PrintEditorToPDF(Editor: TCustomSynEdit; const Options: TEditorPrintOptions; const FileName: String): Integer;
-var
-  Source: TPrintSource;
+function SourceOfEditor(Editor: TCustomSynEdit): TPrintSource;
 begin
-  Source.Lines := Editor.Lines;
-  Source.Highlighter := Editor.Highlighter;
-  Source.FontName := Editor.Font.Name;
-  Source.TextColor := Editor.Font.Color;
-  Source.BackColor := Editor.Color;
-  Source.HasSelection := Editor.SelAvail;
-  Source.SelStart := Editor.BlockBegin;
-  Source.SelEnd := Editor.BlockEnd;
-  Result := PrintSourceToPDF(Source, Options, FileName);
+  Result.Lines := Editor.Lines;
+  Result.Highlighter := Editor.Highlighter;
+  Result.FontName := Editor.Font.Name;
+  Result.TextColor := Editor.Font.Color;
+  Result.BackColor := Editor.Color;
+  Result.HasSelection := Editor.SelAvail;
+  Result.SelStart := Editor.BlockBegin;
+  Result.SelEnd := Editor.BlockEnd;
 end;
 
-function PrintSourceToPDF(const Source: TPrintSource; const Options: TEditorPrintOptions; const FileName: String): Integer;
+function PrintEditorToPDF(Editor: TCustomSynEdit; const Options: TEditorPrintOptions; const FileName: String): Integer;
+begin
+  Result := PrintSourceToPDF(SourceOfEditor(Editor), Options, FileName);
+end;
+
+function CollectSource(const Source: TPrintSource; Colors, Highlight, SelectionOnly: Boolean;
+  out TextRGB, BackRGB: Cardinal): TPrintLines;
 var
   Lines: TPrintLines;
   Copy_: TSynEditStringList;
@@ -83,7 +95,6 @@ var
   StartPt, EndPt: TPoint;
   TextColor, BackColor: TColor;
   Token, Part: String;
-  PdfOptions: TPdfPrintOptions;
 
   procedure AddSegment(const AText: String; AColor: TColor; AStyle: TFontStyles);
   var
@@ -92,14 +103,14 @@ var
     if AText = '' then
       Exit;
     Seg.Text := AText;
-    if Options.Colors and (AColor <> clNone) and (AColor <> clDefault) then
+    if Colors and (AColor <> clNone) and (AColor <> clDefault) then
       Seg.RGB := ToRGB(AColor)
-    else if Options.Colors then
+    else if Colors then
       Seg.RGB := ToRGB(TextColor)
     else
       Seg.RGB := 0; // black
-    Seg.Bold := Options.Highlight and (fsBold in AStyle);
-    Seg.Italic := Options.Highlight and (fsItalic in AStyle);
+    Seg.Bold := Highlight and (fsBold in AStyle);
+    Seg.Italic := Highlight and (fsItalic in AStyle);
     SetLength(Lines[High(Lines)].Segments, Length(Lines[High(Lines)].Segments) + 1);
     Lines[High(Lines)].Segments[High(Lines[High(Lines)].Segments)] := Seg;
   end;
@@ -110,7 +121,7 @@ begin
   Last := Source.Lines.Count;
   StartPt := Point(1, 1);
   EndPt := Point(MaxInt, Last);
-  if Options.SelectionOnly and Source.HasSelection then begin
+  if SelectionOnly and Source.HasSelection then begin
     StartPt := Source.SelStart;
     EndPt := Source.SelEnd;
     First := StartPt.Y;
@@ -130,6 +141,10 @@ begin
   end;
   if TextColor = clDefault then
     TextColor := clBlack;
+  if BackColor = clDefault then
+    BackColor := clWhite;
+  TextRGB := ToRGB(TextColor);
+  BackRGB := ToRGB(BackColor);
 
   Lines := nil;
   Copy_ := nil;
@@ -189,15 +204,24 @@ begin
     end;
     Copy_.Free;
   end;
+  Result := Lines;
+end;
 
+function PrintSourceToPDF(const Source: TPrintSource; const Options: TEditorPrintOptions; const FileName: String): Integer;
+var
+  Lines: TPrintLines;
+  TextRGB, BackRGB: Cardinal;
+  PdfOptions: TPdfPrintOptions;
+begin
+  Lines := CollectSource(Source, Options.Colors, Options.Highlight, Options.SelectionOnly, TextRGB, BackRGB);
   PdfOptions.Title := Options.Title;
   PdfOptions.LineNumbers := Options.LineNumbers;
   PdfOptions.NumbersInMargin := Options.LineNumbersInMargin;
   PdfOptions.WordWrap := Options.WordWrap;
-  PdfOptions.PaintBackground := Options.Colors and (ColorToRGB(BackColor) <> ColorToRGB(clWhite));
-  PdfOptions.BackRGB := ToRGB(BackColor);
+  PdfOptions.PaintBackground := Options.Colors and (BackRGB <> $FFFFFF);
+  PdfOptions.BackRGB := BackRGB;
   if Options.Colors then
-    PdfOptions.TextRGB := ToRGB(TextColor)
+    PdfOptions.TextRGB := TextRGB
   else
     PdfOptions.TextRGB := $404040;
   PdfOptions.TabWidth := Options.TabWidth;

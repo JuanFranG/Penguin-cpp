@@ -112,7 +112,7 @@ al publicarla. Hoy `main` incluye las fases 1 a 4 (`fase4/lazarus`).
 | 3 · Capa de sistema | `fase3/capa-sistema` | ✅ Hecha, probada en Mint |
 | 4 · Port a Lazarus y formularios | `fase4/lazarus` | 🔄 Abre, funciona y cierra bien en Mint con Qt5; falta Buscar/Ir a línea |
 | 4b · Identidad visual y temas | `fase4/lazarus` | 🔄 Icono, esquemas del editor y paneles con la paleta listos; faltan menús y diálogos (con Qt5) |
-| 5 · Editor (SynEdit de Lazarus) | `fase5/editor` | 🔄 Impresión, exportación a RTF/TeX y plegado hechos; falta probarlos en Mint |
+| 5 · Editor (SynEdit de Lazarus) | `fase5/editor` | ✅ Hecha, probada en Mint: impresión, exportación a RTF/TeX y plegado |
 | 6 · Compilación con el gcc de Linux | — | ⏳ Pendiente |
 | 7 · Depurador (GDB/MI) | — | ⏳ Pendiente |
 | 8 · Paquete `.deb` y pulido | — | ⏳ Pendiente |
@@ -374,7 +374,7 @@ Falta:
 - **Hecho cuando:** con un esquema claro u oscuro, todo el IDE (editor,
   paneles, menús y diálogos) se ve con la paleta.
 
-### Fase 5 · Editor 🔄
+### Fase 5 · Editor ✅
 Gran parte se adelantó en la fase 4:
 - `TSynEditEx` mantiene la API del editor original, que trabaja con
   posiciones en el texto de la línea. El SynEdit de Lazarus usa columnas de

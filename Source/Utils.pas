@@ -825,6 +825,14 @@ begin
     result := FileExists(s2 + FileName);
 end;
 
+// Fonts with pictures or math symbols instead of letters, in case fontconfig
+// still lists them
+function IsSymbolFont(const FontName: String): Boolean;
+begin
+  Result := ContainsText(FontName, 'Emoji') or ContainsText(FontName, 'MathJax') or
+    ContainsText(FontName, 'Symbol') or ContainsText(FontName, 'Dingbat');
+end;
+
 procedure GetMonospaceFonts(List: TStrings);
 var
   Bmp: TBitmap;
@@ -833,7 +841,9 @@ var
 begin
   List.Clear;
   // fontconfig knows which fonts are monospaced: "fc-list :spacing=mono family"
-  // prints one font per line, with its family names separated by commas
+  // prints one font per line, with its family names separated by commas.
+  // lang=en leaves out the ones without Latin letters, which fontconfig also
+  // counts as monospaced: emoji (Noto Color Emoji) and symbol fonts (MathJax)
   Mono := TStringList.Create;
   Line := TStringList.Create;
   try
@@ -841,7 +851,7 @@ begin
     Mono.Duplicates := dupIgnore;
     Mono.CaseSensitive := False;
     try
-      Line.Text := RunAndGetOutput('fc-list :spacing=mono family', '', nil, nil, False);
+      Line.Text := RunAndGetOutput('fc-list :spacing=mono:lang=en family', '', nil, nil, False);
     except
       Line.Clear; // no fontconfig
     end;
@@ -849,7 +859,7 @@ begin
       for J := 0 to WordCount(Line[I], [',']) - 1 do
         Mono.Add(Trim(ExtractWord(J + 1, Line[I], [','])));
     for I := 0 to Screen.Fonts.Count - 1 do
-      if Mono.IndexOf(Screen.Fonts[I]) >= 0 then
+      if (Mono.IndexOf(Screen.Fonts[I]) >= 0) and not IsSymbolFont(Screen.Fonts[I]) then
         List.Add(Screen.Fonts[I]);
   finally
     Line.Free;
@@ -866,7 +876,7 @@ begin
     for I := 0 to Screen.Fonts.Count - 1 do begin
       Bmp.Canvas.Font.Name := Screen.Fonts[I];
       Bmp.Canvas.Font.Size := 12;
-      if (Bmp.Canvas.TextWidth('iiiiii') > 0) and
+      if (Bmp.Canvas.TextWidth('iiiiii') > 0) and not IsSymbolFont(Screen.Fonts[I]) and
         (Bmp.Canvas.TextWidth('iiiiii') = Bmp.Canvas.TextWidth('WWWWWW')) then
         List.Add(Screen.Fonts[I]);
     end;

@@ -19,15 +19,12 @@
 
 unit CppTokenizer;
 
+{$IFDEF FPC}{$MODE DELPHI}{$ENDIF}
+
 interface
 
 uses
-{$IFDEF WIN32}
-  Windows, Classes, SysUtils, StrUtils, ComCtrls, Math, cbutils, CharUtils;
-{$ENDIF}
-{$IFDEF LINUX}
-Classes, SysUtils, StrUtils, QComCtrls;
-{$ENDIF}
+  Classes, SysUtils, StrUtils, Math, CBUtils, CharUtils;
 
 type
   PToken = ^TToken;
@@ -94,7 +91,7 @@ procedure Register;
 implementation
 
 uses
-  System.Character, DateUtils;
+  DateUtils;
 
 procedure Register;
 begin
@@ -387,7 +384,7 @@ var
 begin
   Offset := pCurrent;
 
-  if pCurrent^.IsDigit then
+  if pCurrent^ in DigitChars then
     while pCurrent^ in DigitChars + HexChars do
       Advance;
 

@@ -1,15 +1,21 @@
 unit CharUtils;
 
+{$IFDEF FPC}{$MODE DELPHI}{$ENDIF}
+
 interface
 
 uses
-  System.SysUtils;
+  SysUtils;
 
 
 const
   Operators: array[0..16] of string = ('*', '/', '+', '-', '<', '<=', '>', '>=', '==', '!=', '&', '^', '|', '&&', '||', 'and', 'or');
 
 type
+{$IFDEF FPC}
+  // Strings are 8-bit (UTF-8) under Lazarus, so a native char set is exact
+  TSetOfChar = TSysCharSet;
+{$ELSE}
   TSetOfChar = record
   private
     FSet: TArray<Char>;
@@ -21,6 +27,7 @@ type
     class operator Add(const ASet1, ASet2: TSetOfChar): TSetOfChar; inline;
     class operator Implicit(const AAnsiSet: TSysCharSet): TSetOfChar; inline;
   end;
+{$ENDIF}
 
 
 var
@@ -39,7 +46,7 @@ const
   DefSpaceChars: TSysCharSet = [#32, #9];
   DefDigitChars: TSysCharSet = ['0'..'9'];
 //  DefOperatorChars: TSysCharSet = ['+', '-', '*', '/', '!', '=', '<', '>', '&', '|', '^'];
-  DefOperatorChars: TSysCharSet = ['+', '-', '/', '*', '[', ']', '=', '%', '!', '&', '|', '>', '<', '^', '!']; //is they must be different?
+  DefOperatorChars: TSysCharSet = ['+', '-', '/', '*', '[', ']', '=', '%', '!', '&', '|', '>', '<', '^'];
 
   DefIdentChars: TSysCharSet = ['A'..'Z', '0'..'9', 'a'..'z', '_', '*', '&', '~'];
   DefMacroIdentChars: TSysCharSet = ['A'..'Z', 'a'..'z', '_'];
@@ -49,6 +56,7 @@ const
 
 implementation
 
+{$IFNDEF FPC}
 { TSetOfChar }
 
 
@@ -83,6 +91,7 @@ begin
   for var AChar in AAnsiSet do
     Add(AChar);
 end;
+{$ENDIF}
 
 initialization
   LineChars := TSetOfChar(DefLineChars);

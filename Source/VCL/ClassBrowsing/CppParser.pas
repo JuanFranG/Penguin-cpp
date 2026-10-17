@@ -19,16 +19,13 @@
 
 unit CppParser;
 
+{$IFDEF FPC}{$MODE DELPHI}{$ENDIF}
+
 interface
 
 uses
-{$IFDEF WIN32}
-  Dialogs, Windows, Classes, SysUtils, StrUtils, ComCtrls, StatementList, IntList, CppTokenizer, CppPreprocessor,
-  cbutils;
-{$ENDIF}
-{$IFDEF LINUX}
-QDialogs, Classes, SysUtils, StrUtils, QComCtrls, U_IntList, CppTokenizer;
-{$ENDIF}
+  Classes, SysUtils, StrUtils, StatementList, IntList, CppTokenizer, CppPreprocessor,
+  CBUtils;
 
 type
   TCppParser = class(TComponent)
@@ -1897,7 +1894,7 @@ end;
 
 procedure TCppParser.AddFileToScan(Value: String; InProject: boolean);
 begin
-  Value := StringReplace(Value, '/', '\', [rfReplaceAll]); // only accept full file names
+  Value := StringReplace(Value, '/', PathDelim, [rfReplaceAll]); // only accept full file names
 
   // Update project listing
   if InProject then

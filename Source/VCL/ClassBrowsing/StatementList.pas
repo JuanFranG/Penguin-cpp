@@ -19,10 +19,12 @@
 
 unit StatementList;
 
+{$IFDEF FPC}{$MODE DELPHI}{$ENDIF}
+
 interface
 
 uses
-  Classes, CBUtils, Forms, SysUtils;
+  Classes, CBUtils, SysUtils;
 
 type
   PStatementNode = ^TStatementNode;

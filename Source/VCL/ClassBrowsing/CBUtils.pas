@@ -19,15 +19,12 @@
 
 unit CBUtils;
 
+{$IFDEF FPC}{$MODE DELPHI}{$ENDIF}
+
 interface
 
 uses
-{$IFDEF WIN32}
-  SysUtils, StrUtils, Classes, System.AnsiStrings;
-{$ENDIF}
-{$IFDEF LINUX}
-SysUtils, StrUtils;
-{$ENDIF}
+  SysUtils, StrUtils, Classes;
 
 const
   HeaderExts: array[0..6] of String = ('.h', '.hpp', '.rh', '.hh', '.hxx', '.inl', '');
@@ -208,7 +205,7 @@ var
 begin
   SubTextLocation := Length(text) - Length(subtext) + 1;
   if (SubTextLocation > 0) and (subtext <> '') then
-    Result := System.AnsiStrings.StrComp(Pointer(subtext), Pointer(@text[SubTextLocation])) = 0
+    Result := CompareStr(subtext, Copy(text, SubTextLocation, Length(subtext))) = 0
   else
     Result := False;
 end;
@@ -219,7 +216,7 @@ var
 begin
   SubTextLocation := Length(text) - Length(subtext) + 1;
   if (SubTextLocation > 0) and (subtext <> '') then
-    Result := System.AnsiStrings.StrIComp(Pointer(subtext), Pointer(@text[SubTextLocation])) = 0
+    Result := CompareText(subtext, Copy(text, SubTextLocation, Length(subtext))) = 0
   else
     Result := False;
 end;
@@ -272,6 +269,15 @@ begin
     result := ((Length(S) - Length(SubStr)) + 1) - result + 1;
 end;
 
+function IsFullFileName(const FileName: String): boolean;
+begin
+{$IFDEF MSWINDOWS}
+  Result := (Length(FileName) > 2) and (FileName[2] = ':'); // C:\...
+{$ELSE}
+  Result := (FileName <> '') and (FileName[1] = PathDelim); // /...
+{$ENDIF}
+end;
+
 function IsSystemHeaderFile(const FileName: String; IncludePaths: TStringList): boolean;
 var
   FilePath: String;
@@ -280,7 +286,7 @@ begin
   Result := false;
 
   // If it's a full file name, check if its directory is an include path
-  if (Length(FileName) > 2) and (FileName[2] = ':') then begin // full file name
+  if IsFullFileName(FileName) then begin
     Result := false;
     if FileExists(FileName) then begin // the file must exist
       FilePath := ExtractFileDir(FileName); // also extracts last \
@@ -295,7 +301,7 @@ begin
     // Not a full file name, check if it's in a include path
   end else begin
     for I := 0 to IncludePaths.Count - 1 do
-      if FileExists(IncludePaths[I] + '\' + FileName) then begin
+      if FileExists(IncludePaths[I] + PathDelim + FileName) then begin
         Result := true;
         Exit;
       end;
@@ -337,8 +343,8 @@ begin
 
   // Search project include directories
   for I := 0 to ProjectIncludePaths.Count - 1 do
-    if FileExists(ProjectIncludePaths[I] + '\' + FileName) then begin
-      Result := ProjectIncludePaths[I] + '\' + FileName;
+    if FileExists(ProjectIncludePaths[I] + PathDelim + FileName) then begin
+      Result := ProjectIncludePaths[I] + PathDelim + FileName;
       Exit;
     end;
 
@@ -359,8 +365,8 @@ begin
 
   // Search compiler include directories
   for I := 0 to IncludePaths.Count - 1 do
-    if FileExists(IncludePaths[I] + '\' + FileName) then begin
-      Result := IncludePaths[I] + '\' + FileName;
+    if FileExists(IncludePaths[I] + PathDelim + FileName) then begin
+      Result := IncludePaths[I] + PathDelim + FileName;
       Exit;
     end;
 

@@ -19,15 +19,12 @@
 
 unit CppPreprocessor;
 
+{$IFDEF FPC}{$MODE DELPHI}{$ENDIF}
+
 interface
 
 uses
-{$IFDEF WIN32}
-  Windows, Classes, SysUtils, StrUtils, ComCtrls, Math, IntList, cbutils, CharUtils;
-{$ENDIF}
-{$IFDEF LINUX}
-Classes, SysUtils, StrUtils, QComCtrls;
-{$ENDIF}
+  Classes, SysUtils, StrUtils, Math, IntList, CBUtils, CharUtils;
 
 type
   PFile = ^TFile;

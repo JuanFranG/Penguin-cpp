@@ -10,6 +10,7 @@
       </Flags>
       <SessionStorage Value="InProjectDir"/>
       <Title Value="Penguin cpp"/>
+      <Icon Value="0"/>
       <Scaled Value="True"/>
       <ResourceType Value="res"/>
       <Resources Count="5">

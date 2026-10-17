@@ -95,6 +95,7 @@ Pruebas de consola:
 | `Source/Tests/ParserTest/build.sh --run` | El parser de C++ con las cabeceras reales del sistema (`<iostream>`, `<vector>`…) y el preprocesador (`#if/#elif/#else`) | fpc, g++ |
 | `Source/Tests/PlatformTest/build.sh --run` | Procesos, carpeta de configuración, abrir archivos y monitor de archivos | fpc |
 | `Source/Tests/LfmCheck/check.sh` | Que cada formulario (`.lfm`) solo use clases, propiedades, valores y eventos que existen | lazbuild, python3 |
+| `Source/Tests/FoldTest/build.sh --run` | Dónde abre y cierra el plegado de C++ (llaves, regiones, llaves en cadenas y comentarios) y que `Tests/Folds/main.cpp` quede balanceado | lazbuild |
 
 ---
 
@@ -111,7 +112,7 @@ al publicarla. Hoy `main` incluye las fases 1 a 4 (`fase4/lazarus`).
 | 3 · Capa de sistema | `fase3/capa-sistema` | ✅ Hecha, probada en Mint |
 | 4 · Port a Lazarus y formularios | `fase4/lazarus` | 🔄 Abre y funciona en Mint con Qt5; faltan el error al cerrar y Buscar/Ir a línea |
 | 4b · Identidad visual y temas | `fase4/lazarus` | 🔄 Icono, esquemas del editor y paneles con la paleta listos; faltan menús y diálogos (con Qt5) |
-| 5 · Editor (SynEdit de Lazarus) | `fase5/editor` | 🔄 Impresión y exportación a RTF/TeX hechas; falta el plegado de código |
+| 5 · Editor (SynEdit de Lazarus) | `fase5/editor` | 🔄 Impresión, exportación a RTF/TeX y plegado hechos; falta probarlos en Mint |
 | 6 · Compilación con el gcc de Linux | — | ⏳ Pendiente |
 | 7 · Depurador (GDB/MI) | — | ⏳ Pendiente |
 | 8 · Paquete `.deb` y pulido | — | ⏳ Pendiente |
@@ -389,7 +390,17 @@ Falta:
 - Probar el autocompletado y los tooltips. El resaltado ya funciona.
 - **Buscar, Reemplazar e Ir a línea**: no funcionan en Mint; falta saber
   cómo fallan (ver "Siguiente ciclo de trabajo").
-- **Plegado de código para C++**: el resaltador C++ de Lazarus no lo trae.
+- ✅ **Plegado de código para C++** (falta probarlo en Mint). En el SynEdit
+  de Lazarus el plegado lo da el resaltador, y el de C++ no lo trae:
+  - `SynHighlighterCppFold.pas` (`TSynCppFoldSyn`) usa el `TSynCppSyn` de
+    Lazarus para separar el texto, sin copiarlo ni cambiarlo, y abre los
+    pliegues donde lo hacía Dev-C++: entre llaves (no las de cadenas ni
+    comentarios) y entre `//#region` y `//#endregion`.
+  - Los editores de C/C++ muestran la columna de plegado con el color
+    "Folding lines" del esquema.
+  - Editar → Plegar todo / Desplegar todo vuelven a funcionar, e Ir a línea
+    despliega la línea buscada.
+  - `Tests/FoldTest` lo comprueba.
 - ✅ **Impresión** (falta probarla en Mint). El SynEdit de Lazarus no trae
   impresión, así que:
   - `PdfPrint.pas` arma páginas A4 en un PDF con fcl-pdf, que viene con Free

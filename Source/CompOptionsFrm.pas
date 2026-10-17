@@ -119,7 +119,7 @@ type
 implementation
 
 uses
-  System.UItypes, ShellAPI, main, FileCtrl, Version, devCFG, Utils, MultiLangSupport, DataFrm;
+  System.UItypes, ShellAPI, main, FileCtrl, Version, devCFG, Utils, MultiLangSupport, DataFrm, devPlatform;
 
 {$R *.dfm}
 
@@ -578,7 +578,7 @@ end;
 
 procedure TCompOptForm.OptionsLinkClick(Sender: TObject);
 begin
-  ShellExecute(GetDesktopWindow(), 'open', PChar(TLabel(Sender).Caption), nil, nil, SW_SHOWNORMAL);
+  OpenDocument(TLabel(Sender).Caption);
 end;
 
 procedure TCompOptForm.cbCompAddClick(Sender: TObject);

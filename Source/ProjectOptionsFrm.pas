@@ -193,7 +193,7 @@ type
 implementation
 
 uses
-  System.UITypes, FileCtrl, devCFG, IconFrm, Utils, MultiLangSupport, Version, Math;
+  System.UITypes, FileCtrl, devCFG, IconFrm, Utils, MultiLangSupport, Version, Math, devPlatform;
 
 {$R *.dfm}
 
@@ -1167,7 +1167,7 @@ end;
 
 procedure TProjectOptionsFrm.OptionsLinkClick(Sender: TObject);
 begin
-  ShellExecute(GetDesktopWindow(), 'open', PChar(TLabel(Sender).Caption), nil, nil, SW_SHOWNORMAL);
+  OpenDocument(TLabel(Sender).Caption);
 end;
 
 procedure TProjectOptionsFrm.FormClose(Sender: TObject; var Action: TCloseAction);

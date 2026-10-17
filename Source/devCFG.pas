@@ -792,7 +792,7 @@ implementation
 
 uses
   MultiLangSupport, DataFrm, StrUtils, Forms, main, Compiler, Controls, Version, Utils, SynEditMiscClasses,
-  TypInfo, DateUtils, Types, System.IOUtils, Vcl.ExtDlgs;
+  TypInfo, DateUtils, Types, System.IOUtils, Vcl.ExtDlgs, devPlatform;
 
 procedure CreateOptions;
 var
@@ -2355,10 +2355,12 @@ begin
 end;
 
 procedure TdevDirs.SettoDefaults;
+{$IFNDEF FPC}
 var
   DocumentsPath: array[0..MAX_PATH] of Char;
 const
   CSIDL_MYDOCUMENTS = $05;
+{$ENDIF}
 begin
   fExec := IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName));
   fConfig := fExec;
@@ -2376,11 +2378,15 @@ begin
   end
   else
   begin
+{$IFDEF FPC}
+    fDefault := devPlatform.GetDocumentsDir;
+{$ELSE}
     // Get my documents folder
     if SHGetSpecialFolderPath(Application.Handle, DocumentsPath, CSIDL_MYDOCUMENTS, false) then
       fDefault := DocumentsPath
     else
       fDefault := fExec;
+{$ENDIF}
   end;
 end;
 

@@ -32,6 +32,7 @@ uses
   MultiLangSupport in 'MultiLangSupport.pas',
   Version in 'Version.pas',
   Utils in 'Utils.pas',
+  devPlatform in 'devPlatform.pas',
   Tests in 'Tests.pas',
   LangFrm in 'LangFrm.pas' {LangForm},
   Project in 'Project.pas',
@@ -146,11 +147,24 @@ begin
       CreateDir(ParamStr(2));
 
     // Store the INI file in the directory given to us
+{$IFDEF FPC}
+    if not (ParamStr(2)[1] in AllowDirectorySeparators) and (ExtractFileDrive(ParamStr(2)) = '') then // relative path
+{$ELSE}
     if ParamStr(2)[2] <> ':' then // if a relative path is specified...
-      devData.INIFileName := ExeFolder + IncludeTrailingBackslash(ParamStr(2)) + INIFileName
+{$ENDIF}
+      devData.INIFileName := ExeFolder + IncludeTrailingPathDelimiter(ParamStr(2)) + INIFileName
     else
-      devData.INIFileName := IncludeTrailingBackslash(ParamStr(2)) + INIFileName;
+      devData.INIFileName := IncludeTrailingPathDelimiter(ParamStr(2)) + INIFileName;
   end else begin
+{$IFDEF FPC}
+    // ~/.config/penguin-cpp/, or a config folder next to the program when portable
+    if (not devData.IsPortable) and ForceDirectories(GetConfigDir) then
+      devData.INIFileName := GetConfigDir + INIFileName
+    else begin
+      devData.INIFileName := ExeFolder + 'config' + PathDelim + INIFileName;
+      ForceDirectories(ExtractFilePath(devData.INIFileName));
+    end;
+{$ELSE}
     // default dir should be %APPDATA%\Embarcadero\Dev-Cpp
     AppData := IncludeTrailingBackslash(TPath.GetHomePath);
 
@@ -167,6 +181,7 @@ begin
       devData.INIFileName := ExeFolder + 'config\' + INIFileName;
       TDirectory.CreateDirectory(TPath.GetDirectoryName(devData.INIFileName));
     end;
+{$ENDIF}
   end;
 
   // Load settings

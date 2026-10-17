@@ -970,7 +970,7 @@ uses
   NewTemplateFrm, FunctionSearchFrm, NewFunctionFrm, NewVarFrm, NewClassFrm,
   ProfileAnalysisFrm, FilePropertiesFrm, AddToDoFrm, ViewToDoFrm,
   ImportMSVCFrm, ImportCBFrm, CPUFrm, TipOfTheDayFrm,
-  WindowListFrm, RemoveUnitFrm, ParamsFrm, ProcessListFrm, SynEditHighlighter;
+  WindowListFrm, RemoveUnitFrm, ParamsFrm, ProcessListFrm, SynEditHighlighter, devPlatform;
 
 {$R *.dfm}
 
@@ -1574,7 +1574,7 @@ begin // TODO: ask on SO
   idx := (Sender as TMenuItem).Tag;
 
   with fTools.ToolList[idx]^ do
-    ExecuteFile(ParseToolParams(Exec), ParseToolParams(Params), ParseToolParams(WorkDir), SW_SHOW);
+    devPlatform.ExecuteFile(ParseToolParams(Exec), ParseToolParams(Params), ParseToolParams(WorkDir));
 end;
 
 procedure TMainForm.OpenProject(const s: String);
@@ -5594,18 +5594,12 @@ begin
     fEditorList.CloseEditor(e);
 
   if idx > -1 then // devcpp-based
-    ShellExecute(0, 'open',
-      PChar(devExternalPrograms.ProgramName[idx]),
-      PChar(fProject.Units[idx2].FileName),
-      PChar(ExtractFilePath(fProject.Units[idx2].FileName)),
-      SW_SHOW)
+    devPlatform.ExecuteFile(devExternalPrograms.ProgramName[idx],
+      '"' + fProject.Units[idx2].FileName + '"',
+      ExtractFilePath(fProject.Units[idx2].FileName))
       // idx=-2 means we prompted the user for a program, but didn't select one
-  else if idx <> -2 then // registry-based
-    ShellExecute(0, 'open',
-      PChar(fProject.Units[idx2].FileName),
-      nil,
-      PChar(ExtractFilePath(fProject.Units[idx2].FileName)),
-      SW_SHOW);
+  else if idx <> -2 then // desktop default
+    OpenDocument(fProject.Units[idx2].FileName);
 end;
 
 procedure TMainForm.RebuildClassesToolbar;
@@ -6859,7 +6853,7 @@ begin
   if Assigned(e) then begin
     Folder := ExtractFilePath(e.FileName);
     if Folder <> '' then
-      ShellExecute(Application.Handle, 'open', 'explorer.exe', PChar(Folder), nil, SW_SHOWNORMAL);
+      OpenDocument(Folder);
   end;
 end;
 

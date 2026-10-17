@@ -63,7 +63,7 @@ type
 implementation
 
 uses
-  devCFG, MultiLangSupport;
+  devCFG, MultiLangSupport, devPlatform;
 
 {$R *.dfm}
 
@@ -228,7 +228,7 @@ end;
 
 procedure TTipOfTheDayForm.lblUrlClick(Sender: TObject);
 begin
-  ShellExecute(0, 'open', PChar(HiddenUrl), '', '', SW_SHOWNORMAL);
+  OpenDocument(HiddenUrl);
 end;
 
 procedure TTipOfTheDayForm.LoadText;

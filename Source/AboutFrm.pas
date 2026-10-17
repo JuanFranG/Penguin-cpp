@@ -86,7 +86,7 @@ type
 implementation
 
 uses
-  System.UITypes, ShellAPI, devCFG, Utils, MultiLangSupport, main;
+  System.UITypes, ShellAPI, devCFG, Utils, MultiLangSupport, main, devPlatform;
 
 {$R *.dfm}
 
@@ -121,7 +121,7 @@ var
   S: String;
 begin
   S := TLabel(Sender).Caption;
-  ShellExecute(GetDesktopWindow(), 'open', PChar(s), nil, nil, SW_SHOWNORMAL);
+  OpenDocument(S);
 end;
 
 procedure TAboutForm.FormCreate(Sender: TObject);
@@ -180,9 +180,7 @@ end;
 
 procedure TAboutForm.btnUpdateCheckClick(Sender: TObject);
 begin
-  ShellExecute(GetDesktopWindow(), 'open',
-    PChar('https://github.com/Embarcadero/Dev-Cpp'), nil, nil,
-    SW_SHOWNORMAL);
+  OpenDocument('https://github.com/Embarcadero/Dev-Cpp');
 end;
 
 procedure TAboutForm.btnAuthorsDragDrop(Sender, Source: TObject; X,

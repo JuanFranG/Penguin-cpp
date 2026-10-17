@@ -75,7 +75,7 @@ type
 implementation
 
 uses
-  System.IOUtils, System.UITypes, ShellAPI, main, FileCtrl, Version, devCFG, Utils, MultiLangSupport, DataFrm;
+  System.IOUtils, System.UITypes, ShellAPI, main, FileCtrl, Version, devCFG, Utils, MultiLangSupport, DataFrm, devPlatform;
 
 {$R *.dfm}
 
@@ -92,13 +92,7 @@ end;
 procedure TAStyleFormatterOptionsForm.btnHelpClick(Sender: TObject);
 begin
   if fValid then
-    ShellExecute(
-      0,
-      PChar('open'),
-      PChar(devDirs.Exec + devFormatterAStyle.AStyleDir + 'doc\astyle.html'),
-      nil,
-      nil,
-      SW_SHOWNORMAL);
+    OpenDocument(devDirs.Exec + devFormatterAStyle.AStyleDir + 'doc' + PathDelim + 'astyle.html');
 end;
 
 procedure TAStyleFormatterOptionsForm.LoadText;

@@ -23,7 +23,7 @@ interface
 
 uses
   Windows, Classes, Sysutils, Dateutils, Forms, ShellAPI, Dialogs, SynEdit, SynEditHighlighter,
-  Menus, Registry, Controls, ComCtrls, Messages, System.AnsiStrings, Vcl.ExtDlgs;
+  Menus, Registry, Controls, ComCtrls, Messages, System.AnsiStrings, Vcl.ExtDlgs, devPlatform;
 
 type
   { File ID types }
@@ -42,15 +42,13 @@ type
 
   TFilterSet = (ftOpen, ftPrj, ftSrc, ftAll);
 
-  TLineOutputFunc = procedure(const Line: String) of object;
-  TCheckAbortFunc = procedure(var AbortThread: boolean) of object;
+  TLineOutputFunc = devPlatform.TLineOutputFunc;
+  TCheckAbortFunc = devPlatform.TCheckAbortFunc;
 
 
 procedure FilesFromWildcard(Directory: String; const Mask: String; Files: TStringList; Subdirs, ShowDirs,
   Multitasking: Boolean);
 
-function ExecuteFile(const FileName, Params, DefaultDir: String; ShowCmd: Integer): THandle;
-function ExecuteFileAsAdmin(const FileName, Params, DefaultDir: String; ShowCmd: Integer): THandle;
 function RunAndGetOutput(const Cmd, WorkDir: String; LineOutputFunc: TLineOutputFunc; CheckAbortFunc:
   TCheckAbortFunc; ShowReturnValue: Boolean = True): String;
 
@@ -418,8 +416,8 @@ procedure OpenHelpFile(const HelpFileName: String);
 var
   abshelp: String;
 begin // TODO: fix iframe opening problem
-  abshelp := '"'+ReplaceFirstStr(devDirs.Help, '%path%\', devDirs.Exec) + HelpFileName+'"';
-  ShellExecute(GetDesktopWindow(), 'open', PChar(abshelp), nil, nil, SW_SHOWNORMAL);
+  abshelp := ReplaceFirstStr(devDirs.Help, '%path%' + PathDelim, devDirs.Exec) + HelpFileName;
+  OpenDocument(abshelp);
 end;
 
 procedure FilesFromWildcard(Directory: String; const Mask: String; Files: TStringList; Subdirs, ShowDirs,
@@ -464,24 +462,15 @@ begin
   end;
 end;
 
-function ExecuteFile(const FileName, Params, DefaultDir: String; ShowCmd: Integer): THandle;
-begin
-  Result := ShellExecute(Application.MainForm.Handle, nil,
-    PChar(FileName), PChar(Params),
-    PChar(DefaultDir), ShowCmd);
-end;
-
-function ExecuteFileAsAdmin(const FileName, Params, DefaultDir: String; ShowCmd: Integer): THandle;
-begin
-  Result := ShellExecute(Application.MainForm.Handle, 'runas',
-    PChar(FileName), PChar(Params),
-    PChar(DefaultDir), ShowCmd);
-end;
-
 function RunAndGetOutput(const Cmd, WorkDir: String;
   LineOutputFunc: TLineOutputFunc;
   CheckAbortFunc: TCheckAbortFunc;
   ShowReturnValue: Boolean): String;
+{$IFDEF FPC}
+begin
+  Result := devPlatform.RunAndGetOutput(Cmd, WorkDir, LineOutputFunc, CheckAbortFunc, ShowReturnValue);
+end;
+{$ELSE}
 var
   si: TStartupInfo;
   pi: TProcessInformation;
@@ -639,6 +628,7 @@ begin
     Exit;
   end;
 end;
+{$ENDIF}
 
 procedure SetPath(const Add: String; UseOriginal: boolean = TRUE);
 var

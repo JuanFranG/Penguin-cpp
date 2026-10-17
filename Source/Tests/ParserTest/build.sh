@@ -1,13 +1,14 @@
 #!/bin/sh
 # Builds and runs the parser console test with Free Pascal (no Lazarus needed).
 # usage: Source/Tests/ParserTest/build.sh [--run]
+#   FPCFLAGS="-Cr -Co -Ct -CR -Sa -gh -gl" adds runtime checks and leak reports
 set -e
 HERE=$(cd "$(dirname "$0")" && pwd)
 SRC=$(cd "$HERE/../.." && pwd)
 OUT="$HERE/build"
 mkdir -p "$OUT"
 
-fpc -vewn -FU"$OUT" -FE"$OUT" -Fu"$SRC" -Fu"$SRC/VCL/ClassBrowsing" "$HERE/parsertest.lpr"
+fpc -vewn $FPCFLAGS -FU"$OUT" -FE"$OUT" -Fu"$SRC" -Fu"$SRC/VCL/ClassBrowsing" "$HERE/parsertest.lpr"
 
 if [ "$1" = "--run" ]; then
   echo

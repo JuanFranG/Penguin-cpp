@@ -175,6 +175,11 @@ begin
 
     // Symbols that must have been found, mostly from system headers
     Missing := 0;
+    if Parser.LastError <> '' then begin
+      WriteLn;
+      WriteLn('Parser stopped early: ', Parser.LastError);
+      Inc(Missing);
+    end;
     if Expected.Count > 0 then begin
       WriteLn;
       WriteLn('Expected symbols:');

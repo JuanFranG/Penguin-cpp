@@ -7762,14 +7762,12 @@ object MainForm: TMainForm
       OnExecute = actGotoImplDeclEditorExecute
     end
     object actCollapse: TAction
-      Visible = False
       Category = 'Edit'
       Caption = 'Collapse All'
       OnExecute = actCollapseExecute
       OnUpdate = actUpdateEmptyEditor
     end
     object actUnCollapse: TAction
-      Visible = False
       Category = 'Edit'
       Caption = 'Uncollapse All'
       OnExecute = actUnCollapseExecute

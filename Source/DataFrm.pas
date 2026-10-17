@@ -22,7 +22,7 @@ unit DataFrm;
 interface
 
 uses
-  SysUtils, Classes, Menus, Controls, SynEditHighlighter, SynHighlighterCpp, CodeInsList, ImgList, Graphics,
+  SysUtils, Classes, Menus, Controls, SynEditHighlighter, SynHighlighterCppFold, CodeInsList, ImgList, Graphics,
   LCLType;
 
 type
@@ -34,7 +34,7 @@ type
   end;
 
   TdmMain = class(TDataModule)
-    Cpp: TSynCppSyn;
+    Cpp: TSynCppFoldSyn; // Lazarus' TSynCppSyn plus code folding
     ProjectImage_Gnome: TImageList;
     MenuImages_Gnome: TImageList;
     MenuImages_NewLook: TImageList;

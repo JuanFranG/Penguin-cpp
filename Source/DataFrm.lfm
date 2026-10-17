@@ -1,7 +1,7 @@
 object dmMain: TdmMain
   OnCreate = DataModuleCreate
   OnDestroy = DataModuleDestroy
-  object Cpp: TSynCppSyn
+  object Cpp: TSynCppFoldSyn
     DefaultFilter = 'C++ files (*.cpp,*.h,*.hpp)|*.cpp;*.h;*.hpp'
     AsmAttri.Foreground = clBlue
     CommentAttri.Foreground = clHighlight

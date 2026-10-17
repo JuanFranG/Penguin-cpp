@@ -2579,6 +2579,9 @@ begin
         pt := Point(clBtnFace, clBlack);
         StrtoPoint(pt, fSyntax.Values[cGut]);
         SetGutterColors(Editor, pt.x, pt.y);
+        pt := Point(clNone, clGray); // y is the color of the fold lines
+        StrtoPoint(pt, fSyntax.Values[cFld]);
+        SetFoldColor(Editor, pt.y);
       end else // editor not colored, pick defaults
         SetGutterColors(Editor, clBtnFace, clBlack);
 

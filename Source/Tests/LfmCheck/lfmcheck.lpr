@@ -17,7 +17,7 @@ uses
   Interfaces, Forms, Classes, SysUtils,
   // LCL units that declare the component classes of the forms
   Controls, StdCtrls, ExtCtrls, ComCtrls, Buttons, Menus, ActnList, Dialogs, ExtDlgs, Spin, Grids,
-  ValEdit, CheckLst, ColorBox, ImgList, SynEdit, SynHighlighterCpp,
+  ValEdit, CheckLst, ColorBox, ImgList, SynEdit, SynHighlighterCpp, SynHighlighterCppFold,
   // the IDE's units
   {$I build/units.inc}
   LfmChecks;

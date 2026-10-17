@@ -26,7 +26,7 @@ uses
   CodeCompletion, CppParser, SynEditExport, Menus, ImgList, ComCtrls, StdCtrls, ExtCtrls, SynEdit,
   SynEditKeyCmds, Version, SynExportHTML, SynEditTextBuffer, Math, StrUtils, SynEditTypes,
   SynEditHighlighter, DateUtils, CodeToolTip, CBUtils, UITypes, Contnrs, ExtDlgs,
-  SynEditCompat, SynEditMarks, LazSynEditText, LazUTF8, LConvEncoding;
+  SynEditCompat, SynEditMarks, LazSynEditText, LazUTF8, LConvEncoding, SynEditFoldedView;
 
 type
   TCloseTabSheet = class(TTabSheet)
@@ -97,6 +97,8 @@ type
     function WordAtCursor: string;
     procedure InvalidateGutterLine(Line: Integer);
     procedure UncollapseAroundLine(Line: Integer);
+    procedure CollapseAll;
+    procedure UncollapseAll;
     property CaretX: Integer read GetCaretX write SetCaretX;
     property CaretXY: TBufferCoord read GetCaretXY write SetCaretXY;
     property BlockBegin: TBufferCoord read GetBlockBegin write SetBlockBegin;
@@ -2081,9 +2083,23 @@ begin
   InvalidateGutterLines(Line, Line);
 end;
 
+// Folds come from the highlighter (TSynCppFoldSyn); the folded view hides
+// their lines. TCustomSynEdit's FoldAll and UnfoldAll are deprecated.
 procedure TSynEditEx.UncollapseAroundLine(Line: Integer);
 begin
-  // The C++ highlighter has no code folding, so lines are never hidden
+  TSynEditFoldedView(FoldedTextBuffer).UnFoldAtTextIndexCollapsed(Line - 1);
+end;
+
+procedure TSynEditEx.CollapseAll;
+begin
+  TSynEditFoldedView(FoldedTextBuffer).FoldAll;
+  Invalidate;
+end;
+
+procedure TSynEditEx.UncollapseAll;
+begin
+  TSynEditFoldedView(FoldedTextBuffer).UnfoldAll;
+  Invalidate;
 end;
 
 procedure TSynEditEx.SetCaretXYCentered(ForceToMiddle: Boolean; const Value: TBufferCoord);

@@ -30,7 +30,7 @@ interface
 
 uses
   Types, Graphics, SynEdit, SynGutterBase, SynGutter, SynGutterLineNumber, SynGutterChanges,
-  SynGutterCodeFolding;
+  SynGutterCodeFolding, SynEditHighlighterFoldBase;
 
 type
   TBufferCoord = record
@@ -56,6 +56,9 @@ function DisplayCoord(AColumn, ARow: Integer): TDisplayCoord;
 // built from parts and the line numbers draw with the editor's font
 procedure SetGutterColors(Editor: TCustomSynEdit; Background, Foreground: TColor);
 
+// The "Folding lines" color of the schemes: the fold marks and their lines
+procedure SetFoldColor(Editor: TCustomSynEdit; LineColor: TColor);
+
 // Line number options of the Delphi gutter, applied to the line number part
 procedure ApplyGutter(Editor: TCustomSynEdit; AVisible, AAutoSize, AShowLineNumbers, ALeadingZeros,
   AZeroStart: Boolean; ADigitCount: Integer);
@@ -78,8 +81,9 @@ begin
       Part.ZeroStart := AZeroStart;
       Part.DigitCount := ADigitCount;
     end else if Editor.Gutter.Parts[I] is TSynGutterCodeFolding then
-      // Lazarus' C++ highlighter has no folding: the part would only take room
-      Editor.Gutter.Parts[I].Visible := False;
+      // Folding comes from the highlighter (TSynCppFoldSyn for C/C++); plain
+      // text and highlighters without it would only get an empty column
+      Editor.Gutter.Parts[I].Visible := Editor.Highlighter is TSynCustomFoldHighlighter;
 end;
 
 procedure SetGutterColors(Editor: TCustomSynEdit; Background, Foreground: TColor);
@@ -99,6 +103,15 @@ begin
     else if Part is TSynGutterLineNumber then
       Part.MarkupInfo.Foreground := Foreground;
   end;
+end;
+
+procedure SetFoldColor(Editor: TCustomSynEdit; LineColor: TColor);
+var
+  I: Integer;
+begin
+  for I := 0 to Editor.Gutter.Parts.Count - 1 do
+    if Editor.Gutter.Parts[I] is TSynGutterCodeFolding then
+      Editor.Gutter.Parts[I].MarkupInfo.Foreground := LineColor;
 end;
 
 function BufferCoord(AChar, ALine: Integer): TBufferCoord;

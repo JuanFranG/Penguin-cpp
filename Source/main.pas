@@ -6128,7 +6128,7 @@ var
 begin
   e := fEditorList.GetEditor;
   if Assigned(e) then
-    ; // the C++ highlighter has no code folding
+    e.Text.UncollapseAll;
 end;
 
 procedure TMainForm.actCollapseExecute(Sender: TObject);
@@ -6137,7 +6137,7 @@ var
 begin
   e := fEditorList.GetEditor;
   if Assigned(e) then
-    ; // the C++ highlighter has no code folding
+    e.Text.CollapseAll;
 end;
 
 procedure TMainForm.actInsertExecute(Sender: TObject);

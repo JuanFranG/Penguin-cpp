@@ -843,7 +843,7 @@ begin
   txtOverrideBuildCmd.OnChange := nil;
   spnPriority.OnChange := nil;
 
-  idx := Integer(Node.Data);
+  idx := PtrInt(Node.Data);
   if (Node.Level > 0) and (idx <> -1) then begin // unit
 
     // Check once instead of a lot of times...
@@ -891,7 +891,7 @@ procedure TProjectOptionsFrm.chkCompileClick(Sender: TObject);
     idx: integer;
   begin
     for I := 0 to Node.Count - 1 do begin
-      idx := Integer(Node[I].Data);
+      idx := PtrInt(Node[I].Data);
       if idx <> -1 then begin // unit
         fProjectCopy.Units[idx].Compile := chkCompile.Checked;
         fProjectCopy.Units[idx].CompileCpp := chkCompileCpp.Checked;
@@ -904,7 +904,7 @@ var
   idx: integer;
 begin
   for I := 0 to lvFiles.SelectionCount - 1 do begin
-    idx := Integer(lvFiles.Selections[I].Data);
+    idx := PtrInt(lvFiles.Selections[I].Data);
     if idx <> -1 then begin // unit
       fProjectCopy.Units[idx].Compile := chkCompile.Checked;
       fProjectCopy.Units[idx].CompileCpp := chkCompileCpp.Checked;
@@ -1079,7 +1079,7 @@ var
 begin
   if not Assigned(lvFiles.Selected) or not txtOverrideBuildCmd.Enabled then
     Exit;
-  idx := Integer(lvFiles.Selected.Data);
+  idx := PtrInt(lvFiles.Selected.Data);
   if (lvFiles.Selected.Level > 0) and (idx <> -1) then // unit
     fProjectCopy.Units[idx].BuildCmd := StringReplace(txtOverrideBuildCmd.Text, #13#10, '<CRTAB>', [rfReplaceAll]);
 end;
@@ -1091,7 +1091,7 @@ begin
   if not Assigned(lvFiles.Selected) or not spnPriority.Enabled then
     Exit;
   for I := 0 to lvFiles.SelectionCount - 1 do begin
-    idx := Integer(lvFiles.Selections[I].Data);
+    idx := PtrInt(lvFiles.Selections[I].Data);
     if (lvFiles.Selections[I].Level > 0) and (idx <> -1) then // unit
       fProjectCopy.Units[idx].Priority := spnPriority.Value;
   end;

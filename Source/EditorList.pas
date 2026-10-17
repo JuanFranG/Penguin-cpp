@@ -264,7 +264,7 @@ begin
 
       // Find the first tab in the history list that is still open
       for I := Editor.PreviousEditors.Count - 1 downto 0 do begin
-        e := GetEditorFromTag(Integer(Editor.PreviousEditors[i]));
+        e := GetEditorFromTag(PtrInt(Editor.PreviousEditors[i]));
         if Assigned(e) then begin
           Result := e;
           Exit;

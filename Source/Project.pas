@@ -654,7 +654,7 @@ begin
     Editor := nil;
     Folder := GetFolderPath(ParentNode);
     Node := MakeNewFileNode(ExtractFileName(FileName), False, ParentNode);
-    Node.Data := pointer(result);
+    Node.Data := Pointer(PtrInt(result));
     Compile := True;
     CompileCpp := Self.Options.useGPP;
     Link := True;
@@ -695,7 +695,7 @@ begin
     Editor := nil;
     Folder := GetFolderPath(ParentNode);
     Node := MakeNewFileNode(ExtractFileName(FileName), false, ParentNode);
-    Node.Data := pointer(fUnits.Add(NewUnit));
+    Node.Data := Pointer(PtrInt(fUnits.Add(NewUnit)));
 
     // Determine compilation flags
     case GetFileTyp(InFileName) of
@@ -983,7 +983,7 @@ var
   idx: integer;
 begin
   for idx := 0 to fUnits.Count - 1 do
-    fUnits[idx].Node.Data := pointer(idx);
+    fUnits[idx].Node.Data := Pointer(PtrInt(idx));
 end;
 
 procedure TProject.Open;
@@ -1046,7 +1046,7 @@ begin
 
         Node := MakeNewFileNode(ExtractFileName(FileName), False, FolderNodeFromName(Folder));
         if not fUnits.Exists(NewUnit) then
-          Node.Data := pointer(fUnits.Add(NewUnit));
+          Node.Data := Pointer(PtrInt(fUnits.Add(NewUnit)));
       end;
     end;
   end;
@@ -1230,7 +1230,7 @@ function TProject.RemoveFolder(Node: TTreeNode): boolean;
       else if (ChildNode.Data <> Pointer(-1)) and (ChildNode.Level > 0) then begin
 
         // Remove editor in folder from project
-        EditorIndex := integer(ChildNode.Data);
+        EditorIndex := PtrInt(ChildNode.Data);
         if not RemoveEditor(EditorIndex, true) then
           Exit;
       end;
@@ -1728,7 +1728,7 @@ begin
     begin
       fUnits[idx].Node := MakeNewFileNode(ExtractFileName(fUnits[idx].FileName), False,
       FolderNodeFromName(fUnits[idx].Folder));
-      fUnits[idx].Node.Data := pointer(idx);
+      fUnits[idx].Node.Data := Pointer(PtrInt(idx));
     end;
 
     for idx := 0 to pred(fFolders.Count) do

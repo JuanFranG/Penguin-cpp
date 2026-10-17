@@ -87,7 +87,7 @@ begin
       else
         idx := vle.InsertRow(Lang[option.Name], BoolValYesNo[option.Value > 0], True); // No Yes
 
-      vle.Strings.Objects[idx] := Pointer(I);
+      vle.Strings.Objects[idx] := Pointer(PtrInt(I));
       vle.ItemProps[idx].EditStyle := esPickList;
       vle.ItemProps[idx].ReadOnly := true;
       if Assigned(option.Choices) then begin

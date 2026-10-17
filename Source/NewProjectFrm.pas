@@ -118,7 +118,7 @@ end;
 function TNewProjectForm.GetTemplate: TTemplate;
 begin
   if Assigned(ProjView.Selected) then begin
-    result := TTemplate(fTemplates[integer(ProjView.Selected.Data)]);
+    result := TTemplate(fTemplates[PtrInt(ProjView.Selected.Data)]);
     result.Options.useGPP := rbCpp.Checked;
     result.Name := edProjectName.Text;
   end else
@@ -130,7 +130,7 @@ var
   TemplateItem: TTemplate;
 begin
   if Assigned(ProjView.Selected) then begin
-    TemplateItem := TTemplate(fTemplates[integer(ProjView.Selected.Data)]);
+    TemplateItem := TTemplate(fTemplates[PtrInt(ProjView.Selected.Data)]);
     if not Assigned(TemplateItem) then
       Exit;
 
@@ -210,7 +210,7 @@ begin
       if SameText(TemplateItem.Category, TabsMain.Tabs[TabsMain.TabIndex]) then begin
         ListItem := ProjView.Items.Add;
         ListItem.Caption := TemplateItem.Name;
-        ListItem.Data := pointer(I);
+        ListItem.Data := Pointer(PtrInt(I));
         IconFileName := ValidateFile(TemplateItem.Icon, '', true);
         if IconFileName <> '' then begin
           // Add icon to central dump and tell ListItem to use it

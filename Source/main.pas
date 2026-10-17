@@ -1918,11 +1918,11 @@ begin
   end;
 
   // Open the file that belongs to said node
-  if Assigned(Node) and (integer(Node.Data) <> -1) then begin
+  if Assigned(Node) and (PtrInt(Node.Data) <> -1) then begin
 
     // Do not accept the project node
     if (Node.Level >= 1) then begin
-      i := integer(Node.Data);
+      i := PtrInt(Node.Data);
 
       // Only open the file if it hasn't been opened yet
       e := fEditorList.FileIsOpen(fProject.Units[i].FileName, TRUE);
@@ -2467,7 +2467,7 @@ begin
     if node.Data = Pointer(-1) then
       Continue;
 
-    idx := integer(node.Data);
+    idx := PtrInt(node.Data);
 
     if not fProject.RemoveEditor(idx, true) then
       exit;
@@ -2490,7 +2490,7 @@ begin
     Exit;
 
   // Get the original name
-  I := integer(ProjectView.Selected.Data);
+  I := PtrInt(ProjectView.Selected.Data);
   OldName := fProject.Units[I].FileName;
   NewName := ExtractFileName(OldName);
   CurDir := ExtractFilePath(OldName);
@@ -2554,7 +2554,7 @@ begin
   if ProjectView.Selected.Data = Pointer(-1) then
     Exit;
 
-  I := integer(ProjectView.Selected.Data);
+  I := PtrInt(ProjectView.Selected.Data);
   e := fEditorList.FileIsOpen(fProject.Units[I].FileName, TRUE);
   if Assigned(e) then
     e.Activate
@@ -2567,7 +2567,7 @@ var
   e: TEditor;
 begin
   if Assigned(fProject) and Assigned(ProjectView.Selected) then begin
-    e := fEditorList.FileIsOpen(fProject.Units[integer(ProjectView.Selected.Data)].FileName, TRUE);
+    e := fEditorList.FileIsOpen(fProject.Units[PtrInt(ProjectView.Selected.Data)].FileName, TRUE);
     if Assigned(e) then
       fEditorList.CloseEditor(e);
   end;
@@ -4791,7 +4791,7 @@ begin
       if Assigned(fProject) and
         Assigned(ProjectView.Selected) and
         (ProjectView.Selected.Data <> Pointer(-1)) then
-        SetFile(fProject.Units[integer(ProjectView.Selected.Data)].FileName);
+        SetFile(fProject.Units[PtrInt(ProjectView.Selected.Data)].FileName);
     ShowModal;
   end;
 end;
@@ -4891,14 +4891,14 @@ begin
   for I := 0 to ProjectView.SelectionCount - 1 do begin
     srcNode := ProjectView.Selections[I];
     if not Assigned(Item) then begin
-      fProject.Units[Integer(srcNode.Data)].Folder := '';
+      fProject.Units[PtrInt(srcNode.Data)].Folder := '';
       srcNode.MoveTo(ProjectView.Items[0], naAddChild);
     end else begin
       if srcNode.Data <> Pointer(-1) then begin
         if Item.Data = Pointer(-1) then
-          fProject.Units[Integer(srcNode.Data)].Folder := fProject.GetFolderPath(Item)
+          fProject.Units[PtrInt(srcNode.Data)].Folder := fProject.GetFolderPath(Item)
         else
-          fProject.Units[Integer(srcNode.Data)].Folder := '';
+          fProject.Units[PtrInt(srcNode.Data)].Folder := '';
       end;
       WasExpanded := Item.Expanded;
       ProjectView.Items.BeginUpdate;
@@ -5182,7 +5182,7 @@ begin
     if Node.Data = Pointer(-1) then
       actProjectRemoveFolderExecute(nil)
     else
-      fProject.RemoveEditor(integer(Node.Data), true);
+      fProject.RemoveEditor(PtrInt(Node.Data), true);
   end;
 end;
 
@@ -5418,7 +5418,7 @@ begin
     exit;
   if ProjectView.Selected.Data = Pointer(-1) then
     Exit;
-  idx := integer(ProjectView.Selected.Data);
+  idx := PtrInt(ProjectView.Selected.Data);
 
   ext := ExtractFileExt(fProject.Units[idx].FileName);
   idx2 := devExternalPrograms.AssignedProgram(ext);
@@ -5463,7 +5463,7 @@ begin
     exit;
   if ProjectView.Selected.Data = Pointer(-1) then
     Exit;
-  idx2 := integer(ProjectView.Selected.Data);
+  idx2 := PtrInt(ProjectView.Selected.Data);
 
   item := TMenuItem(Sender);
   if item = mnuOpenWith then begin
@@ -5668,7 +5668,7 @@ begin
     try
       ProcessListForm := TProcessListForm.Create(self);
       if (ProcessListForm.ShowModal = mrOK) and (ProcessListForm.ProcessCombo.ItemIndex > -1) then begin
-        s := IntToStr(integer(ProcessListForm.ProcessList[ProcessListForm.ProcessCombo.ItemIndex]));
+        s := IntToStr(PtrInt(ProcessListForm.ProcessList[ProcessListForm.ProcessCombo.ItemIndex]));
 
         fDebugger.Start;
         fDebugger.SendCommand('file', '"' + StringReplace(fProject.Executable, '\', '\\', [rfReplaceAll]) + '"');
@@ -6388,7 +6388,7 @@ begin
 
     // Get location of bold part
     BoldStart := StrToIntDef(Item.SubItems[1], 1);
-    BoldLen := Integer(Item.Data);
+    BoldLen := PtrInt(Item.Data);
 
     // Draw part before bold highlight
     Draw(Copy(LineToDraw, 1, BoldStart - 1));

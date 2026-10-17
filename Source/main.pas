@@ -122,8 +122,6 @@ type
     NewFileBtn: TToolButton;
     SaveBtn: TToolButton;
     CloseBtn: TToolButton;
-    ToolButton7: TToolButton;
-    PrintBtn: TToolButton;
     CompileBtn: TToolButton;
     RunBtn: TToolButton;
     CompileAndRunBtn: TToolButton;
@@ -3790,8 +3788,23 @@ end;
 // after the panel has placed the toolbars for its new width.
 procedure TMainForm.FitToolbarDock(Data: PtrInt);
 var
-  I, Bottom: Integer;
+  I, J, Right, Bottom: Integer;
+  Bar: TToolBar;
 begin
+  // Each toolbar as wide as its visible buttons: on GTK they keep their design
+  // width, which leaves gaps where hidden buttons were
+  for I := 0 to ToolbarDock.ControlCount - 1 do
+    if ToolbarDock.Controls[I] is TToolBar then begin
+      Bar := TToolBar(ToolbarDock.Controls[I]);
+      Right := 0;
+      for J := 0 to Bar.ControlCount - 1 do
+        if Bar.Controls[J].Visible then
+          Right := Max(Right, Bar.Controls[J].Left + Bar.Controls[J].Width);
+      if (Right > 0) and (Bar.Width <> Right + 2) then
+        Bar.Width := Right + 2;
+    end;
+  ToolbarDock.ReAlign;
+
   Bottom := 0;
   for I := 0 to ToolbarDock.ControlCount - 1 do
     if ToolbarDock.Controls[I].Visible then

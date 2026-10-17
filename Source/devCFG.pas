@@ -2564,8 +2564,9 @@ begin
         LineHighlightColor.Background := clNone;
 
       // Set gutter properties (Lazarus' gutter draws line numbers with the editor font)
-      Gutter.LeftOffset := 4;
-      Gutter.RightOffset := 21;
+      // Delphi's RightOffset (21) also made room for marks; Lazarus has a marks part
+      Gutter.LeftOffset := 2;
+      Gutter.RightOffset := 6;
       ApplyGutter(Editor, fShowGutter, fGutterAuto, fLineNumbers, fLeadZero, fFirstisZero, fGutterSize);
       if Assigned(Highlighter) then begin
         pt := Point(clBtnFace, clBlack);

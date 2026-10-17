@@ -21,7 +21,21 @@ interface
 // underline]". Returns '' for an unknown ID, as LoadStr did.
 function ColorSchemeString(ID: Integer): String;
 
+// Element number (1-14, as in that list) of a C++ highlighter attribute, from
+// its stored name; 0 if the scheme has no such element. Delphi's highlighter
+// had exactly those 14 attributes, so Dev-C++ used the position in the
+// attribute list as the element number. Lazarus' has 10 (no Character, Float,
+// Hexadecimal or Octal), and by position every color landed one or more
+// elements off: "Space", the background, got the colors of "Number".
+function SchemeElement(const StoredName: String): Integer;
+
+// Colors of an attribute in a built-in scheme (0 = Classic), or ''
+function SchemeAttrString(Scheme: Integer; const StoredName: String): String;
+
 implementation
+
+uses
+  SysUtils;
 
 type
   TSchemeEntry = record
@@ -363,6 +377,33 @@ begin
     if Entries[I].ID = ID then
       Exit(Entries[I].Value);
   Result := '';
+end;
+
+const
+  ElementNames: array[1..14] of String = (
+    'Assembler', 'Character', 'Comment', 'Float', 'Hexadecimal', 'Identifier',
+    'Illegal char', 'Number', 'Octal', 'Preprocessor', 'Reserved word', 'Space',
+    'String', 'Symbol');
+
+function SchemeElement(const StoredName: String): Integer;
+var
+  I: Integer;
+begin
+  for I := Low(ElementNames) to High(ElementNames) do
+    if CompareText(ElementNames[I], StoredName) = 0 then
+      Exit(I);
+  Result := 0;
+end;
+
+function SchemeAttrString(Scheme: Integer; const StoredName: String): String;
+var
+  Element: Integer;
+begin
+  Element := SchemeElement(StoredName);
+  if Element = 0 then
+    Result := ''
+  else
+    Result := ColorSchemeString(Scheme * 1000 + Element);
 end;
 
 end.

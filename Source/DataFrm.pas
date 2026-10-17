@@ -94,6 +94,7 @@ type
     function GetNewProjectNumber: integer;
     function GetNewFileNumber: integer;
     procedure InitHighlighterFirstTime(index: integer);
+    procedure RepairShiftedScheme;
     procedure UpdateHighlighter;
     function GetHighlighter(const FileName: String): TSynCustomHighlighter;
   end;
@@ -179,7 +180,7 @@ begin
   for i := 0 to pred(cpp.AttrCount) do begin
     attr := TSynHighlighterAttributes.Create(cpp.Attribute[i].Name,cpp.Attribute[i].Name);
     try
-      StrtoAttr(Attr, ColorSchemeString(i + offset + 1));
+      StrtoAttr(Attr, SchemeAttrString(index, cpp.Attribute[i].StoredName));
       cpp.Attribute[i].Assign(Attr);
       a := devEditor.Syntax.IndexOfName(cpp.Attribute[i].Name);
       if a = -1 then
@@ -198,6 +199,64 @@ begin
   AddSpecial(cFld, offset + 22); // fold bar lines
 end;
 
+// Settings saved before the scheme colors were matched by name have every
+// attribute shifted (see SchemeElement): the background ("Space") holds the
+// colors of "Number", so dark schemes showed light text on white. The special
+// colors (gutter, selection...) were read correctly, so they tell which
+// built-in scheme was picked; load it again.
+procedure TdmMain.RepairShiftedScheme;
+const
+  Specials: array[0..5] of String = (cBP, cErr, cABP, cGut, cSel, cFld);
+
+  // Compare colors, not text: Editor Options saves them as numbers
+  function SpecialsMatch(Scheme: integer): boolean;
+  var
+    I: integer;
+    SavedPt, SchemePt: TPoint;
+  begin
+    Result := True;
+    for I := Low(Specials) to High(Specials) do begin
+      SavedPt := Point(clNone, clNone);
+      SchemePt := Point(clNone, clNone);
+      StrtoPoint(SavedPt, devEditor.Syntax.Values[Specials[I]]);
+      StrtoPoint(SchemePt, ColorSchemeString(Scheme * 1000 + 17 + I));
+      if (SavedPt.X <> SchemePt.X) or (SavedPt.Y <> SchemePt.Y) then
+        Exit(False);
+    end;
+  end;
+
+  // Whether the saved background has the colors of the scheme's AttrName
+  function SpaceIs(Scheme: integer; const AttrName: String): boolean;
+  var
+    Saved, InScheme: TSynHighlighterAttributes;
+  begin
+    Saved := TSynHighlighterAttributes.Create('Space', 'Space');
+    InScheme := TSynHighlighterAttributes.Create('Space', 'Space');
+    try
+      StrtoAttr(Saved, devEditor.Syntax.Values[cpp.SpaceAttri.Name]);
+      StrtoAttr(InScheme, SchemeAttrString(Scheme, AttrName));
+      Result := (Saved.Foreground = InScheme.Foreground) and (Saved.Background = InScheme.Background);
+    finally
+      Saved.Free;
+      InScheme.Free;
+    end;
+  end;
+
+var
+  Scheme: integer;
+begin
+  // Several schemes share the special colors (Classic and Classic Plus):
+  // nothing to repair if the background is right for any of them
+  for Scheme := 0 to 13 do
+    if SpecialsMatch(Scheme) and SpaceIs(Scheme, 'Space') then
+      Exit;
+  for Scheme := 0 to 13 do
+    if SpecialsMatch(Scheme) and SpaceIs(Scheme, 'Number') then begin
+      InitHighlighterFirstTime(Scheme);
+      Exit;
+    end;
+end;
+
 procedure TdmMain.UpdateHighlighter;
 var
   Attr: TSynHighlighterAttributes;
@@ -209,7 +268,9 @@ begin
   // while the color schemes could not be read (empty colors, everything
   // black): use Classic Plus, the first time configuration's default
   if Trim(devEditor.Syntax.Values[cGut]) = '' then
-    InitHighlighterFirstTime(1);
+    InitHighlighterFirstTime(1)
+  else
+    RepairShiftedScheme;
 
   for idx := 0 to pred(cpp.AttrCount) do begin
     aName := cpp.Attribute[idx].Name;

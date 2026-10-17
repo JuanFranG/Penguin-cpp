@@ -158,6 +158,7 @@ type
     cbNewDocEncoding: TComboBox;
     procedure FormCreate(Sender: TObject);
     procedure SetGutter;
+    procedure UpdatePreviews;
     procedure ElementListClick(Sender: TObject);
     procedure cppEditStatusChange(Sender: TObject; Changes: TSynStatusChanges);
     procedure StyleChange(Sender: TObject);
@@ -393,6 +394,8 @@ begin
     ElementList.ItemIndex := 0;
     ElementListClick(nil);
   end;
+
+  UpdatePreviews;
 
   // Snippets, Inserts
   LoadCodeIns;
@@ -868,6 +871,22 @@ end;
 
 { ---------- Syntax Style Methods ---------- }
 
+// The preview, snippet and default source editors take the scheme's
+// background: Lazarus' SynEdit paints only behind the text with it, the rest
+// with Color, which stayed white (light text of dark schemes on white)
+procedure TEditorOptForm.UpdatePreviews;
+var
+  bg: TColor;
+begin
+  bg := cpp.WhitespaceAttribute.Background;
+  if bg = clNone then
+    bg := clWindow;
+  cppEdit.Color := bg;
+  CodeIns.Color := bg;
+  seDefault.Color := bg;
+  cppEdit.Repaint;
+end;
+
 procedure TEditorOptForm.SetGutter;
 begin
   // update preview, snippet edit and default source edit
@@ -1013,7 +1032,7 @@ begin
     end;
   end;
 
-  cppEdit.Repaint;
+  UpdatePreviews;
 end;
 
 procedure TEditorOptForm.cppEditStatusChange(Sender: TObject;
@@ -1113,7 +1132,7 @@ begin
     for i := 0 to pred(cpp.AttrCount) do begin
       attr := TSynHighlighterAttributes.Create(cpp.Attribute[i].Name, cpp.Attribute[i].Name);
       try
-        StrtoAttr(Attr, ColorSchemeString(i + offset + 1));
+        StrtoAttr(Attr, SchemeAttrString(cboQuickColor.ItemIndex, cpp.Attribute[i].StoredName));
         cpp.Attribute[i].Assign(Attr);
 
         if SameText(Attr.Name, 'WhiteSpace') or SameText(Attr.Name, 'Space') then begin
@@ -1136,7 +1155,7 @@ begin
   end;
 
   SetGutter;
-  cppEdit.Repaint;
+  UpdatePreviews;
   ElementListClick(nil);
 end;
 

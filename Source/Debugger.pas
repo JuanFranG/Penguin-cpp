@@ -40,7 +40,10 @@ type
     fWatchVarList: TList;
     fOnEvalReady: TEvalReadyEvent;
     fReader: TDebugReader;
+    fRunningReader: TDebugReader; // the reader thread until it has really ended
     function GetBreakPointFile: String;
+    procedure ReaderTerminated(Sender: TObject);
+    function WaitForReader: Boolean;
   public
     constructor Create;
     destructor Destroy; override;
@@ -94,7 +97,10 @@ var
   I: integer;
 begin
   Stop;
-  FreeAndNil(fProcess);
+  if WaitForReader then
+    FreeAndNil(fProcess)
+  else
+    fProcess := nil; // still read by a stuck thread: leak it rather than free it under it
 
   // Remove watch vars
   for i := 0 to WatchVarList.Count - 1 do
@@ -127,8 +133,11 @@ begin
   end;
   GDBFile := CompilerSet.BinDir[0] + pd + CompilerSet.gdbName;
 
-  // The previous session's reader has finished with its pipe by now
-  FreeAndNil(fProcess);
+  // The previous session's reader may still be reading its pipe
+  if WaitForReader then
+    FreeAndNil(fProcess)
+  else
+    fProcess := nil; // still read by a stuck thread: leak it rather than free it under it
   fProcess := TProcess.Create(nil);
   fProcess.Executable := GDBFile;
   fProcess.Parameters.Add('--annotate=2');
@@ -150,6 +159,8 @@ begin
   Reader := TDebugReader.Create(true);
   Reader.Pipe := fProcess.Output;
   Reader.FreeOnTerminate := true;
+  Reader.OnTerminate := ReaderTerminated;
+  fRunningReader := Reader;
   Reader.BreakpointList := BreakPointList;
   Reader.WatchVarList := WatchVarList;
   Reader.DebugView := DebugView;
@@ -175,7 +186,9 @@ begin
     if Assigned(fProcess) then
       fProcess.Terminate(0); // stop gdb; the reader thread ends when the pipe closes
 
-    Reader.Terminate;
+    // Don't wait for the thread here: it calls Stop from its own Synchronize
+    if Assigned(Reader) then
+      Reader.Terminate;
     Reader := nil;
 
     MainForm.RemoveActiveBreakpoints;
@@ -212,9 +225,31 @@ begin
   end;
 end;
 
+// Runs in the main thread (TThread calls OnTerminate through Synchronize) just
+// before the reader frees itself, so nothing keeps a pointer to a freed thread
+procedure TDebugger.ReaderTerminated(Sender: TObject);
+begin
+  if Sender = fRunningReader then
+    fRunningReader := nil;
+  if Sender = fReader then
+    fReader := nil;
+end;
+
+// Waits (handling the thread's Synchronize calls) until the reader thread has
+// ended, so its pipe and the lists it uses can be freed. False after a timeout.
+function TDebugger.WaitForReader: Boolean;
+var
+  Started: QWord;
+begin
+  Started := GetTickCount64;
+  while Assigned(fRunningReader) and (GetTickCount64 - Started < 5000) do
+    CheckSynchronize(20);
+  Result := not Assigned(fRunningReader);
+end;
+
 function TDebugger.GetBreakPointFile: String;
 begin
-  if Executing then
+  if Executing and Assigned(fReader) then
     Result := fReader.BreakPointFile
   else
     Result := '';

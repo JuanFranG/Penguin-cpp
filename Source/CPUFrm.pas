@@ -95,10 +95,12 @@ begin
     Dispose(PTrace(fBacktrace.Items[I]));
   fBackTrace.Free;
 
-  // Clear contents of the debug reader
-  MainForm.Debugger.Reader.Registers := nil;
-  MainForm.Debugger.Reader.Disassembly := nil;
-  MainForm.Debugger.Reader.Backtrace := nil;
+  // Clear contents of the debug reader (gone if the session has ended)
+  if Assigned(MainForm.Debugger.Reader) then begin
+    MainForm.Debugger.Reader.Registers := nil;
+    MainForm.Debugger.Reader.Disassembly := nil;
+    MainForm.Debugger.Reader.Backtrace := nil;
+  end;
 
   // Save column widths of registerbox
   devData.CPURegisterCol1 := RegisterListbox.Column[0].Width;
@@ -227,7 +229,7 @@ begin
   fAssembler := TStringList.Create;
   fBacktrace := TList.Create;
 
-  if MainForm.Debugger.Executing then begin
+  if MainForm.Debugger.Executing and Assigned(MainForm.Debugger.Reader) then begin
 
     // Load the registers...
     MainForm.Debugger.Reader.Registers := fRegisters;

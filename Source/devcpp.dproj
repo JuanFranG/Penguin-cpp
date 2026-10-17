@@ -236,9 +236,6 @@
         <DCCReference Include="TipOfTheDayFrm.pas">
             <Form>TipOfTheDayForm</Form>
         </DCCReference>
-        <DCCReference Include="ExceptionFrm.pas">
-            <Form>ExceptionFrm</Form>
-        </DCCReference>
         <DCCReference Include="WindowListFrm.pas">
             <Form>WindowListForm</Form>
         </DCCReference>

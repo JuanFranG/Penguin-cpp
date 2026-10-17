@@ -29,7 +29,7 @@ uses
   Project, editor, DateUtils, compiler, ActnList, ToolFrm, AppEvnts,
   debugger, ClassBrowser, CodeCompletion, CppParser, CppTokenizer, SyncObjs,
   StrUtils, SynEditTypes, devFileMonitor, devMonitorTypes, EditorList,
-  devShortcuts, debugreader, ExceptionFrm, CommCtrl, devcfg, SynEditTextBuffer,
+  devShortcuts, debugreader, CommCtrl, devcfg, SynEditTextBuffer,
   CppPreprocessor, CBUtils, StatementList, AStyleFormatterOptionsFrm, ClangFormatterOptionsFrm, System.Actions,
   SVGColor, Vcl.Imaging.pngimage, Vcl.WinXCtrls, Vcl.WinXPanels, Vcl.ExtDlgs,
   Vcl.VirtualImage

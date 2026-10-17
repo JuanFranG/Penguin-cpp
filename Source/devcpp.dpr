@@ -75,7 +75,6 @@ uses
   ImportCBFrm in 'ImportCBFrm.pas' {ImportCBForm},
   CPUFrm in 'CPUFrm.pas' {CPUForm},
   TipOfTheDayFrm in 'TipOfTheDayFrm.pas' {TipOfTheDayForm},
-  ExceptionFrm in 'ExceptionFrm.pas' {ExceptionFrm},
   WindowListFrm in 'WindowListFrm.pas' {WindowListForm},
   ParamsFrm in 'ParamsFrm.pas' {ParamsForm},
   CompOptionsFrame in 'CompOptionsFrame.pas' {CompOptionsFrame: TFrame},

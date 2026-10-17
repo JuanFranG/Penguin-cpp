@@ -828,11 +828,41 @@ end;
 procedure GetMonospaceFonts(List: TStrings);
 var
   Bmp: TBitmap;
-  I: Integer;
+  Mono, Line: TStringList;
+  I, J: Integer;
 begin
   List.Clear;
+  // fontconfig knows which fonts are monospaced: "fc-list :spacing=mono family"
+  // prints one font per line, with its family names separated by commas
+  Mono := TStringList.Create;
+  Line := TStringList.Create;
+  try
+    Mono.Sorted := True;
+    Mono.Duplicates := dupIgnore;
+    Mono.CaseSensitive := False;
+    try
+      Line.Text := RunAndGetOutput('fc-list :spacing=mono family', '', nil, nil, False);
+    except
+      Line.Clear; // no fontconfig
+    end;
+    for I := 0 to Line.Count - 1 do
+      for J := 0 to WordCount(Line[I], [',']) - 1 do
+        Mono.Add(Trim(ExtractWord(J + 1, Line[I], [','])));
+    for I := 0 to Screen.Fonts.Count - 1 do
+      if Mono.IndexOf(Screen.Fonts[I]) >= 0 then
+        List.Add(Screen.Fonts[I]);
+  finally
+    Line.Free;
+    Mono.Free;
+  end;
+  if List.Count > 0 then
+    Exit;
+
+  // Without fontconfig: same width for narrow and wide letters. The bitmap needs
+  // a size, or there is nothing to measure on and every width is 0.
   Bmp := TBitmap.Create;
   try
+    Bmp.SetSize(64, 64);
     for I := 0 to Screen.Fonts.Count - 1 do begin
       Bmp.Canvas.Font.Name := Screen.Fonts[I];
       Bmp.Canvas.Font.Size := 12;
@@ -843,7 +873,7 @@ begin
   finally
     Bmp.Free;
   end;
-  if List.Count = 0 then // could not measure: offer everything
+  if List.Count = 0 then // could not tell: offer everything
     List.Assign(Screen.Fonts);
 end;
 

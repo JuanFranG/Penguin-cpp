@@ -181,7 +181,7 @@ end;
 
 procedure TAboutForm.btnUpdateCheckClick(Sender: TObject);
 begin
-  OpenDocument('https://github.com/Embarcadero/Dev-Cpp');
+  OpenDocument('https://github.com/JuanFranG/Penguin-cpp/releases');
 end;
 
 procedure TAboutForm.btnAuthorsDragDrop(Sender, Source: TObject; X,

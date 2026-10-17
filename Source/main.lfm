@@ -3,7 +3,7 @@ object MainForm: TMainForm
   Top = 231
   HorzScrollBar.Visible = False
   VertScrollBar.Visible = False
-  Caption = 'Embarcadero Dev-C++'
+  Caption = 'Penguin cpp'
   ClientHeight = 689
   ClientWidth = 1285
   Color = clWindow
@@ -5910,6 +5910,7 @@ object MainForm: TMainForm
           Align = alCustom
         end
         object LabelSponsor: TLabel
+          Visible = False
           Left = 20
           Top = 375
           Width = 77
@@ -6368,7 +6369,7 @@ object MainForm: TMainForm
       end
       object ExitItem: TMenuItem
         Action = actExit
-        Caption = 'E&xit Embarcadero Dev-C++'
+        Caption = 'E&xit Penguin cpp'
         GroupIndex = 9
       end
     end

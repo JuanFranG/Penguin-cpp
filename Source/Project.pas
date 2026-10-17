@@ -778,7 +778,7 @@ begin
       fOptions.VersionInfo.CompanyName := ReadString('VersionInfo', 'CompanyName', '');
       fOptions.VersionInfo.FileVersion := ReadString('VersionInfo', 'FileVersion', '0.1');
       fOptions.VersionInfo.FileDescription := ReadString('VersionInfo', 'FileDescription',
-        'Developed using the Embarcadero Dev-C++ IDE');
+        'Developed using the Penguin cpp IDE');
       fOptions.VersionInfo.InternalName := ReadString('VersionInfo', 'InternalName', '');
       fOptions.VersionInfo.LegalCopyright := ReadString('VersionInfo', 'LegalCopyright', '');
       fOptions.VersionInfo.LegalTrademarks := ReadString('VersionInfo', 'LegalTrademarks', '');
@@ -1474,7 +1474,7 @@ begin
   sl := TStringList.Create;
   try
     sl.Add('<html>');
-    sl.Add('<head><title>Embarcadero Dev-C++ project: ' + Self.Name + '</title></head>');
+    sl.Add('<head><title>Penguin cpp project: ' + Self.Name + '</title></head>');
     sl.Add('<body bgcolor=#FFFFFF>');
     sl.Add('<h2>Project: ' + Self.Name + '</h2>');
     sl.Add('<b>Index of files:</b>');
@@ -1515,7 +1515,7 @@ begin
 
     sl.Add('</table>');
     sl.Add('<hr width="80%"/>');
-    sl.Add('<p align="center"><font size="1">Exported by <a href="https://github.com/Embarcadero/Dev-Cpp">' + DEVCPP + '</a> v' +
+    sl.Add('<p align="center"><font size="1">Exported by <a href="https://github.com/JuanFranG/Penguin-cpp">' + DEVCPP + '</a> v' +
       DEVCPP_VERSION + '</font></p>');
     sl.Add('</body>');
     sl.Add('</html>');

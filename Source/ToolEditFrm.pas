@@ -76,7 +76,7 @@ procedure TToolEditForm.HelpClick(Sender: TObject);
 begin
   Application.MessageBox(
     'You can use macros when calling a tool, how it can acts depending on what your doing' + #10#13 +
-    'in Embarcadero Dev-C++. For example, if you are willing to add a tool to Embarcadero Dev-C++' + #10#13 +
+    'in Penguin cpp. For example, if you are willing to add a tool to Penguin cpp' + #10#13 +
     'that can compress executable files, you may need to know the filename of your project''s executable' + #10#13 +
     'that when calling the tool it automatically compress the current project''s executable.' + #10#13 +
     'You can use many different parameters macros for your tool, for more information on' + #10#13 +

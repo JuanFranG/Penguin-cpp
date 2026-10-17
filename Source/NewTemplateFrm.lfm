@@ -99,7 +99,7 @@ object NewTemplateForm: TNewTemplateForm
           Top = 17
           Width = 113
           Height = 24
-          Hint = 'Select a icon from Embarcadero Dev-C++'#39's icon collection'
+          Hint = 'Select a icon from Penguin cpp'#39's icon collection'
           Caption = 'Library'
           ImageIndex = 63
           Images = dmMain.SVGImageListMenuStyle

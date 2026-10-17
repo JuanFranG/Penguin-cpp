@@ -3,7 +3,7 @@ object AboutForm: TAboutForm
   Top = 509
   BorderIcons = [biSystemMenu]
   BorderStyle = bsDialog
-  Caption = 'About Embarcadero Dev-C++ :-)'
+  Caption = 'About Penguin cpp'
   ClientHeight = 642
   ClientWidth = 414
   Color = clBtnFace
@@ -3230,6 +3230,7 @@ object AboutForm: TAboutForm
       OnClick = URLLabelClick
     end
     object lblBlog: TLabel
+      Visible = False
       Left = 16
       Top = 76
       Width = 46
@@ -3237,6 +3238,7 @@ object AboutForm: TAboutForm
       Caption = 'Sponsor:'
     end
     object lblBlogURL: TLabel
+      Visible = False
       Left = 184
       Top = 76
       Width = 153
@@ -3259,6 +3261,7 @@ object AboutForm: TAboutForm
       Shape = bsBottomLine
     end
     object lblSubreddit: TLabel
+      Visible = False
       Left = 16
       Top = 58
       Width = 27
@@ -3266,6 +3269,7 @@ object AboutForm: TAboutForm
       Caption = 'Blog:'
     end
     object lblSubredditURL: TLabel
+      Visible = False
       Left = 184
       Top = 58
       Width = 218
@@ -3293,7 +3297,7 @@ object AboutForm: TAboutForm
       Width = 203
       Height = 13
       Cursor = crHandPoint
-      Caption = 'https://github.com/Embarcadero/Dev-Cpp'
+      Caption = 'https://github.com/JuanFranG/Penguin-cpp'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clBlue
       Font.Height = 11

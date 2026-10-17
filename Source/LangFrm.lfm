@@ -3,7 +3,7 @@ object LangForm: TLangForm
   Top = 516
   BorderIcons = []
   BorderStyle = bsDialog
-  Caption = 'Embarcadero Dev-C++ first time configuration'
+  Caption = 'Penguin cpp first time configuration'
   ClientHeight = 320
   ClientWidth = 560
   Color = clWindow
@@ -85,8 +85,8 @@ object LangForm: TLangForm
       Height = 73
       AutoSize = False
       Caption = 
-        'If you need help using Embarcadero Dev-C++, please refer to the ' +
-        'Embarcadero Dev-C++ help file in the Help menu or send the devel' +
+        'If you need help using Penguin cpp, please refer to the ' +
+        'Penguin cpp help file in the Help menu or send the devel' +
         'oper a message (he doesn'#39't mind!).'
       WordWrap = True
     end
@@ -98,7 +98,7 @@ object LangForm: TLangForm
       AutoSize = False
       Caption = 
         'You can also download packages (like libraries or tools) to use ' +
-        'with Embarcadero Dev-C++ using WebUpdate, which you will find in' +
+        'with Penguin cpp using WebUpdate, which you will find in' +
         ' Tools menu >> Check for Packages.'
       WordWrap = True
     end
@@ -109,7 +109,7 @@ object LangForm: TLangForm
       Height = 45
       AutoSize = False
       Caption = 
-        'Embarcadero Dev-C++ has been configured successfully, you may no' +
+        'Penguin cpp has been configured successfully, you may no' +
         'w click OK to proceed to its loading.'
       WordWrap = True
     end

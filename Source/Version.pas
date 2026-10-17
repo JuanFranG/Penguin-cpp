@@ -26,7 +26,7 @@ const
   pd = DirectorySeparator; // from System; this unit has no uses clause
 
   // exe properties
-  DEVCPP = 'Embarcadero Dev-C++';
+  DEVCPP = 'Penguin cpp';
   DEVCPP_VERSION = '6.3';
 
   // delimiters

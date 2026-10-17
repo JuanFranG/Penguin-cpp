@@ -208,7 +208,7 @@ end;
 procedure TCompiler.WriteMakeHeader(var F: TextFile);
 begin
   Writeln(F, '# Project: ' + fProject.Name);
-  Writeln(F, '# Makefile created by Embarcadero Dev-C++ ' + DEVCPP_VERSION);
+  Writeln(F, '# Makefile created by ' + DEVCPP + ' ' + DEVCPP_VERSION);
   Writeln(F);
   if fCheckSyntax then begin
     Writeln(F, '# This Makefile is written for syntax check!');

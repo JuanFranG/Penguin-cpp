@@ -356,8 +356,8 @@ object EnviroForm: TEnviroForm
         Height = 31
         AutoSize = False
         Caption = 
-          'Current Options directory. Click the button to reset Embarcadero' +
-          ' Dev-C++.'
+          'Current Options directory. Click the button to reset Penguin cpp' +
+          '.'
       end
       object edUserDir: TEdit
         Left = 16

@@ -22,8 +22,8 @@ unit ToolFrm;
 interface
 
 uses
-  Windows, Messages, SysUtils, Classes, Menus, Graphics, Controls, Forms,
-  StdCtrls, Buttons, ShellAPI;
+  LCLIntf, LCLType, LMessages, SysUtils, Classes, Menus, Graphics, Controls, Forms, StdCtrls,
+  Buttons;
 
 type
   { Tool List }
@@ -102,10 +102,9 @@ type
 implementation
 
 uses
-  ToolEditFrm, inifiles, devCFG, Utils, MultiLangSupport, DataFrm,
-  Version, main;
+  ToolEditFrm, inifiles, devCFG, Utils, MultiLangSupport, DataFrm, Version, main;
 
-{$R *.dfm}
+{$R *.lfm}
 
 { TToolList }
 

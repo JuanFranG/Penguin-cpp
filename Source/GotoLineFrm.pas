@@ -22,8 +22,8 @@ unit GotoLineFrm;
 interface
 
 uses
-  Windows, SysUtils, Classes, Graphics, Forms, Controls, StdCtrls,
-  Buttons, ExtCtrls, Spin, SynEdit;
+  LCLIntf, LCLType, SysUtils, Classes, Graphics, Forms, Controls, StdCtrls, Buttons, ExtCtrls,
+  Spin, SynEdit;
 
 type
   TGotoLineForm = class(TForm)
@@ -44,7 +44,7 @@ implementation
 uses
   MultiLangSupport, devCFG;
 
-{$R *.dfm}
+{$R *.lfm}
 
 procedure TGotoLineForm.FormCreate(Sender: TObject);
 begin

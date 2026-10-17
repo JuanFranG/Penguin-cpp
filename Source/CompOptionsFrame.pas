@@ -22,8 +22,8 @@ unit CompOptionsFrame;
 interface
 
 uses
-  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  Grids, ValEdit, ComCtrls, ExtCtrls, CompOptionsList, Project, Utils, ProjectTypes, StdCtrls;
+  LCLIntf, LCLType, LMessages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs, Grids,
+  ValEdit, ComCtrls, ExtCtrls, CompOptionsList, Project, Utils, ProjectTypes, StdCtrls;
 
 type
   TCompOptionsFrame = class(TFrame)
@@ -41,7 +41,7 @@ implementation
 uses
   devCFG, MultiLangSupport;
 
-{$R *.dfm}
+{$R *.lfm}
 
 { TCompOptionsFrame }
 

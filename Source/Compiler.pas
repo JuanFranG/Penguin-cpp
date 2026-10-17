@@ -22,8 +22,8 @@ unit Compiler;
 interface
 
 uses
-  Windows, SysUtils, Dialogs, StdCtrls, Controls, ComCtrls, Forms,
-  devRun, Version, Project, Utils, ProjectTypes, Classes, Graphics, devCFG;
+  LCLIntf, LCLType, SysUtils, Dialogs, StdCtrls, Controls, ComCtrls, Forms, devRun, Version,
+  Project, Utils, ProjectTypes, Classes, Graphics, devCFG;
 
 type
   TLogEntryEvent = procedure(const Msg: String) of object;
@@ -119,7 +119,7 @@ type
 implementation
 
 uses
-  System.UITypes, MultiLangSupport, Macros, devExec, main, StrUtils, System.IOUtils;
+  UITypes, MultiLangSupport, Macros, devExec, main, StrUtils;
 
 procedure TCompiler.DoLogEntry(const msg: String);
 begin

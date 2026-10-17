@@ -30,7 +30,7 @@ unit ImageTheme;
 interface
 
 uses
-  Windows, SysUtils, Classes, Controls, Graphics, Contnrs, VirtualImageList;
+  LCLIntf, LCLType, SysUtils, Classes, Controls, Graphics, Contnrs;
 
 type
   TImageThemeClass = class of TCustomImageTheme;

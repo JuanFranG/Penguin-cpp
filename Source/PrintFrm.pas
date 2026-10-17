@@ -22,8 +22,8 @@ unit PrintFrm;
 interface
 
 uses
-  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, Buttons, MultiLangSupport, Spin,DataFrm;
+  LCLIntf, LCLType, LMessages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs, StdCtrls,
+  Buttons, MultiLangSupport, Spin, DataFrm;
 
 type
   TPrintForm = class(TForm)
@@ -47,10 +47,10 @@ type
 
 implementation
 
-uses 
+uses
   devCFG;
 
-{$R *.dfm}
+{$R *.lfm}
 
 procedure TPrintForm.LoadText;
 begin

@@ -55,7 +55,7 @@ implementation
 uses
   main, Editor, devCFG, MultiLangSupport;
 
-{$R *.dfm}
+{$R *.lfm}
 
 procedure TAddToDoForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin

@@ -22,8 +22,8 @@ unit Tests;
 interface
 
 uses
-  Windows, Classes, Sysutils, Dateutils, Forms, ShellAPI, Dialogs, NewProjectFrm, Project,
-  Menus, Registry, Controls, ComCtrls, Math, ActnList, CompOptionsFrm, SynEditKeyCmds, SynEditTypes;
+  LCLIntf, LCLType, Classes, Sysutils, Dateutils, Forms, Dialogs, NewProjectFrm, Project, Menus,
+  Controls, ComCtrls, Math, ActnList, CompOptionsFrm, SynEditKeyCmds, SynEditTypes;
 
 type
   TTestClass = class

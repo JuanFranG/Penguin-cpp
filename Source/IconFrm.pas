@@ -22,9 +22,8 @@ unit IconFrm;
 interface
 
 uses
-  Windows, Messages, SysUtils, Classes, Graphics, Forms, 
-  ImgList, ComCtrls, Buttons, StdCtrls, Controls, Dialogs, ExtDlgs,
-  System.ImageList,DataFrm;
+  LCLIntf, LCLType, LMessages, SysUtils, Classes, Graphics, Forms, ImgList, ComCtrls, Buttons,
+  StdCtrls, Controls, Dialogs, ExtDlgs, DataFrm;
 
 type
   TIconForm = class(TForm)
@@ -52,9 +51,10 @@ type
 
 implementation
 
-uses Version, MultiLangSupport, devCFG, Utils;
+uses
+  Version, MultiLangSupport, devCFG, Utils;
 
-{$R *.dfm}
+{$R *.lfm}
 
 procedure TIconForm.LoadText;
 begin

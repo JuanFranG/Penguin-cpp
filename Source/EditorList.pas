@@ -22,8 +22,8 @@ unit EditorList;
 interface
 
 uses
-  Windows, SysUtils, Dialogs, StdCtrls, Controls, ComCtrls, Forms, Editor, ExtCtrls,
-  devRun, Version, Project, Utils, ProjectTypes, Classes, Graphics, Math, Messages;
+  LCLIntf, LCLType, SysUtils, Dialogs, StdCtrls, Controls, ComCtrls, Forms, Editor, ExtCtrls,
+  devRun, Version, Project, Utils, ProjectTypes, Classes, Graphics, Math, LMessages;
 
 type
   TLayoutShowType = (lstNone, lstLeft, lstRight, lstBoth);
@@ -74,7 +74,7 @@ type
 implementation
 
 uses
-  System.UItypes, main, MultiLangSupport, DataFrm;
+  UITypes, main, MultiLangSupport, DataFrm;
 
 function TEditorList.GetPageCount: integer;
 begin

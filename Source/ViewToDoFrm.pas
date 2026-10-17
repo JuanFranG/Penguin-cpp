@@ -22,8 +22,8 @@ unit ViewToDoFrm;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ComCtrls, Menus;
+  LCLIntf, LCLType, LMessages, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
+  StdCtrls, ComCtrls, Menus;
 
 type
   PToDoRec = ^TToDoRec;
@@ -74,9 +74,9 @@ type
 implementation
 
 uses
-  System.UItypes, main, Editor, Project, StrUtils, MultiLangSupport, devCFG;
+  UITypes, main, Editor, Project, StrUtils, MultiLangSupport, devCFG;
 
-{$R *.dfm}
+{$R *.lfm}
 
 function TViewToDoForm.BreakupToDo(Filename: String; sl: TStrings; Line: integer; Token: String; HasUser,
   HasPriority: boolean): integer;

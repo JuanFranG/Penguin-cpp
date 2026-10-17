@@ -22,14 +22,8 @@ unit ClassBrowser;
 interface
 
 uses
-{$IFDEF WIN32}
-  Windows, Classes, SysUtils, IntList, StatementList, Controls, ComCtrls, Graphics,
-  CppParser, Forms, Vcl.Themes, CBUtils;
-{$ENDIF}
-{$IFDEF LINUX}
-Classes, SysUtils, QControls, QComCtrls, QForms, QGraphics,
-CppParser;
-{$ENDIF}
+  LCLIntf, LCLType, Classes, SysUtils, IntList, StatementList, Controls, ComCtrls, Graphics,
+  CppParser, Forms, CBUtils;
 
 type
   TMemberSelectEvent = procedure(Sender: TObject; Filename: TFilename; Line: integer) of object;
@@ -135,7 +129,7 @@ procedure Register;
 implementation
 
 uses
-  System.Types;
+  Types;
 
 procedure Register;
 begin

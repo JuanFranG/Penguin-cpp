@@ -21,7 +21,7 @@ unit Templates;
 
 interface
 
-uses 
+uses
   Classes, Types, IniFiles, ProjectTypes;
 
 type
@@ -77,7 +77,7 @@ type
 implementation
 
 uses
-  Windows, Forms, SysUtils, Version, Utils, Dialogs, MultiLangSupport;
+  LCLIntf, LCLType, Forms, SysUtils, Version, Utils, Dialogs, MultiLangSupport;
 
 resourcestring
  cTemplate = 'Template';

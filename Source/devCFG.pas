@@ -22,8 +22,8 @@ unit devCFG;
 interface
 
 uses
-  Dialogs, Windows, Classes, Graphics, SynEdit, Editor, CFGData, IniFiles, ProjectTypes, Math, ShellAPI, ShlObj,
-  ComCtrls, System.UITypes, Vcl.Themes, SynEditTextBuffer, System.SysUtils;
+  Dialogs, LCLIntf, LCLType, Classes, Graphics, SynEdit, Editor, CFGData, IniFiles, ProjectTypes,
+  Math, ComCtrls, UITypes, SynEditTextBuffer, SysUtils;
 
 const
   BoolValYesNo: array[boolean] of String = ('No', 'Yes');
@@ -791,8 +791,8 @@ var
 implementation
 
 uses
-  MultiLangSupport, DataFrm, StrUtils, Forms, main, Compiler, Controls, Version, Utils, SynEditMiscClasses,
-  TypInfo, DateUtils, Types, System.IOUtils, Vcl.ExtDlgs, devPlatform;
+  MultiLangSupport, DataFrm, StrUtils, Forms, main, Compiler, Controls, Version, Utils,
+  SynEditMiscClasses, TypInfo, DateUtils, Types, ExtDlgs, devPlatform;
 
 procedure CreateOptions;
 var

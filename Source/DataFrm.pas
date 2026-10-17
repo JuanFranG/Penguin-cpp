@@ -22,10 +22,7 @@ unit DataFrm;
 interface
 
 uses
-  SysUtils, Classes, Menus, Controls, SynEditHighlighter, SynHighlighterCpp,
-  CodeInsList, SynHighlighterRC, ImgList, System.ImageList,
-  Vcl.BaseImageCollection, Vcl.ImageCollection, Vcl.VirtualImageList,
-  SVGIconImageListBase, SVGIconImageList, SynEditCodeFolding;
+  SysUtils, Classes, Menus, Controls, SynEditHighlighter, SynHighlighterCpp, CodeInsList, ImgList;
 
 type
   PMRUItem = ^TMRUItem;
@@ -114,7 +111,7 @@ implementation
 uses
   devCFG, Utils, Version, math, MultiLangSupport;
 
-{$R *.dfm}
+{$R *.lfm}
 
 { TdmMain }
 

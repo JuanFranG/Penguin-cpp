@@ -63,3 +63,7 @@ devcpp.exe
 *.o
 Source/Tests/ParserTest/build/
 Source/Tests/PlatformTest/build/
+Source/lib/
+Source/penguin-cpp.lps
+Source/penguin-cpp.res
+/penguin-cpp

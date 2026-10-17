@@ -22,8 +22,8 @@ unit Debugger;
 interface
 
 uses
-  Sysutils, Windows, Messages, Forms, Classes, Controls,
-  DebugReader, Version, Editor, ComCtrls, Dialogs, MultiLangSupport;
+  Sysutils, LCLIntf, LCLType, LMessages, Forms, Classes, Controls, DebugReader, Version, Editor,
+  ComCtrls, Dialogs, MultiLangSupport;
 
 type
 
@@ -84,7 +84,7 @@ type
 implementation
 
 uses
-  System.UItypes, main, devCFG, Utils, CPUFrm;
+  UITypes, main, devCFG, Utils, CPUFrm;
 
 constructor TDebugger.Create;
 begin

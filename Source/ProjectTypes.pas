@@ -22,7 +22,7 @@ unit ProjectTypes;
 interface
 
 uses
-  Classes, Editor, ComCtrls, Windows;
+  Classes, Editor, ComCtrls, LCLIntf, LCLType;
 
 const
   dptGUI = 0;

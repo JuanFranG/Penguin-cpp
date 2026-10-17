@@ -22,8 +22,8 @@ unit RemoveUnitFrm;
 interface
 
 uses
-  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, Buttons, ExtCtrls;
+  LCLIntf, LCLType, LMessages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs, StdCtrls,
+  Buttons, ExtCtrls;
 
 type
   TRemoveUnitForm = class(TForm)
@@ -41,7 +41,7 @@ implementation
 uses
   MultiLangSupport, devCFG, main;
 
-{$R *.dfm}
+{$R *.lfm}
 
 procedure TRemoveUnitForm.FormCreate(Sender: TObject);
 begin

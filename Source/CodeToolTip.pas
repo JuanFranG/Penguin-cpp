@@ -22,8 +22,8 @@ unit CodeToolTip;
 interface
 
 uses
-  SysUtils, Classes, Windows, Messages, Graphics, Controls, Forms,
-  SynEdit, SynEditHighlighter, Utils, CppParser;
+  SysUtils, Classes, LCLIntf, LCLType, LMessages, Graphics, Controls, Forms, SynEdit,
+  SynEditHighlighter, Utils, CppParser;
 
 type
   TCustomCodeToolTipButton = class(TPersistent)
@@ -120,7 +120,7 @@ type
 implementation
 
 uses
-  System.Types, devCFG;
+  Types, devCFG;
 
 // contains the up/down buttons
 // I tried to draw them using DrawFrameControl first,

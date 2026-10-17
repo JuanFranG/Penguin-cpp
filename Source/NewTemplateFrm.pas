@@ -22,9 +22,9 @@ unit NewTemplateFrm;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, CheckLst, ExtCtrls, Buttons, ComCtrls,
-  Project, ImgList, ExtDlgs, IniFiles, System.UITypes,DataFrm;
+  LCLIntf, LCLType, LMessages, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
+  StdCtrls, CheckLst, ExtCtrls, Buttons, ComCtrls, Project, ImgList, ExtDlgs, IniFiles, UITypes,
+  DataFrm;
 
 type
   TNewTemplateForm = class(TForm)
@@ -88,7 +88,7 @@ implementation
 uses
   Utils, IconFrm, devCFG, Version, Templates, main, MultiLangSupport, ProjectTypes;
 
-{$R *.dfm}
+{$R *.lfm}
 
 procedure TNewTemplateForm.FormShow(Sender: TObject);
 begin

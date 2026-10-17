@@ -22,12 +22,7 @@ unit devShortcuts;
 interface
 
 uses
-{$IFDEF WIN32}
-  Windows, Messages, SysUtils, Classes, Menus, Controls, IniFiles, Graphics, ActnList;
-{$ENDIF}
-{$IFDEF LINUX}
-SysUtils, Classes, QMenus, QControls, IniFiles, QGraphics, QActnList;
-{$ENDIF}
+  LCLIntf, LCLType, LMessages, SysUtils, Classes, Menus, Controls, IniFiles, Graphics, ActnList;
 
 type
   TShortCutItem = record
@@ -61,14 +56,8 @@ procedure Register;
 
 implementation
 
-{$IFDEF WIN32}
 uses
   devShortcutsEditorForm, Forms;
-{$ENDIF}
-{$IFDEF LINUX}
-uses
-  devShortcutsEditorForm, QForms;
-{$ENDIF}
 
 procedure Register;
 begin

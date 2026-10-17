@@ -22,8 +22,8 @@ unit FindFrm;
 interface
 
 uses
-  Windows, Messages, Editor, SysUtils, Classes, Graphics, Controls, Forms,
-  SynEdit, StdCtrls, SynEditTypes, SynEditSearch, Clipbrd, ComCtrls, Menus;
+  LCLIntf, LCLType, LMessages, Editor, SysUtils, Classes, Graphics, Controls, Forms, SynEdit,
+  StdCtrls, SynEditTypes, SynEditSearch, Clipbrd, ComCtrls, Menus;
 
 type
   TFindAction = (faFind, faFindFiles, faReplace, faReplaceFiles);
@@ -95,7 +95,7 @@ implementation
 uses
   main, Dialogs, MultiLangSupport, devCFG, Utils, SynEditMiscClasses, Math;
 
-{$R *.dfm}
+{$R *.lfm}
 
 function TFindForm.Execute(editor: TSynEdit; action: TFindAction): integer;
 var

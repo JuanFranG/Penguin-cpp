@@ -23,12 +23,7 @@ interface
 
 //path delimiter
 const
-{$IFDEF WIN32}
-  pd = '\';
-{$ENDIF}
-{$IFDEF LINUX}
-  pd = '/';
-{$ENDIF}
+  pd = DirectorySeparator; // from System; this unit has no uses clause
 
   // exe properties
   DEVCPP = 'Embarcadero Dev-C++';

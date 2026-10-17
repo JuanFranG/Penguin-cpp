@@ -22,8 +22,8 @@ unit ImportCBFrm;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, Buttons, StdCtrls;
+  LCLIntf, LCLType, LMessages, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
+  Buttons, StdCtrls;
 
 type
   TImportCBForm = class(TForm)
@@ -70,9 +70,9 @@ type
 implementation
 
 uses
-  System.UITypes, IniFiles, StrUtils, Version, MultiLangSupport, devCFG, Utils;
+  UITypes, IniFiles, StrUtils, Version, MultiLangSupport, devCFG, Utils;
 
-{$R *.dfm}
+{$R *.lfm}
 
 { TImportCBForm }
 

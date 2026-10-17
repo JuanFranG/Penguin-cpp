@@ -22,9 +22,9 @@ unit ProjectOptionsFrm;
 interface
 
 uses
-  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  ExtDlgs, StdCtrls, ExtCtrls, Buttons, ComCtrls, main, Project,
-  ProjectTypes, Spin, ValEdit, CompOptionsFrame, ShellApi, Grids,DataFrm;
+  LCLIntf, LCLType, LMessages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs, ExtDlgs,
+  StdCtrls, ExtCtrls, Buttons, ComCtrls, main, Project, ProjectTypes, Spin, ValEdit,
+  CompOptionsFrame, Grids, DataFrm;
 
 type
   TProjectOptionsFrm = class(TForm)
@@ -193,9 +193,9 @@ type
 implementation
 
 uses
-  System.UITypes, FileCtrl, devCFG, IconFrm, Utils, MultiLangSupport, Version, Math, devPlatform;
+  UITypes, FileCtrl, devCFG, IconFrm, Utils, MultiLangSupport, Version, Math, devPlatform;
 
-{$R *.dfm}
+{$R *.lfm}
 
 procedure TProjectOptionsFrm.UpdateDirButtons;
 begin

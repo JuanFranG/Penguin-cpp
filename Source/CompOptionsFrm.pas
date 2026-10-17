@@ -22,9 +22,8 @@ unit CompOptionsFrm;
 interface
 
 uses
-  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  Buttons, StdCtrls, Inifiles, ExtCtrls, ComCtrls, Spin, Math,
-  CompOptionsFrame, CompOptionsList;
+  LCLIntf, LCLType, LMessages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs, Buttons,
+  StdCtrls, Inifiles, ExtCtrls, ComCtrls, Spin, Math, CompOptionsFrame, CompOptionsList;
 
 type
   TCompOptForm = class(TForm)
@@ -119,9 +118,9 @@ type
 implementation
 
 uses
-  System.UItypes, ShellAPI, main, FileCtrl, Version, devCFG, Utils, MultiLangSupport, DataFrm, devPlatform;
+  UITypes, main, FileCtrl, Version, devCFG, Utils, MultiLangSupport, DataFrm, devPlatform;
 
-{$R *.dfm}
+{$R *.lfm}
 
 procedure TCompOptForm.btnCancelClick(Sender: TObject);
 begin

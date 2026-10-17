@@ -22,9 +22,8 @@ unit NewProjectFrm;
 interface
 
 uses
-  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, ExtCtrls, ImgList, Buttons, ComCtrls, Templates, Inifiles,
-  System.ImageList, SVGIconImageListBase, SVGIconImageList;
+  LCLIntf, LCLType, LMessages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs, StdCtrls,
+  ExtCtrls, ImgList, Buttons, ComCtrls, Templates, Inifiles;
 
 type
   TNewProjectForm = class(TForm)
@@ -63,10 +62,9 @@ type
 implementation
 
 uses
-  MultiLangSupport, Utils, DataFrm, FileCtrl, devCFG, Version,
-  Project, ProjectTypes;
+  MultiLangSupport, Utils, DataFrm, FileCtrl, devCFG, Version, Project, ProjectTypes;
 
-{$R *.dfm}
+{$R *.lfm}
 
 procedure TNewProjectForm.FormCreate(Sender: TObject);
 begin

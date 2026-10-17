@@ -22,8 +22,8 @@ unit NewVarFrm;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, CBUtils, StatementList;
+  LCLIntf, LCLType, LMessages, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
+  StdCtrls, ExtCtrls, CBUtils, StatementList;
 
 type
   TNewVarForm = class(TForm)
@@ -66,9 +66,9 @@ type
 implementation
 
 uses
-  System.UITypes, Editor, main, CppParser, MultiLangSupport, devCFG;
+  UITypes, Editor, main, CppParser, MultiLangSupport, devCFG;
 
-{$R *.dfm}
+{$R *.lfm}
 
 procedure TNewVarForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin

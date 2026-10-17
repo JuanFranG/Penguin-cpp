@@ -22,8 +22,8 @@ unit IncrementalFrm;
 interface
 
 uses
-  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, ActnList, SynEdit, SynEditTypes, SynEditSearch, ExtCtrls, Menus;
+  LCLIntf, LCLType, LMessages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs, StdCtrls,
+  ActnList, SynEdit, SynEditTypes, SynEditSearch, ExtCtrls, Menus;
 
 type
   TIncrementalForm = class(TForm)
@@ -69,7 +69,7 @@ var
 
 implementation
 
-{$R *.dfm}
+{$R *.lfm}
 
 uses
   main, MultiLangSupport;

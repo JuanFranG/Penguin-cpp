@@ -22,8 +22,8 @@ unit ToolEditFrm;
 interface
 
 uses
-  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, Buttons, Macros, DataFrm;
+  LCLIntf, LCLType, LMessages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs, StdCtrls,
+  ExtCtrls, Buttons, Macros, DataFrm;
 
 type
   TToolEditForm = class(TForm)
@@ -65,7 +65,7 @@ implementation
 uses
   FileCtrl, MultiLangSupport, devCFG, Utils, main;
 
-{$R *.dfm}
+{$R *.lfm}
 
 procedure TToolEditForm.btnCancelClick(Sender: TObject);
 begin

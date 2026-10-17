@@ -22,9 +22,8 @@ unit Project;
 interface
 
 uses
-  IniFiles, SysUtils, Dialogs, ComCtrls, Editor, Contnrs, SynExportHTML,
-  Classes, Controls, Version, Forms, Templates, ProjectTypes,
-  Windows, System.UITypes;
+  IniFiles, SysUtils, Dialogs, ComCtrls, Editor, Contnrs, SynExportHTML, Classes, Controls,
+  Version, Forms, Templates, ProjectTypes, LCLIntf, LCLType, UITypes;
 
 type
   TProjUnit = class;
@@ -157,8 +156,8 @@ type
 implementation
 
 uses
-  main, MultiLangSupport, devCFG, ProjectOptionsFrm, DataFrm, Utils,
-  RemoveUnitFrm, SynEdit, EditorList;
+  main, MultiLangSupport, devCFG, ProjectOptionsFrm, DataFrm, Utils, RemoveUnitFrm, SynEdit,
+  EditorList;
 
 { TProjUnit }
 

@@ -22,8 +22,8 @@ unit ProfileAnalysisFrm;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ComCtrls, ExtCtrls, Spin, CBUtils;
+  LCLIntf, LCLType, LMessages, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
+  StdCtrls, ComCtrls, ExtCtrls, Spin, CBUtils;
 
 type
   TProfileAnalysisForm = class(TForm)
@@ -80,10 +80,9 @@ var
 implementation
 
 uses
-  devCFG, Version, Utils, main, ShellAPI, StrUtils, MultiLangSupport, CppParser,
-  Editor;
+  devCFG, Version, Utils, main, StrUtils, MultiLangSupport, CppParser, Editor;
 
-{$R *.dfm}
+{$R *.lfm}
 
 procedure TProfileAnalysisForm.FormShow(Sender: TObject);
 begin

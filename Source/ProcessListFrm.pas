@@ -22,8 +22,8 @@ unit ProcessListFrm;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Buttons, ExtCtrls, MultiLangSupport,DataFrm;
+  LCLIntf, LCLType, LMessages, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
+  StdCtrls, Buttons, ExtCtrls, MultiLangSupport, DataFrm;
 
 type
   TProcessListForm = class(TForm)
@@ -46,10 +46,10 @@ var
 
 implementation
 
-uses 
-  tlhelp32, devCFG;
+uses
+  devCFG;
 
-{$R *.dfm}
+{$R *.lfm}
 
 procedure TProcessListForm.FormCreate(Sender: TObject);
 var

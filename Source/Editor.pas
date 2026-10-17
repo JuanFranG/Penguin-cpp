@@ -22,10 +22,10 @@ unit Editor;
 interface
 
 uses
-  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs, CodeCompletion, CppParser, SynExportTeX,
-  SynEditExport, SynExportRTF, Menus, ImgList, ComCtrls, StdCtrls, ExtCtrls, SynEdit, SynEditKeyCmds, Version,
-  SynEditCodeFolding, SynExportHTML, SynEditTextBuffer, Math, StrUtils, SynEditTypes, SynEditHighlighter, DateUtils,
-  CodeToolTip, CBUtils, System.UITypes, System.Contnrs, SynEditPrint, Vcl.ExtDlgs;
+  LCLIntf, LCLType, LMessages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
+  CodeCompletion, CppParser, SynEditExport, Menus, ImgList, ComCtrls, StdCtrls, ExtCtrls, SynEdit,
+  SynEditKeyCmds, Version, SynExportHTML, SynEditTextBuffer, Math, StrUtils, SynEditTypes,
+  SynEditHighlighter, DateUtils, CodeToolTip, CBUtils, UITypes, Contnrs, ExtDlgs;
 
 type
   TCloseTabSheet = class(TTabSheet)
@@ -237,9 +237,8 @@ type
 implementation
 
 uses
-  main, Project, MultiLangSupport, devCFG, Utils,
-  DataFrm, GotoLineFrm, Macros, DebugReader, IncrementalFrm,
-  CodeCompletionForm, SynEditMiscClasses, CharUtils, Vcl.Printers, SynEditPrintTypes;
+  main, Project, MultiLangSupport, devCFG, Utils, DataFrm, GotoLineFrm, Macros, DebugReader,
+  IncrementalFrm, CodeCompletionForm, SynEditMiscClasses, CharUtils, Printers;
 
 { TCloseTabSheet }
 constructor TCloseTabSheet.Create(AOwner:TComponent);

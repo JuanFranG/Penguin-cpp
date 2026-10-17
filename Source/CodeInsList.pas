@@ -22,7 +22,7 @@ unit CodeInsList;
 interface
 
 uses
-  Windows, Classes;
+  LCLIntf, LCLType, Classes;
 
 type
   PCodeIns = ^TCodeIns;

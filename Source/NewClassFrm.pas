@@ -22,8 +22,8 @@ unit NewClassFrm;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Buttons, CBUtils, StatementList;
+  LCLIntf, LCLType, LMessages, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
+  StdCtrls, Buttons, CBUtils, StatementList;
 
 type
   TNewClassForm = class(TForm)
@@ -69,9 +69,9 @@ type
 implementation
 
 uses
-  System.UITypes, main, CppParser, MultiLangSupport, Version, Editor, devCFG;
+  UITypes, main, CppParser, MultiLangSupport, Version, Editor, devCFG;
 
-{$R *.dfm}
+{$R *.lfm}
 
 procedure TNewClassForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin

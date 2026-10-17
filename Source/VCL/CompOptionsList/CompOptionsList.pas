@@ -22,7 +22,7 @@ unit CompOptionsList;
 interface
 
 uses
-  SysUtils, Classes, StdCtrls, Windows, Controls, Grids, ValEdit, Themes, Types;
+  SysUtils, Classes, StdCtrls, LCLIntf, LCLType, Controls, Grids, ValEdit, Types;
 
 type
   TInplaceEditListAccess = class(Grids.TInplaceEditList);

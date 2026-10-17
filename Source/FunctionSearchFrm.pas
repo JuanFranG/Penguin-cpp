@@ -22,8 +22,8 @@ unit FunctionSearchFrm;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, CppParser, ComCtrls, CBUtils, StatementList;
+  LCLIntf, LCLType, LMessages, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
+  StdCtrls, ExtCtrls, CppParser, ComCtrls, CBUtils, StatementList;
 
 type
   TFunctionSearchForm = class(TForm)
@@ -53,7 +53,7 @@ implementation
 uses
   MultiLangSupport, devCFG, Utils;
 
-{$R *.dfm}
+{$R *.lfm}
 
 procedure TFunctionSearchForm.txtSearchChange(Sender: TObject);
 var

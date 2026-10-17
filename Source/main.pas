@@ -24,16 +24,12 @@ unit main;
 interface
 
 uses
-  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs, System.UITypes,
-  Menus, StdCtrls, ComCtrls, ToolWin, ExtCtrls, Buttons, Utils, SynEditPrint,
-  Project, Editor, DateUtils, Compiler, ActnList, ToolFrm, AppEvnts,
-  Debugger, ClassBrowser, CodeCompletion, CppParser, CppTokenizer, SyncObjs,
-  StrUtils, SynEditTypes, devFileMonitor, devMonitorTypes, EditorList,
-  devShortcuts, DebugReader, CommCtrl, devCFG, SynEditTextBuffer,
-  CppPreprocessor, CBUtils, StatementList, AStyleFormatterOptionsFrm, ClangFormatterOptionsFrm, System.Actions,
-  SVGColor, Vcl.Imaging.pngimage, Vcl.WinXCtrls, Vcl.WinXPanels, Vcl.ExtDlgs,
-  Vcl.VirtualImage
-  ;
+  LCLIntf, LCLType, LMessages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs, UITypes,
+  Menus, StdCtrls, ComCtrls, ExtCtrls, Buttons, Utils, Project, Editor, DateUtils, Compiler,
+  ActnList, ToolFrm, Debugger, ClassBrowser, CodeCompletion, CppParser, CppTokenizer, SyncObjs,
+  StrUtils, SynEditTypes, devFileMonitor, devMonitorTypes, EditorList, devShortcuts, DebugReader,
+  devCFG, SynEditTextBuffer, CppPreprocessor, CBUtils, StatementList, AStyleFormatterOptionsFrm,
+  ClangFormatterOptionsFrm, ExtDlgs;
 
 type
   TRunEndAction = (reaNone, reaProfile);
@@ -962,17 +958,14 @@ var
 implementation
 
 uses
-  System.Threading, System.Math, ShellAPI, IniFiles, Clipbrd, MultiLangSupport, Version,
-  DataFrm, NewProjectFrm, AboutFrm, PrintFrm,
-  CompOptionsFrm, EditorOptFrm, IncrementalFrm, EnviroFrm,
-  SynEdit, ImageTheme, SynEditKeyCmds, Instances,
-  Types, FindFrm, ProjectTypes, devExec, Tests,
-  NewTemplateFrm, FunctionSearchFrm, NewFunctionFrm, NewVarFrm, NewClassFrm,
-  ProfileAnalysisFrm, FilePropertiesFrm, AddToDoFrm, ViewToDoFrm,
-  ImportMSVCFrm, ImportCBFrm, CPUFrm, TipOfTheDayFrm,
-  WindowListFrm, RemoveUnitFrm, ParamsFrm, ProcessListFrm, SynEditHighlighter, devPlatform;
+  Math, IniFiles, Clipbrd, MultiLangSupport, Version, DataFrm, NewProjectFrm, AboutFrm, PrintFrm,
+  CompOptionsFrm, EditorOptFrm, IncrementalFrm, EnviroFrm, SynEdit, ImageTheme, SynEditKeyCmds,
+  Instances, Types, FindFrm, ProjectTypes, devExec, Tests, NewTemplateFrm, FunctionSearchFrm,
+  NewFunctionFrm, NewVarFrm, NewClassFrm, ProfileAnalysisFrm, FilePropertiesFrm, AddToDoFrm,
+  ViewToDoFrm, ImportMSVCFrm, ImportCBFrm, CPUFrm, TipOfTheDayFrm, WindowListFrm, RemoveUnitFrm,
+  ParamsFrm, ProcessListFrm, SynEditHighlighter, devPlatform;
 
-{$R *.dfm}
+{$R *.lfm}
 
 procedure TMainForm.LoadTheme;
 begin
@@ -5146,7 +5139,8 @@ begin
   // Pause updating the class browser (which will be invalidated)
   ClassBrowser.BeginUpdate;
 
-  // Hide anything that uses the database (which will be invalidated)
+  // Hide anything that uses
+  the database (which will be invalidated)
   e := fEditorList.GetEditor;
   if Assigned(e) then begin
     e.FunctionTip.ReleaseHandle;
@@ -5180,7 +5174,8 @@ var
 begin
   Screen.Cursor := crDefault;
 
-  // Done. Rebuild stuff that uses the database
+  // Done. Rebuild stuff that uses
+  the database
   RebuildClassesToolbar;
 
   // The class browser can redraw again

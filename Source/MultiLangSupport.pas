@@ -22,7 +22,7 @@ unit MultiLangSupport;
 interface
 
 uses
-  Windows, Dialogs, SysUtils, Classes;
+  LCLIntf, LCLType, Dialogs, SysUtils, Classes;
 
 {$I LangIDs.inc}
 
@@ -218,7 +218,7 @@ function Lang: TdevMultiLangSupport;
 implementation
 
 uses
-  System.WideStrUtils, System.UITypes, LangFrm, Forms, Utils, Version, Controls, devCFG;
+  UITypes, LangFrm, Forms, Utils, Version, Controls, devCFG;
 
 var
   fLangSingleton: TdevMultiLangSupport = nil;

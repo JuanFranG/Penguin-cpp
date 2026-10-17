@@ -22,8 +22,8 @@ unit AboutFrm;
 interface
 
 uses
-  Windows, SysUtils, Classes, Version, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, Buttons, ExtCtrls, Vcl.Imaging.pngimage,DataFrm;
+  LCLIntf, LCLType, SysUtils, Classes, Version, Graphics, Controls, Forms, Dialogs, StdCtrls,
+  Buttons, ExtCtrls, DataFrm;
 
 type
   TAboutForm = class(TForm)
@@ -86,9 +86,9 @@ type
 implementation
 
 uses
-  System.UITypes, ShellAPI, devCFG, Utils, MultiLangSupport, main, devPlatform;
+  UITypes, devCFG, Utils, MultiLangSupport, main, devPlatform;
 
-{$R *.dfm}
+{$R *.lfm}
 
 procedure TAboutForm.LoadText;
 begin

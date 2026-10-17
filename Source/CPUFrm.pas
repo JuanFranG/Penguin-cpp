@@ -22,7 +22,7 @@ unit CPUFrm;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Math, Graphics, Controls, Forms,
+  LCLIntf, LCLType, LMessages, SysUtils, Variants, Classes, Math, Graphics, Controls, Forms,
   Dialogs, StdCtrls, Buttons, SynEdit, SynEditTypes, ClipBrd, StrUtils, ComCtrls, ExtCtrls, Menus;
 
 type
@@ -77,10 +77,9 @@ var
 implementation
 
 uses
-  main, Version, MultiLangSupport, Debugger, DebugReader, DataFrm, Utils,
-  devCFG, Editor, Types;
+  main, Version, MultiLangSupport, Debugger, DebugReader, DataFrm, Utils, devCFG, Editor, Types;
 
-{$R *.dfm}
+{$R *.lfm}
 
 procedure TCPUForm.FormClose(Sender: TObject; var Action: TCloseAction);
 var

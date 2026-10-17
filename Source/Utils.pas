@@ -22,8 +22,8 @@ unit Utils;
 interface
 
 uses
-  Windows, Classes, Sysutils, Dateutils, Forms, ShellAPI, Dialogs, SynEdit, SynEditHighlighter,
-  Menus, Registry, Controls, ComCtrls, Messages, System.AnsiStrings, Vcl.ExtDlgs, devPlatform;
+  LCLIntf, LCLType, Classes, Sysutils, Dateutils, Forms, Dialogs, SynEdit, SynEditHighlighter,
+  Menus, Controls, ComCtrls, LMessages, ExtDlgs, devPlatform;
 
 type
   { File ID types }
@@ -155,7 +155,7 @@ function FastStringReplace(const S, OldPattern, NewPattern: String; Flags: TRepl
 implementation
 
 uses
-  devCFG, Version, Graphics, StrUtils, MultiLangSupport, main, Editor, ShlObj, ActiveX, System.IOUtils, CharUtils;
+  devCFG, Version, Graphics, StrUtils, MultiLangSupport, main, Editor, CharUtils;
 
 function FastStringReplace(const S, OldPattern, NewPattern: String; Flags: TReplaceFlags): String;
 var
@@ -1002,7 +1002,7 @@ begin
   end;
 
   // Last, replace all slashes with backslahes
-{$IFDEF WIN32}
+{$IFDEF MSWINDOWS}
   Result := StringReplace(Result, '/', '\', [rfReplaceAll]);
 {$ENDIF}
 end;

@@ -22,11 +22,9 @@ unit EditorOptFrm;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ComCtrls, StdCtrls, ExtCtrls, Spin,
-  SynEdit, SynEditHighlighter, SynHighlighterCpp,
-  Buttons, ClassBrowser, CppParser, CppTokenizer, StrUtils, Grids,
-  CppPreprocessor;
+  LCLIntf, LCLType, LMessages, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
+  ComCtrls, StdCtrls, ExtCtrls, Spin, SynEdit, SynEditHighlighter, SynHighlighterCpp, Buttons,
+  ClassBrowser, CppParser, CppTokenizer, StrUtils, Grids, CppPreprocessor;
 
 type
   // Keep history of what we have accessed (does not mean changed)
@@ -217,10 +215,10 @@ type
 implementation
 
 uses
-  System.Types, Vcl.ExtDlgs, shlobj, MultiLangSupport, devCFG, Version, Utils, math, CommCtrl, DateUtils, CodeInsList, DataFrm, IniFiles, Editor,
-  main;
+  Types, ExtDlgs, MultiLangSupport, devCFG, Version, Utils, math, DateUtils, CodeInsList, DataFrm,
+  IniFiles, Editor, main;
 
-{$R *.dfm}
+{$R *.lfm}
 const
   cBreakLine = 7;
   cABreakLine = 9;

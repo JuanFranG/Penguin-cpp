@@ -22,9 +22,8 @@ unit LangFrm;
 interface
 
 uses
-  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, Buttons, ExtCtrls, Menus, FileCtrl, SynEdit, ToolWin, ComCtrls,
-  SVGColor, Vcl.VirtualImage;
+  LCLIntf, LCLType, LMessages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs, StdCtrls,
+  Buttons, ExtCtrls, Menus, FileCtrl, SynEdit, ComCtrls;
 
 type
   TLangForm = class(TForm)
@@ -66,7 +65,7 @@ implementation
 uses
   MultiLangSupport, DataFrm, devCFG, Utils, main, Version, ImageTheme, SynEditTypes;
 
-{$R *.dfm}
+{$R *.lfm}
 
 procedure TLangForm.LoadText;
 begin

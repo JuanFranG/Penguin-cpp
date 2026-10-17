@@ -22,7 +22,7 @@ unit CFGData;
 interface
 
 uses
-  Windows, Classes, sysUtils, TypInfo, IniFiles, Graphics;
+  LCLIntf, LCLType, Classes, sysUtils, TypInfo, IniFiles, Graphics;
 
 type
   TConfigData = class(TPersistent)

@@ -22,8 +22,8 @@ unit NewFunctionFrm;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, CppParser, CBUtils;
+  LCLIntf, LCLType, LMessages, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
+  StdCtrls, ExtCtrls, CppParser, CBUtils;
 
 type
   TNewFunctionForm = class(TForm)
@@ -59,9 +59,9 @@ type
 implementation
 
 uses
-  System.UITypes, Editor, main, MultiLangSupport, devCFG;
+  UITypes, Editor, main, MultiLangSupport, devCFG;
 
-{$R *.dfm}
+{$R *.lfm}
 
 procedure TNewFunctionForm.txtTypeChange(Sender: TObject);
 begin

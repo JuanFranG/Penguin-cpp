@@ -22,14 +22,8 @@ unit devShortcutsEditorForm;
 interface
 
 uses
-{$IFDEF WIN32}
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, ComCtrls, StdCtrls, Menus, devShortcuts, Vcl.Themes;
-{$ENDIF}
-{$IFDEF LINUX}
-SysUtils, Variants, Classes, QGraphics, QControls, QForms,
-QDialogs, QExtCtrls, QComCtrls, QStdCtrls, QMenus;
-{$ENDIF}
+  LCLIntf, LCLType, LMessages, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
+  ExtCtrls, ComCtrls, StdCtrls, Menus, devShortcuts;
 
 type
   TfrmShortcutsEditor = class(TForm)
@@ -68,9 +62,9 @@ var
 implementation
 
 uses
-  System.UITypes, StrUtils;
+  UITypes, StrUtils;
 
-{$R *.dfm}
+{$R *.lfm}
 
 procedure TfrmShortcutsEditor.LoadText(const WindowCaption, Column1, Column2, Tip, OK, Cancel, ResetAll, ResetCurrent,
   ReplaceHint, ResetAllConfirm, ResetCurrentConfirm: string);

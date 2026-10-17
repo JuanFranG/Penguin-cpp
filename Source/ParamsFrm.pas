@@ -22,8 +22,8 @@ unit ParamsFrm;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Buttons,DataFrm;
+  LCLIntf, LCLType, LMessages, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
+  StdCtrls, Buttons, DataFrm;
 
 type
   TParamsForm = class(TForm)
@@ -49,7 +49,7 @@ implementation
 uses
   MultiLangSupport, devCFG;
 
-{$R *.dfm}
+{$R *.lfm}
 
 procedure TParamsForm.LoadText;
 begin

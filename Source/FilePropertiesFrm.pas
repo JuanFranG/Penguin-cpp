@@ -22,9 +22,8 @@ unit FilePropertiesFrm;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StrUtils, ExtCtrls, StdCtrls, SynEdit, Utils,
-  SynEditTypes, FileCtrl, Menus;
+  LCLIntf, LCLType, LMessages, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
+  StrUtils, ExtCtrls, StdCtrls, SynEdit, Utils, SynEditTypes, FileCtrl, Menus;
 
 type
   TFilePropertiesForm = class(TForm)
@@ -96,7 +95,7 @@ implementation
 uses
   SynEditHighlighter, main, MultiLangSupport, DataFrm, Project, Editor, devCFG;
 
-{$R *.dfm}
+{$R *.lfm}
 
 { TFilePropertiesForm }
 

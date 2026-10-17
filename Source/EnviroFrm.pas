@@ -22,10 +22,8 @@ unit EnviroFrm;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Spin, ExtCtrls, ExtDlgs, Buttons,
-  CheckLst, Grids, ValEdit, ComCtrls, Vcl.BaseImageCollection,
-  Vcl.ImageCollection, Vcl.VirtualImage, System.ImageList, Vcl.ImgList;
+  LCLIntf, LCLType, LMessages, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
+  StdCtrls, Spin, ExtCtrls, ExtDlgs, Buttons, CheckLst, Grids, ValEdit, ComCtrls, ImgList;
 
 type
   TEnviroForm = class(TForm)
@@ -120,10 +118,9 @@ type
 implementation
 
 uses
-  System.UITypes, ShellAPI, Filectrl, devCFG, MultiLangSupport, Version, DataFrm, Utils, ImageTheme, main,
-  StrUtils;
+  UITypes, Filectrl, devCFG, MultiLangSupport, Version, DataFrm, Utils, ImageTheme, main, StrUtils;
 
-{$R *.dfm}
+{$R *.lfm}
 
 procedure TEnviroForm.BrowseClick(Sender: TObject);
 var

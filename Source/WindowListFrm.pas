@@ -22,8 +22,8 @@ unit WindowListFrm;
 interface
 
 uses
-  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, Buttons, ExtCtrls, ComCtrls, DataFrm;
+  LCLIntf, LCLType, LMessages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs, StdCtrls,
+  Buttons, ExtCtrls, ComCtrls, DataFrm;
 
 type
   TWindowListForm = class(TForm)
@@ -50,7 +50,7 @@ implementation
 uses
   MultiLangSupport, devCFG;
 
-{$R *.dfm}
+{$R *.lfm}
 
 procedure TWindowListForm.FormCreate(Sender: TObject);
 begin

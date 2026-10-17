@@ -22,8 +22,7 @@ unit DebugReader;
 interface
 
 uses
-  Sysutils, Classes, Windows, StdCtrls,
-  Dialogs, Editor, ComCtrls, StrUtils, Forms;
+  Sysutils, Classes, LCLIntf, LCLType, StdCtrls, Dialogs, Editor, ComCtrls, StrUtils, Forms;
 
 type
   TAnnotateType = (
@@ -151,7 +150,7 @@ type
 implementation
 
 uses
-  System.UItypes, main, devCFG, CPUFrm, MultiLangSupport, Debugger, Utils, Controls, Math;
+  UITypes, main, devCFG, CPUFrm, MultiLangSupport, Debugger, Utils, Controls, Math;
 
 // macro for all the things that need to be done when we are finished parsing the current block
 

@@ -22,9 +22,9 @@ unit FormatterOptionsFrm;
 interface
 
 uses
-  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  Buttons, StdCtrls, Inifiles, ExtCtrls, ComCtrls, Spin, Math,
-  CompOptionsFrame, CompOptionsList, SynEdit, Editor;
+  LCLIntf, LCLType, LMessages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs, Buttons,
+  StdCtrls, Inifiles, ExtCtrls, ComCtrls, Spin, Math, CompOptionsFrame, CompOptionsList, SynEdit,
+  Editor;
 
 type
   TFormatterOptionsForm = class(TForm)
@@ -75,9 +75,9 @@ type
 implementation
 
 uses
-  System.IOUtils, System.UITypes, ShellAPI, main, FileCtrl, Version, devCFG, Utils, MultiLangSupport, DataFrm, devPlatform;
+  UITypes, main, FileCtrl, Version, devCFG, Utils, MultiLangSupport, DataFrm, devPlatform;
 
-{$R *.dfm}
+{$R *.lfm}
 
 procedure TFormatterOptionsForm.btnCancelClick(Sender: TObject);
 begin

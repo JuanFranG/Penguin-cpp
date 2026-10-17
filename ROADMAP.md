@@ -111,7 +111,7 @@ al publicarla. Hoy `main` incluye las fases 1 a 4 (`fase4/lazarus`).
 | 3 · Capa de sistema | `fase3/capa-sistema` | ✅ Hecha, probada en Mint |
 | 4 · Port a Lazarus y formularios | `fase4/lazarus` | 🔄 Abre y funciona en Mint con Qt5; faltan el error al cerrar y Buscar/Ir a línea |
 | 4b · Identidad visual y temas | `fase4/lazarus` | 🔄 Icono, esquemas del editor y paneles con la paleta listos; faltan menús y diálogos (con Qt5) |
-| 5 · Editor (SynEdit de Lazarus) | `fase4/lazarus` | 🔄 Adelantada dentro de la fase 4 |
+| 5 · Editor (SynEdit de Lazarus) | `fase5/editor` | 🔄 Impresión y exportación a RTF/TeX hechas; falta el plegado de código |
 | 6 · Compilación con el gcc de Linux | — | ⏳ Pendiente |
 | 7 · Depurador (GDB/MI) | — | ⏳ Pendiente |
 | 8 · Paquete `.deb` y pulido | — | ⏳ Pendiente |
@@ -408,7 +408,16 @@ Falta:
     biblioteca gráfica y no compila sin interfaz, que es como se compila en
     la Mac.
   - Configurar impresión abre `system-config-printer`, si está instalado.
-- Exportar a RTF/TeX (la exportación a HTML sigue).
+- ✅ **Exportar a RTF y TeX** (falta probarlo en Mint; la exportación a HTML
+  ya funcionaba). El SynEdit de Lazarus solo exporta HTML, así que
+  `CodeExport.pas` escribe:
+  - **RTF** con los colores y estilos del resaltador, para LibreOffice Writer
+    o Word. Los acentos y los emoji se guardan como Unicode.
+  - **TeX**: un documento LaTeX que compila solo (`pdflatex`, con `alltt` y
+    `xcolor`). Los caracteres que `pdflatex` no conoce (emoji, símbolos)
+    quedan como `?`.
+  - Usan los mismos fragmentos de color que la impresión
+    (`EditorPrint.CollectSource`).
 - **Hecho cuando:** funciona todo lo anterior, como en el original.
 
 ### Fase 6 · Compilación con el gcc de Linux ⏳

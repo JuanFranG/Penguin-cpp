@@ -60,8 +60,8 @@ const
   // file extensions
   LIB_EXT = '.a';
   OBJ_EXT = '.o';
-  DLL_EXT = '.dll';
-  EXE_EXT = '.exe';
+  DLL_EXT = '.so'; // shared library
+  EXE_EXT = ''; // Linux programs have no extension: main.cpp builds main
   DEV_EXT = '.dev';
   HTML_EXT = '.html';
   RTF_EXT = '.rtf';
@@ -83,14 +83,15 @@ const
   GCH_EXT = '.gch'; // precompiled header
   DEF_EXT = '.def'; // definitions file
 
-  // program defaults
-  MAKE_PROGRAM = 'mingw32-make.exe';
-  GCC_PROGRAM = 'gcc.exe';
-  GPP_PROGRAM = 'g++.exe';
-  GDB_PROGRAM = 'gdb.exe';
-  GDB32_PROGRAM = 'gdb32.exe';
-  WINDRES_PROGRAM = 'windres.exe';
-  GPROF_PROGRAM = 'gprof.exe';
+  // program defaults: the system's GCC tools, found in the PATH. They are also
+  // the names of the settings keys that hold each compiler set's programs.
+  MAKE_PROGRAM = 'make';
+  GCC_PROGRAM = 'gcc';
+  GPP_PROGRAM = 'g++';
+  GDB_PROGRAM = 'gdb';
+  GDB32_PROGRAM = 'gdb';
+  WINDRES_PROGRAM = 'windres'; // only a settings key: Linux has no resource compiler
+  GPROF_PROGRAM = 'gprof';
 //  CLEAN_PROGRAM = 'rm.exe'; // cannot use del, it doesn't have a quiet mode
 //  CLEAN_PROGRAM = 'del /f /q';
 

@@ -790,7 +790,6 @@ var
   devFormatterAStyle: TdevFormatterAStyle = nil;
   devFormatterClang: TdevFormatterClang = nil;
 
-  TDM_GCC_64_Folder: string = 'TDM-GCC-64';
 
 // Where a formatter works on a copy of an editor's text: the user's private
 // temp dir (devPlatform.GetPrivateTempDir), never the shared /tmp, where
@@ -828,8 +827,6 @@ end;
 
 
 procedure CreateOptions;
-var
-  I: integer;
 begin
   if not Assigned(devDirs) then
     devDirs := TdevDirs.Create;
@@ -837,41 +834,7 @@ begin
   if not Assigned(devCompilerSets) then
     devCompilerSets := TdevCompilerSets.Create;
 
-  // load available compiler sets on first run
-  if devData.First then begin
-
-    // Obtain list of default compilers
-    devCompilerSets.FindSets;
-    devCompilerSets.DefaultSetIndex := -1;
-
-    // Pick a proper default
-    if IsWindows64 then begin // TDM-GCC x64, MinGW32, ???
-      for I := 0 to devCompilerSets.Count - 1 do begin
-        if ContainsText(devCompilerSets[i].Name, 'TDM-GCC') then begin
-          devCompilerSets.DefaultSetIndex := i;
-          break;
-        end;
-      end;
-
-      // Pick the 'release' build
-      if (devCompilerSets.DefaultSetIndex = -1) and (devCompilerSets.Count > 0) then
-        devCompilerSets.DefaultSetIndex := 0;
-
-    end else begin // TDM-GCC x86, MinGW32, ???
-      for I := 0 to devCompilerSets.Count - 1 do begin
-        if ContainsText(devCompilerSets[i].Name, 'TDM-GCC') and ContainsText(devCompilerSets[i].Name, '32-bit') then
-          begin
-          devCompilerSets.DefaultSetIndex := i;
-          break;
-        end;
-      end;
-
-      // Again, pick the 'release' build
-      if (devCompilerSets.DefaultSetIndex = -1) and (devCompilerSets.Count > 0) then
-        devCompilerSets.DefaultSetIndex := 0; // pick any
-    end;
-    devCompilerSets.SaveSets; // save everything to disk
-  end;
+  // The compiler sets are found by LoadSets when there are none yet
 
   if not assigned(devEditor) then
     devEditor := TdevEditor.Create;
@@ -1209,21 +1172,28 @@ end;
 
 procedure TdevCompilerSet.SetProperties(const BinDir, BinFile: String);
 var
-  output {,DummyFileName,Cmd}: String;
-  DelimPos1, DelimPos2 {,DummyHandle}: integer;
+  output, Marker: String;
+  DelimPos1, DelimPos2: integer;
 begin
   // GCC binaries not found../
   if not FileExists(BinDir + pd + BinFile) then
     Exit;
 
-  // Obtain version number and compiler distro etc
-  output := GetCompilerOutput(BinDir + pd, BinFile, '-v');
-  DelimPos1 := Pos('gcc version ', output);
+  // Obtain version number and compiler distro etc. "gcc version 13.3.0
+  // (Ubuntu 13.3.0-6ubuntu2~24.04)"; on macOS gcc is clang: "Apple clang
+  // version 15.0.0 (clang-1500.3.9.4)"
+  output := GetCompilerOutput(BinDir, BinFile, '-v');
+  Marker := 'gcc version ';
+  DelimPos1 := Pos(Marker, output);
+  if DelimPos1 = 0 then begin
+    Marker := 'clang version ';
+    DelimPos1 := Pos(Marker, output);
+  end;
   if DelimPos1 = 0 then
     Exit; // unknown binary
 
   // Find version number
-  Inc(DelimPos1, Length('gcc version '));
+  Inc(DelimPos1, Length(Marker));
   DelimPos2 := DelimPos1;
   while (DelimPos2 <= Length(output)) and not CharInSet(output[DelimPos2], [#0..#32]) do
     Inc(DelimPos2);
@@ -1244,16 +1214,14 @@ begin
 
   // Assemble user friendly name if we don't have one yet
   if fName = '' then begin
-    if ContainsStr(fType, 'tdm64') then
-      fName := 'TDM-GCC ' + fVersion
-    else if ContainsStr(fType, 'tdm') then
-      fName := 'TDM-GCC ' + fVersion
-    else if ContainsStr(fType, 'GCC') then
-      fName := 'MinGW GCC ' + fVersion;
+    if Marker = 'gcc version ' then
+      fName := 'GCC ' + fVersion
+    else
+      fName := 'Clang ' + fVersion;
   end;
 
   // Obtain compiler target
-  fDumpMachine := GetCompilerOutput(BinDir + pd, BinFile, '-dumpmachine');
+  fDumpMachine := GetCompilerOutput(BinDir, BinFile, '-dumpmachine');
 
   // Find default include directories
   {if FileExists(BinDir + pd + "cpp.exe") then begin
@@ -1272,7 +1240,7 @@ begin
   // Obtain default includes when changing current file?
   // Don't use CommaText:
   // http://stackoverflow.com/questions/1335027/delphi-stringlist-delimiter-is-always-a-space-character-even-if-delimiter-is-se
-  output := GetCompilerOutput(BinDir + pd, 'cpp.exe', '-dM -E -x c++ -std=gnu++11 NUL');
+  output := GetCompilerOutput(BinDir, BinFile, '-dM -E -x c++ -std=gnu++11 /dev/null');
   // TODO: use command of current file
   ExtractStrings([#10], [], PChar(output), fDefines);
 end;
@@ -1284,42 +1252,16 @@ begin
   fgppName := GPP_PROGRAM;
   fgdbName := GDB_PROGRAM;
   fmakeName := MAKE_PROGRAM;
-  fwindresName := WINDRES_PROGRAM;
+  fwindresName := ''; // no resource compiler on Linux
   fgprofName := GPROF_PROGRAM;
 end;
 
+// Only the folder of the programs. gcc knows its own include and library
+// folders; giving them again with -I/-L (-I/usr/include) changes their order
+// and breaks the C++ headers, which rely on #include_next. The include and
+// library lists are for the user's extra folders.
 procedure TdevCompilerSet.SetDirectories;
-  procedure AddExistingDirectory(var list: TStringList; const Directory: String);
-  begin
-    if DirectoryExists(Directory) then
-      list.Add(Directory);
-  end;
 begin
-  // Add both the default and the autoconf directories
-  AddExistingDirectory(fBinDir, fFolder + pd + 'bin');
-  AddExistingDirectory(fLibDir, fFolder + pd + 'lib');
-  AddExistingDirectory(fCDir, fFolder + pd + 'include');
-  AddExistingDirectory(fCppDir, fFolder + pd + 'include');
-
-  // Try to obtain our target/autoconf folder
-  if fDumpMachine <> '' then begin
-    AddExistingDirectory(fBinDir, fFolder + pd + fDumpMachine + pd + 'bin');
-    AddExistingDirectory(fLibDir, fFolder + pd + fDumpMachine + pd + 'lib');
-
-    // Regular include folder
-    AddExistingDirectory(fCDir, fFolder + pd + fDumpMachine + pd + 'include');
-    AddExistingDirectory(fCppDir, fFolder + pd + fDumpMachine + pd + 'include');
-
-    // Other include folder?
-    AddExistingDirectory(fCDir,
-      fFolder + pd + 'lib' + pd + 'gcc' + pd + fDumpMachine + pd + fVersion + pd + 'include');
-    AddExistingDirectory(fCppDir,
-      fFolder + pd + 'lib' + pd + 'gcc' + pd + fDumpMachine + pd + fVersion + pd + 'include');
-
-    // C++ only folder
-    AddExistingDirectory(fCppDir,
-      fFolder + pd + 'lib' + pd + 'gcc' + pd + fDumpMachine + pd + fVersion + pd + 'include' + pd + 'c++');
-  end;
 end;
 
 procedure TdevCompilerSet.SetUserInput;
@@ -1329,11 +1271,9 @@ begin
   fLinkAdd := TRUE;
   fCompOpt := '';
 
-  // MinGW32 requires special treatment
-  if ContainsStr(fName, 'MinGW') or ContainsStr(fName, 'TDC-GCC') then
-    fLinkOpt := '-static-libstdc++ -static-libgcc'
-  else
-    fLinkOpt := '-static-libgcc';
+  // MinGW linked libgcc statically so the .exe ran without its DLLs; on
+  // Linux every system has libgcc and libstdc++
+  fLinkOpt := '';
 end;
 
 procedure TdevCompilerSet.SetOptions;
@@ -1734,74 +1674,9 @@ begin
       RemoveDirs(fCDir, badinc);
       RemoveDirs(fCppDir, badinccpp);
 
-      // If we know the folder, we should be able to predict dirs (copy from SetDirectories)
-      if fFolder <> '' then begin
-
-        // Add both the default and the autoconf directories
-        AddUnique(fBinDir, fFolder + pd + 'bin');
-        AddUnique(fLibDir, fFolder + pd + 'lib');
-        AddUnique(fCDir, fFolder + pd + 'include');
-        AddUnique(fCppDir, fFolder + pd + 'include');
-
-        // Try to obtain our target/autoconf folder
-        if fDumpMachine <> '' then begin
-          AddUnique(fBinDir, fFolder + pd + fDumpMachine + pd + 'bin');
-          AddUnique(fLibDir, fFolder + pd + fDumpMachine + pd + 'lib');
-          AddUnique(fCDir, fFolder + pd + fDumpMachine + pd + 'include');
-          AddUnique(fCppDir, fFolder + pd + fDumpMachine + pd + 'include');
-
-          // Custom STL folder?
-          // Currently, Dev-C++ is a bit slow at parsing this shit
-          AddUnique(fCppDir, fFolder + pd + 'lib' + pd + 'gcc' + pd + fDumpMachine + pd + fVersion + pd + 'include' + pd
-            + 'c++');
-        end;
-
-        // Otherwise, make some guesses based on the set name...
-      end else if ContainsStr(fName, 'MinGW') and ContainsStr(fName, '32-bit') then begin
-
-        // Add defaults
-        if (badbin <> '') or (fBinDir.Count = 0) then
-          AddUnique(fBinDir, devDirs.fExec + 'MinGW32' + pd + 'bin');
-        if badlib <> '' then
-          AddUnique(fLibDir, devDirs.fExec + 'MinGW32' + pd + 'lib');
-        if badinc <> '' then
-          AddUnique(fCDir, devDirs.fExec + 'MinGW32' + pd + 'include');
-        if badinccpp <> '' then
-          AddUnique(fCppDir, devDirs.fExec + 'MinGW32' + 'include');
-
-      end else if ContainsStr(fName, 'TDM-GCC-64') then begin
-
-        // Add defaults
-        if (badbin <> '') or (fBinDir.Count = 0) then
-          AddUnique(fBinDir, devDirs.fExec + 'TDM-GCC-64\bin');
-        if badlib <> '' then begin
-          if ContainsStr(fName, 'TDM-GCC') and ContainsStr(fName, '32-bit') then
-            AddUnique(fLibDir, devDirs.fExec + 'TDM-GCC-64' + pd + 'x86_64-w64-mingw32' + pd + 'lib32')
-          else
-            AddUnique(fLibDir, devDirs.fExec + 'TDM-GCC-64' + pd + 'x86_64-w64-mingw32' + pd + 'lib');
-        end;
-        if badinc <> '' then
-          AddUnique(fCDir, devDirs.fExec + 'TDM-GCC-64' + 'x86_64-w64-mingw32' + pd + 'include');
-        if badinccpp <> '' then
-          AddUnique(fCppDir, devDirs.fExec + 'TDM-GCC-64' + pd + 'x86_64-w64-mingw32' + pd + 'include');
-
-      end else begin
-
-        // Add defaults
-        if (badbin <> '') or (fBinDir.Count = 0) then
-          AddUnique(fBinDir, devDirs.fExec + 'MinGW64\bin');
-        if badlib <> '' then begin
-          if ContainsStr(fName, 'TDM-GCC') and ContainsStr(fName, '32-bit') then
-            AddUnique(fLibDir, devDirs.fExec + 'MinGW64' + pd + 'x86_64-w64-mingw32' + pd + 'lib32')
-          else
-            AddUnique(fLibDir, devDirs.fExec + 'MinGW64' + pd + 'x86_64-w64-mingw32' + pd + 'lib');
-        end;
-        if badinc <> '' then
-          AddUnique(fCDir, devDirs.fExec + 'MinGW64' + 'x86_64-w64-mingw32' + pd + 'include');
-        if badinccpp <> '' then
-          AddUnique(fCppDir, devDirs.fExec + 'MinGW64' + pd + 'x86_64-w64-mingw32' + pd + 'include');
-
-      end;
+      // Without a folder for the programs, the one of gcc in the PATH
+      if fBinDir.Count = 0 then
+        AddUnique(fBinDir, ExtractFileDir(ExeSearch(GCC_PROGRAM, GetEnvironmentVariable('PATH'))));
 
       result := false; // not valid
     end;
@@ -2189,6 +2064,16 @@ begin
       end else
         SetToActivate := StrToIntDef(sl.Values[sl.Names[I]], -1);
 
+    // None yet (first run, or settings from before Linux was supported):
+    // look for the system's compilers
+    if fList.Count = 0 then begin
+      FindSets;
+      if fList.Count > 0 then
+        SetToActivate := 0; // Release
+      DefaultSetIndex := SetToActivate;
+      SaveSets;
+    end;
+
     // Activate the current set after everything has been loaded
     DefaultSetIndex := SetToActivate;
 
@@ -2240,86 +2125,50 @@ begin
   devData.Write('CompilerSets', 'Current', fDefaultIndex);
 end;
 
+// The system's gcc, found in the PATH (on Linux Mint, /usr/bin/gcc from the
+// build-essential package), as a Release, a Debug and a Profiling set. Dev-C++
+// looked for the TDM-GCC folder it installed next to the program.
 procedure TdevCompilerSets.FindSets;
 var
   BaseSet: TdevCompilerSet;
-  BaseName: String;
+  BaseName, GccPath: String;
   option: PCompilerOption;
-  index, I: integer;
+  index: integer;
 begin
-  // Assume 64bit compilers are put in the TDM-GCC (MinGW64) folder
-  TDM_GCC_64_Folder := ConcatPaths([devDirs.Exec, TDM_GCC_64_Folder]);
+  GccPath := ExeSearch(GCC_PROGRAM, GetEnvironmentVariable('PATH'));
+  if GccPath = '' then
+    Exit; // gcc is not installed: the compiler options say so
 
-  if DirectoryExists(TDM_GCC_64_Folder) then begin
-
-    // we only require GCC.exe to be present
-    if FileExists(ConcatPaths([ConcatPaths([TDM_GCC_64_Folder, 'bin']), GCC_PROGRAM])) then begin
-
-      // Default, release profile
-      BaseSet := AddSet(TDM_GCC_64_Folder);
-      BaseName := BaseSet.Name;
-      with BaseSet do begin
-        Name := BaseName + ' 64-bit Release';
-        if FindOption('-j', option, index) then
-          SetOption(option, System.CPUCount);
-      end;
-
-      // Debug profile
-      with AddSet(BaseSet) do begin
-        Name := BaseName + ' 64-bit Debug';
-        if FindOption('-g3', option, index) then
-          SetOption(option, 1);
-        if FindOption('-j', option, index) then
-          SetOption(option, 0);
-      end;
-
-      // Profiling profile
-      with AddSet(BaseSet) do begin
-        Name := BaseName + ' 64-bit Profiling';
-        if FindOption('-pg', option, index) then
-          SetOption(option, 1);
-        if FindOption('-j', option, index) then
-          SetOption(option, 0);
-      end;
-
-      // Default, 32bit release profile
-      BaseSet := AddSet(BaseSet);
-      with BaseSet do begin
-        Name := BaseName + ' 32-bit Release';
-        if FindOption('-', option, index) then // -m is used my -mINSTRUCTIONSET, so use - instead
-          SetOption(option, 1);
-
-        // Hack fix, but works...
-        fgdbName := GDB32_PROGRAM;
-        for I := fLibDir.Count - 1 downto 0 do
-          if DirectoryExists(fLibDir[i] + '32') then
-            fLibDir[i] := fLibDir[i] + '32'
-          else
-            fLibDir.Delete(i);
-        if FindOption('-j', option, index) then
-          SetOption(option, System.CPUCount);
-      end;
-
-      // Debug profile
-      with AddSet(BaseSet) do begin
-        Name := BaseName + ' 32-bit Debug';
-        if FindOption('-g3', option, index) then
-          SetOption(option, 1);
-        if FindOption('-j', option, index) then
-          SetOption(option, 0);
-      end;
-
-      // Profiling profile
-      with AddSet(BaseSet) do begin
-        Name := BaseName + ' 32-bit Profiling';
-        if FindOption('-pg', option, index) then
-          SetOption(option, 1);
-        if FindOption('-j', option, index) then
-          SetOption(option, 0);
-      end;
-    end;
+  // Default, release profile
+  BaseSet := AddSet;
+  with BaseSet do begin
+    BinDir.Add(ExtractFileDir(GccPath));
+    SetProperties(BinDir[0], GCC_PROGRAM);
+    SetExecutables;
+    SetUserInput;
+    BaseName := Name;
+    Name := BaseName + ' Release';
+    if FindOption('-j', option, index) then
+      SetOption(option, System.CPUCount);
   end;
 
+  // Debug profile
+  with AddSet(BaseSet) do begin
+    Name := BaseName + ' Debug';
+    if FindOption('-g3', option, index) then
+      SetOption(option, 1);
+    if FindOption('-j', option, index) then
+      SetOption(option, 0);
+  end;
+
+  // Profiling profile
+  with AddSet(BaseSet) do begin
+    Name := BaseName + ' Profiling';
+    if FindOption('-pg', option, index) then
+      SetOption(option, 1);
+    if FindOption('-j', option, index) then
+      SetOption(option, 0);
+  end;
 end;
 
 procedure TdevCompilerSets.ClearSets;

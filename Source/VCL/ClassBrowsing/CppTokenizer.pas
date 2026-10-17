@@ -517,6 +517,7 @@ var
   StartOffset: PChar;
   S: String;
 begin
+  Result := ''; // the tokens go to the list
   StartOffset := pCurrent;
 
   // Step into the init statement

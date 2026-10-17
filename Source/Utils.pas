@@ -760,6 +760,7 @@ var
   i: integer;
 begin
   // Append by using formatstr
+  Result := '';
   for I := 0 to sl.Count - 1 do
     result := format(formatstr, [result, sl[i]]);
 end;

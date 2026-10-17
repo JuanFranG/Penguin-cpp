@@ -225,11 +225,9 @@ end;
 
 function TTemplate.GetOldData: TTemplateRec;
 begin
+  Result := Default(TTemplateRec); // a record with strings: not FillChar
   if not assigned(fTemplate) then
-   begin
-     FillChar(result, Sizeof(TTemplateRec), #0);
-     exit;
-   end;
+    exit;
 
   if (fVersion <= 0) then // read old style
    begin
@@ -282,11 +280,9 @@ function TTemplate.GetUnit(index: integer): TTemplateUnit;
 var
  section: String;
 begin
+  Result := Default(TTemplateUnit); // a record with strings: not FillChar
   if not assigned(fTemplate) then
-   begin
-     FillChar(result, Sizeof(TTemplateUnit), #0);
-     exit;
-   end;
+    exit;
   if fVersion <= 0 then // return nothing no units in old style
    begin
      result.CText:= '';

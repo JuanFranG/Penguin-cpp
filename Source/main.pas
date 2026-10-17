@@ -912,6 +912,7 @@ type
     procedure FitToolbarDock(Data: PtrInt);
     procedure ForwardMenuClick(Sender: TObject);
   public
+    procedure ReleaseTabImages; // before closing without FormClose (Halt)
     procedure CloseTabProc(Sender: TObject);
     procedure ScanActiveProject;
     procedure UpdateCompilerList;
@@ -1060,7 +1061,19 @@ begin
 
   SaveOptions;
 
+  ReleaseTabImages;
   Action := caFree;
+end;
+
+// Freeing an image list makes its page controls drop their tab icons, and
+// Lazarus' Qt5 backend then reads each tab's window. While the form is being
+// destroyed, tabs that were never shown (hidden sheets) cannot get one any
+// more, and that read is an access violation. Drop the icons while the form is
+// still whole, right before it closes.
+procedure TMainForm.ReleaseTabImages;
+begin
+  MessageControl.Images := nil;
+  LeftPageControl.Images := nil;
 end;
 
 procedure TMainForm.FormDestroy(Sender: TObject);

@@ -466,6 +466,7 @@ begin
   RemoveOptionsDir(devDirs.Config);
 
   // Quit without saving: Halt skips the form destructors that write settings
+  MainForm.ReleaseTabImages;
   Halt(0);
 end;
 

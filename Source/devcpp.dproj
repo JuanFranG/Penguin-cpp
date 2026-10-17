@@ -252,7 +252,6 @@
         <DCCReference Include="ProcessListFrm.pas">
             <Form>ProcessListForm</Form>
         </DCCReference>
-        <DCCReference Include="Tools\Packman\PackmanExitCodesU.pas"/>
         <DCCReference Include="ImageTheme.pas"/>
         <DCCReference Include="Instances.pas"/>
         <DCCReference Include="CharUtils.pas"/>

@@ -5137,10 +5137,6 @@ object MainForm: TMainForm
       object N24: TMenuItem
         Caption = '-'
       end
-      object PackageManagerItem: TMenuItem
-        Action = actPackageManager
-        Caption = 'Package Manager'
-      end
     end
     object FormatMenu: TMenuItem
       Caption = 'Formatting'
@@ -6316,12 +6312,6 @@ object MainForm: TMainForm
       Category = 'Tools'
       Caption = '&Check for Packages'
       ImageIndex = 41
-    end
-    object actPackageManager: TAction
-      Category = 'Tools'
-      Caption = 'actPackageManager'
-      ImageIndex = 48
-      OnExecute = actPackageManagerExecute
     end
     object actHelp: TAction
       Category = 'Help'

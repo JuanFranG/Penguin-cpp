@@ -1,1 +1,0 @@
-This directory includes the Canterbury Corpus (http://corpus.canterbury.ac.nz/) encoded in all the compression algorithms PKzip supports, excluding the JPEG-specific one introduced in WinZip 12.  Abbrevia currently does not support Bzip2, DCLImpl, LZMA, or PPMd, and those tests will fail.

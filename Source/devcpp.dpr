@@ -80,7 +80,6 @@ uses
   CompOptionsFrame in 'CompOptionsFrame.pas' {CompOptionsFrame: TFrame},
   CompOptionsFrm in 'CompOptionsFrm.pas' {CompOptionsForm},
   ProcessListFrm in 'ProcessListFrm.pas' {ProcessListForm},
-  PackmanExitCodesU in 'Tools\Packman\PackmanExitCodesU.pas',
   ImageTheme in 'ImageTheme.pas',
   Instances in 'Instances.pas',
   CharUtils in 'CharUtils.pas',

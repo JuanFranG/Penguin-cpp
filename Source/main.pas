@@ -358,7 +358,6 @@ type
     actBrowserViewProject: TAction;
     mnuBrowserViewProject: TMenuItem;
     N43: TMenuItem;
-    PackageManagerItem: TMenuItem;
     btnAbortCompilation: TSpeedButton;
     actAbortCompilation: TAction;
     N45: TMenuItem;
@@ -491,7 +490,6 @@ type
     actMoveSelDown1: TMenuItem;
     actCodeCompletion: TAction;
     actPackageCheck: TAction;
-    actPackageManager: TAction;
     actHelp: TAction;
     FolderPopup: TPopupMenu;
     Addfolder2: TMenuItem;
@@ -819,7 +817,6 @@ type
     procedure actMoveSelDownExecute(Sender: TObject);
     procedure actCodeCompletionUpdate(Sender: TObject);
     procedure actCodeCompletionExecute(Sender: TObject);
-    procedure actPackageManagerExecute(Sender: TObject);
     procedure actHelpExecute(Sender: TObject);
     procedure actShortenCompPathsExecute(Sender: TObject);
     procedure actSyntaxCheckFileExecute(Sender: TObject);
@@ -1333,7 +1330,6 @@ begin
   actConfigTools.Caption := Lang[ID_ITEM_TOOLCONFIG];
   actConfigdevShortcuts.Caption := Lang[ID_ITEM_SHORTCUTSCONFIG];
   actPackageCheck.Caption := Lang[ID_ITEM_UPDATECHECK];
-  actPackageManager.Caption := Lang[ID_ITEM_PACKMAN];
 
   // Formatter menu
   actAStyleFormatCurrentFile.Caption := Lang[ID_FORMATTER_FORMATCURFILE];
@@ -4100,7 +4096,7 @@ procedure TMainForm.actToolsMenuExecute(Sender: TObject);
 var
   I, J: integer;
 begin
-  for I := (ToolsMenu.IndexOf(PackageManagerItem) + 2) to ToolsMenu.Count - 1 do begin
+  for I := (ToolsMenu.IndexOf(N24) + 1) to ToolsMenu.Count - 1 do begin
     J := ToolsMenu.Items[I].tag;
     ToolsMenu.Items[I].Enabled := FileExists(ParseToolParams(fTools.ToolList[J]^.Exec));
     if not ToolsMenu.Items[I].Enabled then
@@ -6143,7 +6139,7 @@ begin
   fTools := TToolController.Create;
   with fTools do begin
     Menu := ToolsMenu;
-    Offset := ToolsMenu.IndexOf(PackageManagerItem);
+    Offset := ToolsMenu.IndexOf(N24);
     ToolClick := ToolItemClick;
     BuildMenu;
   end;
@@ -6769,17 +6765,6 @@ begin
   e := fEditorList.GetEditor;
   if Assigned(e) then
     e.ShowCompletion;
-end;
-
-procedure TMainForm.actPackageManagerExecute(Sender: TObject);
-var
-  s: String;
-  StyleS: String;
-begin
-  StyleS := IntToStr(devData.Style);
-  s := IncludeTrailingBackslash(devDirs.Exec) + PACKMAN_PROGRAM;
-  if FileExists(s) then
-    ExecuteFileAsAdmin(s, '/style '+StyleS, IncludeTrailingBackslash(devDirs.Exec), SW_SHOW);
 end;
 
 procedure TMainForm.actHelpExecute(Sender: TObject);

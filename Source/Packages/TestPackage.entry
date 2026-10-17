@@ -1,8 +1,0 @@
-[Setup]
-AppName=MyPackage
-AppVersion=1.0
-Description=Test
-Url=
-
-[Files]
-Project1.dev

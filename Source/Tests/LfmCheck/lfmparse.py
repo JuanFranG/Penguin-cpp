@@ -47,6 +47,10 @@ def check_image_data(prop, data):
     elif prop in ('Icon.Data', 'Glyph.Data') or prop.endswith(('.Icon.Data', '.Glyph.Data')):
         if not sized(data):
             return f'{prop}: image data has no size prefix (Delphi format)'
+    elif prop == 'Bitmap':
+        # TImageList data; Delphi's comctl32 stream ('IL') is misread by the LCL
+        if data[:2] not in (b'Li', b'Lz', b'li', b'\x01\x00'):
+            return f'{prop}: image list data is not in an LCL format (starts with {data[:2]!r})'
     return None
 
 

@@ -6074,22 +6074,28 @@ begin
 
   // Set toolbars to previous state.
   // 1) position
-  tbMain.Left := devData.ToolbarMainX;
-  tbMain.Top := devData.ToolbarMainY;
-  tbEdit.Left := devData.ToolbarEditX;
-  tbEdit.Top := devData.ToolbarEditY;
-  tbCompile.Left := devData.ToolbarCompileX;
-  tbCompile.Top := devData.ToolbarCompileY;
-  tbProject.Left := devData.ToolbarProjectX;
-  tbProject.Top := devData.ToolbarProjectY;
-  tbSpecials.Left := devData.ToolbarSpecialsX;
-  tbSpecials.Top := devData.ToolbarSpecialsY;
-  tbSearch.Left := devData.ToolbarSearchX;
-  tbSearch.Top := devData.ToolbarSearchY;
-  tbClasses.Left := devData.ToolbarClassesX;
-  tbClasses.Top := devData.ToolbarClassesY;
-  tbCompilers.Left := devData.ToolbarCompilersX;
-  tbCompilers.Top := devData.ToolbarCompilersY;
+  // Positions saved while the toolbars were aligned left inside the control
+  // bar (first Linux builds) are scattered over many rows: keep the form's
+  if MaxValue([devData.ToolbarMainY, devData.ToolbarEditY, devData.ToolbarCompileY,
+    devData.ToolbarProjectY, devData.ToolbarSpecialsY, devData.ToolbarSearchY,
+    devData.ToolbarClassesY, devData.ToolbarCompilersY]) <= 2 * ToolbarDock.RowSize then begin
+    tbMain.Left := devData.ToolbarMainX;
+    tbMain.Top := devData.ToolbarMainY;
+    tbEdit.Left := devData.ToolbarEditX;
+    tbEdit.Top := devData.ToolbarEditY;
+    tbCompile.Left := devData.ToolbarCompileX;
+    tbCompile.Top := devData.ToolbarCompileY;
+    tbProject.Left := devData.ToolbarProjectX;
+    tbProject.Top := devData.ToolbarProjectY;
+    tbSpecials.Left := devData.ToolbarSpecialsX;
+    tbSpecials.Top := devData.ToolbarSpecialsY;
+    tbSearch.Left := devData.ToolbarSearchX;
+    tbSearch.Top := devData.ToolbarSearchY;
+    tbClasses.Left := devData.ToolbarClassesX;
+    tbClasses.Top := devData.ToolbarClassesY;
+    tbCompilers.Left := devData.ToolbarCompilersX;
+    tbCompilers.Top := devData.ToolbarCompilersY;
+  end;
 
   // Set toolbars to previous state.
   // 2) Visibility

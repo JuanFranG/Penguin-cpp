@@ -428,7 +428,6 @@ object MainForm: TMainForm
       Top = 2
       Width = 211
       Height = 24
-      Align = alLeft
       AutoSize = True
       ButtonHeight = 28
       ButtonWidth = 29
@@ -491,7 +490,6 @@ object MainForm: TMainForm
       Top = 2
       Width = 256
       Height = 24
-      Align = alLeft
       AutoSize = True
       ButtonHeight = 28
       ButtonWidth = 29
@@ -574,7 +572,6 @@ object MainForm: TMainForm
       Top = 2
       Width = 95
       Height = 24
-      Align = alLeft
       AutoSize = True
       ButtonHeight = 28
       ButtonWidth = 29
@@ -615,7 +612,6 @@ object MainForm: TMainForm
       Top = 2
       Width = 58
       Height = 24
-      Align = alLeft
       AutoSize = True
       ButtonHeight = 28
       ButtonWidth = 29
@@ -643,7 +639,6 @@ object MainForm: TMainForm
       Top = 2
       Width = 124
       Height = 24
-      Align = alLeft
       AutoSize = True
       ButtonHeight = 28
       ButtonWidth = 29
@@ -689,7 +684,6 @@ object MainForm: TMainForm
       Top = 30
       Width = 87
       Height = 24
-      Align = alLeft
       AutoSize = True
       ButtonHeight = 28
       ButtonWidth = 29
@@ -723,7 +717,6 @@ object MainForm: TMainForm
       Top = 30
       Width = 700
       Height = 24
-      Align = alLeft
       AutoSize = True
       ButtonHeight = 27
       Caption = 'tbClasses'
@@ -763,7 +756,6 @@ object MainForm: TMainForm
       Top = 2
       Width = 250
       Height = 24
-      Align = alLeft
       AutoSize = True
       ButtonHeight = 27
       Caption = 'tbCompilers'

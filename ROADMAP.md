@@ -110,7 +110,7 @@ al publicarla. Hoy `main` incluye las fases 1 a 4 (`fase4/lazarus`).
 | 1 · Quitar lo que no se puede portar | `fase1/quitar-windows` | ✅ Hecha |
 | 2 · Parser de C++ en Free Pascal | `fase2/parser-fpc` | ✅ Hecha, probada en Mint |
 | 3 · Capa de sistema | `fase3/capa-sistema` | ✅ Hecha, probada en Mint |
-| 4 · Port a Lazarus y formularios | `fase4/lazarus` | 🔄 Abre y funciona en Mint con Qt5; faltan el error al cerrar y Buscar/Ir a línea |
+| 4 · Port a Lazarus y formularios | `fase4/lazarus` | 🔄 Abre, funciona y cierra bien en Mint con Qt5; falta Buscar/Ir a línea |
 | 4b · Identidad visual y temas | `fase4/lazarus` | 🔄 Icono, esquemas del editor y paneles con la paleta listos; faltan menús y diálogos (con Qt5) |
 | 5 · Editor (SynEdit de Lazarus) | `fase5/editor` | 🔄 Impresión, exportación a RTF/TeX y plegado hechos; falta probarlos en Mint |
 | 6 · Compilación con el gcc de Linux | — | ⏳ Pendiente |
@@ -150,9 +150,9 @@ de la barra principal. Probar con una impresora y con "Guardar como archivo
 PDF…", con y sin colores, números de línea, ajuste de línea y solo la
 selección.
 
-**4. Qt5** (decidido): compila y funciona mejor que GTK2 en Mint. Se corrigió
-el "Access violation" al cerrar (ver la fase 4); falta confirmar en Mint que
-el IDE cierra sin errores y que heaptrc vuelve a dar 0 bloques sin liberar.
+**4. Qt5** (decidido): compila y funciona mejor que GTK2 en Mint. ✅ Ya cierra
+sin errores: heaptrc da 0 bloques sin liberar (probado en Mint el 17 de
+octubre de 2026).
 
 **5. Fase 6, el siguiente paso grande:** compilar y ejecutar con el gcc del
 sistema. La lista de compiladores está vacía porque el IDE solo busca TDM-GCC
@@ -240,7 +240,7 @@ Falta:
 - **Verificación de memoria y seguridad:** lo que se puede hacer sin
   interfaz gráfica está hecho; los acentos en el editor funcionan. Queda
   valgrind, opcional (ver abajo).
-- **Qt5**: confirmar en Mint que ya cierra sin errores (ver abajo).
+- ✅ **Qt5**: cierra sin errores y sin memoria sin liberar.
 - **Hecho cuando:** el IDE abre, se ven los menús, se puede abrir, editar,
   buscar y guardar un archivo, y cierra sin errores con Qt5.
 
@@ -316,7 +316,7 @@ Plan:
    - El `.deb` solo depende de `libqt5pas1`, que está en los repositorios.
    - Qt5 ya no tiene soporte libre de Qt, pero Ubuntu 24.04 lo mantiene hasta
      2029.
-4. ✅ **Error al cerrar con Qt5** ("Access violation", falta confirmarlo en
+4. ✅ **Error al cerrar con Qt5** ("Access violation", corregido y probado en
    Mint). gdb mostró `GETICON (this=0x0)` en `qtpagecontrol.inc`: al
    liberarse una lista de iconos, las pestañas de mensajes y de proyecto
    quitan sus iconos, y el Qt5 de Lazarus lee la ventana de cada pestaña.

@@ -635,6 +635,18 @@ var
 begin
   case Target of
     ctFile: begin
+        // The commands are split into arguments at spaces outside quotes
+        // (Process.CommandToList), so a " in the name would end the quoted
+        // file name and turn the rest of it into options for gcc
+        if Pos('"', fSourceFile) > 0 then begin
+          MessageDlg(Format(Lang[ID_ERR_QUOTEDFILENAME], [fSourceFile]), mtError, [mbOK], 0);
+          Exit;
+        end;
+        if GetFileTyp(fSourceFile) = utResSrc then begin
+          MessageDlg(Lang[ID_ERR_NORESOURCES], mtInformation, [mbOK], 0);
+          Exit;
+        end;
+
         InitProgressForm;
 
         DoLogEntry(Lang[ID_LOG_COMPILINGFILE]);
@@ -1079,11 +1091,12 @@ var
     delim := FPos(':', OMsg, 1);
     if delim > 0 then begin
       S := Copy(OMsg, 1, delim - 1);
-      if SameStr(S, 'error') or SameStr(S, 'fatal error') then begin
+      // gcc in English, or in Spanish when its translations are installed
+      if SameStr(S, 'error') or SameStr(S, 'fatal error') or SameStr(S, 'error fatal') then begin
         Inc(fErrCount);
         Delete(OMsg, 1, delim + 1);
         OMsg := '[Error] ' + Trim(OMsg);
-      end else if SameStr(S, 'warning') then begin
+      end else if SameStr(S, 'warning') or SameStr(S, 'aviso') then begin
         Inc(fWarnCount);
         Delete(OMsg, 1, delim + 1);
         OMsg := '[Warning] ' + Trim(OMsg);
@@ -1091,7 +1104,7 @@ var
         //Inc(fInfoCount);
         Delete(OMsg, 1, delim + 1);
         OMsg := '[Info] ' + Trim(OMsg);
-      end else if SameStr(S, 'note') then begin
+      end else if SameStr(S, 'note') or SameStr(S, 'nota') then begin
         //Inc(fInfoCount);
         Delete(OMsg, 1, delim + 1);
         OMsg := '[Note] ' + Trim(OMsg);
@@ -1158,7 +1171,9 @@ end;
 
 procedure TCompiler.GetLibrariesParams;
 const
-  cAppendStr = '%s -L"%s"';
+  // The whole argument in quotes: -L"dir" would reach gcc with its quotes
+  // (Process.CommandToList only strips quotes around a whole word)
+  cAppendStr = '%s "-L%s"';
 var
   i, val: integer;
   option: TCompilerOption;
@@ -1174,10 +1189,6 @@ begin
   if (fTarget = ctProject) and assigned(fProject) then begin
     for i := 0 to pred(fProject.Options.Libs.Count) do
       fLibrariesParams := format(cAppendStr, [fLibrariesParams, fProject.Options.Libs[i]]);
-
-    // got sick of "symbol 'blah blah' is deprecated"
-    if fProject.Options.typ = dptGUI then
-      fLibrariesParams := fLibrariesParams + ' -mwindows';
 
     // Add project compiler linker extras
     if Length(fProject.Options.LinkerCmd) > 0 then
@@ -1211,7 +1222,7 @@ end;
 
 procedure TCompiler.GetIncludesParams;
 const
-  cAppendStr = '%s -I"%s"';
+  cAppendStr = '%s "-I%s"'; // see GetLibrariesParams
 var
   i: integer;
 begin

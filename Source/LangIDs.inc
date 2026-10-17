@@ -59,6 +59,10 @@ const
   ID_WELCOME_CLOSE                      = 1040;
   ID_WELCOME_WHEEL                      = 1041;
 
+  // compiling
+  ID_ERR_QUOTEDFILENAME                 = 1050;
+  ID_ERR_NORESOURCES                    = 1051;
+
   ID_ITEM_OPEN                          = 2001;
   ID_SUB_REOPEN                         = 2002;
   ID_ITEM_CLEARHISTORY                  = 2003;

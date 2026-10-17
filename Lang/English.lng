@@ -38,6 +38,8 @@ Ver=1
 1039=Compile
 1040=Close
 1041=Wheel
+1050=The file name has a double quote ("), which the compiler commands cannot hold:<CR>%s<CR><CR>Rename the file to compile it.
+1051=Resource scripts (.rc) are for Windows programs; Linux has no resource compiler.
 
 
 2001=&Open...

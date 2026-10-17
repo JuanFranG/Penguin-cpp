@@ -38,6 +38,8 @@ Ver=1
 1039=Compilar
 1040=Cerrar
 1041=rueda del ratón
+1050=El nombre del archivo tiene comillas dobles ("), que no caben en los comandos del compilador:<CR>%s<CR><CR>Cámbiale el nombre para compilarlo.
+1051=Los archivos de recursos (.rc) son de programas de Windows; Linux no tiene compilador de recursos.
 
 
 2001=&Abrir Proyecto o Archivo

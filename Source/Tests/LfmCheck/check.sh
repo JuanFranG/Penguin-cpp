@@ -20,7 +20,8 @@ LFMS=$(cd "$SRC" && find . -name '*.lfm' \
   ! -name FormatterOptionsFrm.lfm | sed 's#^\./##' | sort)
 python3 "$HERE/lfmparse.py" "$OUT" "$SRC" $LFMS
 
-if ! ${LAZBUILD:-lazbuild} ${WS:+--ws=$WS} "$HERE/lfmcheck.lpi" > "$OUT/build.log" 2>&1; then
+# -B: FPC 3.2.2 can stop with "Internal error 200611031" on incremental builds
+if ! ${LAZBUILD:-lazbuild} -B ${WS:+--ws=$WS} "$HERE/lfmcheck.lpi" > "$OUT/build.log" 2>&1; then
   grep -E "Error|Fatal" "$OUT/build.log" || tail -20 "$OUT/build.log"
   echo "lfmcheck did not build; full log: $OUT/build.log"
   exit 1

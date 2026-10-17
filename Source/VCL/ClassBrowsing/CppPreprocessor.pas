@@ -270,10 +270,18 @@ begin
   end;
 end;
 
+// Each nesting level of #if stores one of these. BranchDone marks that an
+// earlier #if/#elif of the same chain was taken, so later #elif/#else must
+// be skipped even if their own condition is true.
+const
+  BranchNotTaken = 0;
+  BranchTaken = 1;
+  BranchDone = 2;
+
 function TCppPreprocessor.GetCurrentBranch: boolean;
 begin
   if fBranchResults.Count > 0 then
-    Result := boolean(fBranchResults[fBranchResults.Count - 1])
+    Result := fBranchResults[fBranchResults.Count - 1] = BranchTaken
   else
     Result := True;
 end;
@@ -822,8 +830,13 @@ var
         RightOpValue := StrToIntDef(RemoveSuffixes(RightOp), 0);
         if OperatorToken = '*' then
           ResultValue := LeftOpValue * RightOpValue
-        else if OperatorToken = '/' then
-          ResultValue := LeftOpValue div RightOpValue // int division
+        else if OperatorToken = '/' then begin
+          // Unknown macros evaluate to 0; don't let x / 0 abort the whole file
+          if RightOpValue <> 0 then
+            ResultValue := LeftOpValue div RightOpValue // int division
+          else
+            ResultValue := 0;
+        end
         else if OperatorToken = '+' then
           ResultValue := LeftOpValue + RightOpValue
         else if OperatorToken = '-' then
@@ -893,23 +906,28 @@ begin
   end else if StartsStr('else', Line) then begin
     // if a branch that is not at our level is false, ignore (that means we're skipping)
     for I := 0 to fBranchResults.Count - 2 do
-      if fBranchResults[i] = 0 then // ignore it too
+      if fBranchResults[i] <> BranchTaken then // ignore it too
         Exit;
 
-    // otherwise, process it
-    OldResult := GetCurrentBranch; // take either if or else
-    RemoveCurrentBranch;
-    SetCurrentBranch(not OldResult);
+    // otherwise, take the else only if no earlier branch of this chain was taken
+    if fBranchResults.Count > 0 then begin
+      I := fBranchResults[fBranchResults.Count - 1];
+      RemoveCurrentBranch;
+      if I = BranchNotTaken then
+        fBranchResults.Add(BranchTaken)
+      else
+        fBranchResults.Add(BranchDone);
+    end;
   end else if StartsStr('elif', Line) then begin
     // if a branch that is not at our level is false, ignore
     for I := 0 to fBranchResults.Count - 2 do
-      if fBranchResults[i] = 0 then // ignore it too
+      if fBranchResults[i] <> BranchTaken then // ignore it too
         Exit;
 
-    OldResult := GetCurrentBranch; // take either if or else
+    OldResult := (fBranchResults.Count > 0) and (fBranchResults[fBranchResults.Count - 1] <> BranchNotTaken);
     RemoveCurrentBranch;
-    if OldResult then begin // don't take this one, previous if has been taken
-      SetCurrentBranch(false);
+    if OldResult then begin // don't take this one, an earlier branch has been taken
+      fBranchResults.Add(BranchDone);
     end else begin // previous ifs failed. try this one
       IfLine := TrimLeft(Copy(Line, Length('elif') + 1, MaxInt)); // remove elif
       SetCurrentBranch(EvaluateIf(IfLine));

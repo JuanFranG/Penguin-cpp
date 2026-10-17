@@ -149,11 +149,9 @@ de la barra principal. Probar con una impresora y con "Guardar como archivo
 PDF…", con y sin colores, números de línea, ajuste de línea y solo la
 selección.
 
-**4. Qt5** (decidido): compila y funciona mejor que GTK2 en Mint, pero **al
-cerrar el IDE da un "Access violation"** y por eso heaptrc lista memoria sin
-liberar (el cierre se corta antes de liberar el idioma, la configuración y el
-historial). Falta la pila de llamadas del error para corregirlo (ver la fase
-4).
+**4. Qt5** (decidido): compila y funciona mejor que GTK2 en Mint. Se corrigió
+el "Access violation" al cerrar (ver la fase 4); falta confirmar en Mint que
+el IDE cierra sin errores y que heaptrc vuelve a dar 0 bloques sin liberar.
 
 **5. Fase 6, el siguiente paso grande:** compilar y ejecutar con el gcc del
 sistema. La lista de compiladores está vacía porque el IDE solo busca TDM-GCC
@@ -241,7 +239,7 @@ Falta:
 - **Verificación de memoria y seguridad:** lo que se puede hacer sin
   interfaz gráfica está hecho; los acentos en el editor funcionan. Queda
   valgrind, opcional (ver abajo).
-- **Qt5**: corregir el error al cerrar (ver abajo).
+- **Qt5**: confirmar en Mint que ya cierra sin errores (ver abajo).
 - **Hecho cuando:** el IDE abre, se ven los menús, se puede abrir, editar,
   buscar y guardar un archivo, y cierra sin errores con Qt5.
 
@@ -317,10 +315,14 @@ Plan:
    - El `.deb` solo depende de `libqt5pas1`, que está en los repositorios.
    - Qt5 ya no tiene soporte libre de Qt, pero Ubuntu 24.04 lo mantiene hasta
      2029.
-4. ⏳ **Error al cerrar con Qt5** ("Access violation"): con GTK2 no pasaba.
-   Se sospecha del orden en que se liberan las listas de iconos, que los
-   menús y barras de Qt todavía usan; falta confirmarlo con la pila de
-   llamadas del error.
+4. ✅ **Error al cerrar con Qt5** ("Access violation", falta confirmarlo en
+   Mint). gdb mostró `GETICON (this=0x0)` en `qtpagecontrol.inc`: al
+   liberarse una lista de iconos, las pestañas de mensajes y de proyecto
+   quitan sus iconos, y el Qt5 de Lazarus lee la ventana de cada pestaña.
+   Las que nunca se mostraron no tienen, y mientras el formulario se destruye
+   ya no se pueden crear. Ahora los iconos de las pestañas se quitan justo
+   antes de cerrar. Las "fugas" de heaptrc eran la limpieza que el error
+   cortaba.
 5. **Qt6 con Mint 23**: en Lazarus, Qt5 y Qt6 comparten casi todo el código,
    así que el cambio es compilar con `--ws=qt6` y volver a probar.
 

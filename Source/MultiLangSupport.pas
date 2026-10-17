@@ -173,13 +173,13 @@ type
       //(CPID: 20932; CPName: 'EUC-JP'),
       //(CPID: 20936; CPName: 'x-cp20936'),
       //(CPID: 20949; CPName: 'x-cp20949'),
-      (CPID: 21025; CPName: 'cp1025'; CPLang: 'Bulgarian';),
+      (CPID: 1251; CPName: 'windows-1251'; CPLang: 'Bulgarian';), // the file is cp1251, not EBCDIC 1025
       //(CPID: 21866; CPName: 'koi8-u'),
       //(CPID: 28591; CPName: 'iso-8859-1'),
       //(CPID: 28592; CPName: 'iso-8859-2'),
       //(CPID: 28593; CPName: 'iso-8859-3'),
-      (CPID: 28594; CPName: 'iso-8859-4'; CPLang: 'Estonian';),
-      (CPID: 28594; CPName: 'iso-8859-4'; CPLang: 'Latvian';),
+      (CPID: 1257; CPName: 'windows-1257'; CPLang: 'Estonian';), // the file is cp1257
+      (CPID: 1257; CPName: 'windows-1257'; CPLang: 'Latvian';), // the file is cp1257
       //(CPID: 28595; CPName: 'iso-8859-5'),
       //(CPID: 28596; CPName: 'iso-8859-6'),
       //(CPID: 28597; CPName: 'iso-8859-7'),
@@ -218,7 +218,7 @@ function Lang: TdevMultiLangSupport;
 implementation
 
 uses
-  UITypes, LangFrm, Forms, Utils, Version, Controls, devCFG, LConvEncoding;
+  UITypes, LangFrm, Forms, Utils, Version, Controls, devCFG, LConvEncoding, LazUTF8;
 
 var
   fLangSingleton: TdevMultiLangSupport = nil;
@@ -242,6 +242,10 @@ var
   I: Integer;
 begin
   Result := 1252; //put the default encoding here
+
+  // Traditional Chinese (file Chinese_TC, name "Chinese (TW)") would match 'Chinese' (936)
+  if (ALanguage.IndexOf('Chinese_TC') > -1) or (ALanguage.IndexOf('(TW)') > -1) then
+    Exit(950);
 
   for I := 0 to MaxEncodings - 1 do
     if ALanguage.IndexOf(Encodings[I].CPLang)>-1 then
@@ -312,6 +316,8 @@ begin
   devData.Language := ExtractFileName(LangFile);
 end;
 
+function AnsiToUtf8Ex(const S: String; CodePage: Integer): String; forward;
+
 procedure TdevMultiLangSupport.CheckLanguageFiles;
 var
   I: integer;
@@ -331,7 +337,8 @@ begin
       try
         for I := 0 to fLangList.Count - 1 do begin
           sl.LoadFromFile(fLangList[I]);
-          s := sl.Values['Lang'];
+          // the name is in the file's Windows code page, like its strings
+          s := AnsiToUtf8Ex(sl.Values['Lang'], GetCodePage(ChangeFileExt(ExtractFileName(fLangList[I]), '')));
           if SameText(ExtractFileName(fLangList[I]), 'English.lng') and (devData.Language = '') then
             fCurLang := s;
           if s = '' then
@@ -353,7 +360,8 @@ end;
 // Language files are stored in the Windows code page of their language
 function AnsiToUtf8Ex(const S: String; CodePage: Integer): String;
 begin
-  if (CodePage = 0) or (CodePage = 65001) then
+  // Already valid UTF-8 (or plain ASCII): nothing to convert
+  if (CodePage = 0) or (CodePage = 65001) or (FindInvalidUTF8Codepoint(PChar(S), Length(S)) < 0) then
     Result := S
   else
     Result := ConvertEncoding(S, 'cp' + IntToStr(CodePage), EncodingUTF8);

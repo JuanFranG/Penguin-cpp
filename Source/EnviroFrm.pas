@@ -182,9 +182,13 @@ begin
     AutoOpen := rgbAutoOpen.ItemIndex;
     Splash := edSplash.Text;
 
-    s := Lang.FileFromDescription(cboLang.Text);
-    LangChange := s <> Language;
-    Language := s;
+    // Nothing selected (the current language wasn't found in the list): keep it
+    LangChange := False;
+    if cboLang.ItemIndex >= 0 then begin
+      s := Lang.FileFromDescription(cboLang.Text);
+      LangChange := s <> Language;
+      Language := s;
+    end;
     ThemeChange := cboTheme.Text <> devData.Theme;
     Theme := 'NewLook'; //cboTheme.Text;
     ShowProgress := cbShowProgress.Checked;

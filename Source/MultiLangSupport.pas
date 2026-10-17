@@ -292,6 +292,14 @@ begin
   inherited;
 end;
 
+function AnsiToUtf8Ex(const S: String; CodePage: Integer): String; forward;
+
+// Code page of a language file, from its file name (Spanish.lng, Chinese_TC.lng...)
+function FileCodePage(const LangFile: String): Integer;
+begin
+  Result := GetCodePage(ChangeFileExt(ExtractFileName(LangFile), ''));
+end;
+
 procedure TdevMultiLangSupport.Open(const Filename: String);
 var
   LangFile: String;
@@ -307,16 +315,13 @@ begin
   fStrings.LoadFromFile(LangFile,TEncoding.ANSI);
   fLangFile := LangFile;
 
-  // Get languange
-  fCurLang := fStrings.Values['Lang'];
+  // Get languange; its name in UTF-8, as in the language list it is compared with
+  fCurCodePage := FileCodePage(LangFile);
+  fCurLang := AnsiToUtf8Ex(fStrings.Values['Lang'], fCurCodePage);
   if fCurLang = '' then
     fCurLang := ChangeFileExt(ExtractFileName(LangFile), '');
-
-  fCurCodePage := GetCodePage(fCurLang);
   devData.Language := ExtractFileName(LangFile);
 end;
-
-function AnsiToUtf8Ex(const S: String; CodePage: Integer): String; forward;
 
 procedure TdevMultiLangSupport.CheckLanguageFiles;
 var
@@ -338,7 +343,7 @@ begin
         for I := 0 to fLangList.Count - 1 do begin
           sl.LoadFromFile(fLangList[I]);
           // the name is in the file's Windows code page, like its strings
-          s := AnsiToUtf8Ex(sl.Values['Lang'], GetCodePage(ChangeFileExt(ExtractFileName(fLangList[I]), '')));
+          s := AnsiToUtf8Ex(sl.Values['Lang'], FileCodePage(fLangList[I]));
           if SameText(ExtractFileName(fLangList[I]), 'English.lng') and (devData.Language = '') then
             fCurLang := s;
           if s = '' then

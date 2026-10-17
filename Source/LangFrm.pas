@@ -107,8 +107,7 @@ begin
   // Update translation
   if lbLanguages.ItemIndex <> -1 then begin
     SelectedLang := Lang.Langs.Names[lbLanguages.ItemIndex];
-    Lang.Open(SelectedLang);
-    devData.Language := Lang.FileFromDescription(SelectedLang);
+    Lang.Open(SelectedLang); // sets devData.Language to the file name
   end else begin
     Lang.Open('English.lng');
   end;

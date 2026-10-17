@@ -14,11 +14,11 @@
       <Scaled Value="True"/>
       <ResourceType Value="res"/>
       <Resources Count="5">
-        <Resource_0 FileName="Images/IconLists/SVGImageListMenuStyle.png" Type="RCDATA" ResourceName="ICONS_MENU"/>
-        <Resource_1 FileName="Images/IconLists/SVGImageListProjectStyle.png" Type="RCDATA" ResourceName="ICONS_PROJECT"/>
-        <Resource_2 FileName="Images/IconLists/SVGImageListClassStyle.png" Type="RCDATA" ResourceName="ICONS_CLASS"/>
-        <Resource_3 FileName="Images/IconLists/SVGImageListMessageStyle.png" Type="RCDATA" ResourceName="ICONS_MESSAGE"/>
-        <Resource_4 FileName="Images/IconLists/SVGIconImageWelcomeScreen.png" Type="RCDATA" ResourceName="ICONS_WELCOME"/>
+        <Resource_0 FileName="$(ProjPath)Images/IconLists/SVGImageListMenuStyle.png" Type="RCDATA" ResourceName="ICONS_MENU"/>
+        <Resource_1 FileName="$(ProjPath)Images/IconLists/SVGImageListProjectStyle.png" Type="RCDATA" ResourceName="ICONS_PROJECT"/>
+        <Resource_2 FileName="$(ProjPath)Images/IconLists/SVGImageListClassStyle.png" Type="RCDATA" ResourceName="ICONS_CLASS"/>
+        <Resource_3 FileName="$(ProjPath)Images/IconLists/SVGImageListMessageStyle.png" Type="RCDATA" ResourceName="ICONS_MESSAGE"/>
+        <Resource_4 FileName="$(ProjPath)Images/IconLists/SVGIconImageWelcomeScreen.png" Type="RCDATA" ResourceName="ICONS_WELCOME"/>
       </Resources>
     </General>
     <BuildModes>

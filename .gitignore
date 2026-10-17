@@ -56,3 +56,9 @@ __history/
 *.~*
 MinGW64
 devcpp.exe
+
+
+# Free Pascal / Lazarus build output
+*.ppu
+*.o
+Source/Tests/ParserTest/build/

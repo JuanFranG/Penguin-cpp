@@ -172,10 +172,10 @@ begin
   // Create OBJ output directory
   SetCurrentDir(fProject.Directory); // .dev file location
   if fProject.Options.ObjectOutput <> '' then
-    TDirectory.CreateDirectory(fProject.Options.ObjectOutput);
+    ForceDirectories(fProject.Options.ObjectOutput);
 
   if not fProject.Options.ExeOutput.IsEmpty then
-    TDirectory.CreateDirectory(fProject.Options.ExeOutput);
+    ForceDirectories(fProject.Options.ExeOutput);
 
   // Should not return custom filename
   fMakefile := fProject.MakeFileName;
@@ -618,7 +618,7 @@ begin
 end;
 
 procedure TCompiler.Compile;
-resourcestring
+const
   // windres, input, output
   cResourceCmdLine = '%s --input-format=rc -i %s -o %s';
   // gcc, input, compileparams, includeparams, librariesparams
@@ -898,7 +898,7 @@ begin
         if not FileExists(fMakefile) then begin
           DoLogEntry(Lang[ID_ERR_NOMAKEFILE]);
           DoLogEntry(Lang[ID_ERR_CLEANFAILED]);
-          MessageBox(MainForm.Handle, PChar(Lang[ID_ERR_NOMAKEFILE]), PChar(Lang[ID_ERROR]), MB_OK or
+          Application.MessageBox(PChar(Lang[ID_ERR_NOMAKEFILE]), PChar(Lang[ID_ERROR]), MB_OK or
             MB_ICONERROR);
           Exit;
         end;
@@ -942,7 +942,7 @@ begin
         if not FileExists(fMakefile) then begin
           DoLogEntry(Lang[ID_ERR_NOMAKEFILE]);
           DoLogEntry(Lang[ID_ERR_CLEANFAILED]);
-          MessageBox(MainForm.Handle, PChar(Lang[ID_ERR_NOMAKEFILE]), PChar(Lang[ID_ERROR]), MB_OK or
+          Application.MessageBox(PChar(Lang[ID_ERR_NOMAKEFILE]), PChar(Lang[ID_ERROR]), MB_OK or
             MB_ICONERROR);
           Exit;
         end;
@@ -1157,7 +1157,7 @@ begin
 end;
 
 procedure TCompiler.GetLibrariesParams;
-resourcestring
+const
   cAppendStr = '%s -L"%s"';
 var
   i, val: integer;
@@ -1210,7 +1210,7 @@ begin
 end;
 
 procedure TCompiler.GetIncludesParams;
-resourcestring
+const
   cAppendStr = '%s -I"%s"';
 var
   i: integer;
@@ -1252,7 +1252,7 @@ begin
     MainForm.pbCompilation.Max := 1; // just fSourceFile
 
   // Initialize counters
-  fStartTime := GetTickCount;
+  fStartTime := GetTickCount64;
   fWarnCount := 0;
   fErrCount := 0;
 
@@ -1312,7 +1312,7 @@ var
 begin
   MainForm.pbCompilation.Position := 0;
 
-  CompileTime := (GetTickCount - fStartTime) / 1000;
+  CompileTime := (GetTickCount64 - fStartTime) / 1000;
 
   DoLogEntry('');
   DoLogEntry(Lang[ID_LOG_COMPILERESULTS]);

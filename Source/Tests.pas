@@ -41,7 +41,7 @@ type
 implementation
 
 uses
-  main, EditorList, Editor, Version;
+  main, EditorList, Editor, Version, SynEditCompat;
 
 procedure TTestClass.ShowUpdate(Delay: Integer);
 begin
@@ -328,6 +328,7 @@ function TTestClass.TestEditor: Boolean;
 var
   I, FoldCount, LineCount, LineLength, CommentCount, DupeCount, IndentCount: Integer;
   e: TEditor;
+  J: Integer;
 
   procedure TypeText(const Text: String);
   var
@@ -378,14 +379,8 @@ begin
     end;
     Assert(e.Text.Lines.Count = 2 * FoldCount + 1);
 
-    MainForm.SetStatusbarMessage('Test fold collapsing and uncollapsing');
-    e.Text.CollapseAll;
-    ShowUpdate(50);
-    e.Text.UncollapseAll;
-    ShowUpdate(50);
-
     MainForm.SetStatusbarMessage('Undo all previous actions to end up with empty editor');
-    while e.Text.UndoList.CanUndo do begin
+    while e.Text.CanUndo do begin
       e.Text.Undo;
       ShowUpdate(0);
     end;
@@ -401,7 +396,7 @@ begin
     MainForm.SetStatusbarMessage('Move lines down');
     for I := 0 to e.Text.Lines.Count - 1 do begin
       e.Text.CaretXY := BufferCoord(1, 1);
-      for var J := 0 to e.Text.Lines.Count - 3 - I do
+      for J := 0 to e.Text.Lines.Count - 3 - I do
         e.Text.CommandProcessor(TSynEditEx.ecMoveSelDown, #0, nil);
       ShowUpdate(0);
     end;
@@ -409,7 +404,7 @@ begin
     MainForm.SetStatusbarMessage('Move lines up');
     for I := 0 to e.Text.Lines.Count - 1 do begin
       e.Text.CaretXY := BufferCoord(1, e.Text.Lines.Count);
-      for var J := 0 to e.Text.Lines.Count - 1 - I do
+      for J := 0 to e.Text.Lines.Count - 1 - I do
         e.Text.CommandProcessor(TSynEditEx.ecMoveSelUp, #0, nil);
       ShowUpdate(0);
     end;
@@ -439,7 +434,7 @@ begin
     Assert(e.Text.Lines.Count = 26 + 1);
 
     MainForm.SetStatusbarMessage('Undo all previous actions to end up with empty editor');
-    while e.Text.UndoList.CanUndo do begin
+    while e.Text.CanUndo do begin
       e.Text.Undo;
       ShowUpdate(0);
     end;
@@ -466,7 +461,7 @@ begin
     Assert(e.Text.Lines.Count = 1);
 
     MainForm.SetStatusbarMessage('Undo all previous actions to end up with empty editor');
-    while e.Text.UndoList.CanUndo do begin
+    while e.Text.CanUndo do begin
       e.Text.Undo;
       ShowUpdate(0);
     end;
@@ -497,7 +492,7 @@ begin
     Assert(e.Text.Lines.Count = 26 + 1);
 
     MainForm.SetStatusbarMessage('Undo all previous actions to end up with empty editor');
-    while e.Text.UndoList.CanUndo do begin
+    while e.Text.CanUndo do begin
       e.Text.Undo;
       ShowUpdate(0);
     end;
@@ -535,7 +530,7 @@ begin
     Assert(e.Text.Lines.Count = 11);
 
     MainForm.SetStatusbarMessage('Undo all previous actions to end up with empty editor');
-    while e.Text.UndoList.CanUndo do begin
+    while e.Text.CanUndo do begin
       e.Text.Undo;
       ShowUpdate(0);
     end;

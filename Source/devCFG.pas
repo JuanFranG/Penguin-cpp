@@ -23,10 +23,15 @@ interface
 
 uses
   Dialogs, LCLIntf, LCLType, Classes, Graphics, SynEdit, Editor, CFGData, IniFiles, ProjectTypes,
-  Math, ComCtrls, UITypes, SynEditTextBuffer, SysUtils;
+  Math, ComCtrls, UITypes, SynEditTextBuffer, SysUtils, Forms;
 
 const
   BoolValYesNo: array[boolean] of String = ('No', 'Yes');
+
+  // Encoding names as stored in the settings (from Delphi's ExtDlgs unit)
+  DefaultEncodingNames: array[0..5] of String = ('ANSI', 'ASCII', 'Unicode', 'Big Endian Unicode', 'UTF-8', 'UTF-7');
+
+function StandardEncodingFromName(const Name: String): TEncoding;
 
 type
   // the comments are an example of the record
@@ -524,11 +529,10 @@ type
     fBottom: integer;
     fShowCmd: integer;
     fFlags: integer;
-    fStruct: TWindowPlacement; // don't store on disk!
   public
     constructor Create;
-    procedure GetPlacement(Source: HWND);
-    procedure SetPlacement(Destination: HWND);
+    procedure GetPlacement(Source: TCustomForm);
+    procedure SetPlacement(Destination: TCustomForm);
   published
     property Left: integer read fLeft write fLeft; // TWindowPlacement parts
     property Top: integer read fTop write fTop;
@@ -791,8 +795,32 @@ var
 implementation
 
 uses
-  MultiLangSupport, DataFrm, StrUtils, Forms, main, Compiler, Controls, Version, Utils,
-  SynEditMiscClasses, TypInfo, DateUtils, Types, ExtDlgs, devPlatform;
+  MultiLangSupport, DataFrm, StrUtils, main, Compiler, Controls, Version, Utils,
+  SynEditMiscClasses, TypInfo, DateUtils, Types, ExtDlgs, devPlatform, FileUtil, SynEditCompat, SynEditTypes;
+
+function StandardEncodingFromName(const Name: String): TEncoding;
+begin
+  if SameText(Name, 'UTF-8') then
+    Result := TEncoding.UTF8
+  else if SameText(Name, 'Unicode') then
+    Result := TEncoding.Unicode
+  else if SameText(Name, 'Big Endian Unicode') then
+    Result := TEncoding.BigEndianUnicode
+  else if SameText(Name, 'UTF-7') then
+    Result := TEncoding.UTF7
+  else if SameText(Name, 'ASCII') then
+    Result := TEncoding.ASCII
+  else
+    Result := TEncoding.ANSI;
+end;
+
+procedure RemoveOptionsDir(const Directory: String);
+begin
+  // Keep a copy next to it, then delete
+  CopyDirTree(Directory, ExcludeTrailingPathDelimiter(Directory) + 'Backup' + pd, [cffOverwriteFile, cffCreateDestDirectory]);
+  DeleteDirectory(Directory, False);
+end;
+
 
 procedure CreateOptions;
 var
@@ -884,38 +912,6 @@ begin
   FreeAndNil(devFormatterClang);
 end;
 
-procedure RemoveOptionsDir(const Directory: String);
-var
-  fostruct: SHFILEOPSTRUCT;
-  DirFrom, DirTo: array[0..MAX_PATH] of char;
-begin
-  // Copy and delete
-  FillChar(DirFrom, Sizeof(DirFrom), 0);
-  StrPCopy(DirFrom, Directory);
-
-  FillChar(DirTo, Sizeof(DirFrom), 0);
-  StrPCopy(DirTo, ExcludeTrailingBackslash(Directory) + 'Backup' + pd);
-
-  FillChar(fostruct, Sizeof(fostruct), 0);
-  with fostruct do begin
-    Wnd := 0;
-    pFrom := @DirFrom;
-    pTo := @DirTo;
-    wFunc := FO_COPY;
-    fFlags := FOF_ALLOWUNDO or FOF_SILENT or FOF_NOCONFIRMATION;
-  end;
-  SHFileOperation(fostruct);
-
-  FillChar(fostruct, Sizeof(fostruct), 0);
-  with fostruct do begin
-    Wnd := 0;
-    pFrom := @DirFrom;
-    wFunc := FO_DELETE;
-    fFlags := FOF_ALLOWUNDO or FOF_SILENT or FOF_NOCONFIRMATION;
-  end;
-  SHFileOperation(fostruct);
-end;
-
 var
   fdevDataSingleton: TdevData = nil;
 
@@ -945,18 +941,6 @@ begin
 end;
 
 procedure TdevData.SettoDefaults;
-var
-  osinfo: TOSVersionInfo;
-
-  function getAssociation(I: integer): Boolean;
-  begin
-    Result := CheckFiletype('.' + Associations[I, 0],
-      'DevCpp.' + Associations[I, 0],
-      Associations[I, 1],
-      'open',
-      Application.Exename + ' "%1"');
-  end;
-
 begin
   fFirst := TRUE;
   fLang := 'English.lng';
@@ -1007,27 +991,25 @@ begin
   fToolbarCompilersX := 686;
   fToolbarCompilersY := 2;
 
-  // Office 2007 / Vista support
-  osinfo.dwOSVersionInfoSize := SizeOf(TOSVersionInfo);
-  GetVersionEx(osinfo);
-  if (Screen.Fonts.IndexOf('Heebo') <> -1) and (osinfo.dwMajorVersion >= 6) then begin
+  // Heebo ships in Fonts/; without it use the desktop's font
+  if Screen.Fonts.IndexOf('Heebo') <> -1 then begin
     fInterfaceFontSize := 10;
     fInterfaceFont := 'Heebo';
   end else begin
-    fInterfaceFontSize := 8;
-    fInterfaceFont := 'Roboto';
+    fInterfaceFontSize := 10;
+    fInterfaceFont := 'default';
   end;
 
   //read associations set by installer as defaults
-  fAssociateC := getAssociation(0);
-  fAssociateCpp := getAssociation(1);
-  fAssociateCxx := getAssociation(2);
-  fAssociateH := getAssociation(3);
-  fAssociateHpp := getAssociation(4);
-  fAssociateHxx := getAssociation(5);
-  fAssociateDev := getAssociation(6);
-  fAssociateRc := getAssociation(7);
-  fAssociateTemplate := getAssociation(8);
+  fAssociateC := False;
+  fAssociateCpp := False;
+  fAssociateCxx := False;
+  fAssociateH := False;
+  fAssociateHpp := False;
+  fAssociateHxx := False;
+  fAssociateDev := False;
+  fAssociateRc := False;
+  fAssociateTemplate := False;
   fCheckAssocs := false;
 
   fShowTipsOnStart := FALSE; // due to popular demand
@@ -1069,39 +1051,36 @@ end;
 constructor TWindowState.Create;
 begin
   inherited Create;
-  fStruct.length := sizeof(WINDOWPLACEMENT);
-  flags := -1; // -1 means GetWindowPlacement isn't called yet
+  flags := -1; // -1 means GetPlacement hasn't been called yet
 end;
 
-procedure TWindowState.GetPlacement(Source: HWND);
+// ShowCmd keeps the Windows values (1 normal, 2 minimized, 3 maximized) so
+// settings written by the Windows version stay readable
+procedure TWindowState.GetPlacement(Source: TCustomForm);
 begin
-  if GetWindowPlacement(Source, @fStruct) then begin
-    fShowCmd := fStruct.showCmd;
-    fFlags := fStruct.flags;
-
-    // Attempt to correct for Aero Snap. GetWindowPlacement ignores this functionality
-    // Only do that if the window is not minimized/maximized
-    if fStruct.showCmd = SW_SHOWNORMAL then
-      GetWindowRect(Source, fStruct.rcNormalPosition);
-
-    // Apply fixed aero values
-    fLeft := fStruct.rcNormalPosition.Left;
-    fTop := fStruct.rcNormalPosition.Top;
-    fRight := fStruct.rcNormalPosition.Right;
-    fBottom := fStruct.rcNormalPosition.Bottom;
+  case Source.WindowState of
+    wsMaximized: fShowCmd := 3;
+    wsMinimized: fShowCmd := 2;
+  else
+    fShowCmd := 1;
   end;
+  fFlags := 0;
+
+  // Size and position the window has when not maximized
+  fLeft := Source.RestoredLeft;
+  fTop := Source.RestoredTop;
+  fRight := Source.RestoredLeft + Source.RestoredWidth;
+  fBottom := Source.RestoredTop + Source.RestoredHeight;
 end;
 
-procedure TWindowState.SetPlacement(Destination: HWND);
+procedure TWindowState.SetPlacement(Destination: TCustomForm);
 begin
-  if flags <> -1 then begin
-    fStruct.rcNormalPosition.Left := fLeft;
-    fStruct.rcNormalPosition.Top := fTop;
-    fStruct.rcNormalPosition.Right := fRight;
-    fStruct.rcNormalPosition.Bottom := fBottom;
-    fStruct.showCmd := fShowCmd;
-    fStruct.flags := fFlags;
-    SetWindowPlacement(Destination, @fStruct);
+  if (flags <> -1) and (fRight > fLeft) and (fBottom > fTop) then begin
+    Destination.SetBounds(fLeft, fTop, fRight - fLeft, fBottom - fTop);
+    if fShowCmd = 3 then
+      Destination.WindowState := wsMaximized
+    else
+      Destination.WindowState := wsNormal; // never restore minimized
   end;
 end;
 
@@ -1355,6 +1334,8 @@ end;
 procedure TdevCompilerSet.SetOptions;
 var
   sl: TStringList;
+  sl2: TStringList;
+  CPUNumber: Integer;
 begin
 
   // C options
@@ -1453,7 +1434,7 @@ begin
   AddOption(ID_COPT_ARCH, ID_COPT_GRP_CODEGEN, True, True, False, 0, '-march=', sl);
 
   // Optimization
-  var sl2 := TStringList.Create;
+  sl2 := TStringList.Create;
   sl2.Assign(sl);
   sl2.Insert(2, 'generic: Produce code optimized for the most common IA32/AMD64/EM64T processors=generic');
   sl2.Insert(3, 'intel: Produce code optimized for the most current Intel processors, which are Haswell and Silvermont for this version of GCC=intel');
@@ -1562,7 +1543,7 @@ begin
   sl := TStringList.Create;
   sl.Add(''); // /!\ Must contain a starting empty value in order to do not have always to pass the parameter
   sl.Add('1 Thread=1');
-  for var CPUNumber := 2 to System.CPUCount do begin
+  for CPUNumber := 2 to System.CPUCount do begin
     sl.Add(CPUNumber.ToString + ' Threads=' + CPUNumber.ToString);
   end;
   sl.Add('Auto=');
@@ -1625,7 +1606,7 @@ begin
     Result := Result + [PCompilerOption(fOptions[I])^.Value];
 end;
 
-procedure TdevCompilerSet.SetINIOptions(const value: TArray<Integer>);
+procedure TdevCompilerSet.SetINIOptions(const value: TCompilerOptionsValues);
 var
   I: integer;
 begin
@@ -2262,12 +2243,12 @@ var
   index, I: integer;
 begin
   // Assume 64bit compilers are put in the TDM-GCC (MinGW64) folder
-  TDM_GCC_64_Folder := TPath.Combine(devDirs.Exec, TDM_GCC_64_Folder);
+  TDM_GCC_64_Folder := ConcatPaths([devDirs.Exec, TDM_GCC_64_Folder]);
 
-  if TDirectory.Exists(TDM_GCC_64_Folder) then begin
+  if DirectoryExists(TDM_GCC_64_Folder) then begin
 
     // we only require GCC.exe to be present
-    if TFile.Exists(TPath.Combine(TPath.Combine(TDM_GCC_64_Folder, 'bin'), GCC_PROGRAM)) then begin
+    if FileExists(ConcatPaths([ConcatPaths([TDM_GCC_64_Folder, 'bin']), GCC_PROGRAM])) then begin
 
       // Default, release profile
       BaseSet := AddSet(TDM_GCC_64_Folder);
@@ -2373,8 +2354,8 @@ begin
 
   if devData.IsPortable then
   begin
-    fDefault := TPath.Combine(fExec, 'Projects');
-    TDirectory.CreateDirectory(fDefault);
+    fDefault := ConcatPaths([fExec, 'Projects']);
+    ForceDirectories(fDefault);
   end
   else
   begin
@@ -2478,7 +2459,7 @@ begin
   fParserHints := TRUE; // Editor hints
   fShowFunctionTip := TRUE;
   fTrimTrailingSpaces := FALSE;
-  fNewDocEncoding := DefaultEncodingNames[0]; //ANSI
+  fNewDocEncoding := DefaultEncodingNames[4]; // UTF-8, the norm on Linux
   
   // Caret
   fInsertCaret := 0;
@@ -2544,10 +2525,9 @@ begin
     try
       // Set text area properties
       WantTabs := True;
-      //MaxScrollWidth := 4096; // bug-fix #600748
       MaxUndo := 4096;
       BorderStyle := bsNone;
-      Font.Quality := TFontQuality.fqClearType; //FontSmoothing := fsmClearType;
+      Font.Quality := fqCleartype;
 
       // Select highlighter based on filename (a lot depends on this)
       Highlighter := dmMain.GetHighlighter(FileName);
@@ -2560,20 +2540,8 @@ begin
         SelectedColor.Background := pt.X;
         SelectedColor.Foreground := pt.Y;
       end else begin // editor not colored, pick defaults
-        SelectedColor.Background := clNavy; //StyleServices.GetStyleColor(scGenericBackground);// clNavy;
-        SelectedColor.Foreground := clWhite; //StyleServices.GetStyleFontColor(sfWindowTextNormal); // clWhite
-      end;
-
-      // Set code folding
-      if Assigned(Highlighter) then begin
-        StrtoPoint(pt, devEditor.Syntax.Values[cFld]);
-        CodeFolding.FolderBarLinesColor := pt.y;
-        if Editor is TSynEditEx then
-          OnScanForFoldRanges := TSynEditEx(EDitor).DoScanForFoldRanges;
-        UseCodeFolding := True;
-      end else begin
-        UseCodeFolding := False;
-        OnScanForFoldRanges := nil;
+        SelectedColor.Background := clNavy;
+        SelectedColor.Foreground := clWhite;
       end;
 
       // More stuff
@@ -2584,39 +2552,26 @@ begin
       RightEdgeColor := fMarginColor;
       InsertCaret := TSynEditCaretType(fInsertCaret);
       OverwriteCaret := TSynEditCaretType(fOverwriteCaret);
-      ScrollHintFormat := shfTopToBottom;
       if HighCurrLine and Assigned(Highlighter) then
-        ActiveLineColor := HighColor
+        LineHighlightColor.Background := HighColor
       else
-        ActiveLineColor := clNone;
+        LineHighlightColor.Background := clNone;
 
-      // Set gutter properties
-      with Gutter do begin
-        LeftOffset := 4;
-        RightOffset := 21;
-        BorderStyle := gbsNone;
-        Font.Assign(fGutterFont);
-        DigitCount := fGutterSize;
-        Visible := fShowGutter;
-        AutoSize := fGutterAuto;
-        ShowLineNumbers := fLineNumbers;
-        LeadingZeros := fLeadZero;
-        ZeroStart := fFirstisZero;
-        if Assigned(Highlighter) then begin
-          StrtoPoint(pt, fSyntax.Values[cGut]);
-          Color := pt.x;
-          Font.Color := pt.y;
-        end else begin // editor not colored, pick defaults
-          Color := clBtnFace;// StyleServices.GetStyleColor(scGenericBackground); //clBtnFace;
-          Font.Color := clBlack; //StyleServices.GetStyleFontColor(sfWindowTextNormal); //clBlack;
-        end;
-      end;
+      // Set gutter properties (Lazarus' gutter draws line numbers with the editor font)
+      Gutter.LeftOffset := 4;
+      Gutter.RightOffset := 21;
+      ApplyGutter(Editor, fShowGutter, fGutterAuto, fLineNumbers, fLeadZero, fFirstisZero, fGutterSize);
+      if Assigned(Highlighter) then begin
+        StrtoPoint(pt, fSyntax.Values[cGut]);
+        SetGutterColors(Editor, pt.x, pt.y);
+      end else // editor not colored, pick defaults
+        SetGutterColors(Editor, clBtnFace, clBlack);
 
       // Set option enum
       Options := [
         eoAltSetsColumnMode, eoDisableScrollArrows,
         eoDragDropEditing, eoDropFiles, eoKeepCaretX, eoTabsToSpaces,
-        eoRightMouseMovesCursor, eoScrollByOneLess {eoAutoSizeMaxScrollWidth}
+        eoRightMouseMovesCursor, eoScrollByOneLess
         ];
 
       // Optional synedit options in devData
@@ -2633,23 +2588,21 @@ begin
       if fShowScrollbars then
         Options := Options + [eoHideShowScrollbars];
       if fPastEOF then
-        Options := Options + [eoScrollPastEOF];
+        Options := Options + [eoScrollPastEof];
       if fPastEOL then
-        Options := Options + [eoScrollPastEOL];
+        Options := Options + [eoScrollPastEol];
       if fShowScrollHint then
         Options := Options + [eoScrollHintFollows, eoShowScrollHint];
       if fSmartTabs then
-        Options := Options + [eoSmartTabs];
-      if fSmartTabs then
-        Options := Options + [eoSmartTabDelete];
+        Options := Options + [eoSmartTabs, eoSmartTabDelete];
       if fUseTabs then
         Options := Options - [eoTabsToSpaces];
       if fSpecialChar then
         Options := Options + [eoShowSpecialChars];
       if fTrimTrailingSpaces then
         Options := Options + [eoTrimTrailingSpaces];
-      if fShowLigatures then
-        Options := Options + [eoShowLigatures];
+      if fMatch then // highlight the bracket matching the one at the caret
+        Options := Options + [eoBracketHighlight];
     finally
       EndUpdate;
     end;
@@ -2806,7 +2759,7 @@ var
   DummyEditor: TSynEdit;
 begin
   // Store file backup in AStyle dir and format that file
-  FileName := TPath.Combine(TPath.GetTempPath,ExtractFileName(Editor.FileName)); //devDirs.Exec + fAStyleDir
+  FileName := ConcatPaths([GetTempDir, ExtractFileName(Editor.FileName)]); //devDirs.Exec + fAStyleDir
   Editor.Text.Lines.SaveToFile(FileName);
   FormatFile(FileName, OverrideCommand);
 
@@ -2835,7 +2788,7 @@ var
 begin
   WorkingDir := devDirs.Exec + fAStyleDir;
   RunCommand := fAStyleFile + ' ' + OverrideCommand + ' "' + FileName + '"';
-  Result := RunAndGetOutput(WorkingDir + RunCommand, TPath.GetTempPath, nil, nil, False);
+  Result := RunAndGetOutput(WorkingDir + RunCommand, GetTempDir, nil, nil, False);
 end;
 
 function TdevFormatterAStyle.GetVersion: String;
@@ -2844,7 +2797,7 @@ var
 begin
   WorkingDir := devDirs.Exec + fAStyleDir;
   RunCommand := fAStyleFile + ' --version';
-  Result := RunAndGetOutput(WorkingDir + RunCommand, TPath.GetTempPath, nil, nil, False);
+  Result := RunAndGetOutput(WorkingDir + RunCommand, GetTempDir, nil, nil, False);
 end;
 
 { TdevFormatter }
@@ -2947,7 +2900,7 @@ var
   DummyEditor: TSynEdit;
 begin
   // Store file backup in temporary directory
-  FileName := TPath.Combine(TPath.GetTempPath,ExtractFileName(Editor.FileName));
+  FileName := ConcatPaths([GetTempDir, ExtractFileName(Editor.FileName)]);
   Editor.Text.Lines.SaveToFile(FileName);
   Formatted := FormatFile(FileName, OverrideCommand);
 
@@ -2976,7 +2929,7 @@ var
 begin
   WorkingDir := devDirs.Exec + fClangDir;
   RunCommand := fClangFile + ' ' + OverrideCommand + ' "' + FileName + '"';
-  Result := RunAndGetOutput(WorkingDir + RunCommand, TPath.GetTempPath, nil, nil, False);
+  Result := RunAndGetOutput(WorkingDir + RunCommand, GetTempDir, nil, nil, False);
 end;
 
 function TdevFormatterClang.GetVersion: String;
@@ -2985,7 +2938,7 @@ var
 begin
   WorkingDir := devDirs.Exec + fClangDir;
   RunCommand := fClangFile + ' --version';
-  Result := RunAndGetOutput(WorkingDir + RunCommand, TPath.GetTempPath, nil, nil, False);
+  Result := RunAndGetOutput(WorkingDir + RunCommand, GetTempDir, nil, nil, False);
 end;
 
 { TdevExternalPrograms }

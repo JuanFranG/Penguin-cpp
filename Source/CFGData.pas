@@ -66,7 +66,7 @@ type
     property INIFileName: String read GetIniFileName write SetIniFileName;
   end;
 
-function GetPropName(Instance: TPersistent; Index: Integer): TSymbolName;
+function GetPropName(Instance: TPersistent; Index: Integer): ShortString;
 function GetPropCount(Instance: TPersistent): Integer;
 
 implementation
@@ -83,7 +83,7 @@ end;
 
 //Returns the property name of an instance at a certain index
 
-function GetPropName(Instance: TPersistent; Index: Integer): TSymbolName;
+function GetPropName(Instance: TPersistent; Index: Integer): ShortString;
 var
   PropList: PPropList;
   PropInfo: PPropInfo;

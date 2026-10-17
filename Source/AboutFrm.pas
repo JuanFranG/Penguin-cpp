@@ -127,6 +127,7 @@ end;
 procedure TAboutForm.FormCreate(Sender: TObject);
 var
   datestring: String;
+  f: Double;
 begin
   LoadText;
 
@@ -137,7 +138,7 @@ begin
   if FileExists(devData.Splash) then // TODO: check all folders?
     imgBanner.Picture.LoadFromFile(devData.Splash);
 
-  var f: Double := 1;
+  f := 1;
   if Assigned(imgBanner.Picture) then
     f := imgBanner.Picture.Height / imgBanner.Picture.Width;
 
@@ -163,7 +164,7 @@ const
     '- Gnome icons: Gnome designers'#13#10 +
     '- Blue theme: Thomas Thron';
 begin
-  MessageBeep($F);
+  Beep;
   MessageDlg(MessageText, MtInformation, [MbOK], 0);
 end;
 

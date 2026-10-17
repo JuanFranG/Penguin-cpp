@@ -23,7 +23,7 @@ interface
 
 uses
   LCLIntf, LCLType, LMessages, Editor, SysUtils, Classes, Graphics, Controls, Forms, SynEdit,
-  StdCtrls, SynEditTypes, SynEditSearch, Clipbrd, ComCtrls, Menus;
+  StdCtrls, SynEditTypes, Clipbrd, ComCtrls, Menus, SynEditCompat;
 
 type
   TFindAction = (faFind, faFindFiles, faReplace, faReplaceFiles);
@@ -77,12 +77,11 @@ type
     fSearchOptions: TSynSearchOptions;
     fCurFile: String;
     fTabIndex: integer;
-    fSearchEngine: TSynEditSearch;
-    fTempSynEdit: TSynEdit;
+    fTempSynEdit: TSynEditEx;
     procedure LoadText;
     procedure FindAllAction(Sender: TObject; const aSearch, aReplace: String; Line, Column: integer; var Action:
       TSynReplaceAction);
-    function Execute(editor: TSynEdit; action: TFindAction): integer;
+    function Execute(editor: TSynEditEx; action: TFindAction): integer;
   public
     property TabIndex: integer read fTabIndex write fTabIndex;
   end;
@@ -97,11 +96,10 @@ uses
 
 {$R *.lfm}
 
-function TFindForm.Execute(editor: TSynEdit; action: TFindAction): integer;
+function TFindForm.Execute(editor: TSynEditEx; action: TFindAction): integer;
 var
   caretbackup, blockbeginbackup, blockendbackup: TBufferCoord;
   onreplacebackup: TReplaceTextEvent;
-  enginebackup: TSynEditSearchCustom;
   toplinebackup: integer;
 begin
 
@@ -136,14 +134,11 @@ begin
   blockendbackup := editor.BlockEnd;
   toplinebackup := editor.TopLine;
   onreplacebackup := editor.OnReplaceText;
-  enginebackup := editor.SearchEngine;
 
   // When using find in files, report each find using OnReplaceText
   if action = faFindFiles then
     editor.OnReplaceText := FindAllAction;
 
-  // Swap search engire for ours
-  editor.SearchEngine := fSearchEngine;
   result := editor.SearchReplace(cboFindText.Text, cboReplaceText.Text, fSearchOptions);
 
   // Don't touch editors which we are only scanning
@@ -157,7 +152,6 @@ begin
   end;
 
   editor.OnReplaceText := onreplacebackup;
-  editor.SearchEngine := enginebackup;
 end;
 
 procedure TFindForm.btnExecuteClick(Sender: TObject);
@@ -183,11 +177,9 @@ begin
     if cboFindText.Items.IndexOf(cboFindText.Text) = -1 then
       cboFindText.AddItem(cboFindText.Text, nil);
   end else begin
-    MessageBox(
-      Self.Handle,
-      PChar(Lang[ID_ERR_SEARCHCANNOTBEEMPTY]),
+    Application.MessageBox(PChar(Lang[ID_ERR_SEARCHCANNOTBEEMPTY]),
       PChar(Lang[ID_INFO]),
-      MB_ICONINFORMATION or MB_TOPMOST);
+      MB_ICONINFORMATION);
     cboFindText.SetFocus;
     Exit;
   end;
@@ -350,26 +342,16 @@ begin
       MainForm.FindSheet.Caption := Lang[ID_SHEET_FIND] + ' (' + IntToStr(findcount) + ')';
     MainForm.OpenCloseMessageSheet(TRUE);
   end else if findcount = 0 then begin
-    MessageBox(
-      Self.Handle,
-      PChar(Format(Lang[ID_MSG_TEXTNOTFOUND], [cboFindText.Text])),
+    Application.MessageBox(PChar(Format(Lang[ID_MSG_TEXTNOTFOUND], [cboFindText.Text])),
       PChar(Lang[ID_INFO]),
-      MB_ICONINFORMATION or MB_TOPMOST);
+      MB_ICONINFORMATION);
     cboFindText.SetFocus;
   end;
 end;
 
 procedure TFindForm.FindAllAction(Sender: TObject; const aSearch, aReplace: String; Line, Column: integer; var
   Action: TSynReplaceAction);
-var
-  p: TBufferCoord;
-  q: TDisplayCoord;
 begin
-  p.Char := Column;
-  p.Line := Line;
-  q := TCustomSynEdit(Sender).BufferToDisplayPos(p);
-
-  // Convert to display coords
   MainForm.AddFindOutputItem(IntToStr(Line), IntToStr(Column), fCurFile, TCustomSynEdit(Sender).Lines[Line - 1],
     aSearch);
   action := raSkip;
@@ -493,10 +475,8 @@ procedure TFindForm.FormCreate(Sender: TObject);
 begin
   LoadText;
 
-  fSearchEngine := TSynEditSearch.Create(Self);
-
   // Create a temporary editor for closed file searching
-  fTempSynEdit := TSynEdit.Create(Self);
+  fTempSynEdit := TSynEditEx.Create(Self);
   fTempSynEdit.Visible := False;
   fTempSynEdit.Parent := Self;
   fTempSynEdit.WantTabs := devEditor.UseTabs;
@@ -564,7 +544,6 @@ end;
 
 procedure TFindForm.FormDestroy(Sender: TObject);
 begin
-  fSearchEngine.Free;
   fTempSynEdit.Free;
 end;
 

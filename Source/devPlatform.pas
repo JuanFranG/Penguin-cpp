@@ -27,13 +27,22 @@ unit devPlatform;
 interface
 
 uses
-  Classes, SysUtils;
+  Classes, SysUtils{$IFDEF FPC}, Process{$ENDIF};
 
 type
   TLineOutputFunc = procedure(const Line: String) of object;
   TCheckAbortFunc = procedure(var AbortThread: boolean) of object;
 
 {$IFDEF FPC}
+var
+  // PATH for the programs the IDE starts (compilers, gdb, the user's program).
+  // Empty: they inherit the IDE's PATH. Changing the IDE's own environment
+  // doesn't reliably reach TProcess, so it is applied per process instead.
+  ChildPath: String = '';
+
+// Gives P the IDE's environment with PATH replaced by ChildPath (if set)
+procedure PrepareProcessEnvironment(P: TProcess);
+
 // Runs Cmd (a command line; quoted arguments may contain spaces) in WorkDir
 // with stdout and stderr merged, and returns everything it printed. When
 // ShowReturnValue is set, ' <exit code>' is appended. LineOutputFunc receives
@@ -48,6 +57,10 @@ function GetConfigDir: String;
 
 // Default directory for new projects (the user's home on Linux)
 function GetDocumentsDir: String;
+
+// Running processes: Names receives each program name with its process ID
+// stored in Objects[] (to attach the debugger). Reads /proc on Linux.
+procedure ListProcesses(Names: TStrings);
 {$ENDIF}
 
 // Opens a file, directory or URL with the desktop's default application
@@ -61,7 +74,7 @@ implementation
 
 uses
 {$IFDEF FPC}
-  Process{$IFDEF UNIX}, BaseUnix{$ENDIF}{$IFDEF MSWINDOWS}, Windows, ShellAPI{$ENDIF};
+  {$IFDEF UNIX}BaseUnix{$ENDIF}{$IFDEF MSWINDOWS}Windows, ShellAPI{$ENDIF};
 {$ELSE}
   Windows, ShellAPI;
 {$ENDIF}
@@ -71,11 +84,35 @@ const
 
 {$IFDEF FPC}
 
+procedure PrepareProcessEnvironment(P: TProcess);
+var
+  I: Integer;
+  S: String;
+begin
+  if ChildPath = '' then
+    Exit;
+  P.Environment.Clear;
+  for I := 1 to GetEnvironmentVariableCount do begin
+    S := GetEnvironmentString(I);
+    if not SameText(Copy(S, 1, 5), 'PATH=') then
+      P.Environment.Add(S);
+  end;
+  P.Environment.Add('PATH=' + ChildPath);
+end;
+
+function SearchPath: String;
+begin
+  if ChildPath <> '' then
+    Result := ChildPath
+  else
+    Result := GetEnvironmentVariable('PATH');
+end;
+
 function FindExecutable(const Name: String): String;
 begin
   Result := Name;
   if ExtractFilePath(Name) = '' then begin
-    Result := ExeSearch(Name, GetEnvironmentVariable('PATH'));
+    Result := ExeSearch(Name, SearchPath);
     if Result = '' then
       Result := Name; // let TProcess report the error
   end;
@@ -128,6 +165,7 @@ begin
       P.CurrentDirectory := WorkDir;
     P.Options := [poUsePipes, poStderrToOutPut];
     P.ShowWindow := swoHIDE;
+    PrepareProcessEnvironment(P);
     try
       P.Execute;
     except
@@ -182,6 +220,40 @@ begin
   Result := IncludeTrailingPathDelimiter(GetUserDir);
 end;
 
+procedure ListProcesses(Names: TStrings);
+{$IFDEF LINUX}
+var
+  Rec: TSearchRec;
+  PID: Integer;
+  Comm: TStringList;
+begin
+  Comm := TStringList.Create;
+  try
+    if FindFirst('/proc/*', faDirectory, Rec) = 0 then
+      try
+        repeat
+          if TryStrToInt(Rec.Name, PID) then
+            try
+              Comm.LoadFromFile('/proc/' + Rec.Name + '/comm');
+              if Comm.Count > 0 then
+                Names.AddObject(Comm[0], TObject(PtrInt(PID)));
+            except
+              // the process ended or is not readable; skip it
+            end;
+        until FindNext(Rec) <> 0;
+      finally
+        FindClose(Rec);
+      end;
+  finally
+    Comm.Free;
+  end;
+end;
+{$ELSE}
+begin
+  // Not implemented here: other systems have no /proc with process names
+end;
+{$ENDIF}
+
 {$IFDEF UNIX}
 function StartDetached(const Exe: String; const Params: array of String; const WorkDir: String): Boolean;
 var
@@ -196,6 +268,7 @@ begin
     if WorkDir <> '' then
       P.CurrentDirectory := WorkDir;
     P.InheritHandles := False;
+    PrepareProcessEnvironment(P);
     try
       P.Execute; // don't wait; freeing TProcess does not stop the child
       Result := True;

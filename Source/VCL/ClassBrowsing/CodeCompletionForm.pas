@@ -38,8 +38,6 @@ type
     { Private declarations }
     fOwner: TCodeCompletion;
 
-  protected
-    procedure WMNCHitTest(var Message: TWMNCHitTest); message WM_NCHITTEST;
   public
     constructor Create(AOwner: TComponent); override;
     procedure CreateParams(var Params: TCreateParams); override;
@@ -149,44 +147,6 @@ procedure TCodeComplForm.lbCompletionKeyPress(Sender: TObject; var Key: Char);
 begin
   if Assigned(fOwner.OnKeyPress) then
     fOwner.OnKeyPress(self, Key);
-end;
-
-procedure TCodeComplForm.WMNCHitTest(var Message: TWMNCHitTest);
-var
-  D: Integer;
-  P: TPoint;
-begin
-
-  D := GetSystemMetrics(SM_CXSIZEFRAME);
-
-  P := Self.ScreenToClient(Message.Pos);
-
-  if P.Y < D then
-  begin
-    if P.X < D then
-      Message.Result := HTTOPLEFT
-    else if P.X > ClientWidth - D then
-      Message.Result := HTTOPRIGHT
-    else
-      Message.Result := HTTOP;
-  end
-  else if P.Y > ClientHeight - D then
-  begin
-    if P.X < D then
-      Message.Result := HTBOTTOMLEFT
-    else if P.X > ClientWidth - D then
-      Message.Result := HTBOTTOMRIGHT
-    else
-      Message.Result := HTBOTTOM;
-  end
-  else
-  begin
-    if P.X < D then
-      Message.Result := HTLEFT
-    else if P.X > ClientWidth - D then
-      Message.Result := HTRIGHT
-  end;
-
 end;
 
 end.

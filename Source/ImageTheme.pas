@@ -310,11 +310,8 @@ begin
     begin
       for X := 0 to ImgLists[Y].Count-1 do
       begin
-        if ImgLists[Y].GetBitmap(X, SingleBmp) then
-        begin
-          //SingleBmp.TransparentColor := SingleBmp.Canvas.Pixels[0,cTileH-1];
-          Bmp.Canvas.Draw(X*cTileW, Y*cTileW, SingleBmp);
-        end;
+        ImgLists[Y].GetBitmap(X, SingleBmp); // a procedure in the LCL
+        Bmp.Canvas.Draw(X*cTileW, Y*cTileW, SingleBmp);
       end; 
     end;
 

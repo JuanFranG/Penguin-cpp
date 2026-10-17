@@ -73,7 +73,7 @@ type
 
   TDebugReader = class(TThread)
   private
-    fPipeRead: THandle;
+    fPipe: TStream; // gdb's output
     fRegisters: TList;
     fDisassembly: TStringList; // convert to TList with proper data formatting?
     fBacktrace: TList;
@@ -140,7 +140,7 @@ type
     property Registers: TList read fRegisters write fRegisters;
     property Disassembly: TStringList read fDisassembly write fDisassembly;
     property Backtrace: TList read fBacktrace write fBacktrace;
-    property PipeRead: THandle read fPipeRead write fPipeRead;
+    property Pipe: TStream read fPipe write fPipe;
     property BreakPointList: TList read fBreakPointList write fBreakPointList;
     property WatchVarList: TList read fWatchVarList write fWatchVarList;
     property DebugView: TTreeView read fDebugView write fDebugView;
@@ -220,7 +220,7 @@ begin
       Checked := devData.ShowCPUSignal;
     end;
 
-    MessageBeep(MB_ICONERROR);
+    Beep;
     if SignalDialog.ShowModal = ID_OK then begin
       devData.ShowCPUSignal := SignalCheck.Checked;
       if SignalCheck.Checked and not Assigned(CPUForm) then begin
@@ -932,7 +932,7 @@ end;
 procedure TDebugReader.Execute;
 var
   tmp: TBytes;
-  bytesread, totalbytesread: DWORD;
+  bytesread, totalbytesread: Integer;
 const
   chunklen = 1000; // GDB usually sends 4K blocks, disassembly easily takes up to 20K
 begin
@@ -944,8 +944,9 @@ begin
     SetLength(tmp, totalbytesread + chunklen);
     FillChar(tmp[totalbytesread], chunklen, 0);
 
-    // ReadFile returns when there's something to read
-    if not ReadFile(fPipeRead, (@tmp[totalbytesread])^, chunklen, bytesread, nil) or (bytesread = 0) then
+    // Read blocks until there's something to read; 0 means gdb has exited
+    bytesread := fPipe.Read(tmp[totalbytesread], chunklen);
+    if bytesread <= 0 then
       break;
 
     Inc(totalbytesread, bytesread);

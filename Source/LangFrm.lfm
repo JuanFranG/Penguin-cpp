@@ -197,16 +197,12 @@ object LangForm: TLangForm
         Height = 15
         Caption = 'Font:'
       end
-      object VirtualImageTheme: TVirtualImage
+      object VirtualImageTheme: TImage
+        Visible = False
         Left = 3
         Top = 135
         Width = 383
         Height = 103
-        ImageCollection = dmMain.ImageThemeColection
-        ImageWidth = 0
-        ImageHeight = 0
-        ImageIndex = 0
-        ImageName = 'Windows Classic'
       end
       object cmbTheme: TComboBox
         Left = 56

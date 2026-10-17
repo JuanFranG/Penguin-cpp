@@ -62,7 +62,7 @@ var
 implementation
 
 uses
-  UITypes, StrUtils;
+  UITypes, StrUtils, LCLProc;
 
 {$R *.lfm}
 
@@ -189,7 +189,7 @@ begin
       if Item.Index mod 2 = 0 then
         Brush.Color := lvShortcuts.Color
       else
-        Brush.Color := StyleServices.GetStyleColor(scGenericBackground);
+        Brush.Color := clBtnFace;
     end;
   end;
 end;
@@ -198,7 +198,6 @@ procedure TfrmShortcutsEditor.lvShortcutsExit(Sender: TObject);
 var
   key: word;
   shift: TShiftState;
-  State: TKeyboardState;
 begin
   // Don't let Tab and Alt combinations escape
   if (GetKeyState(VK_TAB) < 0) then
@@ -209,12 +208,12 @@ begin
     Exit;
 
   // Get shift state
-  GetKeyboardState(State);
-  if ((State[vk_Control] and 128) <> 0) then
+  shift := [];
+  if GetKeyState(VK_CONTROL) < 0 then
     shift := shift + [ssCtrl];
-  if ((State[vk_Menu] and 128) <> 0) then
+  if GetKeyState(VK_MENU) < 0 then
     shift := shift + [ssAlt];
-  if ((State[vk_Shift] and 128) <> 0) then
+  if GetKeyState(VK_SHIFT) < 0 then
     shift := shift + [ssShift];
 
   lvShortcutsKeyDown(Self, key, Shift);

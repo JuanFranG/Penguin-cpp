@@ -64,10 +64,10 @@ type
     procedure Hide;
     function SelectedStatement: PStatement;
     property CurrentStatement: PStatement read fCurrentStatement write fCurrentStatement;
+    property Position: TPoint read fPos write SetPosition;
   published
     property ShowCount: integer read fShowCount write fShowCount;
     property Parser: TCppParser read fParser write fParser;
-    property Position: TPoint read fPos write SetPosition;
     property Color: TColor read fColor write fColor;
     property Width: integer read fWidth write fWidth;
     property Height: integer read fHeight write fHeight;

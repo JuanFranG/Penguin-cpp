@@ -22,18 +22,13 @@ unit CompOptionsList;
 interface
 
 uses
-  SysUtils, Classes, StdCtrls, LCLIntf, LCLType, Controls, Grids, ValEdit, Types;
+  Classes, ValEdit;
 
 type
-  TInplaceEditListAccess = class(Grids.TInplaceEditList);
-
+  // Compiler option grid. The Delphi version drew its own drop-down buttons
+  // for rows with a pick list; Lazarus' TValueListEditor shows a combo box
+  // editor for those rows by itself.
   TCompOptionsList = class(TValueListEditor)
-  private
-    procedure DrawDropDownButton(ACol, ARow: Integer; ARect: TRect; AState: TGridDrawState);
-    function MouseOverButton(X: Integer): Boolean;
-  protected
-    procedure DrawCell(ACol, ARow: Integer; ARect: TRect; AState: TGridDrawState); override;
-    procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Integer); override;
   end;
 
 procedure Register;
@@ -45,59 +40,4 @@ begin
   RegisterComponents('Dev-C++', [TCompOptionsList]);
 end;
 
-procedure TCompOptionsList.DrawCell(ACol, ARow: Integer; ARect: TRect; AState: TGridDrawState);
-begin
-  inherited DrawCell(ACol, ARow, ARect, AState);
-  DrawDropDownButton(ACol, ARow, ARect, AState);
-end;
-
-procedure TCompOptionsList.DrawDropDownButton(ACol, ARow: Integer; ARect: TRect; AState: TGridDrawState);
-var
-  Details: TThemedElementDetails;
-begin
-  if not Assigned(EditList) then
-    Exit; // this can be the case at design time
-  if not StyleServices.Enabled then
-    Exit;
-
-  if (ACol = 1) and (ARow >= FixedRows) and not (gdFocused in AState) and ItemProps[ARow - FixedRows].HasPickList then
-    begin
-      ARect.Left := ARect.Right - EditList.ButtonWidth;
-      Details := StyleServices.GetElementDetails(tcDropDownButtonNormal);
-      // this line causes some elements not to draw
-      //StyleServices.DrawElement(Canvas.Handle, Details, ARect);
-    end;
-end;
-
-procedure TCompOptionsList.MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-var
-  ACol: Integer;
-  ARow: Integer;
-begin
-  inherited MouseDown(Button, Shift, X, Y);
-
-  if not Assigned(EditList) then
-    Exit;
-  if not StyleServices.Enabled then
-    Exit;
-
-  MouseToCell(X, Y, ACol, ARow);
-  if (Button = mbLeft) and (ARow > FixedRows) and
-    ItemProps[ARow - FixedRows].HasPickList and
-    not EditList.ListVisible and MouseOverButton(X) then begin
-    EditorMode := True;
-    TInplaceEditListAccess(EditList).DropDown;
-  end;
-end;
-
-function TCompOptionsList.MouseOverButton(X: Integer): Boolean;
-begin
-  if Assigned(EditList) and StyleServices.Enabled then
-    Result := (UseRightToLeftAlignment and (X < EditList.ButtonWidth)) or
-      (not UseRightToLeftAlignment and (X > ClientWidth - EditList.ButtonWidth))
-  else
-    Result := false;
-end;
-
 end.
-

@@ -23,7 +23,7 @@ interface
 
 uses
   LCLIntf, LCLType, LMessages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs, StdCtrls,
-  ActnList, SynEdit, SynEditTypes, SynEditSearch, ExtCtrls, Menus;
+  ActnList, SynEdit, SynEditTypes, ExtCtrls, Menus, Editor;
 
 type
   TIncrementalForm = class(TForm)
@@ -55,13 +55,12 @@ type
     procedure EditKeyPress(Sender: TObject; var Key: Char);
   private
     fOptions: TSynSearchOptions;
-    fSearchEngine: TSynEditSearch;
     fOriginalColor: TColor;
-    fEditor: TSynEdit;
+    fEditor: TSynEditEx;
     procedure DoSearch;
-    procedure SetEditor(value: TSynEdit);
+    procedure SetEditor(value: TSynEditEx);
   public
-    property Editor: TSynEdit read fEditor write SetEditor;
+    property Editor: TSynEditEx read fEditor write SetEditor;
   end;
 
 var
@@ -74,17 +73,9 @@ implementation
 uses
   main, MultiLangSupport;
 
-procedure TIncrementalForm.SetEditor(value: TSynEdit);
+procedure TIncrementalForm.SetEditor(value: TSynEditEx);
 begin
-  if value <> fEditor then begin
-
-    // remove search engine of old editor
-    if Assigned(fEditor) then
-      fEditor.SearchEngine := nil;
-
-    fEditor := value;
-    fEditor.SearchEngine := fSearchEngine;
-  end;
+  fEditor := value; // Lazarus' SynEdit has its own search engine
 end;
 
 procedure TIncrementalForm.DoSearch;
@@ -97,7 +88,7 @@ begin
     Include(fOptions, ssoEntireScope);
     if Editor.SearchReplace(Edit.Text, '', fOptions) = 0 then begin
       Edit.Color := clRed;
-      MessageBeep(MB_OK);
+      Beep;
     end else
       Edit.Color := fOriginalColor;
   end else
@@ -150,15 +141,12 @@ end;
 
 procedure TIncrementalForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  fSearchEngine.Free;
   Action := caFree;
   IncrementalForm := nil;
 end;
 
 procedure TIncrementalForm.FormCreate(Sender: TObject);
 begin
-  fSearchEngine := TSynEditSearch.Create(Self);
-
   IncrementalUndo.Caption := Lang[ID_ITEM_UNDO];
   IncrementalCut.Caption := Lang[ID_ITEM_CUT];
   IncrementalCopy.Caption := Lang[ID_ITEM_COPY];

@@ -555,16 +555,12 @@ object EnviroForm: TEnviroForm
         Height = 15
         Caption = 'Size'
       end
-      object viThemePreview: TVirtualImage
+      object viThemePreview: TImage
+        Visible = False
         Left = 0
         Top = 150
         Width = 476
         Height = 249
-        ImageCollection = dmMain.AppearanceThemeCollection
-        ImageWidth = 0
-        ImageHeight = 0
-        ImageIndex = -1
-        ImageName = 'Windows Classic'
       end
       object cbUIfont: TComboBox
         Left = 138

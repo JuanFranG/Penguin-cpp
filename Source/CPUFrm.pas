@@ -77,7 +77,7 @@ var
 implementation
 
 uses
-  main, Version, MultiLangSupport, Debugger, DebugReader, DataFrm, Utils, devCFG, Editor, Types;
+  main, Version, MultiLangSupport, Debugger, DebugReader, DataFrm, Utils, devCFG, Editor, Types, SynEditCompat;
 
 {$R *.lfm}
 

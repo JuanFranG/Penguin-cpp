@@ -169,7 +169,7 @@ end;
 
 procedure TClangFormatterOptionsForm.CreateScratchFile;
 begin
-  synExample.Lines.SaveToFile(TPath.Combine(TPath.GetTempPath,'DummyInput.txt')); // devDirs.Exec + devFormatterClang.ClangDir
+  synExample.Lines.SaveToFile(ConcatPaths([GetTempDir, 'DummyInput.txt'])); // devDirs.Exec + devFormatterClang.ClangDir
 end;
 
 procedure TClangFormatterOptionsForm.LoadSettings;
@@ -248,7 +248,7 @@ begin
   if fCreating then
     Exit;
   // Apply to dummy file
-  DummyFileName := TPath.Combine(TPath.GetTempPath,'DummyInput.txt'); //devDirs.Exec + devFormatterClang.AStyleDir
+  DummyFileName := ConcatPaths([GetTempDir, 'DummyInput.txt']); //devDirs.Exec + devFormatterClang.AStyleDir
   ClangOutput := devFormatterClang.FormatFile(DummyFileName, memFullCommand.Text);
 
   // Check if formatting finished correctly

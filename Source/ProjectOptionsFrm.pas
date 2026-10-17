@@ -405,18 +405,8 @@ begin
     VersionInfo.LegalCopyright := vleVersion.Cells[1, 7];
     VersionInfo.LegalTrademarks := vleVersion.Cells[1, 8];
 
-    // Get international language ID (1026 ...)
-    if cmbLangID.Visible then begin // no exception has occurred on show...
-      try
-        for I := 0 to Languages.Count - 1 do begin
-          if SameText(Languages.Name[I], cmbLangID.Text) then begin
-            VersionInfo.LanguageID := Languages.LocaleID[I];
-            Break;
-          end;
-        end;
-      except // no messageboxes this time, the user has received the message already
-      end;
-    end;
+    // The language ID of the Windows version resource is kept as loaded:
+    // there is no Windows locale list to pick from here
   end;
 end;
 
@@ -982,18 +972,10 @@ begin
     chkAutoIncBuild.Checked := AutoIncBuildNr;
     chkSyncProduct.Checked := SyncProduct;
 
+    // Windows locale list for the version resource language: not available here
     cmbLangID.Items.Clear;
-    cmbLangID.Items.BeginUpdate; // prevent redraws
-    try
-      for I := 0 to Languages.Count - 1 do
-        cmbLangID.Items.Add(Languages.Name[i]);
-      cmbLangID.ItemIndex := cmbLangID.Items.IndexOf(Languages.NameFromLocaleID[LanguageID]);
-    except
-      MessageDlg(Lang[ID_POPT_LANGUAGEDEP], mtInformation, [mbOK], 0);
-      cmbLangID.Visible := false;
-      lblVerLang.Visible := false;
-    end;
-    cmbLangID.Items.EndUpdate;
+    cmbLangID.Visible := false;
+    lblVerLang.Visible := false;
   end;
 end;
 

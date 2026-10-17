@@ -445,14 +445,12 @@ procedure TProfileAnalysisForm.lvFlatAdvancedCustomDraw(
   Sender: TCustomListView; const ARect: TRect; Stage: TCustomDrawStage;
   var DefaultDraw: Boolean);
 begin
-  SendMessage(lvFlat.Handle, WM_CHANGEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
 end;
 
 procedure TProfileAnalysisForm.lvGraphAdvancedCustomDraw(
   Sender: TCustomListView; const ARect: TRect; Stage: TCustomDrawStage;
   var DefaultDraw: Boolean);
 begin
-  SendMessage(lvFlat.Handle, WM_CHANGEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
 end;
 
 end.

@@ -218,7 +218,7 @@ function Lang: TdevMultiLangSupport;
 implementation
 
 uses
-  UITypes, LangFrm, Forms, Utils, Version, Controls, devCFG;
+  UITypes, LangFrm, Forms, Utils, Version, Controls, devCFG, LConvEncoding;
 
 var
   fLangSingleton: TdevMultiLangSupport = nil;
@@ -348,6 +348,15 @@ begin
   finally
     fLangListLoaded := True;
   end;
+end;
+
+// Language files are stored in the Windows code page of their language
+function AnsiToUtf8Ex(const S: String; CodePage: Integer): String;
+begin
+  if (CodePage = 0) or (CodePage = 65001) then
+    Result := S
+  else
+    Result := ConvertEncoding(S, 'cp' + IntToStr(CodePage), EncodingUTF8);
 end;
 
 function TdevMultiLangSupport.GetString(ID: integer): String;

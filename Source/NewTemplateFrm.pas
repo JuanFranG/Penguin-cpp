@@ -86,7 +86,7 @@ type
 implementation
 
 uses
-  Utils, IconFrm, devCFG, Version, Templates, main, MultiLangSupport, ProjectTypes;
+  Utils, IconFrm, devCFG, Version, Templates, main, MultiLangSupport, ProjectTypes, FileUtil;
 
 {$R *.lfm}
 
@@ -167,7 +167,7 @@ begin
     XOffset := 2;
     YOffset := ((Control as TListBox).ItemHeight - Abs(Font.Height)) div 2;
     if Icons[Index] <> nil then begin
-      DrawIcon(Handle, Rect.Left + XOffset, Rect.Top + XOffset, Icons[Index].Handle);
+      Draw(Rect.Left + XOffset, Rect.Top + XOffset, Icons[Index]);
       XOffset := Icons[Index].Width + 6;
     end
     else begin
@@ -293,7 +293,7 @@ begin
     WriteInteger('Template', 'ver', 1);
     WriteString('Template', 'Name', cmbName.Text);
     if IconFiles[0] <> '' then begin
-      CopyFile(PChar(IconFiles[0]), PChar(devDirs.Templates + cmbName.Text + '.ico'), False);
+      CopyFile(IconFiles[0], devDirs.Templates + cmbName.Text + '.ico');
       WriteString('Template', 'Icon', cmbName.Text + '.ico');
     end;
     WriteString('Template', 'Description', txtDescr.Text);
@@ -305,7 +305,7 @@ begin
         WriteString('Unit' + IntToStr(C), 'CppName', lstFiles.Items[I]);
         S := StringReplace(cmbName.Text + '_' + lstFiles.Items[I] + '.txt', ' ', '_', [rfReplaceAll]);
         WriteString('Unit' + IntToStr(C), 'Cpp', S);
-        CopyFile(PChar(TempProject.Units[I].FileName), PChar(devDirs.Templates + S), False);
+        CopyFile(TempProject.Units[I].FileName, devDirs.Templates + S);
         Inc(C);
       end;
 
@@ -328,7 +328,7 @@ begin
       WriteString('Project', 'ResourceIncludes', TempProject.Options.ResourceIncludes.DelimitedText);
 
     if IconFiles[1] <> '' then begin
-      CopyFile(PChar(IconFiles[1]), PChar(devDirs.Templates + cmbName.Text + '.project.ico'), False);
+      CopyFile(IconFiles[1], devDirs.Templates + cmbName.Text + '.project.ico');
       WriteString('Project', 'Icon', cmbName.Text + '.project.ico');
     end;
     MessageDlg('The new template has been created!'#10#10 +

@@ -117,10 +117,6 @@ begin
   finally
     lvEntries.Items.EndUpdate;
   end;
-
-  // without this, the user has to press the down arrow twice to
-  // move down the listview entries (only the first time!)...
-  lvEntries.Perform(WM_KEYDOWN, VK_DOWN, 0);
 end;
 
 procedure TFunctionSearchForm.txtSearchKeyPress(Sender: TObject; var Key: Char);
@@ -142,8 +138,15 @@ end;
 procedure TFunctionSearchForm.txtSearchKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
   case Key of
-    VK_DOWN, VK_UP: begin
-        lvEntries.Perform(WM_KEYDOWN, Key, 0); // send the key to lventries
+    VK_DOWN: begin // move through the list while typing
+        if lvEntries.ItemIndex < lvEntries.Items.Count - 1 then
+          lvEntries.ItemIndex := lvEntries.ItemIndex + 1;
+        Key := 0;
+      end;
+    VK_UP: begin
+        if lvEntries.ItemIndex > 0 then
+          lvEntries.ItemIndex := lvEntries.ItemIndex - 1;
+        Key := 0;
       end;
   end;
 end;

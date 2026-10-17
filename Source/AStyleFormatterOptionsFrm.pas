@@ -167,7 +167,7 @@ end;
 
 procedure TAStyleFormatterOptionsForm.CreateScratchFile;
 begin
-  synExample.Lines.SaveToFile(TPath.Combine(TPath.GetTempPath,'DummyInput.txt')); // devDirs.Exec + devFormatterAStyle.AStyleDir
+  synExample.Lines.SaveToFile(ConcatPaths([GetTempDir, 'DummyInput.txt'])); // devDirs.Exec + devFormatterAStyle.AStyleDir
 end;
 
 procedure TAStyleFormatterOptionsForm.LoadSettings;
@@ -242,7 +242,7 @@ begin
   if fCreating then
     Exit;
   // Apply to dummy file
-  DummyFileName := TPath.Combine(TPath.GetTempPath,'DummyInput.txt'); //devDirs.Exec + devFormatterAStyle.AStyleDir
+  DummyFileName := ConcatPaths([GetTempDir, 'DummyInput.txt']); //devDirs.Exec + devFormatterAStyle.AStyleDir
   AStyleOutput := devFormatterAStyle.FormatFile(DummyFileName, memFullCommand.Text);
 
   // Check if formatting finished correctly

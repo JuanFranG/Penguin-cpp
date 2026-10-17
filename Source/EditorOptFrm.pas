@@ -24,7 +24,8 @@ interface
 uses
   LCLIntf, LCLType, LMessages, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
   ComCtrls, StdCtrls, ExtCtrls, Spin, SynEdit, SynEditHighlighter, SynHighlighterCpp, Buttons,
-  ClassBrowser, CppParser, CppTokenizer, StrUtils, Grids, CppPreprocessor;
+  ClassBrowser, CppParser, CppTokenizer, StrUtils, Grids, CppPreprocessor, ColorBox, SynEditMarks,
+  SynEditCompat, SynEditTypes;
 
 type
   // Keep history of what we have accessed (does not mean changed)
@@ -231,8 +232,9 @@ var
   Attribute: TSynHighlighterAttributes;
   I: integer;
   FontIndex: Integer;
+  EncName: String;
 begin
-  for var EncName in DefaultEncodingNames do
+  for EncName in DefaultEncodingNames do
     cbNewDocEncoding.Items.Add(EncName);
 
   LoadText;
@@ -242,11 +244,6 @@ begin
     CppEdit.Font.Assign(Font);
     CodeIns.Font.Assign(devEditor.Font);
     seDefault.Font.Assign(devEditor.Font);
-
-    // Gutters too
-    CppEdit.Gutter.Font.Assign(Gutterfont);
-    CodeIns.Gutter.Font.Assign(Gutterfont);
-    seDefault.Gutter.Font.Assign(Gutterfont);
 
     // General
     cbGutterAuto.Checked := GutterAuto;
@@ -873,20 +870,10 @@ end;
 
 procedure TEditorOptForm.SetGutter;
 begin
-  // update preview
-  cppedit.Gutter.Color := fgutColor.x;
-  cppedit.Gutter.Font.Color := fgutColor.y;
-  cppedit.CodeFolding.FolderBarLinesColor := fFoldColor.y;
-
-  // update snippet edit
-  CodeIns.Gutter.Color := fgutColor.x;
-  CodeIns.Gutter.Font.Color := fgutColor.y;
-  CodeIns.CodeFolding.FolderBarLinesColor := fFoldColor.y;
-
-  // update default source edit
-  seDefault.Gutter.Color := fgutColor.x;
-  seDefault.Gutter.Font.Color := fgutColor.y;
-  seDefault.CodeFolding.FolderBarLinesColor := fFoldColor.y;
+  // update preview, snippet edit and default source edit
+  SetGutterColors(cppedit, fgutColor.x, fgutColor.y);
+  SetGutterColors(CodeIns, fgutColor.x, fgutColor.y);
+  SetGutterColors(seDefault, fgutColor.x, fgutColor.y);
 end;
 
 procedure TEditorOptForm.ElementListClick(Sender: TObject);
@@ -1036,7 +1023,7 @@ var
   attr: TSynHighlighterAttributes;
 begin
   if assigned(cppEdit.Highlighter) and
-    (Changes * [scAll, scCaretX, scCaretY] <> []) then
+    (Changes * [scCaretX, scCaretY] <> []) then
     case cppEdit.CaretY of
       cSelection: begin
           ElementList.ItemIndex := ElementList.Items.Indexof(cSel);

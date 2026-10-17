@@ -38,7 +38,6 @@ type
     ProjView: TListView;
     TemplateLabel: TLabel;
     btnHelp: TBitBtn;
-    SVGIconImageList: TSVGIconImageList;
     ImageList: TImageList;
     procedure ProjViewChange(Sender: TObject; Item: TListItem; Change: TItemChange);
     procedure FormCreate(Sender: TObject);
@@ -54,7 +53,6 @@ type
     procedure ReadTemplateDir;
   private
     fTemplates: TList;
-    procedure UpdateView;
   public
     function GetTemplate: TTemplate;
   end;
@@ -71,8 +69,6 @@ begin
   fTemplates := TList.Create;
   LoadText;
   ReadTemplateDir;
-  if devdata.Style > 0 then
-    SVGIconImageList.FixedColor := StringToColor(cSVGColor[devData.Style]);
 end;
 
 procedure TNewProjectForm.FormDestroy(Sender: TObject);
@@ -112,10 +108,7 @@ begin
     if TemplateFileNames.Count > 0 then begin
       for i := 0 to TemplateFileNames.Count - 1 do
         AddTemplate(TemplateFileNames[i]);
-      if devdata.Style > 0 then
-        UpdateView
-      else
-        UpdateViewColorIcon;
+      UpdateViewColorIcon;
     end;
   finally
     TemplateFileNames.Free;
@@ -173,72 +166,6 @@ begin
   btnHelp.Caption := Lang[ID_BTN_HELP];
 
   edProjectName.Text := format(Lang[ID_NEWPROJECT], [dmMain.GetNewFileNumber]);
-end;
-
-procedure TNewProjectForm.UpdateView;
-  function HasPage(const value: String): boolean;
-  var
-    I: integer;
-  begin
-    for I := 0 to TabsMain.Tabs.Count - 1 do
-      if CompareText(TabsMain.Tabs[I], Value) = 0 then begin
-        Result := True;
-        Exit;
-      end;
-    Result := False;
-  end;
-var
-  I,SVGIndex: integer;
-  TemplateItem: TTemplate;
-  ListItem: TListItem;
-  IconFileName: String;
-  svgFileName: TStrings;
-  svgName: string;
-begin
-  svgFileName := TStringList.Create;
-  ProjView.Items.BeginUpdate;
-  try
-    ProjView.LargeImages := SVGIConImageList;
-    ProjView.Items.Clear;
-
-    // Walk all items
-    for I := 0 to pred(fTemplates.Count) do begin
-      TemplateItem := TTemplate(fTemplates[I]);
-
-      // Add a page for each unique category
-      if not HasPage(TemplateItem.Category) then
-        TabsMain.Tabs.Append(TemplateItem.Category);
-
-      // Select a category
-      if TemplateItem.Category = '' then
-        TemplateItem.Category := Lang[ID_NP_PRJSHEET];
-
-      // Only add if we're viewing this category
-      if SameText(TemplateItem.Category, TabsMain.Tabs[TabsMain.TabIndex]) then begin
-        ListItem := ProjView.Items.Add;
-        ListItem.Caption := TemplateItem.Name;
-        ListItem.Data := pointer(I);
-        IconFileName := ValidateFile(TemplateItem.Icon, '', true);
-        if IconFileName <> '' then
-        begin
-          // Add svg image to central dump and tell ListItem to use it
-          svgFileName.Clear;
-          svgFileName.Add(IconFileName);
-          SVGIconImageList.LoadFromFiles(svgFileName);
-          svgName :=  Copy(TemplateItem.Icon, 1, length(TemplateItem.Icon)-4);
-          SVGIndex := SVGIconImageList.GetIndexByName(svgName);
-          ListItem.ImageIndex := SVGIndex;
-          if ListItem.ImageIndex = -1 then
-            ListItem.ImageIndex := 0;
-        end
-        else
-          ListItem.ImageIndex := 0; // don't use an icon
-      end;
-    end;
-  finally
-    ProjView.Items.EndUpdate;
-    svgFileName.Free;
-  end;
 end;
 
 procedure TNewProjectForm.UpdateViewColorIcon;
@@ -307,10 +234,7 @@ end;
 
 procedure TNewProjectForm.TabsMainChange(Sender: TObject);
 begin
-  if devdata.Style > 0 then
-    UpdateView
-  else
-    UpdateViewColorIcon;
+  UpdateViewColorIcon;
 end;
 
 procedure TNewProjectForm.ProjViewDblClick(Sender: TObject);

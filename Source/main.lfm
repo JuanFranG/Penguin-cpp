@@ -1106,11 +1106,8 @@ object MainForm: TMainForm
       OnChange = EditorPageControlChange
       OnDragDrop = EditorPageControlDragDrop
       OnDragOver = EditorPageControlDragOver
-      OnDrawTab = EditorPageControlDrawTab
       OnMouseDown = EditorPageControlMouseDown
-      OnMouseLeave = EditorPageControlMouseLeave
       OnMouseMove = EditorPageControlMouseMove
-      OnMouseUp = EditorPageControlMouseUp
     end
     object EditorPageControlRight: TPageControl
       Left = 1073
@@ -1126,11 +1123,8 @@ object MainForm: TMainForm
       OnChange = EditorPageControlChange
       OnDragDrop = EditorPageControlDragDrop
       OnDragOver = EditorPageControlDragOver
-      OnDrawTab = EditorPageControlDrawTab
       OnMouseDown = EditorPageControlMouseDown
-      OnMouseLeave = EditorPageControlMouseLeave
       OnMouseMove = EditorPageControlMouseMove
-      OnMouseUp = EditorPageControlMouseUp
     end
     object MainPanel: TPanel
       Left = 0
@@ -4235,17 +4229,13 @@ object MainForm: TMainForm
           ExplicitLeft = 2
           ExplicitTop = -1984
         end
-        object ImageEmbarcadero: TVirtualImage
+        object ImageEmbarcadero: TImage
+          Visible = False
           Left = 22
           Top = 392
           Width = 139
           Height = 23
           Align = alCustom
-          ImageCollection = dmMain.EMBTImageCollection
-          ImageWidth = 0
-          ImageHeight = 0
-          ImageIndex = 0
-          ImageName = 'EMBTBlack'
         end
         object LabelSponsor: TLabel
           Left = 20
@@ -4389,7 +4379,8 @@ object MainForm: TMainForm
           OnClick = SpeedButton4Click
           OnDblClick = SpeedButton4DblClick
         end
-        object ButtonNewDocument: TButton
+        object ButtonNewDocument: TBitBtn
+          Layout = blGlyphTop
           Left = 70
           Top = 73
           Width = 138
@@ -4401,48 +4392,42 @@ object MainForm: TMainForm
           BiDiMode = bdRightToLeft
           Caption = 'New Document'
           DoubleBuffered = True
-          ImageAlignment = iaTop
           ImageIndex = 0
-          ImageName = 'iconsnew-02'
-          ImageMargins.Top = 10
           Images = dmMain.SVGIconImageWelcomeScreen
           ParentBiDiMode = False
           ParentDoubleBuffered = False
           TabOrder = 0
           OnClick = actNewSourceExecute
         end
-        object ButtonOpenDocument: TButton
+        object ButtonOpenDocument: TBitBtn
+          Layout = blGlyphTop
           Left = 223
           Top = 73
           Width = 138
           Height = 121
           Margins.Top = 10
           Caption = 'Open Document'
-          ImageAlignment = iaTop
           ImageIndex = 1
-          ImageName = 'iconsnew-03'
-          ImageMargins.Top = 10
           Images = dmMain.SVGIconImageWelcomeScreen
           TabOrder = 1
           WordWrap = True
           OnClick = actOpenExecute
         end
-        object ButtonOptions: TButton
+        object ButtonOptions: TBitBtn
+          Layout = blGlyphTop
           Left = 375
           Top = 73
           Width = 138
           Height = 121
           Caption = 'Options'
-          ImageAlignment = iaTop
           ImageIndex = 2
-          ImageName = 'icons-231'
-          ImageMargins.Top = 10
           Images = dmMain.SVGIconImageWelcomeScreen
           TabOrder = 2
           WordWrap = True
           OnClick = actCompOptionsExecute
         end
-        object ButtonChangeTheme: TButton
+        object ButtonChangeTheme: TBitBtn
+          Layout = blGlyphTop
           Left = 70
           Top = 225
           Width = 138
@@ -4460,7 +4445,6 @@ object MainForm: TMainForm
           Font.Name = 'Heebo'
           Font.Style = []
           ImageIndex = 80
-          ImageName = 'icons-227'
           Images = dmMain.SVGImageListMenuStyle
           ParentBiDiMode = False
           ParentDoubleBuffered = False
@@ -4468,7 +4452,8 @@ object MainForm: TMainForm
           TabOrder = 3
           OnClick = actEnviroOptionsExecute
         end
-        object ButtonChangeFont: TButton
+        object ButtonChangeFont: TBitBtn
+          Layout = blGlyphTop
           Left = 223
           Top = 225
           Width = 138
@@ -4486,7 +4471,6 @@ object MainForm: TMainForm
           Font.Name = 'Heebo'
           Font.Style = []
           ImageIndex = 81
-          ImageName = 'icons-228'
           Images = dmMain.SVGImageListMenuStyle
           ParentBiDiMode = False
           ParentDoubleBuffered = False
@@ -4494,7 +4478,8 @@ object MainForm: TMainForm
           TabOrder = 4
           OnClick = actEnviroOptionsExecute
         end
-        object ButtonChangeLanguage: TButton
+        object ButtonChangeLanguage: TBitBtn
+          Layout = blGlyphTop
           Left = 375
           Top = 225
           Width = 138
@@ -4512,7 +4497,6 @@ object MainForm: TMainForm
           Font.Name = 'Heebo'
           Font.Style = []
           ImageIndex = 82
-          ImageName = 'icons-230'
           Images = dmMain.SVGImageListMenuStyle
           ParentBiDiMode = False
           ParentDoubleBuffered = False
@@ -4520,7 +4504,7 @@ object MainForm: TMainForm
           TabOrder = 5
           OnClick = actEnviroOptionsExecute
         end
-        object RichEdit1: TRichEdit
+        object RichEdit1: TMemo
           Tag = 1
           Left = 70
           Top = 339
@@ -4540,9 +4524,8 @@ object MainForm: TMainForm
           ReadOnly = True
           TabOrder = 6
           Visible = False
-          Zoom = 100
         end
-        object RichEdit2: TRichEdit
+        object RichEdit2: TMemo
           Tag = 2
           Left = 70
           Top = 389
@@ -4562,9 +4545,8 @@ object MainForm: TMainForm
           ReadOnly = True
           TabOrder = 7
           Visible = False
-          Zoom = 100
         end
-        object RichEdit3: TRichEdit
+        object RichEdit3: TMemo
           Tag = 3
           Left = 70
           Top = 440
@@ -4584,9 +4566,8 @@ object MainForm: TMainForm
           ReadOnly = True
           TabOrder = 8
           Visible = False
-          Zoom = 100
         end
-        object RichEdit4: TRichEdit
+        object RichEdit4: TMemo
           Tag = 4
           Left = 70
           Top = 491
@@ -4606,9 +4587,8 @@ object MainForm: TMainForm
           ReadOnly = True
           TabOrder = 9
           Visible = False
-          Zoom = 100
         end
-        object RichEdit0: TRichEdit
+        object RichEdit0: TMemo
           Left = 71
           Top = 290
           Width = 443
@@ -4627,7 +4607,6 @@ object MainForm: TMainForm
           ReadOnly = True
           TabOrder = 10
           Visible = False
-          Zoom = 100
         end
       end
     end
@@ -4721,12 +4700,6 @@ object MainForm: TMainForm
         ImageIndex = 12
         object HTMLItem: TMenuItem
           Action = actExportHTML
-        end
-        object RTFItem: TMenuItem
-          Action = actExportRTF
-        end
-        object TEXItem: TMenuItem
-          Action = actExportTex
         end
         object N19: TMenuItem
           Caption = '-'
@@ -5492,20 +5465,6 @@ object MainForm: TMainForm
       OnExecute = actExportHTMLExecute
       OnUpdate = actUpdateEmptyEditor
     end
-    object actExportRTF: TAction
-      Tag = 2
-      Category = 'File'
-      Caption = 'to &RTF'
-      OnExecute = actExportRTFExecute
-      OnUpdate = actUpdateEmptyEditor
-    end
-    object actExportTex: TAction
-      Tag = 3
-      Category = 'File'
-      Caption = 'to &Tex'
-      OnExecute = actExportTexExecute
-      OnUpdate = actUpdateEmptyEditor
-    end
     object actExportProject: TAction
       Tag = 3
       Category = 'File'
@@ -5514,6 +5473,7 @@ object MainForm: TMainForm
       OnUpdate = actUpdateProject
     end
     object actPrint: TAction
+      Visible = False
       Tag = 8
       Category = 'File'
       Caption = '&Print'
@@ -5523,6 +5483,7 @@ object MainForm: TMainForm
       OnUpdate = actUpdateEmptyEditor
     end
     object actPrintSU: TAction
+      Visible = False
       Tag = 9
       Category = 'File'
       Caption = 'Prin&ter Setup...'
@@ -6166,12 +6127,14 @@ object MainForm: TMainForm
       OnExecute = actGotoImplDeclEditorExecute
     end
     object actCollapse: TAction
+      Visible = False
       Category = 'Edit'
       Caption = 'Collapse All'
       OnExecute = actCollapseExecute
       OnUpdate = actUpdateEmptyEditor
     end
     object actUnCollapse: TAction
+      Visible = False
       Category = 'Edit'
       Caption = 'Uncollapse All'
       OnExecute = actUnCollapseExecute

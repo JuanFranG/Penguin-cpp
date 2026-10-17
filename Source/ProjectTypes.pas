@@ -103,7 +103,7 @@ type
   public
     function ToString: string;
     property OptionValue[const Index: Integer]: Integer read GetOptionValue;
-    class function FromString(const AStr: string): TArray<Integer>;
+    class function FromString(const AStr: string): TArray<Integer>; static;
   end;
 
 
@@ -241,19 +241,22 @@ end;
 { TCompilerOptionsHelper }
 
 class function TCompilerOptionsValuesHelper.FromString(const AStr: string): TArray<Integer>;
+var
+  OV: string;
+  C: Char;
 begin
   Result := [];
-  if AStr.IndexOf(';')>-1 then
+  if Pos(';', AStr) > 0 then
   begin
     // read compiler options with a ; delimiter
-    for var OV in AStr.Split([';']) do
-      Result := Result + [StrToIntDef(OV.Trim, 0)];
+    for OV in AStr.Split([';']) do
+      Result := Result + [StrToIntDef(Trim(OV), 0)];
   end
   else
   begin
     // read compiler options that have no delimiter
-    for var OV in AStr do
-      Result := Result + [StrToIntDef(OV, 0)];
+    for C in AStr do
+      Result := Result + [StrToIntDef(C, 0)];
   end;
 end;
 
@@ -266,13 +269,15 @@ begin
 end;
 
 function TCompilerOptionsValuesHelper.ToString: string;
+var
+  OV: Integer;
 begin
   Result := '';
-  for var OV in Self do
+  for OV in Self do
     if Result = '' then
-      Result := OV.ToString
+      Result := IntToStr(OV)
     else
-      Result := Result + ';' + OV.ToString;
+      Result := Result + ';' + IntToStr(OV);
 end;
 
 end.

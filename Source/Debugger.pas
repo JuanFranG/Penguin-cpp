@@ -23,7 +23,7 @@ interface
 
 uses
   Sysutils, LCLIntf, LCLType, LMessages, Forms, Classes, Controls, DebugReader, Version, Editor,
-  ComCtrls, Dialogs, MultiLangSupport;
+  ComCtrls, Dialogs, MultiLangSupport, Process;
 
 type
 
@@ -31,11 +31,7 @@ type
 
   TDebugger = class(TObject)
   private
-    fOutputRead: THandle;
-    fOutputWrite: THandle;
-    fInputRead: THandle;
-    fInputWrite: THandle;
-    fProcessID: THandle;
+    fProcess: TProcess; // gdb; kept until the next Start so the reader thread never reads a freed pipe
     fExecuting: boolean;
     fCommandChanged: boolean;
     fDebugView: TTreeView;
@@ -98,6 +94,7 @@ var
   I: integer;
 begin
   Stop;
+  FreeAndNil(fProcess);
 
   // Remove watch vars
   for i := 0 to WatchVarList.Count - 1 do
@@ -114,61 +111,44 @@ end;
 
 procedure TDebugger.Start;
 var
-  pi: TProcessInformation;
-  si: TStartupInfo;
-  sa: TSecurityAttributes;
-  GDBFile, GDBCommand: String;
+  GDBFile: String;
   CompilerSet: TdevCompilerSet;
 begin
   Executing := true;
-
-  // Set up the security attributes struct.
-  sa.nLength := sizeof(TSecurityAttributes);
-  sa.lpSecurityDescriptor := nil;
-  sa.bInheritHandle := true;
-
-  // Create the child output pipe.
-  if not CreatePipe(fOutputread, fOutputwrite, @sa, 0) then
-    Exit;
-  if not SetHandleInformation(fOutputread, HANDLE_FLAG_INHERIT, 0) then
-    Exit;
-
-  // Create the child input pipe.
-  if not CreatePipe(fInputread, fInputwrite, @sa, 0) then
-    Exit;
-  if not SetHandleInformation(fInputwrite, HANDLE_FLAG_INHERIT, 0) then
-    Exit;
-
-  // Set up the start up info struct.
-  FillChar(si, sizeof(TStartupInfo), 0);
-  si.cb := sizeof(TStartupInfo);
-  si.dwFlags := STARTF_USESTDHANDLES or STARTF_USESHOWWINDOW or STARTF_USESHOWWINDOW;
-  si.hStdInput := fInputread;
-  si.hStdOutput := fOutputwrite;
-  si.hStdError := fOutputwrite;
-  si.wShowWindow := SW_HIDE;
 
   // Use the GDB provided in the project if needed
   CompilerSet := devCompilerSets.CompilationSet;
 
   // Assume it's present in the first bin dir
-  if CompilerSet.BinDir.Count > 0 then begin
-    GDBFile := CompilerSet.BinDir[0] + pd + CompilerSet.gdbName;
-    GDBCommand := '"' + GDBFile + '"' + ' --annotate=2 --silent';
-    if not CreateProcess(nil, PChar(GDBCommand), nil, nil, true, CREATE_NEW_CONSOLE, nil, nil, si, pi) then begin
-      MessageDlg(Format(Lang[ID_ERR_ERRORLAUNCHINGGDB], [GDBFile, SysErrorMessage(GetLastError)]), mtError,
-        [mbOK], 0);
+  if CompilerSet.BinDir.Count = 0 then begin
+    MessageDlg(Lang[ID_ERR_GDBNOUTFOUND], mtError, [mbOK], 0);
+    Executing := false;
+    Exit;
+  end;
+  GDBFile := CompilerSet.BinDir[0] + pd + CompilerSet.gdbName;
+
+  // The previous session's reader has finished with its pipe by now
+  FreeAndNil(fProcess);
+  fProcess := TProcess.Create(nil);
+  fProcess.Executable := GDBFile;
+  fProcess.Parameters.Add('--annotate=2');
+  fProcess.Parameters.Add('--silent');
+  fProcess.Options := [poUsePipes, poStderrToOutPut];
+  fProcess.ShowWindow := swoHIDE;
+  try
+    fProcess.Execute;
+  except
+    on E: Exception do begin
+      MessageDlg(Format(Lang[ID_ERR_ERRORLAUNCHINGGDB], [GDBFile, E.Message]), mtError, [mbOK], 0);
+      FreeAndNil(fProcess);
       Executing := false;
       Exit;
     end;
-  end else
-    MessageDlg(Lang[ID_ERR_GDBNOUTFOUND], mtError, [mbOK], 0);
-
-  fProcessID := pi.hProcess;
+  end;
 
   // Create a thread that will read GDB output.
   Reader := TDebugReader.Create(true);
-  Reader.PipeRead := fOutputRead;
+  Reader.Pipe := fProcess.Output;
   Reader.FreeOnTerminate := true;
   Reader.BreakpointList := BreakPointList;
   Reader.WatchVarList := WatchVarList;
@@ -192,18 +172,11 @@ begin
     if Assigned(CPUForm) then
       CPUForm.Close;
 
-    TerminateProcess(fProcessID, 0); // stop gdb
+    if Assigned(fProcess) then
+      fProcess.Terminate(0); // stop gdb; the reader thread ends when the pipe closes
 
     Reader.Terminate;
     Reader := nil;
-
-    // Free resources
-    if not CloseHandle(fProcessID) then
-      Exit;
-    if not CloseHandle(fOutputwrite) then
-      Exit;
-    if not CloseHandle(fInputread) then
-      Exit;
 
     MainForm.RemoveActiveBreakpoints;
 
@@ -215,15 +188,16 @@ end;
 
 procedure TDebugger.SendCommand(const Command, Params: String; ViewInUI: boolean);
 var
-  nBytesWrote: DWORD;
-  Buff: TBytes;
+  Line: String;
 begin
-  if Executing then begin
+  if Executing and Assigned(fProcess) then begin
 
-    Buff := TEncoding.ANSI.GetBytes((command + ' ' + params).Trim) + [10];
-
-    if not WriteFile(fInputwrite, (@Buff[Low(Buff)])^, Length(Buff), nBytesWrote, nil) then
+    Line := Trim(command + ' ' + params) + #10;
+    try
+      fProcess.Input.WriteBuffer(Line[1], Length(Line));
+    except
       MessageDlg(Lang[ID_ERR_WRITEGDB], mtError, [mbOK], 0);
+    end;
 
     if ViewInUI then
       if (not CommandChanged) or (MainForm.edGdbCommand.Text = '') then begin

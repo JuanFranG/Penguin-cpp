@@ -86,6 +86,7 @@ type
     procedure OnParserBusy(Sender: TObject);
     procedure SetNodeImages(Node: TTreeNode; Statement: PStatement);
     procedure Sort;
+    function CompareNodes(Node1, Node2: TTreeNode): Integer;
     procedure SetCurrentFile(const Value: String);
     procedure SetShowFilter(Value: TShowFilter);
     procedure SetShowInheritedMembers(Value: boolean);
@@ -394,19 +395,19 @@ begin
   EndUpdate;
 end;
 
-function CustomSortProc(Node1, Node2: TTreeNode; Data: Integer): Integer; stdcall;
+function TClassBrowser.CompareNodes(Node1, Node2: TTreeNode): Integer;
 begin
   if (Node1.ImageIndex = 0) or (Node2.ImageIndex = 0) then
     Result := Node1.ImageIndex - Node2.ImageIndex
   else
     Result := Ord(PStatement(Node1.Data)^._Kind) - Ord(PStatement(Node2.Data)^._Kind);
   if Result = 0 then
-    Result := StrIComp(PChar(Node1.Text), PChar(Node2.Text));
+    Result := CompareText(Node1.Text, Node2.Text);
 end;
 
 procedure TClassBrowser.Sort;
 begin
-  CustomSort(@CustomSortProc, 0);
+  CustomSort(CompareNodes);
 end;
 
 procedure TClassBrowser.Clear;
@@ -496,16 +497,9 @@ begin
         if bInherited then
           fControlCanvas.Font.Color := clGray
         else
-          begin
-            var TextColor := clMaroon;
-            case StyleServices.GetStyleFontColor(sfTabTextActiveNormal) of
-              16777215: TextColor := clMoneyGreen; // Slate Gray
-              14803425: TextColor := clSkyBlue; // Blue Whale
-            end;
-            fControlCanvas.Font.Color := TextColor;
-          end;
+          fControlCanvas.Font.Color := clMaroon;
 
-        fControlCanvas.Brush.Color := StyleServices.GetStyleColor(scTreeView);
+        fControlCanvas.Brush.Color := Color;
         fControlCanvas.TextOut(DrawPoint.X, DrawPoint.Y + 2, st^._Args); // center vertically
         Inc(DrawPoint.X, fControlCanvas.TextWidth(st^._Args) + 3); // add some right padding
       end;
@@ -518,7 +512,7 @@ begin
       // Then draw node type to the right of the arguments
       if TypeText <> '' then begin
         fControlCanvas.Font.Color := clGray;
-        fControlCanvas.Brush.Color := StyleServices.GetStyleColor(scTreeView);
+        fControlCanvas.Brush.Color := Color;
         fControlCanvas.TextOut(DrawPoint.X, DrawPoint.Y + 2, ': ' + TypeText); // center vertically
       end;
     except // stick head into sand method. sometimes during painting, the PStatement is invalid

@@ -213,12 +213,9 @@ begin
 end;
 
 function IsWindows64: boolean;
-var
-  buffer: array[0..1023] of char;
 begin
-  // IsWow64Process not available in Delphi 7, so using this instead
-  GetEnvironmentVariable('PROGRAMFILES', buffer, 1024);
-  result := EndsStr(' (x86)', String(buffer));
+  // Used to pick 32 or 64 bit compiler defaults: is this a 64 bit system?
+  Result := {$IFDEF CPU64}True{$ELSE}False{$ENDIF};
 end;
 
 function GetPrettyLine(hwnd: TListView; i: integer): String;
@@ -260,7 +257,7 @@ var
 begin
   SubTextLocation := Length(text) - Length(subtext) + 1;
   if (SubTextLocation > 0) and (subtext <> '') then
-    Result := System.AnsiStrings.StrComp(Pointer(subtext), Pointer(@text[SubTextLocation])) = 0
+    Result := CompareStr(subtext, Copy(text, SubTextLocation, Length(subtext))) = 0
   else
     Result := False;
 end;
@@ -271,7 +268,7 @@ var
 begin
   SubTextLocation := Length(text) - Length(subtext) + 1;
   if (SubTextLocation > 0) and (subtext <> '') then
-    Result := System.AnsiStrings.StrIComp(Pointer(subtext), Pointer(@text[SubTextLocation])) = 0
+    Result := CompareText(subtext, Copy(text, SubTextLocation, Length(subtext))) = 0
   else
     Result := False;
 end;
@@ -360,27 +357,10 @@ begin
 end;
 
 function ProgramHasConsole(const path: String): boolean;
-var
-  handle: Cardinal;
-  bytesread: DWORD;
-  signature: DWORD;
-  dos_header: _IMAGE_DOS_HEADER;
-  pe_header: _IMAGE_FILE_HEADER;
-  opt_header: _IMAGE_OPTIONAL_HEADER;
 begin
-  handle := CreateFile(PChar(path), GENERIC_READ, FILE_SHARE_READ, nil, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
-  if handle <> INVALID_HANDLE_VALUE then begin
-    ReadFile(Handle, dos_header, sizeof(dos_header), bytesread, nil);
-    SetFilePointer(Handle, dos_header._lfanew, nil, 0);
-    ReadFile(Handle, signature, sizeof(signature), bytesread, nil);
-    ReadFile(Handle, pe_header, sizeof(pe_header), bytesread, nil);
-    ReadFile(Handle, opt_header, sizeof(opt_header), bytesread, nil);
-
-    Result := (opt_header.Subsystem = IMAGE_SUBSYSTEM_WINDOWS_CUI);
-  end else
-    Result := false;
-
-  CloseHandle(handle);
+  // Windows told console and GUI programs apart by their PE header. Linux
+  // programs can always write to a terminal, so treat them all as console ones.
+  Result := True;
 end;
 
 function GetBuildTime(const Path: String): String;
@@ -632,28 +612,24 @@ end;
 
 procedure SetPath(const Add: String; UseOriginal: boolean = TRUE);
 var
-  OldPath: array[0..2048] of char;
   NewPath: String;
 begin
   NewPath := Add;
 
   if NewPath <> '' then
-    if NewPath[length(NewPath)] <> ';' then
-      NewPath := NewPath + ';';
+    if NewPath[length(NewPath)] <> PathSeparator then
+      NewPath := NewPath + PathSeparator;
 
   // PATH environment variable does *not* like quotes in paths...
-  // Even if there are spaces in pathnames, it doesn't matter.
-  // It splits them up by the ';'
   NewPath := StringReplace(NewPath, '"', '', [rfReplaceAll]);
 
   if UseOriginal then
     NewPath := NewPath + devDirs.OriginalPath
-  else begin
-    GetEnvironmentVariable(PChar('PATH'), @OldPath, SizeOf(OldPath));
-    NewPath := NewPath + String(OldPath);
-  end;
+  else
+    NewPath := NewPath + GetEnvironmentVariable('PATH');
 
-  SetEnvironmentVariable(PChar('PATH'), PChar(NewPath));
+  // Applied to every program the IDE starts (see devPlatform.ChildPath)
+  ChildPath := NewPath;
 end;
 
 function ValidateFile(const FileName: String; const WorkPath: String; const CheckDirs: boolean = FALSE):
@@ -686,11 +662,8 @@ begin
 end;
 
 function GetShortName(const FileName: String): String;
-var
-  pFileName: array[0..2048] of char;
 begin
-  GetShortPathName(PChar(FileName), pFileName, 2048);
-  result := StrPas(pFileName);
+  Result := FileName; // there are no 8.3 short names outside Windows
 end;
 
 function BuildFilter(const Filters: array of String): String;
@@ -1028,68 +1001,15 @@ end;
 // in the form x.x.x.x
 
 function GetVersionString(const FileName: String): String;
-var
-  Buf: Pointer;
-  i: cardinal;
-  P: pointer;
-  pSize: cardinal;
-  ffi: TVSFixedFileInfo;
 begin
-  Result := '';
-  i := GetFileVersionInfoSize(PChar(FileName), i);
-  if i = 0 then
-    Exit;
-
-  Buf := AllocMem(i);
-  try
-    if not GetFileVersionInfo(PChar(FileName), 0, i, Buf) then
-      Exit;
-
-    pSize := SizeOf(P);
-    VerQueryValue(Buf, '\', p, pSize);
-
-    ffi := TVSFixedFileInfo(p^);
-    Result := Format('%d.%d.%d.%d', [
-      HiWord(ffi.dwFileVersionMS),
-        LoWord(ffi.dwFileVersionMS),
-        HiWord(ffi.dwFileVersionLS),
-        LoWord(ffi.dwFileVersionLS)]);
-  finally
-    FreeMem(Buf);
-  end;
+  Result := ''; // executables have no version resource outside Windows
 end;
 
 function GetAssociatedProgram(const Extension: String; var Filename, Description: String): boolean;
-const
-  NOVALUE = '$__NONE__$';
-var
-  R: TRegIniFile;
-  Base, S: String;
 begin
+  // Windows looked this up in the registry; on Linux devPlatform.OpenDocument
+  // (xdg-open) hands files to the desktop's default application instead
   Result := False;
-  R := TRegIniFile.Create;
-  try
-    R.RootKey := HKEY_CLASSES_ROOT;
-    Base := R.ReadString(Extension, '', NOVALUE);
-    if S = NOVALUE then
-      Exit;
-    S := R.ReadString(Base + '\shell\open\command', '', NOVALUE);
-    if S = NOVALUE then
-      Exit;
-    Filename := S; // filename probably contains args, e.g. Filename='"some where\my.exe" "%1"'
-
-    Description := ExtractFilename(S);
-    Result := True;
-    S := R.ReadString(Base + '\shell\open\ddeexec\application', '', NOVALUE);
-    if S = NOVALUE then
-      Description := 'Default application'
-    else
-      Description := S;
-    if S = 'DEVCPP' then // avoid extensions registered to DevCpp ;)
-      Result := False;
-  finally
-    R.Free;
-  end;
 end;
 
 function IsNumeric(const s: String): boolean;
@@ -1114,66 +1034,13 @@ begin
       Inc(result);
 end;
 
-function NewSelectDirectoryCallback(Wnd: HWND; uMsg: UINT; lParam, lpData: LPARAM): Integer stdcall;
-begin
-  if (uMsg = BFFM_INITIALIZED) and (lpData <> 0) then
-    SendMessage(Wnd, BFFM_SETSELECTION, Integer(True), lpdata);
-  result := 0;
-end;
-
 function NewSelectDirectory(const Caption: string; const Root: WideString; var Directory: string): Boolean;
 var
-  WindowList: Pointer;
-  BrowseInfo: TBrowseInfo;
-  Buffer: PChar;
-  OldErrorMode: Cardinal;
-  RootItemIDList, ItemIDList: PItemIDList;
-  ShellMalloc: IMalloc;
-  IDesktopFolder: IShellFolder;
-  Eaten, Flags: LongWord;
+  Chosen: String;
 begin
-  Result := False;
-  if not DirectoryExists(Directory) then
-    Directory := '';
-  FillChar(BrowseInfo, SizeOf(BrowseInfo), 0);
-  if (ShGetMalloc(ShellMalloc) = S_OK) and (ShellMalloc <> nil) then begin
-    Buffer := ShellMalloc.Alloc(MAX_PATH);
-    try
-      RootItemIDList := nil;
-      if Root <> '' then begin
-        SHGetDesktopFolder(IDesktopFolder);
-        IDesktopFolder.ParseDisplayName(Application.Handle, nil,
-          POleStr(Root), Eaten, RootItemIDList, Flags);
-      end;
-      with BrowseInfo do begin
-        hwndOwner := Application.Handle;
-        pidlRoot := RootItemIDList;
-        pszDisplayName := Buffer;
-        lpszTitle := PChar(Caption);
-        ulFlags := BIF_RETURNONLYFSDIRS or BIF_USENEWUI; // FIX
-        if Directory <> '' then begin
-          lpfn := NewSelectDirectoryCallback;
-          lParam := Integer(PChar(Directory));
-        end;
-      end;
-      WindowList := DisableTaskWindows(0);
-      OldErrorMode := SetErrorMode(SEM_FAILCRITICALERRORS);
-      try
-        ItemIDList := ShBrowseForFolder(BrowseInfo);
-      finally
-        SetErrorMode(OldErrorMode);
-        EnableTaskWindows(WindowList);
-      end;
-      Result := ItemIDList <> nil;
-      if Result then begin
-        ShGetPathFromIDList(ItemIDList, Buffer);
-        ShellMalloc.Free(ItemIDList);
-        Directory := Buffer;
-      end;
-    finally
-      ShellMalloc.Free(Buffer);
-    end;
-  end;
+  Result := SelectDirectory(Caption, Directory, Chosen);
+  if Result then
+    Directory := Chosen;
 end;
 
 function GetFileSize(const FileName: String): integer;

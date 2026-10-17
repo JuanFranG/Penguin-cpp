@@ -140,6 +140,30 @@ begin
   Check(GetConfigDir = Expected, 'follows XDG (' + GetConfigDir + ')', 'expected ' + Expected);
 end;
 
+procedure TestProcessList;
+var
+  Names: TStringList;
+  I: Integer;
+  Found: Boolean;
+begin
+  WriteLn('ListProcesses:');
+  Names := TStringList.Create;
+  try
+    ListProcesses(Names);
+    Found := False;
+    for I := 0 to Names.Count - 1 do
+      if PtrInt(Names.Objects[I]) = GetProcessID then
+        Found := True;
+    {$IFDEF LINUX}
+    Check(Found, 'lists this process (' + IntToStr(Names.Count) + ' processes)');
+    {$ELSE}
+    WriteLn('  (skipped: /proc is Linux only)');
+    {$ENDIF}
+  finally
+    Names.Free;
+  end;
+end;
+
 procedure TestExecuteFile(const Dir: String);
 var
   Marker: String;
@@ -199,6 +223,7 @@ begin
   try
     TestProcesses;
     TestConfigDir;
+    TestProcessList;
     TestExecuteFile(Dir);
     TestFileMonitor(Dir);
   finally

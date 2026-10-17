@@ -23,7 +23,7 @@ interface
 
 uses
   LCLIntf, LCLType, LMessages, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, Buttons, ExtCtrls, MultiLangSupport, DataFrm;
+  StdCtrls, Buttons, ExtCtrls, MultiLangSupport, DataFrm, devPlatform;
 
 type
   TProcessListForm = class(TForm)
@@ -53,23 +53,20 @@ uses
 
 procedure TProcessListForm.FormCreate(Sender: TObject);
 var
-  t  : THandle;
-  pe : TProcessEntry32;
-  HasProcess: boolean;
+  Names: TStringList;
+  I: integer;
 begin
   LoadText;
   ProcessList := TList.Create;
-  t := CreateToolhelp32Snapshot(TH32CS_SNAPALL, 0);
+  Names := TStringList.Create;
   try
-    pe.dwSize:= SizeOf(pe);
-    HasProcess := Process32First(t, pe);
-    while HasProcess do begin
-      ProcessCombo.Items.Add(pe.szExeFile);
-      ProcessList.Add(pointer(pe.th32ProcessId));
-      HasProcess := Process32Next(t, pe);
+    ListProcesses(Names);
+    for I := 0 to Names.Count - 1 do begin
+      ProcessCombo.Items.Add(Names[I]);
+      ProcessList.Add(Pointer(Names.Objects[I])); // the process ID
     end;
   finally
-    CloseHandle(t);
+    Names.Free;
   end;
 end;
 

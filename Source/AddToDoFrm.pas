@@ -53,7 +53,7 @@ type
 implementation
 
 uses
-  main, Editor, devCFG, MultiLangSupport;
+  main, Editor, devCFG, MultiLangSupport, SynEditCompat;
 
 {$R *.lfm}
 
@@ -98,6 +98,8 @@ begin
     Hdr := Hdr + txtUser.Text;
   Hdr := Hdr + '#' + IntToStr(spnPri.Value) + '#): ';
 
+  e.Text.BeginUndoBlock; // undo removes the whole comment at once
+  try
   if memDescr.Lines.Count = 1 then
     e.Text.Lines.Insert(Line, Prepend + Hdr + memDescr.Text + ' */')
   else begin
@@ -110,7 +112,9 @@ begin
         e.Text.Lines.Insert(Line + I, Prepend + memDescr.Lines[I]);
     end;
   end;
-  e.Text.UndoList.AddChange(crInsert, st, BufferCoord(st.Char, st.Line + memDescr.Lines.Count), '', smNormal);
+  finally
+    e.Text.EndUndoBlock;
+  end;
   e.Text.Modified := True;
   Close;
 end;

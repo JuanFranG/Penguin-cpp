@@ -94,7 +94,7 @@ type
     Button2: TButton;
     Button3: TButton;
     RadioGroup1: TRadioGroup;
-    viThemePreview: TVirtualImage;
+    viThemePreview: TImage;
     procedure BrowseClick(Sender: TObject);
     procedure btnOkClick(Sender: TObject);
     procedure btnHelpClick(Sender: TObject);
@@ -174,7 +174,7 @@ begin
     MRUMax := seMRUMax.Value;
     if not MultiLineTab then begin
       if cboTabsTop.ItemIndex in [2, 3] then begin
-        MessageBox(application.handle, PChar(Lang[ID_ENV_MULTILINETABERROR]), PChar(Lang[ID_ERROR]), MB_OK);
+        Application.MessageBox(PChar(Lang[ID_ENV_MULTILINETABERROR]), PChar(Lang[ID_ERROR]), MB_OK);
         cboTabsTop.ItemIndex := 0;
       end;
     end;
@@ -216,8 +216,7 @@ end;
 procedure TEnviroForm.ListBoxStyleClick(Sender: TObject);
 begin
   Panel1.Visible := false;
-  viThemePreview.Visible := true;
-  viThemePreview.ImageIndex := ListBoxStyle.ItemIndex;
+  viThemePreview.Visible := false; // previews showed Windows styles, which don't exist here
 end;
 
 procedure TEnviroForm.LoadText;
@@ -462,8 +461,8 @@ begin
   // Remove settings on exit
   RemoveOptionsDir(devDirs.Config);
 
-  // Quit without saving
-  TerminateProcess(GetCurrentProcess, 0);
+  // Quit without saving: Halt skips the form destructors that write settings
+  Halt(0);
 end;
 
 

@@ -57,7 +57,7 @@ procedure Register;
 implementation
 
 uses
-  devShortcutsEditorForm, Forms;
+  devShortcutsEditorForm, Forms, LCLProc;
 
 procedure Register;
 begin

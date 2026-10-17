@@ -93,7 +93,7 @@ type
 implementation
 
 uses
-  SynEditHighlighter, main, MultiLangSupport, DataFrm, Project, Editor, devCFG;
+  SynEditHighlighter, main, MultiLangSupport, DataFrm, Project, Editor, devCFG, SynEditCompat;
 
 {$R *.lfm}
 

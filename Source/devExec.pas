@@ -22,7 +22,10 @@ unit devExec;
 interface
 
 uses
-  LCLIntf, LCLType, Classes, Forms, devCFG, Utils;
+  Classes, SysUtils, Forms, Process, devCFG, Utils;
+
+const
+  INFINITE = Cardinal($FFFFFFFF); // no time-out
 
 type
   {$M+}
@@ -32,7 +35,7 @@ type
     fPath: String;
     fParams: String;
     fTimeOut: Cardinal;
-    fProcess: Cardinal;
+    fProcess: TProcess; // only valid while the program runs
     fVisible: boolean;
     procedure ExecAndWait;
   public
@@ -43,7 +46,7 @@ type
     property Params: String read fParams write fParams;
     property TimeOut: Cardinal read fTimeOut write fTimeOut;
     property Visible: boolean read fVisible write fVisible;
-    property Process: Cardinal read fProcess;
+    property Process: TProcess read fProcess;
   end;
 
   TdevExecutor = class(TPersistent)
@@ -79,26 +82,42 @@ end;
 
 procedure TExecThread.ExecAndWait;
 var
-  StartupInfo: TStartupInfo;
-  ProcessInfo: TProcessInformation;
+  P: TProcess;
+  Args: TStringList;
+  Started: QWord;
 begin
-  FillChar(StartupInfo, SizeOf(TStartupInfo), 0);
-  with StartupInfo do begin
-    cb := SizeOf(TStartupInfo);
-    dwFlags := STARTF_USESHOWWINDOW or STARTF_FORCEONFEEDBACK;
+  P := TProcess.Create(nil);
+  Args := TStringList.Create;
+  try
+    P.Executable := fFile;
+    CommandToList(fParams, Args);
+    P.Parameters.Assign(Args);
+    if fPath <> '' then
+      P.CurrentDirectory := fPath;
     if fVisible then
-      wShowWindow := SW_SHOW
+      P.ShowWindow := swoShow
     else
-      wShowWindow := SW_HIDE;
+      P.ShowWindow := swoHIDE;
+    try
+      P.Execute;
+    except
+      Exit; // could not start; OnTerminate still reports the end
+    end;
+    fProcess := P;
+
+    // Wait for it to finish, like WaitForSingleObject with a time-out
+    if fTimeOut = INFINITE then
+      P.WaitOnExit
+    else begin
+      Started := GetTickCount64;
+      while P.Running and (GetTickCount64 - Started < fTimeOut) do
+        Sleep(50);
+    end;
+  finally
+    fProcess := nil;
+    Args.Free;
+    P.Free;
   end;
-  if CreateProcess(nil, PChar('"' + fFile + '" ' + fParams), nil, nil, False, NORMAL_PRIORITY_CLASS, nil,
-    PChar(fPath),
-    StartupInfo, ProcessInfo) then begin
-    fProcess := ProcessInfo.hProcess;
-    WaitForSingleObject(ProcessInfo.hProcess, fTimeOut);
-  end;
-  CloseHandle(ProcessInfo.hProcess);
-  CloseHandle(ProcessInfo.hThread);
 end;
 
 var
@@ -144,8 +163,8 @@ end;
 
 procedure TdevExecutor.Reset;
 begin
-  if Assigned(fExec) then
-    TerminateProcess(fExec.Process, 0);
+  if Assigned(fExec) and Assigned(fExec.Process) then
+    fExec.Process.Terminate(0);
   fIsRunning := False;
 end;
 

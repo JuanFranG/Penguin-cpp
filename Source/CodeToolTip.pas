@@ -93,8 +93,7 @@ type
     FForceHide: boolean; // true if hidden by Esc
     FCustomSelIndex: Boolean; // user clicked up/down
     procedure SetSelIndex(Value: Integer);
-    procedure WMEraseBkgnd(var Message: TWMEraseBkgnd); message WM_ERASEBKGND;
-    procedure WMNCHitTest(var Message: TWMNCHitTest); message WM_NCHITTEST;
+    procedure WMEraseBkgnd(var Message: TLMEraseBkgnd); message LM_ERASEBKGND;
   protected
     function GetCommaIndex(P: PChar; Start, CurPos: Integer): Integer;
     function FindClosestToolTip(const ToolTip: String; CommaIndex: Integer): String;
@@ -120,7 +119,7 @@ type
 implementation
 
 uses
-  Types, devCFG;
+  Types, devCFG, SynEditCompat;
 
 // contains the up/down buttons
 // I tried to draw them using DrawFrameControl first,
@@ -653,9 +652,9 @@ begin
 
   // this displays the rect below the current line and at the same position where the token begins
   Pt.X :=
-    FEditor.ClientToScreen(FEditor.RowColumnToPixels(FEditor.BufferToDisplayPos(FEditor.CharIndexToRowCol(FTokenPos)))).X;
+    FEditor.ClientToScreen(FEditor.RowColumnToPixels(FEditor.LogicalToPhysicalPos(FEditor.CharIndexToRowCol(FTokenPos)))).X;
   Pt.Y :=
-    FEditor.ClientToScreen(FEditor.RowColumnToPixels(FEditor.BufferToDisplayPos(FEditor.CharIndexToRowCol(FFunctionEnd)))).Y;
+    FEditor.ClientToScreen(FEditor.RowColumnToPixels(FEditor.LogicalToPhysicalPos(FEditor.CharIndexToRowCol(FFunctionEnd)))).Y;
 
   ActivateHint(Rect(Pt.X,
     Pt.Y + FEditor.LineHeight + 2,
@@ -858,21 +857,9 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TCodeToolTip.WMNCHitTest(var Message: TWMNCHitTest);
-var
-  Pt: TPoint;
-begin
-  Message.Result := HTTRANSPARENT;
-  Pt := ScreenToClient(Point(Message.XPos, Message.YPos));
-
-  // hitcheck against the position of our both buttons
-  if PtInRect(FUpButton.ClientRect, Pt) or PtInRect(FDownButton.ClientRect, Pt) then
-    Message.Result := HTCLIENT;
-end;
-
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TCodeToolTip.WMEraseBkgnd(var Message: TWMEraseBkgnd);
+procedure TCodeToolTip.WMEraseBkgnd(var Message: TLMEraseBkgnd);
 // override WMEraseBkgnd to avoid flickering
 begin
   Message.Result := 1;

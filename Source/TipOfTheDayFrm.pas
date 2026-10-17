@@ -246,8 +246,7 @@ begin
   btnClose.Caption := Lang[ID_BTN_CLOSE];
   btnRandom.Caption := lang[ID_TIPS_RANDOMTIP];
 
-  // Title uses
-  a custom font
+  // Title uses a custom font
   lblTitle.Font.Style := [fsBold];
   lblTitle.Font.Size := 14;
 end;

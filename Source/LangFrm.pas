@@ -46,7 +46,7 @@ type
     lblEditInfo: TLabel;
     lblFont: TLabel;
     cmbFont: TComboBox;
-    VirtualImageTheme: TVirtualImage;
+    VirtualImageTheme: TImage;
     procedure OkBtnClick(Sender: TObject);
     procedure ColorChange(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -63,7 +63,7 @@ type
 implementation
 
 uses
-  MultiLangSupport, DataFrm, devCFG, Utils, main, Version, ImageTheme, SynEditTypes;
+  MultiLangSupport, DataFrm, devCFG, Utils, main, Version, ImageTheme, SynEditTypes, SynEditCompat;
 
 {$R *.lfm}
 
@@ -152,7 +152,6 @@ begin
 
   // Interface themes
   cmbTheme.ItemIndex := devData.Style;
-  VirtualImageTheme.ImageIndex := devData.Style;
 
   // Editor colors
   cmbColors.ItemIndex := 1; // Classic Plus
@@ -224,7 +223,6 @@ begin
     tbExample.Images := dmMain.MenuImages_Blue
   else
     tbExample.Images := dmMain.MenuImages_NewLook;}
-  VirtualImageTheme.ImageIndex := cmbTheme.ItemIndex;
 end;
 
 procedure TLangForm.cmbFontDrawItem(Control: TWinControl; Index: Integer; Rect: TRect; State: TOwnerDrawState);

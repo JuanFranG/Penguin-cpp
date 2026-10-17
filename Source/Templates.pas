@@ -108,8 +108,7 @@ begin
    end
   else
    begin
-     MessageBox(Application.mainform.handle,
-       PChar(Format(Lang[ID_ERR_TEMPFNF], [fFileName])),
+     Application.MessageBox(PChar(Format(Lang[ID_ERR_TEMPFNF], [fFileName])),
        PChar(Lang[ID_INFO]), MB_OK or MB_ICONINFORMATION);
      exit;
    end;
@@ -261,8 +260,7 @@ procedure TTemplate.SetOldData(value: TTemplateRec);
 begin
   if not assigned(fTemplate) then
    begin
-     MessageBox(Application.MainForm.Handle,
-      PChar(Lang[ID_ERR_NOTEMPLATE]), PChar(Lang[ID_INFO]), MB_OK or MB_ICONWARNING);
+     Application.MessageBox(PChar(Lang[ID_ERR_NOTEMPLATE]), PChar(Lang[ID_INFO]), MB_OK or MB_ICONWARNING);
      exit;
    end;
 

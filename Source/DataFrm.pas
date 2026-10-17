@@ -22,7 +22,8 @@ unit DataFrm;
 interface
 
 uses
-  SysUtils, Classes, Menus, Controls, SynEditHighlighter, SynHighlighterCpp, CodeInsList, ImgList;
+  SysUtils, Classes, Menus, Controls, SynEditHighlighter, SynHighlighterCpp, CodeInsList, ImgList, Graphics,
+  LCLType;
 
 type
   PMRUItem = ^TMRUItem;
@@ -36,21 +37,18 @@ type
     Cpp: TSynCppSyn;
     ProjectImage_Gnome: TImageList;
     MenuImages_Gnome: TImageList;
-    Res: TSynRCSyn;
     MenuImages_NewLook: TImageList;
     ProjectImage_NewLook: TImageList;
     GutterImages: TImageList;
     MenuImages_Blue: TImageList;
     ProjectImage_Blue: TImageList;
     ClassImages: TImageList;
-    ImageThemeColection: TImageCollection;
-    SVGImageListMenuStyle: TSVGIconImageList;
-    SVGImageListProjectStyle: TSVGIconImageList;
-    SVGImageListClassStyle: TSVGIconImageList;
-    SVGImageListMessageStyle: TSVGIconImageList;
-    SVGIconImageWelcomeScreen: TSVGIconImageList;
-    EMBTImageCollection: TImageCollection;
-    AppearanceThemeCollection: TImageCollection;
+    // Filled at runtime from PNG strips embedded as resources (see LoadIconStrip)
+    SVGImageListMenuStyle: TImageList;
+    SVGImageListProjectStyle: TImageList;
+    SVGImageListClassStyle: TImageList;
+    SVGImageListMessageStyle: TImageList;
+    SVGIconImageWelcomeScreen: TImageList;
     procedure DataModuleCreate(Sender: TObject);
     procedure DataModuleDestroy(Sender: TObject);
   private
@@ -115,10 +113,40 @@ uses
 
 { TdmMain }
 
+// The icon sets were SVG image lists. They are rendered once to PNG strips at
+// twice their size (Source/Images/IconLists) and embedded as RCDATA resources
+// through the project file; here each strip is cut into a scaled image list.
+procedure LoadIconStrip(List: TImageList; const ResourceName: String);
+var
+  Stream: TResourceStream;
+  Png: TPortableNetworkGraphic;
+  Size: integer;
+begin
+  Size := List.Width;
+  Stream := TResourceStream.Create(HInstance, ResourceName, RT_RCDATA);
+  Png := TPortableNetworkGraphic.Create;
+  try
+    Png.LoadFromStream(Stream);
+    List.Clear;
+    List.Scaled := True;
+    List.RegisterResolutions([Size, 2 * Size]);
+    List.AddSliced(Png, Png.Width div (2 * Size), 1);
+  finally
+    Png.Free;
+    Stream.Free;
+  end;
+end;
+
 procedure TdmMain.DataModuleCreate(Sender: TObject);
 begin
   fMRU := TList.Create;
   fCodeList := TCodeInsList.Create;
+
+  LoadIconStrip(SVGImageListMenuStyle, 'ICONS_MENU');
+  LoadIconStrip(SVGImageListProjectStyle, 'ICONS_PROJECT');
+  LoadIconStrip(SVGImageListClassStyle, 'ICONS_CLASS');
+  LoadIconStrip(SVGImageListMessageStyle, 'ICONS_MESSAGE');
+  LoadIconStrip(SVGIconImageWelcomeScreen, 'ICONS_WELCOME');
 end;
 
 procedure TdmMain.DataModuleDestroy(Sender: TObject);
@@ -190,17 +218,6 @@ begin
       end;
     end;
   end;
-  // update res highlighter
-  with Res do begin
-    CommentAttri.Assign(cpp.CommentAttri);
-    DirecAttri.Assign(cpp.DirecAttri);
-    IdentifierAttri.Assign(cpp.IdentifierAttri);
-    KeyAttri.Assign(cpp.KeyAttri);
-    NumberAttri.Assign(cpp.NumberAttri);
-    SpaceAttri.Assign(cpp.SpaceAttri);
-    StringAttri.Assign(cpp.StringAttri);
-    SymbolAttri.Assign(cpp.SymbolAttri);
-  end;
 end;
 
 function TdmMain.GetHighlighter(const FileName: String): TSynCustomHighlighter;
@@ -217,7 +234,7 @@ begin
     else begin
       ext := ExtractFileExt(FileName);
       if CompareText(ext, RC_EXT) = 0 then
-        result := Res
+        result := nil // Lazarus' SynEdit has no resource script highlighter
       else begin
         tmp := TStringList.Create;
         try
@@ -523,7 +540,7 @@ begin
       fCodeMenu.Add(Item)
     else begin
       cdx := fCodeList[idx]^.Sep;
-      fCodeMenu.NewBottomLine;
+      fCodeMenu.AddSeparator;
       fCodeMenu.Add(Item);
     end;
   end;

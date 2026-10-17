@@ -1,133 +1,112 @@
-# Embarcadero Dev-C++
-A fast, portable, simple, and free C/C++ IDE. Dev C++ has been downloaded over 67,796,885 times since 2000.
+# Penguin cpp
 
-Embarcadero Dev-C++ is a new and improved fork (sponsored by Embarcadero) of Bloodshed Dev-C++ and Orwell Dev-C++. It is a full-featured Integrated Development Environment (IDE) and code editor for the C/C++ programming language. It uses Mingw port of GCC (GNU Compiler Collection) as its compiler. Embarcadero Dev-C++ can also be used in combination with Cygwin or any other GCC based compiler. Embarcadero Dev-C++ is built using the latest version of Embarcadero Delphi. Embarcadero Dev-C++ has a low memory footprint because it is a native Windows application and does not use Electron.
+**Un IDE de C/C++ sencillo, libre y nativo para Linux.**
 
-Download the latest release:
-<https://github.com/Embarcadero/Dev-Cpp/releases>
+Penguin cpp expande Embarcadero Dev-C++ a Linux. Es el mismo entorno ligero
+con el que mucha gente aprende C y C++, ahora como programa nativo de Linux,
+sin Wine.
 
-Keystone Features:
- - C++17/C++20 (partial) support.
- - Unicode support.
- - Parallel Compilation support.
- - Windows 7/8/10 support.
+> **Estado: en desarrollo.** Todavía no hay una versión instalable. El IDE ya
+> compila con Lazarus y está en su primera fase de pruebas en Linux Mint. Ver
+> [ROADMAP.md](ROADMAP.md).
 
-Main Features include:
+---
 
-- TDM-GCC 9.2.0 32/64bit
-- Support GCC-based compilers
-- Integrated debugging (using GDB)
-- GPROF profiling
-- Project Manager
-- Customizable syntax highlighting editor
-- Class Browser
-- Code Completion
-- Code Insight
-- Function listing
-- AStyle code formatting support
-- GPROF Profiling support
-- Quickly create Windows, console, static libraries and DLLs
-- Support of templates for creating your own project types
-- Makefile creation
-- Edit and compile Resource files
-- Tool Manager
-- Devpak IDE extensions
-- Print support
-- Find and replace facilities
-- CVS support
+## Objetivo
 
-Supported Operating System:
+Penguin cpp tiene **propósitos educativos y de divulgación**:
 
-- Windows 7
-- Windows 8.1
-- Windows 10
+- **Para aprender y enseñar.** Estudiantes, docentes, talleres y cursos
+  tienen en Linux la misma herramienta que se usa en muchas aulas con
+  Windows. Se instala y se usa sin configuraciones complicadas.
+- **Para divulgar.** Muestra que un IDE clásico de Windows puede pasar a
+  Linux como software libre, y documenta cómo se hizo: cada fase del port
+  está explicada en [ROADMAP.md](ROADMAP.md) y en el historial de commits.
+- **Producto final: un paquete `.deb`** para Debian, Ubuntu, Linux Mint y
+  derivadas. Se instala con `apt`, trae sus dependencias (gcc/g++, gdb,
+  make) y aparece en el menú de aplicaciones.
 
-# Dev C++ Release Notes
+---
 
-Version 6.3 - 30 January 2021
+## Qué ofrece
 
- - Added: Parallel compilation enabled by default for release builds through MAKE Jobs.
- - Added: 3 Buttons for setting up custom shell command line tabs.
- - Updated: Code completion and menues for dark themes.
- - Updated: CTRL-TAB editor tab selection wrapping.
- - Fixed: Make clean file deletion issue.
- - Fixed: Status bar not showing all text.
- - Fixed: Debug/CPU Window hex column issue.
- - Fixed: Closing tabs in editor side by side view.
+Lo que trae del Dev-C++ original y se está portando:
 
-Version 6.2 - 13 November 2020
+- Editor con resaltado de sintaxis de C/C++, temas de color y numeración de
+  líneas.
+- Navegador de clases y autocompletado, con un analizador de C++ propio.
+- Proyectos y plantillas (consola, bibliotecas…).
+- Compilación con el gcc/g++ del sistema, con errores que se pueden clicar.
+- Depuración con gdb.
+- Formateo de código con AStyle o clang-format.
+- Traducida a más de 30 idiomas, incluido el español (con variantes de
+  España y Colombia).
 
- - Added: 5 new UI styles. Windows 10 Black Pearl, Glossy, Calypso, Flat UI Light, Material Patterns Blue
- - Added: Default encoding for new documents option.
- - Added: New setting to enable and disable font ligature support.
- - Updated: Welcome screen hotkey backgrounds.
- - Updated: Allow multiple instances of Dev-C++ to run simaltaniously.
- - Fixed: Error on AStyle Formatting Config Form
- - Fixed: Double clicking text now selects the current line.
- - Fixed: Auto Indent to {} and : now works correctly.
- - Fixed: CTRL-Y will not delete the current line if there is nothing left to redo.
- - Fixed: Buggy behaviour when highlighting matching braces.
+Qué funciona hoy y qué falta está en [ROADMAP.md](ROADMAP.md).
 
-Version 6.1 - 2 November 2020
+---
 
- - Updated: C++ keyword highlighting. Added some C++20 keywords.
- - Updated: Font ligature support.
- - Updated: SVGIconImageList dependency
- - Updated: SynEdit dependency.
- - Updated: Text file loading and saving dialogs with Encodings.
- - Added: Visual Studio Dark theme.
- - Fixed: Automatic Tab widths.
- - Fixed: Launching help from directory with spaces.
- - Fixed: Welcome screen issue when canceling closing.
- - Fixed: Shortcuts Form dark styling.
- - Fixed: Crash in Issue #26.
+## Instalación
 
-# Screenshot:
+Cuando exista la primera versión, el `.deb` se publicará en
+[Releases](https://github.com/JuanFranG/Penguin-cpp/releases) y se instalará
+así:
 
-![Dev C++ Screenshot](https://raw.githubusercontent.com/Embarcadero/Dev-Cpp/master/Source/Images/screenshot800x600.png)
+```bash
+sudo apt install ./penguin-cpp_<versión>_amd64.deb
+```
 
-# Bundled Compiler
+## Compilar desde el código
 
-tdm-gcc: GCC compiler, Windows-friendly.
-<https://jmeubank.github.io/tdm-gcc/>
+Necesitas Lazarus 3.0 o superior y Free Pascal 3.2.2 (Linux Mint 22 /
+Ubuntu 24.04):
 
-# Third Party Libraries
+```bash
+sudo apt install lazarus fpc g++ gdb make git python3
+git clone https://github.com/JuanFranG/Penguin-cpp.git
+cd Penguin-cpp
+lazbuild --ws=gtk2 Source/penguin-cpp.lpi
+./penguin-cpp
+```
 
-"Artistic Style is a source code indenter, formatter, and beautifier for the C, C++, C++/CLI, Objective‑C, C# and Java programming languages."
-<http://astyle.sourceforge.net/>
+Las pruebas y más detalles están en [ROADMAP.md](ROADMAP.md#cómo-compilar-y-probar-linux).
 
-"SynEdit is a syntax highlighting edit control, not based on the Windows common controls. SynEdit is compatible with both Delphi and C++ Builder."
-<https://github.com/TurboPack/SynEdit>
+---
 
-"FastMM is a fast replacement memory manager for Embarcadero Delphi applications that scales well across multiple threads and CPU cores."
-<https://github.com/pleriche/FastMM5>
+## Origen
 
-"VCL Styles Utils is a Delphi library which extend the RAD Studio VCL Styles."
-<https://github.com/RRUZ/vcl-styles-utils>
+Penguin cpp parte del código de **Embarcadero Dev-C++**
+(<https://github.com/Embarcadero/Dev-Cpp>), que a su vez continúa a
+**Orwell Dev-C++** y a **Bloodshed Dev-C++**
+(<https://www.bloodshed.net/devcpp.html>). El proyecto original solo funciona
+en Windows y está hecho con Delphi.
 
-"DDetours is a library allowing you to hook Delphi and Windows API functions."
-<https://github.com/MahdiSafsafi/DDetours>
+Para llevarlo a Linux se pasó a **Lazarus y Free Pascal**, y se quitó todo lo
+que solo existe en Windows. El historial completo del proyecto original se
+conserva en este repositorio. Sus notas de versión están en
+[NEWS.txt](NEWS.txt).
 
-"Components to simplify use of SVG images (resize, fixedcolor, grayscale...). "
-<https://github.com/EtheaDev/SVGIconImageList>
+## Licencia
 
-"Abbrevia is a compression toolkit for Delphi and C++Builder."
-https://github.com/TurboPack/Abbrevia
+Penguin cpp es software libre bajo la **GNU General Public License, versión 2
+o posterior** ([LICENSE](LICENSE)), la misma licencia del código del que
+parte.
 
-"Monokai Theme"
-<https://github.com/rbardini/devcpp-monokai>
+## Créditos
 
-"Monokai Fresh Theme"
-<https://github.com/sspathare97/devcpp-monokai_fresh>
+- **Bloodshed Dev-C++**: Colin Laplace y colaboradores.
+- **Orwell Dev-C++**: Johan Mes y colaboradores.
+- **Embarcadero Dev-C++**: Embarcadero Technologies y colaboradores.
+- [Lazarus](https://www.lazarus-ide.org/) y [Free Pascal](https://www.freepascal.org/):
+  la LCL y el componente de edición SynEdit.
+- [Artistic Style](https://astyle.sourceforge.net/): formateo de código.
+- Temas [Monokai](https://github.com/rbardini/devcpp-monokai) y
+  [Monokai Fresh](https://github.com/sspathare97/devcpp-monokai_fresh).
+- Fuentes Heebo y Source Code Pro (SIL Open Font License).
 
-# Original Dev-C++ Developers
+## Aviso sobre marcas
 
-Find out more about the original developers of Bloodshed Dev-C++:
-
-<https://www.bloodshed.net/devcpp.html>
-
-# Built In Delphi
-
-Find out more information about Embarcadero Delphi:
-
-<https://www.embarcadero.com/products/delphi>
+Penguin cpp es un proyecto independiente. **No está afiliado a Embarcadero
+Technologies ni cuenta con su respaldo.** "Embarcadero" y "Delphi" son marcas
+registradas de sus dueños. Aquí se nombran solo para indicar de dónde viene
+el código.

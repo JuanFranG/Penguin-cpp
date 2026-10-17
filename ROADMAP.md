@@ -2,12 +2,25 @@
 
 Penguin cpp es un IDE de C/C++ **nativo para Linux**: editor con resaltado,
 navegador de clases, autocompletado, proyectos, plantillas, compilación con
-gcc/g++ y depuración con gdb.
+gcc/g++ y depuración con gdb. Expande a Linux Embarcadero Dev-C++, que solo
+funciona en Windows.
 
-Parte del código de Embarcadero Dev-C++, que solo funciona en Windows. Este
-documento explica de dónde viene, qué se ha hecho hasta ahora y qué falta.
+Este documento explica de dónde viene, qué se ha hecho hasta ahora y qué
+falta.
 
 *Última actualización: 16 de octubre de 2026.*
+
+---
+
+## Objetivo
+
+- **Propósitos educativos y de divulgación**:
+  - Que estudiantes y docentes tengan en Linux, nativo y libre, el IDE con el
+    que mucha gente aprende C y C++.
+  - Documentar abiertamente cómo se lleva un IDE de Windows a Linux.
+- **Producto final: un paquete `.deb`** para Debian, Ubuntu, Linux Mint y
+  derivadas. Se instala con `apt` y deja el IDE listo para compilar y
+  depurar. Todas las fases apuntan a eso; la fase 8 arma el paquete.
 
 ---
 
@@ -46,6 +59,7 @@ la GPL (ver [Licencia y créditos](#licencia-y-créditos)).
 | Iconos | Las listas SVG se renderizaron una sola vez a tiras PNG (`Source/Images/IconLists`), que se incrustan como recursos |
 | Configuración | `~/.config/penguin-cpp/` (respeta `$XDG_CONFIG_HOME`), o `config/` junto al programa en modo portable |
 | Procesos | `TProcess`; abrir archivos y URLs con `xdg-open` (todo en `devPlatform.pas`) |
+| Distribución | Paquete **`.deb`** (Debian, Ubuntu, Linux Mint y derivadas, amd64) |
 | Licencia | GPL v2 o posterior. Los archivos nuevos llevan cabecera `SPDX-License-Identifier: GPL-2.0-or-later` |
 
 ---
@@ -94,7 +108,7 @@ la importación del código original.
 | 5 · Editor (SynEdit de Lazarus) | `fase4/lazarus` | 🔄 Adelantada dentro de la fase 4 |
 | 6 · Compilación con el gcc de Linux | — | ⏳ Pendiente |
 | 7 · Depurador (GDB/MI) | — | ⏳ Pendiente |
-| 8 · Empaquetado y pulido | — | ⏳ Pendiente |
+| 8 · Paquete `.deb` y pulido | — | ⏳ Pendiente |
 
 ### Fase 0 · Preparación ✅
 - Repositorio en GitHub con el historial completo del original y el remoto
@@ -208,12 +222,33 @@ Falta:
 - **Hecho cuando:** funcionan los breakpoints, el paso a paso, las variables
   vigiladas, la pila de llamadas y ver valores al pasar el ratón.
 
-### Fase 8 · Empaquetado y pulido ⏳
-- AppImage y, opcionalmente, `.deb` o Flatpak, con archivo `.desktop` e
-  iconos.
-- Instalar plantillas, idiomas y fuentes en las rutas estándar de Linux.
+### Fase 8 · Paquete `.deb` y pulido ⏳
+El producto final del proyecto es un `.deb` que se instala con
+`sudo apt install ./penguin-cpp_<versión>_amd64.deb`.
+
+- **Rutas de instalación** (requiere cambios en el código):
+  - Hoy el IDE busca `Lang/`, `Templates/` y `Help/` junto al ejecutable
+    (`devCFG.pas`). Instalado, el ejecutable va en `/usr/bin` y los datos en
+    `/usr/share/penguin-cpp/`, así que hay que enseñarle a buscarlos ahí.
+    Otra opción es instalar todo en `/usr/lib/penguin-cpp/` con un enlace
+    en `/usr/bin`.
+  - Lanzador `.desktop` en `/usr/share/applications`.
+  - Iconos en `/usr/share/icons/hicolor`.
+  - Asociación con archivos `.c`, `.cpp`, `.h` y proyectos `.dev`.
+  - Fuentes Heebo y Source Code Pro en `/usr/share/fonts`.
+- **Dependencias del paquete**: `gcc`, `g++`, `make`, `gdb` y GTK2
+  (`libgtk2.0-0`). Recomendadas: `astyle` y `clang-format`.
+- **Construcción**: un script que compila con `lazbuild` y arma el paquete
+  (`dpkg-deb` o debhelper). El paquete se revisa con `lintian`.
+- `sudo apt remove penguin-cpp` no debe dejar archivos. La configuración de
+  cada usuario queda en `~/.config/penguin-cpp`.
 - Probar X11, Wayland, pantallas HiDPI y tema oscuro (en Linux el tema lo
   pone GTK).
+- Otros formatos (AppImage, Flatpak) quedan fuera del plan por ahora.
+- **Hecho cuando:** en un Linux Mint 22 limpio:
+  - El `.deb` se instala con `apt` y el IDE aparece en el menú.
+  - Se compila, ejecuta y depura un "Hola mundo".
+  - Se desinstala sin dejar rastros.
 
 ---
 
@@ -221,10 +256,11 @@ Falta:
 
 - **Identidad propia** (la GPL cubre el código, no las marcas; "Embarcadero" y
   "Delphi" son marcas registradas):
-  - `README.md` todavía es el del proyecto original.
   - El enlace "buscar actualizaciones" de *Acerca de* todavía apunta a
     Embarcadero.
   - Faltan logo e iconos propios (`devcpp.ico`, pantalla de bienvenida).
+  - `SECURITY.md` todavía es el del proyecto original (versiones 6.x y un
+    contacto del equipo de Embarcadero).
 - **Limpieza**, preguntando antes de borrar:
   - `Source/VCL/SynEdit` y `Source/VCL/SVGIconImageList`, que ya no se usan.
   - Los proyectos de Delphi (`devcpp.dpr/.dproj`, `DevCpp.dpk/.dproj`,

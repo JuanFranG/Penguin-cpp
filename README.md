@@ -66,10 +66,10 @@ Necesitas Lazarus 3.0 o superior y Free Pascal 3.2.2 (Linux Mint 22 /
 Ubuntu 24.04):
 
 ```bash
-sudo apt install lazarus fpc g++ gdb make git python3
+sudo apt install lazarus fpc g++ gdb make git python3 lcl-qt5-3.0 libqt5pas-dev
 git clone https://github.com/JuanFranG/Penguin-cpp.git
 cd Penguin-cpp
-lazbuild --ws=gtk2 Source/penguin-cpp.lpi
+lazbuild -B --ws=qt5 Source/penguin-cpp.lpi
 ./penguin-cpp
 ```
 

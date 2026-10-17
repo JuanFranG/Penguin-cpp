@@ -56,7 +56,7 @@ la GPL (ver [Licencia y créditos](#licencia-y-créditos)).
 | Lenguaje | Free Pascal 3.2.2 en `{$MODE DELPHI}`, para cambiar lo mínimo la sintaxis del código original |
 | Entorno | Lazarus 3.0, la versión que trae Linux Mint 22 / Ubuntu 24.04 |
 | Delphi | **Solo Lazarus.** El proyecto ya no compila con Delphi. Algunas unidades todavía tienen ramas `{$IFDEF FPC} … {$ELSE}` que se pueden limpiar |
-| Interfaz | LCL con **GTK2** para la primera ejecución (el widgetset por defecto de Lazarus en Linux y el más probado). Apenas el IDE abra se prueba **Qt6**, y si funciona bien queda como el oficial (ver fase 4) |
+| Interfaz | LCL con **Qt5** (`--ws=qt5`). La primera ejecución fue con GTK2; Qt6 no está en Linux Mint 22 / Ubuntu 24.04, así que se pasa a Qt6 con Mint 23 (ver fase 4) |
 | Editor | SynEdit de Lazarus en lugar del SynEdit de Delphi, con una capa de compatibilidad (`SynEditCompat.pas`, `TSynEditEx` en `Editor.pas`) |
 | Iconos | Las listas SVG se renderizaron una sola vez a tiras PNG (`Source/Images/IconLists`), que se incrustan como recursos |
 | Configuración | `~/.config/penguin-cpp/` (respeta `$XDG_CONFIG_HOME`), o `config/` junto al programa en modo portable |
@@ -71,16 +71,19 @@ la GPL (ver [Licencia y créditos](#licencia-y-créditos)).
 Requisitos (Mint 22 / Ubuntu 24.04):
 
 ```bash
-sudo apt install lazarus fpc g++ gdb make git python3
+sudo apt install lazarus fpc g++ gdb make git python3 lcl-qt5-3.0 libqt5pas-dev
 ```
 
-Compilar el IDE. El ejecutable `penguin-cpp` queda en la raíz del repo, junto a
-`Lang/`, `Templates/` y `Help/`:
+Compilar el IDE con Qt5. El ejecutable `penguin-cpp` queda en la raíz del
+repo, junto a `Lang/`, `Templates/` y `Help/`:
 
 ```bash
-lazbuild --ws=gtk2 Source/penguin-cpp.lpi
+lazbuild -B --ws=qt5 Source/penguin-cpp.lpi
 ./penguin-cpp
 ```
+
+Con `--bm=Debug` se compila `penguin-cpp-debug`, con las comprobaciones de
+memoria (ver la fase 4). `--ws=gtk2` sigue funcionando.
 
 Si usas conda, desactívalo antes (`conda deactivate`): sus bibliotecas
 pueden interferir con el enlazado.
@@ -106,8 +109,8 @@ al publicarla. Hoy `main` incluye las fases 1 a 4 (`fase4/lazarus`).
 | 1 · Quitar lo que no se puede portar | `fase1/quitar-windows` | ✅ Hecha |
 | 2 · Parser de C++ en Free Pascal | `fase2/parser-fpc` | ✅ Hecha, probada en Mint |
 | 3 · Capa de sistema | `fase3/capa-sistema` | ✅ Hecha, probada en Mint |
-| 4 · Port a Lazarus y formularios | `fase4/lazarus` | 🔄 Abre y funciona en Mint; faltan Buscar/Ir a línea y pasar a Qt6 |
-| 4b · Identidad visual y temas | `fase4/lazarus` | 🔄 Icono, esquemas del editor y paneles con la paleta listos; faltan menús y diálogos (con Qt6) |
+| 4 · Port a Lazarus y formularios | `fase4/lazarus` | 🔄 Abre y funciona en Mint con Qt5; faltan el error al cerrar y Buscar/Ir a línea |
+| 4b · Identidad visual y temas | `fase4/lazarus` | 🔄 Icono, esquemas del editor y paneles con la paleta listos; faltan menús y diálogos (con Qt5) |
 | 5 · Editor (SynEdit de Lazarus) | `fase4/lazarus` | 🔄 Adelantada dentro de la fase 4 |
 | 6 · Compilación con el gcc de Linux | — | ⏳ Pendiente |
 | 7 · Depurador (GDB/MI) | — | ⏳ Pendiente |
@@ -116,7 +119,8 @@ al publicarla. Hoy `main` incluye las fases 1 a 4 (`fase4/lazarus`).
 
 ### Siguiente ciclo de trabajo
 
-Estado al 17 de octubre de 2026: el IDE abre en Linux Mint 22 (GTK2). Funciona
+Estado al 17 de octubre de 2026: el IDE abre en Linux Mint 22, con GTK2 y con
+Qt5, que queda como la biblioteca gráfica oficial. Funciona
 en español y la configuración se conserva entre arranques. El editor tiene
 colores y números de línea, y las barras de herramientas son responsivas.
 Al cerrar no quedan fugas de memoria (heaptrc: 0 bloques sin liberar). Los
@@ -145,8 +149,11 @@ de la barra principal. Probar con una impresora y con "Guardar como archivo
 PDF…", con y sin colores, números de línea, ajuste de línea y solo la
 selección.
 
-**4. Pasar a Qt6** (decisión: sí, si compila y abre bien en Mint). Ver el plan
-en la fase 4.
+**4. Qt5** (decidido): compila y funciona mejor que GTK2 en Mint, pero **al
+cerrar el IDE da un "Access violation"** y por eso heaptrc lista memoria sin
+liberar (el cierre se corta antes de liberar el idioma, la configuración y el
+historial). Falta la pila de llamadas del error para corregirlo (ver la fase
+4).
 
 **5. Fase 6, el siguiente paso grande:** compilar y ejecutar con el gcc del
 sistema. La lista de compiladores está vacía porque el IDE solo busca TDM-GCC
@@ -234,9 +241,9 @@ Falta:
 - **Verificación de memoria y seguridad:** lo que se puede hacer sin
   interfaz gráfica está hecho; los acentos en el editor funcionan. Queda
   valgrind, opcional (ver abajo).
-- **Pasar a Qt6** (decidido, falta probarlo en Mint; ver abajo).
+- **Qt5**: corregir el error al cerrar (ver abajo).
 - **Hecho cuando:** el IDE abre, se ven los menús, se puede abrir, editar,
-  buscar y guardar un archivo, y corre con Qt6 (o se decidió seguir con GTK2).
+  buscar y guardar un archivo, y cierra sin errores con Qt5.
 
 #### Verificación de memoria y seguridad
 Free Pascal protege más que C (las cadenas se manejan solas y puede comprobar
@@ -279,14 +286,14 @@ Los pendientes de seguridad de otras fases están en su lugar: la instancia
 única (fase 3), los nombres de archivo en los comandos, `INTERNAL_DEL` y los
 proyectos de terceros (fase 6), y el mantenimiento de GTK2 (abajo).
 
-#### Biblioteca gráfica: GTK2 o Qt6 (decidido: Qt6, falta probarlo)
+#### Biblioteca gráfica (decidido: Qt5 ahora, Qt6 con Mint 23)
 La biblioteca gráfica es la que dibuja las ventanas, botones y menús. En
 Lazarus el código y los formularios son los mismos para todas; se elige al
 compilar (`--ws=gtk2`, `--ws=qt6`…). Cambiarla no es reescribir nada, pero sí
 cambia las dependencias del `.deb`, algunos tamaños de los controles y las
 rarezas de cada una, así que hay que volver a probar todo.
 
-| | GTK2 (hoy) | GTK3 | Qt5 | Qt6 |
+| | GTK2 | GTK3 | Qt5 (hoy) | Qt6 |
 |---|---|---|---|---|
 | Estado en Lazarus | El más probado | Verde en 3.0; mejor en 4.x, con detalles | Maduro | Maduro (comparte código con Qt5) |
 | Mantenimiento de la biblioteca | Abandonada desde 2020 (sigue funcionando y viene en Mint 22) | Mantenida | Sin soporte libre desde 2023; las distribuciones la parchean | Activa |
@@ -298,21 +305,24 @@ rarezas de cada una, así que hay que volver a probar todo.
 Plan:
 1. ✅ **Primera ejecución con GTK2.** Lo que falló era de nuestro código y ya
    está corregido.
-2. **Ahora, compilar con Qt6** en Mint y comparar las dos versiones:
-   - `apt policy libqt6pas-dev` dice si el paquete está disponible, y
-     `sudo apt install libqt6pas-dev` lo instala.
-   - `lazbuild -B --ws=qt6 Source/penguin-cpp.lpi` compila la versión Qt6
-     (`-B` vuelve a compilar todo para la otra biblioteca).
-   - Se prueba lo mismo que con GTK2: arranque, menús, barras, editor,
-     opciones, bienvenida y cerrar.
-3. **Si Qt6 funciona bien, queda como la oficial** antes de los ajustes
-   visuales, los temas (fase 4b) y el `.deb`. Razones:
-   - Se mantiene, y el `.deb` tiene que servir por años.
+2. ❌ **Qt6 no se puede en Linux Mint 22.** Ubuntu 24.04, su base, no trae
+   `libqt6pas` ni el soporte Qt6 de Lazarus (`lcl-qt6`); aparecen en Ubuntu
+   25.10 y 26.04, la base de Mint 23. Compilarlo a mano obligaría al `.deb` a
+   traer su propia copia de la biblioteca.
+3. ✅ **Qt5 queda como la oficial** (`sudo apt install lcl-qt5-3.0
+   libqt5pas-dev`, `lazbuild -B --ws=qt5 …`). En Mint funciona mejor que
+   GTK2, y trae casi todo lo que se buscaba en Qt6:
    - Funciona nativo en Wayland y en pantallas HiDPI.
-   - Permite aplicar la paleta de Penguin cpp a toda la app, igual en
-     cualquier escritorio.
-4. **Si no, se queda GTK2** (o Qt5 como alternativa), y se vuelve a evaluar
-   más adelante.
+   - Permite aplicar la paleta de Penguin cpp a toda la app.
+   - El `.deb` solo depende de `libqt5pas1`, que está en los repositorios.
+   - Qt5 ya no tiene soporte libre de Qt, pero Ubuntu 24.04 lo mantiene hasta
+     2029.
+4. ⏳ **Error al cerrar con Qt5** ("Access violation"): con GTK2 no pasaba.
+   Se sospecha del orden en que se liberan las listas de iconos, que los
+   menús y barras de Qt todavía usan; falta confirmarlo con la pila de
+   llamadas del error.
+5. **Qt6 con Mint 23**: en Lazarus, Qt5 y Qt6 comparten casi todo el código,
+   así que el cambio es compilar con `--ws=qt6` y volver a probar.
 
 GTK3 no se recomienda todavía en Lazarus.
 
@@ -355,9 +365,9 @@ Hecho:
 Falta:
 - Esquemas del editor **"Penguin claro"** y **"Penguin oscuro"** con esta
   paleta, junto a los 14 que ya trae.
-- Menús, botones y diálogos los dibuja la biblioteca gráfica: con GTK2 siguen
-  el tema del escritorio. Con Qt6 la paleta se puede aplicar a toda la app;
-  se hace después de pasar a Qt6 (fase 4).
+- Menús, botones y diálogos los dibuja la biblioteca gráfica. Con Qt5 la
+  paleta se puede aplicar a toda la app; se hace cuando Qt5 cierre sin
+  errores (fase 4).
 - **Hecho cuando:** con un esquema claro u oscuro, todo el IDE (editor,
   paneles, menús y diálogos) se ve con la paleta.
 
@@ -386,7 +396,8 @@ Falta:
   - `EditorPrint.pas` toma el texto con los colores y estilos del resaltador
     (o solo la selección).
   - El PDF va a la impresora elegida con `lp` (CUPS), o se guarda con
-    "Guardar como archivo PDF…". Funciona igual con GTK2 y con Qt6.
+    "Guardar como archivo PDF…". Funciona igual con cualquier biblioteca
+    gráfica.
   - La fuente es la del editor si es TrueType; si no, DejaVu Sans Mono o
     Liberation Mono (fcl-pdf 3.2.2 corre las tildes al recortar la fuente,
     así que se incrusta completa). Sin ninguna de ellas usa la Courier del
@@ -483,7 +494,7 @@ El producto final del proyecto es un `.deb` que se instala con
   - Asociación con archivos `.c`, `.cpp`, `.h` y proyectos `.dev`.
   - Fuentes Heebo y Source Code Pro en `/usr/share/fonts`.
 - **Dependencias del paquete**: `gcc`, `g++`, `make`, `gdb` y la biblioteca
-  gráfica (GTK2 o Qt6). Recomendadas: `astyle`, `clang-format`, `cups-client`
+  gráfica (`libqt5pas1`). Recomendadas: `astyle`, `clang-format`, `cups-client`
   (`lp`, para imprimir) y `fonts-dejavu-core` (la fuente de los PDF).
 - **Construcción**: un script que compila con `lazbuild` y arma el paquete
   (`dpkg-deb` o debhelper). El paquete se revisa con `lintian`.
@@ -505,7 +516,7 @@ archivos con `open` en macOS), el monitor de archivos y los Makefiles.
 
 | Parte | Linux | macOS | Dificultad |
 |---|---|---|---|
-| Interfaz | GTK2 | Cocoa. Está menos pulido en Lazarus; el menú va en la barra superior, con *Preferencias* y *Salir* en el menú de la app | Media |
+| Interfaz | Qt5 | Cocoa. Está menos pulido en Lazarus; el menú va en la barra superior, con *Preferencias* y *Salir* en el menú de la app | Media |
 | Atajos | Ctrl | ⌘ Cmd: traducir los atajos | Baja |
 | Compilador | gcc/g++ | El clang de Apple (`xcode-select --install`), con el mismo formato de errores | Baja |
 | **Depurador** | gdb | **gdb no funciona en Macs con Apple Silicon.** Hace falta otro motor sobre lldb (por ejemplo lldb-dap) | **Alta** |

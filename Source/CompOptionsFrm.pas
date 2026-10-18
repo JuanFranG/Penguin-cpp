@@ -610,9 +610,7 @@ procedure TCompOptForm.btnFindCompilersClick(Sender: TObject);
 var
   dlgresult, I: integer;
 begin
-  dlgresult := MessageDlg(
-    Format(Lang[ID_COPT_ADDCOMPILERS], [devDirs.Exec + 'TDM-GCC-64\x86_64-w64-mingw32', devDirs.Exec + 'TDM-GCC-64']), mtConfirmation, [mbYes,
-    mbNo, mbCancel], 0);
+  dlgresult := MessageDlg(Lang[ID_COPT_FINDCOMPILERS], mtConfirmation, [mbYes, mbNo, mbCancel], 0);
 
   if dlgresult = mrCancel then
     Exit;

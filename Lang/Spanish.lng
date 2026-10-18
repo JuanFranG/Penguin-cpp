@@ -463,7 +463,7 @@ Ver=1
 36003=Licencia Pública GPL de GNU
 36004=Información de Contacto
 36005=Sitio web de Bloodshed Software:
-36006=Sitio web del Compilador Mingw:
+36006=Sitio web del compilador GCC:
 36007=Dev-Cpp foros de discusión:
 36008=Dev-Cpp lista de correo:
 36009=E-mail de los Autores:
@@ -636,6 +636,7 @@ Ver=1
 47007=Cambiar de nombre al Paquete de Compilador
 47008=Ingrese el nuevo nombre para renombrar al Paquete de Compilación:
 47009=Más optimizaciones
+47016=Se buscarán gcc y clang en las carpetas del PATH (en Linux Mint se instalan con: sudo apt install build-essential clang).<CR><CR>¿Borrar antes la lista actual de compiladores?
 
 
 48001=Editor del Menú de Ayuda

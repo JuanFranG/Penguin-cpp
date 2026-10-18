@@ -889,7 +889,6 @@ type
     function PrepareForRun(ForcedCompileTarget: TTarget = ctInvalid): Boolean;
     function PrepareForCompile(ForcedCompileTarget: TTarget = ctInvalid): Boolean;
     function PrepareForClean(ForcedCompileTarget: TTarget = ctInvalid): Boolean;
-    procedure CheckForDLLProfiling;
     procedure ProjectWindowClose(Sender: TObject; var Action: TCloseAction);
     procedure BuildOpenWith;
     procedure RebuildClassesToolbar;
@@ -1630,7 +1629,6 @@ begin
       if not devData.ShowLeftPages then
         actProjectManager.Execute;
 
-      CheckForDLLProfiling;
       UpdateAppTitle;
       UpdateCompilerList;
       ScanActiveProject;
@@ -2590,10 +2588,8 @@ end;
 procedure TMainForm.actCompOptionsExecute(Sender: TObject);
 begin
   with TCompOptForm.Create(nil) do try
-    if ShowModal = mrOk then begin
-      CheckForDLLProfiling;
+    if ShowModal = mrOk then
       UpdateCompilerList;
-    end;
   finally
     Free;
   end;
@@ -5179,36 +5175,6 @@ begin
 
     // View command examples only when edit is empty or when the UI itself added the current command
     fDebugger.CommandChanged := true;
-  end;
-end;
-
-procedure TMainForm.CheckForDLLProfiling;
-var
-  prof: boolean;
-begin
-  if not Assigned(fProject) then
-    Exit;
-
-  // If this is a DLL / static link library project, then check for profiling
-  if (fProject.Options.typ in [dptDyn, dptStat]) then begin
-
-    // Check if profiling is enabled
-    prof := fProject.GetCompilerOption('-pg') <> 0;
-
-    // Check for the existence of "-lgmon" in project's linker options
-    if prof and (Pos('-lgmon', fProject.Options.LinkerCmd) = 0) then begin
-
-      // Warn the user that we should update its project options and include
-      // -lgmon in linker options, or else the compilation will fail
-      if MessageDlg('You have profiling enabled in Compiler Options and you are ' +
-        'working on a dynamic or static library. Do you want to add a special ' +
-        'linker option in your project to allow compilation with profiling enabled? ' +
-        'If you choose No, and you do not disable profiling from the Compiler Options ' +
-        'chances are that your library''s compilation will fail...', mtConfirmation, [mbYes, mbNo], 0) = mrYes then begin
-        fProject.Options.LinkerCmd := fProject.Options.LinkerCmd + ' -lgmon';
-        fProject.Modified := True;
-      end;
-    end;
   end;
 end;
 

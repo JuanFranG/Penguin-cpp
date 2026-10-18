@@ -512,7 +512,7 @@ Ver=1
 36003=GNU General Public License
 36004=Contact Information
 36005=Bloodshed Software Website:
-36006=MinGW Compiler Website:
+36006=GCC Compiler Website:
 36007=Dev-C++ discussion forums:
 36008=Dev-C++ users mailing list:
 36009=Dev-C++ Resource Site:
@@ -693,6 +693,7 @@ Ver=1
 47013=Delete the selected compiler set
 47014=Rename the selected compiler set
 47015=Add a compiler set by folder
+47016=Look for gcc and clang in the folders of PATH (on Linux Mint, install them with: sudo apt install build-essential clang).<CR><CR>Clear the current compiler list first?
 
 
 48001=Help Menu Editor

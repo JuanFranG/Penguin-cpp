@@ -3154,7 +3154,7 @@ object AboutForm: TAboutForm
       Width = 106
       Height = 13
       Cursor = crHandPoint
-      Caption = 'http://www.mingw.org'
+      Caption = 'https://gcc.gnu.org'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clBlue
       Font.Height = 11

@@ -55,6 +55,11 @@ function RunAndGetOutput(const Cmd, WorkDir: String; LineOutputFunc: TLineOutput
 // ~/.config/penguin-cpp/ ($XDG_CONFIG_HOME is honored). Not created here.
 function GetConfigDir: String;
 
+// Creates Dir (and its parents) and makes Dir itself readable by the user
+// alone (mode 0700): the settings list the projects the user trusts and the
+// folders they work in. An existing Dir is made private too.
+function ForcePrivateDirectory(const Dir: String): Boolean;
+
 // Default directory for new projects (the user's home on Linux)
 function GetDocumentsDir: String;
 
@@ -86,7 +91,11 @@ function OpenDocument(const Path: String): Boolean;
 
 // Starts a program without waiting for it. Anything that is not an executable
 // is opened with OpenDocument instead.
-function ExecuteFile(const FileName, Params, WorkDir: String): Boolean;
+function ExecuteFile(const FileName, Params, WorkDir: String): Boolean; overload;
+
+// The same with each argument given apart, so a file name is never split or
+// read as more arguments, whatever characters it has
+function ExecuteFile(const FileName: String; const Args: array of String; const WorkDir: String): Boolean; overload;
 
 implementation
 
@@ -230,6 +239,15 @@ begin
 {$ELSE}
   Result := IncludeTrailingPathDelimiter(
     ExtractFilePath(ExcludeTrailingPathDelimiter(GetAppConfigDir(False))) + AppDirName);
+{$ENDIF}
+end;
+
+function ForcePrivateDirectory(const Dir: String): Boolean;
+begin
+  Result := ForceDirectories(Dir);
+{$IFDEF UNIX}
+  if Result then
+    FpChmod(ExcludeTrailingPathDelimiter(Dir), &700);
 {$ENDIF}
 end;
 
@@ -418,24 +436,30 @@ end;
 
 function ExecuteFile(const FileName, Params, WorkDir: String): Boolean;
 var
-  Exe: String;
   Args: TStringList;
   ArgArray: array of String;
   I: Integer;
 begin
-  Exe := FindExecutable(FileName);
-  if DirectoryExists(Exe) or (FpAccess(Exe, X_OK) <> 0) then
-    Exit(OpenDocument(FileName));
   Args := TStringList.Create;
   try
     CommandToList(Params, Args);
     SetLength(ArgArray, Args.Count);
     for I := 0 to Args.Count - 1 do
       ArgArray[I] := Args[I];
-    Result := StartDetached(Exe, ArgArray, WorkDir);
+    Result := ExecuteFile(FileName, ArgArray, WorkDir);
   finally
     Args.Free;
   end;
+end;
+
+function ExecuteFile(const FileName: String; const Args: array of String; const WorkDir: String): Boolean;
+var
+  Exe: String;
+begin
+  Exe := FindExecutable(FileName);
+  if DirectoryExists(Exe) or (FpAccess(Exe, X_OK) <> 0) then
+    Exit(OpenDocument(FileName));
+  Result := StartDetached(Exe, Args, WorkDir);
 end;
 {$ENDIF UNIX}
 
@@ -463,6 +487,17 @@ end;
 function ExecuteFile(const FileName, Params, WorkDir: String): Boolean;
 begin
   Result := ShellExecute(0, nil, PChar(FileName), PChar(Params), PChar(WorkDir), SW_SHOWNORMAL) > 32;
+end;
+
+function ExecuteFile(const FileName: String; const Args: array of String; const WorkDir: String): Boolean;
+var
+  Params: String;
+  I: Integer;
+begin
+  Params := '';
+  for I := 0 to High(Args) do
+    Params := Params + ' "' + Args[I] + '"';
+  Result := ExecuteFile(FileName, Trim(Params), WorkDir);
 end;
 {$ENDIF}
 

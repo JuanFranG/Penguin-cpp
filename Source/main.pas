@@ -5718,7 +5718,7 @@ begin
 
   if idx > -1 then // devcpp-based
     devPlatform.ExecuteFile(devExternalPrograms.ProgramName[idx],
-      '"' + fProject.Units[idx2].FileName + '"',
+      [fProject.Units[idx2].FileName],
       ExtractFilePath(fProject.Units[idx2].FileName))
       // idx=-2 means we prompted the user for a program, but didn't select one
   else if idx <> -2 then // desktop default

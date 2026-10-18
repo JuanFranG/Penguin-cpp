@@ -114,7 +114,7 @@ begin
       devData.INIFileName := IncludeTrailingPathDelimiter(ParamStr(2)) + INIFileName;
   end else begin
     // ~/.config/penguin-cpp/, or a config folder next to the program when portable
-    if (not devData.IsPortable) and ForceDirectories(GetConfigDir) then
+    if (not devData.IsPortable) and ForcePrivateDirectory(GetConfigDir) then
       devData.INIFileName := GetConfigDir + INIFileName
     else begin
       devData.INIFileName := ExeFolder + 'config' + PathDelim + INIFileName;

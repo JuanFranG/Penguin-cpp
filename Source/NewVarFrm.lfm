@@ -108,7 +108,7 @@ object NewVarForm: TNewVarForm
     TabOrder = 6
     object Label3: TLabel
       Left = 8
-      Top = 20
+      Top = 6
       Width = 31
       Height = 13
       Alignment = taRightJustify
@@ -116,7 +116,7 @@ object NewVarForm: TNewVarForm
     end
     object chkInlineR: TCheckBox
       Left = 8
-      Top = 44
+      Top = 30
       Width = 53
       Height = 17
       Caption = 'Inline'
@@ -125,7 +125,7 @@ object NewVarForm: TNewVarForm
     end
     object txtReadFunc: TEdit
       Left = 84
-      Top = 16
+      Top = 2
       Width = 333
       Height = 19
       TabOrder = 1
@@ -141,7 +141,7 @@ object NewVarForm: TNewVarForm
     TabOrder = 7
     object Label4: TLabel
       Left = 8
-      Top = 20
+      Top = 6
       Width = 31
       Height = 13
       Alignment = taRightJustify
@@ -149,7 +149,7 @@ object NewVarForm: TNewVarForm
     end
     object chkInlineW: TCheckBox
       Left = 8
-      Top = 44
+      Top = 30
       Width = 53
       Height = 17
       Caption = 'Inline'
@@ -158,7 +158,7 @@ object NewVarForm: TNewVarForm
     end
     object txtWriteFunc: TEdit
       Left = 84
-      Top = 16
+      Top = 2
       Width = 333
       Height = 19
       TabOrder = 1

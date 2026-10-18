@@ -24,7 +24,7 @@ object ParamsForm: TParamsForm
     TabOrder = 0
     object ParamEdit: TEdit
       Left = 8
-      Top = 22
+      Top = 6
       Width = 264
       Height = 21
       TabOrder = 0
@@ -39,7 +39,7 @@ object ParamsForm: TParamsForm
     TabOrder = 1
     object LoadBtn: TSpeedButton
       Left = 248
-      Top = 21
+      Top = 5
       Width = 22
       Height = 22
       ImageIndex = 59
@@ -49,7 +49,7 @@ object ParamsForm: TParamsForm
     end
     object HostEdit: TEdit
       Left = 8
-      Top = 22
+      Top = 6
       Width = 234
       Height = 21
       TabOrder = 0

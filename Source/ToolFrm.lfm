@@ -30,7 +30,7 @@ object ToolForm: TToolForm
     object btnUp: TSpeedButton
       Tag = 1
       Left = 245
-      Top = 72
+      Top = 58
       Width = 26
       Height = 26
       Anchors = [akTop, akRight]
@@ -43,7 +43,7 @@ object ToolForm: TToolForm
     object btnDown: TSpeedButton
       Tag = 2
       Left = 245
-      Top = 120
+      Top = 106
       Width = 26
       Height = 26
       Anchors = [akTop, akRight]
@@ -55,7 +55,7 @@ object ToolForm: TToolForm
     end
     object ListBox: TListBox
       Left = 8
-      Top = 16
+      Top = 2
       Width = 232
       Height = 199
       Anchors = [akLeft, akTop, akRight, akBottom]
@@ -76,7 +76,7 @@ object ToolForm: TToolForm
     TabOrder = 1
     object btnAdd: TSpeedButton
       Left = 8
-      Top = 16
+      Top = 2
       Width = 84
       Height = 33
       Caption = 'Add'
@@ -87,7 +87,7 @@ object ToolForm: TToolForm
     end
     object btnDelete: TSpeedButton
       Left = 186
-      Top = 16
+      Top = 2
       Width = 84
       Height = 33
       Caption = 'Delete'
@@ -98,7 +98,7 @@ object ToolForm: TToolForm
     end
     object btnEdit: TSpeedButton
       Left = 97
-      Top = 16
+      Top = 2
       Width = 84
       Height = 33
       Caption = 'Edit'

@@ -77,28 +77,28 @@ object NewClassForm: TNewClassForm
     TabOrder = 5
     object lblAccess: TLabel
       Left = 8
-      Top = 20
+      Top = 6
       Width = 70
       Height = 13
       Caption = 'Access scope:'
     end
     object lblInherit: TLabel
       Left = 8
-      Top = 44
+      Top = 30
       Width = 82
       Height = 13
       Caption = 'Inherit from class:'
     end
     object lblHeaderFile: TLabel
       Left = 8
-      Top = 68
+      Top = 54
       Width = 80
       Height = 13
       Caption = 'Header filename:'
     end
     object cmbClass: TComboBox
       Left = 124
-      Top = 40
+      Top = 26
       Width = 293
       Height = 21
       Enabled = False
@@ -107,7 +107,7 @@ object NewClassForm: TNewClassForm
     end
     object cmbScope: TComboBox
       Left = 124
-      Top = 16
+      Top = 2
       Width = 293
       Height = 21
       Style = csDropDownList
@@ -120,7 +120,7 @@ object NewClassForm: TNewClassForm
     end
     object txtIncFile: TEdit
       Left = 124
-      Top = 64
+      Top = 50
       Width = 293
       Height = 19
       Enabled = False

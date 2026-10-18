@@ -119,7 +119,7 @@ object ProjectOptionsFrm: TProjectOptionsFrm
         TabOrder = 0
         object btnIconBrowse: TBitBtn
           Left = 128
-          Top = 60
+          Top = 44
           Width = 105
           Height = 30
           Hint = 'Select a custom icon'
@@ -131,7 +131,7 @@ object ProjectOptionsFrm: TProjectOptionsFrm
         end
         object btnIconLib: TBitBtn
           Left = 128
-          Top = 21
+          Top = 5
           Width = 105
           Height = 30
           Hint = 'Select a icon from Dev-C++'#39's icon collection'
@@ -143,7 +143,7 @@ object ProjectOptionsFrm: TProjectOptionsFrm
         end
         object btnRemoveIcon: TBitBtn
           Left = 128
-          Top = 97
+          Top = 81
           Width = 105
           Height = 30
           Hint = 'Do not use an icon for this project'
@@ -156,7 +156,7 @@ object ProjectOptionsFrm: TProjectOptionsFrm
         end
         object Panel1: TPanel
           Left = 38
-          Top = 50
+          Top = 34
           Width = 44
           Height = 44
           BevelOuter = bvLowered
@@ -180,7 +180,7 @@ object ProjectOptionsFrm: TProjectOptionsFrm
         TabOrder = 1
         object lstType: TListBox
           Left = 8
-          Top = 20
+          Top = 4
           Width = 225
           Height = 62
           IntegralHeight = True
@@ -195,7 +195,7 @@ object ProjectOptionsFrm: TProjectOptionsFrm
         end
         object chkSupportXP: TCheckBox
           Left = 7
-          Top = 115
+          Top = 99
           Width = 230
           Height = 17
           Caption = 'Support Windows XP Themes'
@@ -203,7 +203,7 @@ object ProjectOptionsFrm: TProjectOptionsFrm
         end
         object chkDefCpp: TCheckBox
           Left = 7
-          Top = 92
+          Top = 76
           Width = 230
           Height = 17
           Caption = 'Default to C++ when creating new files'
@@ -245,7 +245,7 @@ object ProjectOptionsFrm: TProjectOptionsFrm
         TabOrder = 1
         object lblPriority: TLabel
           Left = 8
-          Top = 20
+          Top = 6
           Width = 153
           Height = 20
           AutoSize = False
@@ -253,7 +253,7 @@ object ProjectOptionsFrm: TProjectOptionsFrm
         end
         object chkCompile: TCheckBox
           Left = 8
-          Top = 44
+          Top = 30
           Width = 217
           Height = 17
           Caption = 'Include in compilation process'
@@ -263,7 +263,7 @@ object ProjectOptionsFrm: TProjectOptionsFrm
         end
         object chkCompileCpp: TCheckBox
           Left = 8
-          Top = 80
+          Top = 66
           Width = 217
           Height = 17
           Caption = 'Compile unit as C++'
@@ -273,7 +273,7 @@ object ProjectOptionsFrm: TProjectOptionsFrm
         end
         object chkOverrideBuildCmd: TCheckBox
           Left = 8
-          Top = 100
+          Top = 86
           Width = 217
           Height = 17
           Caption = 'Override build command'
@@ -283,7 +283,7 @@ object ProjectOptionsFrm: TProjectOptionsFrm
         end
         object txtOverrideBuildCmd: TMemo
           Left = 8
-          Top = 122
+          Top = 108
           Width = 281
           Height = 167
           Enabled = False
@@ -294,7 +294,7 @@ object ProjectOptionsFrm: TProjectOptionsFrm
         end
         object chkLink: TCheckBox
           Left = 8
-          Top = 62
+          Top = 48
           Width = 217
           Height = 17
           Caption = 'Include in linking process'
@@ -304,7 +304,7 @@ object ProjectOptionsFrm: TProjectOptionsFrm
         end
         object spnPriority: TSpinEdit
           Left = 168
-          Top = 16
+          Top = 2
           Width = 85
           Height = 24
           Enabled = False
@@ -843,42 +843,42 @@ object ProjectOptionsFrm: TProjectOptionsFrm
         TabOrder = 1
         object lblVerMajor: TLabel
           Left = 12
-          Top = 20
+          Top = 4
           Width = 34
           Height = 15
           Caption = 'Major:'
         end
         object lblVerMinor: TLabel
           Left = 72
-          Top = 20
+          Top = 4
           Width = 35
           Height = 15
           Caption = 'Minor:'
         end
         object lblVerRel: TLabel
           Left = 132
-          Top = 20
+          Top = 4
           Width = 42
           Height = 15
           Caption = 'Release:'
         end
         object lblVerBuild: TLabel
           Left = 192
-          Top = 20
+          Top = 4
           Width = 30
           Height = 15
           Caption = 'Build:'
         end
         object lblVerLang: TLabel
           Left = 280
-          Top = 20
+          Top = 4
           Width = 55
           Height = 15
           Caption = 'Language:'
         end
         object spnMajor: TSpinEdit
           Left = 12
-          Top = 38
+          Top = 22
           Width = 57
           Height = 24
           MaxValue = 0
@@ -889,7 +889,7 @@ object ProjectOptionsFrm: TProjectOptionsFrm
         end
         object spnMinor: TSpinEdit
           Left = 72
-          Top = 38
+          Top = 22
           Width = 57
           Height = 24
           MaxValue = 0
@@ -900,7 +900,7 @@ object ProjectOptionsFrm: TProjectOptionsFrm
         end
         object spnRelease: TSpinEdit
           Left = 132
-          Top = 38
+          Top = 22
           Width = 57
           Height = 24
           MaxValue = 0
@@ -911,7 +911,7 @@ object ProjectOptionsFrm: TProjectOptionsFrm
         end
         object spnBuild: TSpinEdit
           Left = 192
-          Top = 38
+          Top = 22
           Width = 57
           Height = 24
           MaxValue = 0
@@ -922,7 +922,7 @@ object ProjectOptionsFrm: TProjectOptionsFrm
         end
         object vleVersion: TValueListEditor
           Left = 12
-          Top = 92
+          Top = 76
           Width = 477
           Height = 175
           DisplayOptions = [doAutoColResize, doKeyColFixed]
@@ -932,7 +932,7 @@ object ProjectOptionsFrm: TProjectOptionsFrm
         end
         object cmbLangID: TComboBox
           Left = 280
-          Top = 38
+          Top = 22
           Width = 209
           Height = 23
           Style = csDropDownList
@@ -941,7 +941,7 @@ object ProjectOptionsFrm: TProjectOptionsFrm
         end
         object chkAutoIncBuild: TCheckBox
           Left = 12
-          Top = 67
+          Top = 51
           Width = 269
           Height = 17
           Caption = 'Auto-increment build number on compile'
@@ -949,7 +949,7 @@ object ProjectOptionsFrm: TProjectOptionsFrm
         end
         object chkSyncProduct: TCheckBox
           Left = 300
-          Top = 67
+          Top = 51
           Width = 181
           Height = 17
           Caption = 'Sync product with file version'

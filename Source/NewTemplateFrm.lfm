@@ -84,7 +84,7 @@ object NewTemplateForm: TNewTemplateForm
         TabOrder = 3
         object lstIcons: TListBox
           Left = 12
-          Top = 20
+          Top = 5
           Width = 181
           Height = 85
           Style = lbOwnerDrawFixed
@@ -96,7 +96,7 @@ object NewTemplateForm: TNewTemplateForm
         end
         object btnLib: TBitBtn
           Left = 208
-          Top = 17
+          Top = 2
           Width = 113
           Height = 24
           Hint = 'Select a icon from Penguin cpp'#39's icon collection'
@@ -109,7 +109,7 @@ object NewTemplateForm: TNewTemplateForm
         end
         object btnBrowse: TBitBtn
           Left = 208
-          Top = 51
+          Top = 36
           Width = 113
           Height = 22
           Hint = 'Select a custom icon'
@@ -122,7 +122,7 @@ object NewTemplateForm: TNewTemplateForm
         end
         object btnRemove: TBitBtn
           Left = 208
-          Top = 83
+          Top = 68
           Width = 113
           Height = 22
           Hint = 'Do not use an icon for this project'

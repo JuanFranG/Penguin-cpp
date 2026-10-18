@@ -91,7 +91,7 @@ object FindForm: TFindForm
       TabOrder = 2
       object cbMatchCase: TCheckBox
         Left = 8
-        Top = 16
+        Top = 2
         Width = 120
         Height = 17
         Caption = 'C&ase sensitive'
@@ -99,7 +99,7 @@ object FindForm: TFindForm
       end
       object cbWholeWord: TCheckBox
         Left = 8
-        Top = 40
+        Top = 26
         Width = 121
         Height = 17
         Caption = '&Whole words only'
@@ -107,7 +107,7 @@ object FindForm: TFindForm
       end
       object cbPrompt: TCheckBox
         Left = 8
-        Top = 64
+        Top = 50
         Width = 120
         Height = 17
         Caption = '&Prompt on Replace'
@@ -123,7 +123,7 @@ object FindForm: TFindForm
       TabOrder = 3
       object rbBackward: TRadioButton
         Left = 8
-        Top = 42
+        Top = 26
         Width = 121
         Height = 17
         Caption = '&Backward'
@@ -131,7 +131,7 @@ object FindForm: TFindForm
       end
       object rbForward: TRadioButton
         Left = 8
-        Top = 18
+        Top = 2
         Width = 121
         Height = 17
         Caption = '&Forward'
@@ -149,7 +149,7 @@ object FindForm: TFindForm
       TabOrder = 4
       object rbProjectFiles: TRadioButton
         Left = 8
-        Top = 20
+        Top = 4
         Width = 121
         Height = 17
         Caption = 'Files in Project'
@@ -159,7 +159,7 @@ object FindForm: TFindForm
       end
       object rbOpenFiles: TRadioButton
         Left = 8
-        Top = 41
+        Top = 25
         Width = 121
         Height = 17
         Caption = 'Open Files'
@@ -167,7 +167,7 @@ object FindForm: TFindForm
       end
       object rbCurFile: TRadioButton
         Left = 8
-        Top = 64
+        Top = 48
         Width = 121
         Height = 17
         Caption = 'Current file'
@@ -183,7 +183,7 @@ object FindForm: TFindForm
       TabOrder = 5
       object rbGlobal: TRadioButton
         Left = 8
-        Top = 18
+        Top = 2
         Width = 121
         Height = 17
         Caption = '&Global'
@@ -193,7 +193,7 @@ object FindForm: TFindForm
       end
       object rbSelectedOnly: TRadioButton
         Left = 8
-        Top = 42
+        Top = 26
         Width = 121
         Height = 17
         Caption = '&Selected only'
@@ -209,7 +209,7 @@ object FindForm: TFindForm
       TabOrder = 6
       object rbFromCursor: TRadioButton
         Left = 8
-        Top = 18
+        Top = 2
         Width = 121
         Height = 17
         Caption = 'From &cursor'
@@ -219,7 +219,7 @@ object FindForm: TFindForm
       end
       object rbEntireScope: TRadioButton
         Left = 8
-        Top = 42
+        Top = 26
         Width = 121
         Height = 17
         Caption = 'Entire &scope'

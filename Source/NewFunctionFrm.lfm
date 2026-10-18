@@ -132,7 +132,7 @@ object NewFunctionForm: TNewFunctionForm
     TabOrder = 5
     object chkStatic: TCheckBox
       Left = 12
-      Top = 20
+      Top = 4
       Width = 157
       Height = 17
       Caption = 'Static'
@@ -141,7 +141,7 @@ object NewFunctionForm: TNewFunctionForm
     end
     object chkVirtual: TCheckBox
       Left = 12
-      Top = 44
+      Top = 28
       Width = 69
       Height = 17
       Caption = 'Virtual'
@@ -150,7 +150,7 @@ object NewFunctionForm: TNewFunctionForm
     end
     object chkPure: TCheckBox
       Left = 96
-      Top = 44
+      Top = 28
       Width = 57
       Height = 17
       Caption = 'Pure'
@@ -159,7 +159,7 @@ object NewFunctionForm: TNewFunctionForm
     end
     object chkInline: TCheckBox
       Left = 12
-      Top = 68
+      Top = 52
       Width = 157
       Height = 17
       Caption = 'Inline'

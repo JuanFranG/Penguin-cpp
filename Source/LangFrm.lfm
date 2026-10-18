@@ -56,7 +56,7 @@ object LangForm: TLangForm
       TabOrder = 0
       object lbLanguages: TListBox
         Left = 8
-        Top = 20
+        Top = 4
         Width = 250
         Height = 181
         Font.Charset = DEFAULT_CHARSET
@@ -165,21 +165,21 @@ object LangForm: TLangForm
       object lblTheme: TLabel
         Visible = False
         Left = 8
-        Top = 104
+        Top = 88
         Width = 39
         Height = 15
         Caption = 'Theme:'
       end
       object lblColor: TLabel
         Left = 8
-        Top = 72
+        Top = 56
         Width = 32
         Height = 15
         Caption = 'Color:'
       end
       object lblFont: TLabel
         Left = 8
-        Top = 32
+        Top = 16
         Width = 27
         Height = 15
         Caption = 'Font:'
@@ -187,14 +187,14 @@ object LangForm: TLangForm
       object VirtualImageTheme: TImage
         Visible = False
         Left = 3
-        Top = 135
+        Top = 119
         Width = 383
         Height = 103
       end
       object cmbTheme: TComboBox
         Visible = False
         Left = 56
-        Top = 102
+        Top = 86
         Width = 201
         Height = 23
         Style = csDropDownList
@@ -213,7 +213,7 @@ object LangForm: TLangForm
       end
       object cmbColors: TComboBox
         Left = 56
-        Top = 70
+        Top = 54
         Width = 201
         Height = 23
         Style = csDropDownList
@@ -239,7 +239,7 @@ object LangForm: TLangForm
       end
       object cmbFont: TComboBox
         Left = 56
-        Top = 22
+        Top = 6
         Width = 201
         Height = 36
         AutoComplete = False

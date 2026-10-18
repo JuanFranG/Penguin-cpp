@@ -448,12 +448,12 @@ object CompOptForm: TCompOptForm
     Left = 12
     Top = 8
     Width = 461
-    Height = 53
+    Height = 60
     Caption = 'Compiler set to configure'
     TabOrder = 4
     object btnAddBlankCompilerSet: TSpeedButton
       Left = 360
-      Top = 20
+      Top = 4
       Width = 22
       Height = 22
       Hint = 'Add a new compiler set'
@@ -464,7 +464,7 @@ object CompOptForm: TCompOptForm
     end
     object btnDelCompilerSet: TSpeedButton
       Left = 432
-      Top = 20
+      Top = 4
       Width = 22
       Height = 22
       Hint = 'Delete the selected compiler set'
@@ -475,7 +475,7 @@ object CompOptForm: TCompOptForm
     end
     object btnRenameCompilerSet: TSpeedButton
       Left = 408
-      Top = 20
+      Top = 4
       Width = 22
       Height = 22
       Hint = 'Rename the selected compiler set'
@@ -486,7 +486,7 @@ object CompOptForm: TCompOptForm
     end
     object btnFindCompilers: TSpeedButton
       Left = 336
-      Top = 20
+      Top = 4
       Width = 22
       Height = 22
       Hint = 'Find and automatically configure compilers'
@@ -503,7 +503,7 @@ object CompOptForm: TCompOptForm
     end
     object btnAddFilledCompilerSet: TSpeedButton
       Left = 384
-      Top = 20
+      Top = 4
       Width = 22
       Height = 22
       Hint = 'Add a new compiler set'
@@ -514,7 +514,7 @@ object CompOptForm: TCompOptForm
     end
     object cmbCompilerSetComp: TComboBox
       Left = 8
-      Top = 20
+      Top = 4
       Width = 321
       Height = 23
       Style = csDropDownList

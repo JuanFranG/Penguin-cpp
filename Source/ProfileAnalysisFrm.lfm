@@ -207,21 +207,21 @@ object ProfileAnalysisForm: TProfileAnalysisForm
           TabOrder = 0
           object PrevText: TLabel
             Left = 16
-            Top = 78
+            Top = 62
             Width = 176
             Height = 15
             Caption = 'Supress functions called less than'
           end
           object PostText: TLabel
             Left = 240
-            Top = 78
+            Top = 62
             Width = 29
             Height = 15
             Caption = 'times'
           end
           object chkHideNotCalled: TCheckBox
             Left = 16
-            Top = 24
+            Top = 8
             Width = 257
             Height = 17
             Caption = 'Hide functions not called long enough'
@@ -232,7 +232,7 @@ object ProfileAnalysisForm: TProfileAnalysisForm
           end
           object chkSuppressStatic: TCheckBox
             Left = 16
-            Top = 48
+            Top = 32
             Width = 257
             Height = 17
             Caption = 'Suppress statically declared (private) functions'
@@ -241,7 +241,7 @@ object ProfileAnalysisForm: TProfileAnalysisForm
           end
           object spnMinCount: TSpinEdit
             Left = 184
-            Top = 75
+            Top = 59
             Width = 49
             Height = 24
             MaxValue = 999999999
@@ -269,7 +269,7 @@ object ProfileAnalysisForm: TProfileAnalysisForm
           TabOrder = 2
           object chkCustom: TCheckBox
             Left = 16
-            Top = 24
+            Top = 8
             Width = 249
             Height = 17
             Caption = 'Use these commands instead:'
@@ -278,7 +278,7 @@ object ProfileAnalysisForm: TProfileAnalysisForm
           end
           object editCustom: TEdit
             Left = 16
-            Top = 48
+            Top = 32
             Width = 289
             Height = 21
             Enabled = False

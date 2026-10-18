@@ -102,48 +102,48 @@ object AStyleFormatterOptionsForm: TAStyleFormatterOptionsForm
     TabOrder = 4
     object lblBracketStyle: TLabel
       Left = 16
-      Top = 24
+      Top = 10
       Width = 69
       Height = 15
       Caption = 'Bracket style:'
     end
     object lblIndentStyle: TLabel
       Left = 16
-      Top = 56
+      Top = 42
       Width = 64
       Height = 15
       Caption = 'Indent style:'
     end
     object lblTabWidth: TLabel
       Left = 16
-      Top = 88
+      Top = 74
       Width = 54
       Height = 15
       Caption = 'Tab width:'
     end
     object lblCommand: TLabel
       Left = 16
-      Top = 154
+      Top = 140
       Width = 226
       Height = 15
       Caption = 'Final command (add customizations here):'
     end
     object bvCustom: TBevel
       Left = 20
-      Top = 146
+      Top = 132
       Width = 544
       Height = 2
     end
     object lblIndentParts: TLabel
       Left = 280
-      Top = 16
+      Top = 2
       Width = 184
       Height = 15
       Caption = 'Indent the following kinds of code:'
     end
     object cmbBracketStyle: TComboBox
       Left = 104
-      Top = 20
+      Top = 6
       Width = 145
       Height = 23
       Style = csDropDownList
@@ -168,7 +168,7 @@ object AStyleFormatterOptionsForm: TAStyleFormatterOptionsForm
     end
     object cmbIndentStyle: TComboBox
       Left = 104
-      Top = 52
+      Top = 38
       Width = 145
       Height = 23
       Style = csDropDownList
@@ -185,7 +185,7 @@ object AStyleFormatterOptionsForm: TAStyleFormatterOptionsForm
     end
     object spinTabWidth: TSpinEdit
       Left = 130
-      Top = 84
+      Top = 70
       Width = 50
       Height = 24
       MaxValue = 20
@@ -196,7 +196,7 @@ object AStyleFormatterOptionsForm: TAStyleFormatterOptionsForm
     end
     object chkClasses: TCheckBox
       Left = 288
-      Top = 40
+      Top = 26
       Width = 129
       Height = 17
       Caption = 'Classes'
@@ -205,7 +205,7 @@ object AStyleFormatterOptionsForm: TAStyleFormatterOptionsForm
     end
     object chkSwitches: TCheckBox
       Left = 288
-      Top = 64
+      Top = 50
       Width = 129
       Height = 17
       Caption = 'Switches'
@@ -214,7 +214,7 @@ object AStyleFormatterOptionsForm: TAStyleFormatterOptionsForm
     end
     object chkNamespace: TCheckBox
       Left = 432
-      Top = 40
+      Top = 26
       Width = 129
       Height = 17
       Caption = 'Namespaces'
@@ -223,7 +223,7 @@ object AStyleFormatterOptionsForm: TAStyleFormatterOptionsForm
     end
     object chkCases: TCheckBox
       Left = 288
-      Top = 88
+      Top = 74
       Width = 129
       Height = 17
       Caption = 'Cases'
@@ -232,7 +232,7 @@ object AStyleFormatterOptionsForm: TAStyleFormatterOptionsForm
     end
     object chkLabels: TCheckBox
       Left = 432
-      Top = 64
+      Top = 50
       Width = 129
       Height = 17
       Caption = 'Labels'
@@ -241,7 +241,7 @@ object AStyleFormatterOptionsForm: TAStyleFormatterOptionsForm
     end
     object chkPreprocessor: TCheckBox
       Left = 432
-      Top = 88
+      Top = 74
       Width = 129
       Height = 17
       Caption = 'Preprocessor'
@@ -250,7 +250,7 @@ object AStyleFormatterOptionsForm: TAStyleFormatterOptionsForm
     end
     object memFullCommand: TMemo
       Left = 16
-      Top = 174
+      Top = 160
       Width = 552
       Height = 81
       TabOrder = 9
@@ -258,7 +258,7 @@ object AStyleFormatterOptionsForm: TAStyleFormatterOptionsForm
     end
     object spinMaxLineLength: TSpinEdit
       Left = 130
-      Top = 116
+      Top = 102
       Width = 50
       Height = 24
       MaxValue = 200
@@ -269,7 +269,7 @@ object AStyleFormatterOptionsForm: TAStyleFormatterOptionsForm
     end
     object chkMaxLineLength: TCheckBox
       Left = 16
-      Top = 120
+      Top = 106
       Width = 112
       Height = 17
       Caption = 'Max line length:'

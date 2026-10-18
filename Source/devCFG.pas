@@ -2349,7 +2349,7 @@ begin
   fTabSize := 4;
 
   // Display
-  fFont.name := 'Consolas';
+  fFont.name := 'DejaVu Sans Mono'; // on every Linux Mint; Consolas is a Windows font
   fFont.Size := 10;
   //fFont.name := 'Source Code Pro';
   //fFont.Size := 10;
@@ -2362,7 +2362,7 @@ begin
   fLineNumbers := TRUE;
   fFirstisZero := FALSE;
   fLeadZero := FALSE;
-  fGutterFont.Name := 'Consolas';
+  fGutterFont.Name := 'DejaVu Sans Mono';
   fGutterFont.Size := 10;
   //fGutterFont.name := 'Source Code Pro';
   //fGutterFont.Size := 10;

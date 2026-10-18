@@ -161,7 +161,7 @@ begin
   GetMonospaceFonts(cmbFont.Items);
   FontIndex := cmbFont.Items.IndexOf('Source Code Pro');
   if FontIndex = -1 then
-    FontIndex := cmbFont.Items.IndexOf('Consolas');
+    FontIndex := cmbFont.Items.IndexOf('DejaVu Sans Mono');
   if FontIndex = -1 then
     FontIndex := cmbFont.Items.IndexOf('Courier');
   // usual monospaced fonts on Linux

@@ -11,7 +11,7 @@ object CodeComplForm: TCodeComplForm
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -13
-  Font.Name = 'Courier New'
+  Font.Name = 'Monospace'
   Font.Style = []
   FormStyle = fsStayOnTop
   KeyPreview = True
@@ -39,7 +39,7 @@ object CodeComplForm: TCodeComplForm
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -13
-    Font.Name = 'Courier New'
+    Font.Name = 'Monospace'
     Font.Style = []
     ParentFont = False
     TabOrder = 0

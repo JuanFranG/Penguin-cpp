@@ -6149,7 +6149,7 @@ begin
   widestwidth := 0;
 
   // Fix, cmbMembers.Canvas.Font was set to Tahoma for some reason?
-  ComboBox.Canvas.Font.Name := 'Courier New';
+  ComboBox.Canvas.Font.Name := 'Monospace'; // fontconfig's monospaced font
 
   // get the max needed with of the items in dropdown state
   for I := 0 to ComboBox.Items.Count - 1 do

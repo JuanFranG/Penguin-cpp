@@ -10,7 +10,7 @@ object TipOfTheDayForm: TTipOfTheDayForm
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'default'
   Font.Style = []
   FormStyle = fsStayOnTop
   Position = poMainFormCenter
@@ -147,7 +147,7 @@ object TipOfTheDayForm: TTipOfTheDayForm
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clBlue
       Font.Height = -11
-      Font.Name = 'MS Sans Serif'
+      Font.Name = 'default'
       Font.Style = []
       ParentFont = False
       OnClick = lblUrlClick

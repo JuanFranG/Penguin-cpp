@@ -9,7 +9,7 @@ object CompOptForm: TCompOptForm
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -12
-  Font.Name = 'Segoe UI'
+  Font.Name = 'default'
   Font.Style = []
   Position = poMainFormCenter
   ShowHint = True
@@ -130,7 +130,7 @@ object CompOptForm: TCompOptForm
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clBlue
         Font.Height = -11
-        Font.Name = 'MS Sans Serif'
+        Font.Name = 'default'
         Font.Style = [fsUnderline]
         ParentColor = False
         ParentFont = False
@@ -496,7 +496,7 @@ object CompOptForm: TCompOptForm
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -12
-      Font.Name = 'Segoe UI'
+      Font.Name = 'default'
       Font.Style = [fsBold]
       ParentFont = False
       OnClick = btnFindCompilersClick

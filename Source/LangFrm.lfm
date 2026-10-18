@@ -10,7 +10,7 @@ object LangForm: TLangForm
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -12
-  Font.Name = 'Segoe UI'
+  Font.Name = 'default'
   Font.Style = []
   Position = poMainFormCenter
   OnClose = FormClose
@@ -62,7 +62,7 @@ object LangForm: TLangForm
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -12
-        Font.Name = 'Segoe UI'
+        Font.Name = 'default'
         Font.Style = []
         ItemHeight = 15
         ParentFont = False
@@ -122,7 +122,7 @@ object LangForm: TLangForm
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -13
-    Font.Name = 'Courier New'
+    Font.Name = 'Monospace'
     Font.Style = []
     Font.Quality = fqClearTypeNatural
     TabOrder = 3

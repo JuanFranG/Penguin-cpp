@@ -294,7 +294,7 @@ begin
     if FontIndex = -1 then
       FontIndex := cboEditorFont.Items.IndexOf('Source Code Pro');
     if FontIndex = -1 then
-      FontIndex := cboEditorFont.Items.IndexOf('Consolas');
+      FontIndex := cboEditorFont.Items.IndexOf('DejaVu Sans Mono');
     if FontIndex = -1 then
       FontIndex := cboEditorFont.Items.IndexOf('Courier');
     cboEditorFont.ItemIndex := FontIndex;
@@ -310,7 +310,7 @@ begin
     if FontIndex = -1 then
       FontIndex := cboGutterFont.Items.IndexOf('Source Code Pro');
     if FontIndex = -1 then
-      FontIndex := cboGutterFont.Items.IndexOf('Consolas');
+      FontIndex := cboGutterFont.Items.IndexOf('DejaVu Sans Mono');
     if FontIndex = -1 then
       FontIndex := cboGutterFont.Items.IndexOf('Courier');
     cboGutterFont.ItemIndex := FontIndex;

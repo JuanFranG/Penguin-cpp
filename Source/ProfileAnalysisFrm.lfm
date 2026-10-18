@@ -8,7 +8,7 @@ object ProfileAnalysisForm: TProfileAnalysisForm
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'default'
   Font.Style = []
   FormStyle = fsStayOnTop
   Position = poMainFormCenter
@@ -34,7 +34,7 @@ object ProfileAnalysisForm: TProfileAnalysisForm
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -12
-      Font.Name = 'Segoe UI'
+      Font.Name = 'default'
       Font.Style = []
       ParentFont = False
       TabOrder = 0
@@ -59,7 +59,7 @@ object ProfileAnalysisForm: TProfileAnalysisForm
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
           Font.Height = -11
-          Font.Name = 'Courier New'
+          Font.Name = 'Monospace'
           Font.Style = []
           ParentFont = False
           ReadOnly = True
@@ -140,7 +140,7 @@ object ProfileAnalysisForm: TProfileAnalysisForm
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
           Font.Height = -11
-          Font.Name = 'Courier New'
+          Font.Name = 'Monospace'
           Font.Style = []
           ParentFont = False
           ReadOnly = True

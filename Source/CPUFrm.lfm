@@ -10,7 +10,7 @@ object CPUForm: TCPUForm
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -12
-  Font.Name = 'Segoe UI'
+  Font.Name = 'default'
   Font.Style = []
   FormStyle = fsStayOnTop
   PopupMenu = CPUPopup
@@ -108,7 +108,7 @@ object CPUForm: TCPUForm
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -13
-        Font.Name = 'Courier New'
+        Font.Name = 'Monospace'
         Font.Pitch = fpFixed
         Font.Style = []
         Font.Quality = fqClearTypeNatural

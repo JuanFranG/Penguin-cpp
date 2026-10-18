@@ -9,7 +9,7 @@ object AStyleFormatterOptionsForm: TAStyleFormatterOptionsForm
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -12
-  Font.Name = 'Segoe UI'
+  Font.Name = 'default'
   Font.Style = []
   Position = poMainFormCenter
   ShowHint = True
@@ -77,7 +77,7 @@ object AStyleFormatterOptionsForm: TAStyleFormatterOptionsForm
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -13
-    Font.Name = 'Courier New'
+    Font.Name = 'Monospace'
     Font.Style = []
     Font.Quality = fqClearTypeNatural
     TabOrder = 0

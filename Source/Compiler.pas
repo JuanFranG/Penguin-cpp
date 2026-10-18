@@ -230,11 +230,14 @@ begin
   Result := ExtractRelativePath(Project.FileName, Project.Units[I].FileName);
 end;
 
-// Its object file: next to it, or in the project's object folder
+// Its object file: next to it, or in the project's object folder. That folder
+// is usually relative to the project ("obj"); ExtractRelativePath needs both
+// names absolute, or it climbs to / ("../../../../main.o")
 function UnitObject(Project: TProject; I: integer): String;
 begin
   if Project.Options.ObjectOutput <> '' then
-    Result := ExtractRelativePath(Project.FileName, IncludeTrailingPathDelimiter(Project.Options.ObjectOutput) +
+    Result := ExtractRelativePath(Project.FileName,
+      IncludeTrailingPathDelimiter(ExpandFileto(Project.Options.ObjectOutput, Project.Directory)) +
       ChangeFileExt(ExtractFileName(Project.Units[I].FileName), OBJ_EXT))
   else
     Result := ChangeFileExt(UnitSource(Project, I), OBJ_EXT);

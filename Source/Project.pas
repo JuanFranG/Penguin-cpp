@@ -289,11 +289,14 @@ var
   OptionIndex: integer;
 begin
   Result := 0;
+  if (fOptions.CompilerSet < 0) or (fOptions.CompilerSet >= devCompilerSets.Count) then
+    Exit; // no compiler installed
 
   // Does the option exist?
   if devCompilerSets[fOptions.CompilerSet].FindOption(OptionString, OptionStruct, OptionIndex) then begin
-    // Can it be found in the project options list?
-    if (OptionIndex <= Length(fOptions.CompilerOptions)) then begin
+    // Can it be found in the project options list? (a project saved with
+    // another compiler set may have fewer)
+    if (OptionIndex >= 0) and (OptionIndex < Length(fOptions.CompilerOptions)) then begin
       result := fOptions.CompilerOptions[OptionIndex];
     end;
   end;
@@ -304,10 +307,13 @@ var
   OptionStruct: PCompilerOption;
   OptionIndex: integer;
 begin
+  if (fOptions.CompilerSet < 0) or (fOptions.CompilerSet >= devCompilerSets.Count) then
+    Exit; // no compiler installed
+
   // Does the option exist?
   if devCompilerSets[fOptions.CompilerSet].FindOption(OptionString, OptionStruct, OptionIndex) then begin
     // Can it be found in the project options list?
-    if (OptionIndex <= Length(fOptions.CompilerOptions)) then begin
+    if (OptionIndex >= 0) and (OptionIndex < Length(fOptions.CompilerOptions)) then begin
       if (fOptions.CompilerOptions[OptionIndex] <> value) then begin
         fOptions.CompilerOptions[OptionIndex] := Value;
         SetModified(true);

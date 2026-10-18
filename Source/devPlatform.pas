@@ -75,7 +75,10 @@ procedure ListProcesses(Names: TStrings);
 // seconds and %d for the code, as for printf) until Enter (PausePrompt).
 // False when no terminal is installed.
 function BuildTerminalCommand(Command: TStrings; Pause: Boolean; const ExitFormat, PausePrompt: String;
-  out Exe: String; Args: TStrings): Boolean;
+  out Exe: String; Args: TStrings; const Preferred: String = ''): Boolean;
+
+// The terminals BuildTerminalCommand knows, for the user to choose from
+procedure GetTerminalNames(Names: TStrings);
 {$ENDIF}
 
 // Opens a file, directory or URL with the desktop's default application
@@ -316,16 +319,26 @@ const
     'printf "$fmt\n" "$((ms / 1000)).$(printf %03d $((ms % 1000)))" "$code"; ' +
     'printf ''%s'' "$prompt"; read dummy';
 
-// The desktop's own terminal first (XDG_CURRENT_DESKTOP: X-Cinnamon, MATE,
-// XFCE, KDE...), then the others in order
-function FindTerminal(out Terminal: TTerminal): Boolean;
+procedure GetTerminalNames(Names: TStrings);
+var
+  I: Integer;
+begin
+  for I := Low(Terminals) to High(Terminals) do
+    Names.Add(Terminals[I].Exe);
+end;
+
+// The one the user chose, if installed; else the desktop's own terminal
+// (XDG_CURRENT_DESKTOP: X-Cinnamon, MATE, XFCE, KDE...), then the others in order
+function FindTerminal(out Terminal: TTerminal; const Chosen: String): Boolean;
 var
   Desktop, Preferred: String;
   I: Integer;
 begin
   Desktop := UpperCase(GetEnvironmentVariable('XDG_CURRENT_DESKTOP'));
   Preferred := '';
-  if Pos('MATE', Desktop) > 0 then
+  if Chosen <> '' then
+    Preferred := Chosen
+  else if Pos('MATE', Desktop) > 0 then
     Preferred := 'mate-terminal'
   else if Pos('XFCE', Desktop) > 0 then
     Preferred := 'xfce4-terminal'
@@ -345,13 +358,13 @@ begin
 end;
 
 function BuildTerminalCommand(Command: TStrings; Pause: Boolean; const ExitFormat, PausePrompt: String;
-  out Exe: String; Args: TStrings): Boolean;
+  out Exe: String; Args: TStrings; const Preferred: String = ''): Boolean;
 var
   Terminal: TTerminal;
   I: Integer;
 begin
   Exe := '';
-  Result := FindTerminal(Terminal);
+  Result := FindTerminal(Terminal, Preferred);
   if not Result then
     Exit;
   Exe := ExeSearch(Terminal.Exe, SearchPath);
@@ -428,10 +441,14 @@ end;
 
 {$IFNDEF UNIX}
 function BuildTerminalCommand(Command: TStrings; Pause: Boolean; const ExitFormat, PausePrompt: String;
-  out Exe: String; Args: TStrings): Boolean;
+  out Exe: String; Args: TStrings; const Preferred: String = ''): Boolean;
 begin
   Exe := '';
   Result := False; // not implemented here
+end;
+
+procedure GetTerminalNames(Names: TStrings);
+begin
 end;
 {$ENDIF}
 

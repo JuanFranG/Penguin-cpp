@@ -1124,6 +1124,8 @@ const
   ID_ENV_CACHEFAIL                      = 66023;
   ID_ENV_PRINTERFAIL                    = 66024;
   ID_ENV_MULTILINETABERROR              = 66025;
+  ID_ENV_TERMINAL                       = 66026;
+  ID_ENV_TERMINALAUTO                   = 66027;
 
   // Execute menu
   ID_ITEM_EXECPARAMS                    = 67001;

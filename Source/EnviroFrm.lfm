@@ -249,6 +249,21 @@ object EnviroForm: TEnviroForm
         Caption = 'Pause console programs after return'
         TabOrder = 5
       end
+      object lblTerminal: TLabel
+        Left = 302
+        Top = 165
+        Width = 160
+        Height = 15
+        Caption = 'Terminal for programs'
+      end
+      object cboTerminal: TComboBox
+        Left = 302
+        Top = 183
+        Width = 160
+        Height = 23
+        Style = csDropDownList
+        TabOrder = 13
+      end
     end
     object tabPaths: TTabSheet
       Caption = 'Directories'

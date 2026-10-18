@@ -74,6 +74,8 @@ type
     btnExtDel: TSpeedButton;
     vleExternal: TValueListEditor;
     cbPauseConsole: TCheckBox;
+    lblTerminal: TLabel;
+    cboTerminal: TComboBox;
     edOptionsDir: TEdit;
     lblOptionsDir: TLabel;
     btnResetDev: TButton;
@@ -118,7 +120,8 @@ type
 implementation
 
 uses
-  UITypes, Filectrl, devCFG, MultiLangSupport, Version, DataFrm, Utils, ImageTheme, main, StrUtils;
+  UITypes, Filectrl, devCFG, MultiLangSupport, Version, DataFrm, Utils, ImageTheme, main, StrUtils, Math,
+  devPlatform;
 
 {$R *.lfm}
 
@@ -171,6 +174,10 @@ begin
     BackUps := cbBackups.Checked;
     MinOnRun := cbMinOnRun.Checked;
     ConsolePause := cbPauseConsole.Checked;
+    if cboTerminal.ItemIndex > 0 then // 0 is "Automatic"
+      TerminalProgram := cboTerminal.Text
+    else
+      TerminalProgram := '';
     MRUMax := seMRUMax.Value;
     if not MultiLineTab then begin
       if cboTabsTop.ItemIndex in [2, 3] then begin
@@ -248,6 +255,7 @@ begin
   cbBackups.Caption := Lang[ID_ENV_BACKUPS];
   cbMinOnRun.Caption := Lang[ID_ENV_MINONRUN];
   cbPauseConsole.Caption := Lang[ID_ENV_PAUSECONSOLE];
+  lblTerminal.Caption := Lang[ID_ENV_TERMINAL];
 
   gbProgress.Caption := Lang[ID_ENV_COMPPROGRESSWINDOW];
   cbShowProgress.Caption := Lang[ID_ENV_SHOWPROGRESS];
@@ -317,6 +325,11 @@ begin
     cbMultiLineTab.Checked := MultiLineTab;
     cbPauseConsole.Checked := ConsolePause;
     cbWatchHint.Checked := WatchHint;
+
+    // Terminals for console programs: "Automatic", then the known ones
+    cboTerminal.Items.Add(Lang[ID_ENV_TERMINALAUTO]);
+    GetTerminalNames(cboTerminal.Items);
+    cboTerminal.ItemIndex := Max(0, cboTerminal.Items.IndexOf(TerminalProgram));
     cbShowProgress.Checked := ShowProgress;
     cbAutoCloseProgress.Checked := AutoCloseProgress;
 

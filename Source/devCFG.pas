@@ -574,6 +574,7 @@ type
     fInterfaceFont: String; // UI font
     fInterfaceFontSize: integer; // UI font size
     fConsolePause: boolean; // pause console program after return
+    fTerminalProgram: String; // terminal for console programs; '' picks one
     fShortenCompPaths: boolean; // shorten compiler paths in compiler log
     fStyle: integer; // Delphi Style
     fStyleChange: boolean;
@@ -675,6 +676,7 @@ type
     //Execution
     property MinOnRun: boolean read fMinOnRun write fMinOnRun;
     property ConsolePause: boolean read fConsolePause write fConsolePause;
+    property TerminalProgram: String read fTerminalProgram write fTerminalProgram;
     property BackUps: boolean read fBackup write fBackup;
     property AutoOpen: integer read fAutoOpen write fAutoOpen;
 
@@ -932,6 +934,7 @@ begin
   fDefCpp := TRUE;
   fdblFiles := FALSE;
   fConsolePause := TRUE;
+  fTerminalProgram := '';
   fShortenCompPaths := False;
   fStyle := 0; // the colorful icon set; style 1 is the flat one. Themes come in phase 4b
   fTheme := 'NewLook';
@@ -2128,50 +2131,60 @@ begin
   devData.Write('CompilerSets', 'Current', fDefaultIndex);
 end;
 
-// The system's gcc, found in the PATH (on Linux Mint, /usr/bin/gcc from the
-// build-essential package), as a Release, a Debug and a Profiling set. Dev-C++
-// looked for the TDM-GCC folder it installed next to the program.
+// The system's compilers, found in the PATH: gcc (on Linux Mint, /usr/bin/gcc
+// from the build-essential package) and clang if it is installed, each as a
+// Release, a Debug and a Profiling set. gcc comes first: it is the default.
+// Dev-C++ looked for the TDM-GCC folder it installed next to the program.
 procedure TdevCompilerSets.FindSets;
-var
-  BaseSet: TdevCompilerSet;
-  BaseName, GccPath: String;
-  option: PCompilerOption;
-  index: integer;
+
+  procedure AddSets(const CCompiler, CppCompiler: String);
+  var
+    BaseSet: TdevCompilerSet;
+    BaseName, Path: String;
+    option: PCompilerOption;
+    index: integer;
+  begin
+    Path := ExeSearch(CCompiler, GetEnvironmentVariable('PATH'));
+    if (Path = '') or (ExeSearch(CppCompiler, GetEnvironmentVariable('PATH')) = '') then
+      Exit;
+
+    // Default, release profile
+    BaseSet := AddSet;
+    with BaseSet do begin
+      BinDir.Add(ExtractFileDir(Path));
+      SetProperties(BinDir[0], CCompiler);
+      SetExecutables;
+      gccName := CCompiler;
+      gppName := CppCompiler;
+      SetUserInput;
+      BaseName := Name;
+      Name := BaseName + ' Release';
+      if FindOption('-j', option, index) then
+        SetOption(option, System.CPUCount);
+    end;
+
+    // Debug profile
+    with AddSet(BaseSet) do begin
+      Name := BaseName + ' Debug';
+      if FindOption('-g3', option, index) then
+        SetOption(option, 1);
+      if FindOption('-j', option, index) then
+        SetOption(option, 0);
+    end;
+
+    // Profiling profile
+    with AddSet(BaseSet) do begin
+      Name := BaseName + ' Profiling';
+      if FindOption('-pg', option, index) then
+        SetOption(option, 1);
+      if FindOption('-j', option, index) then
+        SetOption(option, 0);
+    end;
+  end;
+
 begin
-  GccPath := ExeSearch(GCC_PROGRAM, GetEnvironmentVariable('PATH'));
-  if GccPath = '' then
-    Exit; // gcc is not installed: the compiler options say so
-
-  // Default, release profile
-  BaseSet := AddSet;
-  with BaseSet do begin
-    BinDir.Add(ExtractFileDir(GccPath));
-    SetProperties(BinDir[0], GCC_PROGRAM);
-    SetExecutables;
-    SetUserInput;
-    BaseName := Name;
-    Name := BaseName + ' Release';
-    if FindOption('-j', option, index) then
-      SetOption(option, System.CPUCount);
-  end;
-
-  // Debug profile
-  with AddSet(BaseSet) do begin
-    Name := BaseName + ' Debug';
-    if FindOption('-g3', option, index) then
-      SetOption(option, 1);
-    if FindOption('-j', option, index) then
-      SetOption(option, 0);
-  end;
-
-  // Profiling profile
-  with AddSet(BaseSet) do begin
-    Name := BaseName + ' Profiling';
-    if FindOption('-pg', option, index) then
-      SetOption(option, 1);
-    if FindOption('-j', option, index) then
-      SetOption(option, 0);
-  end;
+  AddSets(GCC_PROGRAM, GPP_PROGRAM);
+  AddSets('clang', 'clang++');
 end;
 
 procedure TdevCompilerSets.ClearSets;

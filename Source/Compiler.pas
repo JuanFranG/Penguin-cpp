@@ -778,7 +778,7 @@ begin
     Command.Add(FileToRun);
     CommandToList(Params, Command); // appends the program's arguments
     if BuildTerminalCommand(Command, devData.ConsolePause, Lang[ID_RUN_EXITED], Lang[ID_RUN_PRESSENTER],
-      Terminal, Args) then
+      Terminal, Args, devData.TerminalProgram) then
       devExecutor.ExecuteAndWatch(Terminal, Args, Dir, RunTerminate)
     else begin
       MessageDlg(Lang[ID_RUN_NOTERMINAL], mtWarning, [mbOK], 0);

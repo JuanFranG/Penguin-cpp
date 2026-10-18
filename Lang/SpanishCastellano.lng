@@ -961,6 +961,8 @@ Ver=12
 66020=Has cambiado el archivo de configuración a utilizar en tu aplicación.<CR>El nuevo archivo de configuración *no* se usará en la sesión actual. Cualquier cambio que hagas en esta sesión, será guardado en el archivo de configuración *actual*<CR><CR>Es recomendable reiniciar Dev-C++ ahora, para que empiece a usar el nuevo archivo de configuración... 
 66021=Dev-C++ was unable to set file associations.<CR><CR>This is known to be caused by using UAC on a normal non-admin user account.<CR><CR>Please disable UAC or run Dev-C++ as an admin if you want to change file associations using Dev-C++.<CR><CR>You might want to try the "Default Programs" feature in Windows Vista or 7.
 66022=UI font
+66026=Terminal para los programas:
+66027=Automática
 
 
 67001=Parámetros...

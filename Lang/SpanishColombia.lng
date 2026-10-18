@@ -930,6 +930,8 @@ Ver=1
 66022=UI fuente:
 66023=Dev-C++ no pudo cargar el caché de finalización de código, que está dañado o en parte obsoletas archivos de configuración ubicados en:<CR><CR>%s<CR><CR>¿Desea realizar copias de seguridad y restablecer las opciones? Si es así, por favor, reinicie Dev-C++. Las copias de seguridad se almacenarán aquí:<CR><CR>%s
 66024=Ocurrió un error al intentar cargar el diálogo de configuración de la impresora.<CR><CR>Usted probablemente no tiene una impresora instalada aún.
+66026=Terminal para los programas:
+66027=Automática
 
 67001=Parámetros...
 67002=Compilar el archivo actual

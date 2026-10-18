@@ -168,9 +168,13 @@ y también saber si pasa sin abrir ningún archivo.
   sin archivo ni línea, y la detección de compiladores busca las palabras
   "gcc version" y las carpetas de cabeceras en su salida. La codificación
   del usuario no cambia, y el programa que se compila corre en su idioma.
-- **D. Traducción al español completa:** faltan 237 textos en
-  `Spanish.lng` y `SpanishCastellano.lng` y 186 en `SpanishColombia.lng`; se
-  ven en inglés. `Hebrew.lng` es de una versión muy antigua (otros números de
+- ✅ **D. Traducción al español completa:** se tradujeron los 191 textos
+  que faltaban en `Spanish.lng` y `SpanishCastellano.lng` (153 en
+  `SpanishColombia.lng`); los que faltan todavía (46) ya no los usa el
+  código. Siete textos en inglés que hablaban de Windows, de Dev-C++ o de
+  WebUpdate se reescribieron (AStyle y clang-format dicen cómo instalarlos
+  con `apt`), y Acerca de enlaza a Clang en vez de TDM-GCC. Falta decidir
+  `Hebrew.lng`, que es de una versión muy antigua (otros números de
   mensaje): se propone quitarlo.
 - **E. Pruebas automáticas:** una prueba de los Makefiles con make y gcc de
   verdad (habría detectado `../../main.o`) y CI en GitHub Actions que

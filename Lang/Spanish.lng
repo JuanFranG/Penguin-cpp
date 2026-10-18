@@ -12,6 +12,7 @@ Ver=1
 8=Ve&ntana
 9=Ay&uda
 10=&Depurar
+11=F&ormato
 
 
 1001=&Nuevo
@@ -92,6 +93,8 @@ Ver=1
 4013=Marcador
 4014=&Fecha y Hora
 4015=&Encabezado Comentario
+4016=Copiar todo
+4017=Limpiar
 
 
 5001=&Buscar
@@ -118,6 +121,9 @@ Ver=1
 5022=&Edición
 5023=&Buscar
 5024=Ventana de reporte flotante
+5025=Reemplazar en archivos...
+5026=Compiladores
+5027=Buscar hacia atrás
 
 
 6001=&Nuevo archivo fuente
@@ -146,6 +152,7 @@ Ver=1
 7014=Configurar &Herramientas
 7015=Configurar &Teclas Rápidas
 7016=Delete Profiling Information
+7017=Comprobar la &sintaxis del archivo actual
 
 
 8001=Modo &Pantalla Completa
@@ -156,12 +163,15 @@ Ver=1
 8006=Pantalla completa de Dev-CPP %s. Presione Mayus-F12 para ver/ocultar 
 8007=Cerrar todos excepto este
 8008=&Listar...
+8009=Presione %s para activar o desactivar la pantalla completa, o %s para mostrar u ocultar las barras de herramientas
 
 
 9001=&Acerca de Dev-C++...
 9002=A&ctualizaciones
 9003=&Modificar Menú de Ayuda...
 9004=&Ayuda en Dev-CPP
+9006=Donar :)
+9007=Consejo del día...
 
 
 10001=&Depurar
@@ -184,6 +194,10 @@ Ver=1
 10018=&Remover Archivo...
 10019=&Opciones...
 10020=&Editar Archivo de Recurso
+10021=Siguiente instrucción
+10022=Entrar en la instrucción
+10023=Saltar función
+10024=Ir al punto de interrupción
 
 
 11001=&Remover Archivo
@@ -209,6 +223,9 @@ Ver=1
 12014=Archivos del proyecto
 12015=Ver miembros derivados
 12016=Abrir con...
+12017=Abrir la carpeta que lo contiene...
+12018=Cerrar todos excepto este
+12019=Agregar tarea pendiente (TODO)...
 
 
 13001=Compilador
@@ -246,6 +263,7 @@ Ver=1
 17003=Salida
 17004=Enviar comando a GDB
 17005=Enviar
+17006=Evaluar:
 
 
 18001=Nuevo
@@ -263,6 +281,7 @@ Ver=1
 19004=Guardar Archivo
 19005=Guardar Proyecto
 19006=Seleccionar Archivo de Ayuda
+19007=Guardar como
 
 
 20001=Nueva Variable vigilancia
@@ -285,6 +304,13 @@ Ver=1
 22005=Intercambiar encabezado/fuente
 22006=Collapse All
 22007=Uncollapse All
+22008=Comentar/descomentar
+22009=Duplicar línea
+22010=Eliminar línea
+22011=Mover la selección hacia arriba
+22012=Mover la selección hacia abajo
+22013=Mover a la otra vista
+22014=Comentar/descomentar al final de la línea
 
 
 23001=Opciones del Editor
@@ -340,6 +366,9 @@ Ver=1
 26025=Trim trailing spaces
 26026=Enabled
 26027=Gutter width
+26028=Sangría automática
+26029=Agregar sangría después de {} y :
+26030=Tabulaciones
 
 
 27001=Mostrar Caracteres ocultos en la Línea
@@ -400,6 +429,17 @@ Ver=1
 27056=Complete includes '<>' '""'
 27057=Complete square braces '[]'
 27058=Complete multiline comments '/**/'
+27059=Guardar todos los archivos del proyecto
+27060=Sobrescribir el archivo
+27061=Agregar marca de tiempo UNIX
+27062=Agregar fecha y hora con formato
+27063=Nombres de archivo
+27064=Nombre de ejemplo: %s
+27067=Borrar el carácter de cierre al borrar el de apertura
+27068=Completar comillas simples ''''
+27069=Completar comillas dobles '""'
+27070=Codificación de los documentos nuevos:
+27071=Usar las ligaduras de la fuente si las tiene
 
 
 28001=Nombre:
@@ -443,6 +483,13 @@ Ver=1
 34005=Tecla Asignada
 34006=Cancelar
 34007=Aceptar
+34009=Botón/Varios
+34010=Este atajo ya lo usa la acción '%s'.<CR><CR>¿Quitárselo y asignarlo a '%s'?
+34011=Haga clic en un elemento y presione el atajo que desee. Presione Esc o Supr para borrar el atajo. Evite Ctrl+Alt en los atajos si necesita usar la tecla AltGr.
+34012=¿Seguro que desea restablecer los atajos de todas las acciones?
+34013=¿Seguro que desea restablecer el atajo de la acción '%s'?
+34014=Restablecer todo
+34015=Restablecer selección
 
 
 35001=Devuelve Directorio por Omisión
@@ -475,6 +522,13 @@ Ver=1
 36015=&Buscar Actualizaciones
 36016=Post-4.9.9.2 Development:
 36017=http://orwellengine.blogspot.com
+36018=> 5.12
+36019=Repositorio:
+36020=Blog:
+36021=Compiladores
+36022=Sitio web del compilador Clang:
+36023=<= 4.9.9.2 (versiones antiguas)
+36025=Patrocinador:
 
 
 37001=Editar entrada de código automático
@@ -539,6 +593,17 @@ Ver=1
 38053=Atrás
 38054=Pause console programs after return
 38055=Opened files at previous closing
+38056=Reemplazar
+38057=Reemplazar en archivos
+38058=Reemplazar por:
+38059=Preguntar antes de reemplazar
+38060=Archivo actual
+38062=Arriba
+38063=Abajo
+38064=Izquierda
+38065=Derecha
+38066=Borrar la configuración y salir
+38067=Carpeta de configuración actual. Haga clic en el botón para restablecer Penguin cpp.
 
 
 39001=Reemplazar Texto
@@ -584,6 +649,7 @@ Ver=1
 43002=Compilador C++:
 43003=Compilador:
 43004=Output
+43005=Make
 
 
 44001=Soportar todos los programas en C ANSI Estandar
@@ -636,6 +702,11 @@ Ver=1
 47007=Cambiar de nombre al Paquete de Compilador
 47008=Ingrese el nuevo nombre para renombrar al Paquete de Compilación:
 47009=Más optimizaciones
+47011=Buscar y configurar automáticamente los compiladores
+47012=Agregar un conjunto de compilador vacío
+47013=Eliminar el conjunto de compilador seleccionado
+47014=Renombrar el conjunto de compilador seleccionado
+47015=Agregar un conjunto de compilador desde una carpeta
 47016=Se buscarán gcc y clang en las carpetas del PATH (en Linux Mint se instalan con: sudo apt install build-essential clang).<CR><CR>¿Borrar antes la lista actual de compiladores?
 
 
@@ -756,6 +827,11 @@ Ver=1
 55027=Sobreescribir archivo de salida
 55028=Agregar Librería u Objeto
 55029=%d archivos [%d fuentes, %d cabeceras, %d recursos, %d otros]
+55030=Guardar automáticamente el registro del compilador:
+55031=Compilador de C:
+55033=¿Seguro que desea descartar los cambios hechos a este conjunto en su proyecto?
+55034=Compilador de C++:
+55035=Enlazador:
 
 
 56001=Nombre:
@@ -776,6 +852,10 @@ Ver=1
 56016=Use directorios Include del proyecto
 56017=Use directorios de Librerías del proyecto
 56018=Use directorios de Recursos del proyecto
+56019=Biblioteca
+56020=Compilador de C:
+56021=Compilador de C++:
+56022=Enlazador:
 
 
 57001=Tipo de retorno:
@@ -804,6 +884,8 @@ Ver=1
 57024=Nombre de archivo de encabezado:
 57025=Agregar al proyecto actual
 57026=Atributos
+57027=Crear constructor
+57028=Crear destructor
 
 
 58001=Nombre de archivo
@@ -819,6 +901,7 @@ Ver=1
 58011=Relativo
 58012=Fecha y Hora del Archivo
 58013=Configuración para el compilador
+58014=Propiedades
 
 
 59001=Análisis de Perfil de ejecución
@@ -859,6 +942,11 @@ Ver=1
 60022=Se ha producido una violación de acceso a memoria (fallo de 
 60023=El archivo fuente es más reciente que el ejecutable. ¿Desea reconstruir 
 60024=Please select the application you want to attach to:
+60025=No se encontró el archivo fuente correspondiente
+60026=No se encontró el archivo de cabecera correspondiente
+60027=El formato de las opciones del compilador de Penguin cpp cambió.<CR><CR>Revise sus opciones en Proyecto >> Opciones del proyecto >> Compilador y guarde el proyecto.
+60028=El conjunto de compilador elegido para este proyecto ya no existe.<CR>Se usará el conjunto de compilador global.
+60029=El archivo %s contiene caracteres internacionales. ¿Desea guardarlo con codificación UTF-8? Si elige "No", se perderán esos caracteres.
 
 
 61001=No se puede abrir Archivo %s
@@ -877,6 +965,14 @@ Ver=1
 61014=Archivo %s no encontrado
 61015=No se ha indicado Aplicación Anfitriona. Puede indicarla en el menú 
 61016=Aplicación Anfitriona no encontrada! Puede indicarla en el menú 
+61017=El proyecto no está compilado.<CR><CR>¿Compilarlo ahora?
+61018=El archivo fuente no está compilado.<CR><CR>¿Compilarlo ahora?
+61019=%s cambió en el disco. ¿Volver a cargarlo?
+61020=%s fue renombrado o eliminado...
+61021=%s fue renombrado o eliminado. ¿Mantener este archivo en el editor?
+61022=Error al iniciar<CR><CR>%s<CR><CR>%s
+61023=Error al iniciar el depurador: no se indicó la carpeta del ejecutable
+61024=Error al escribir a GDB
 
 
 62001=Sin Nombre
@@ -899,6 +995,14 @@ Ver=1
 62018=Compilación Cancelada por el Usuario
 62019=Line:%6d               Col:%6d               Sel:%6d               Lines:%6d               Length:%6d
 62020=Done parsing
+62022=Análisis terminado en %g segundos
+62030=Archivo "%s" guardado automáticamente
+62031=Archivo "%s" guardado automáticamente como "%s"
+62032=Se borró el archivo de datos de perfilado "%s"
+62033=No se encontró el archivo de perfilado "%s"
+62034=No se encontró información de la expresión "%s"
+62035=Analizando el archivo %d de %d: "%s"
+62036=Se analizaron %d archivos en %g segundos (%.2f archivos por segundo)
 
 
 63001=&Aceptar
@@ -938,6 +1042,7 @@ Ver=1
 65004=No mostrar Sugerencias del Día al iniciar este programa
 65005=Sig. sugerencia
 65006=Sugerencia ant.
+65007=Consejo al azar
 
 
 66001=Asociaciones de Archivos
@@ -962,6 +1067,7 @@ Ver=1
 66020=You changed the configuration file to be used by the application.<CR>The new configuration file will *not* be used in the current session. Any configuration changes you do in this session, will be saved in the *currently* open configuration file.<CR><CR>It is suggested that you restart the application now, so that it starts using the new configuration file...
 66021=Dev-C++ was unable to set file associations.<CR><CR>This is known to be caused by using UAC on a normal non-admin user account.<CR><CR>Please disable UAC or run Dev-C++ as an admin if you want to change file associations using Dev-C++.<CR><CR>You might want to try the "Default Programs" feature in Windows Vista or 7.
 66022=UI font
+66025=Para usar pestañas verticales hay que activar las pestañas en varias líneas.<CR><CR>Se vuelve a las pestañas de arriba.
 66026=Terminal para los programas:
 66027=Automática
 
@@ -1071,6 +1177,7 @@ Ver=1
 72027=Incluir el siguiente archivo dentro del Makefile:
 72028=Sync product with file version
 72029=Default to C++ when creating new files
+72032=Archivos:
 
 
 73001=Tira ejecutable
@@ -1080,6 +1187,7 @@ Ver=1
 73005=Language standard (-std)
 73006=Compile with the following bit width (-mx)
 73007=Optimize less, while maintaining full compatibility (-mtune)
+73008=Procesos de compilación simultáneos (-j)
 
 
 74001=Compiler:
@@ -1087,3 +1195,86 @@ Ver=1
 74003=File:
 74004=Errors:
 74005=Warnings:
+75001=Las siguientes carpetas de %s no existen:
+75002=No se indicó ninguna carpeta de %s.
+75003=Se buscó en las siguientes carpetas de programas:
+75004=Revise que la carpeta de programas y los nombres de los ejecutables estén bien en Herramientas >> Opciones del compilador >> Directorios/Programas.
+75005=¿Desea que Penguin cpp las quite y agregue las rutas predeterminadas a las válidas?<CR><CR>Dejar esas carpetas causará problemas al compilar.<CR><CR>Salvo que sepa exactamente lo que hace, se recomienda pulsar Sí.
+75006=No se encuentra el %s "%s".
+75007=programas
+75008=cabeceras de C
+75009=cabeceras de C++
+75010=bibliotecas
+75011=compilador de C
+75012=compilador de C++
+75013=depurador
+75014=perfilador
+75015=procesador de makefiles
+75018=Se encontraron estos problemas al revisar el conjunto de compilador "%s":
+76001=Elija su tema:
+76002=Fuente:
+76003=Color:
+76004=Tema:
+76005=Puede cambiar el tema más adelante en Herramientas >> Opciones del editor >> Fuentes/Colores.
+76015=Penguin cpp se configuró correctamente.
+76016=Si necesita ayuda para usar Penguin cpp, consulte la ayuda en el menú Ayuda o abra un issue en el repositorio del proyecto.
+76017=Las bibliotecas y herramientas para sus programas se instalan con el gestor de paquetes de su distribución, por ejemplo: sudo apt install libsdl2-dev.
+76018=&Siguiente
+78002=Generando el makefile...
+78003=Recompilando todo el proyecto...
+78004=Procesando el makefile...
+78005=- Archivo del proyecto: %s
+78006=- Compilador: %s
+78007=- Archivo: %s
+78009=- Procesador de makefile: %s
+78010=- Comando: %s
+78011=Resultados de la compilación...
+78012=- Errores: %d
+78013=- Advertencias: %d
+78014=- Tamaño de la salida: %s
+78015=- Tiempo de compilación: %fs
+78016=- Archivo de salida: %s
+78017=Compilando un archivo suelto...
+78018=- Archivo: %s
+78021=Procesando archivo fuente de C++...
+78022=- Compilador de C++: %s
+78023=Procesando archivo fuente de C...
+78024=- Compilador de C: %s
+78025=Compilando los cambios del proyecto...
+78026=Procesando archivo de cabecera...
+78027=El conjunto de compilador "%s" no tiene carpeta de programas. Compilación cancelada.
+78028=No hay nada que compilar. Compilación cancelada.
+78029=Limpiando el proyecto...
+78030=Limpiando el archivo...
+78031=Se borró el archivo de salida %s
+78032=No hay archivos de salida que borrar.
+78033=Procesando un tipo de archivo desconocido...
+79001=Formatear el archivo actual
+79002=Opciones de formato...
+79003=Opciones de formato
+79004=No se encuentra el programa astyle. Instálelo con: sudo apt install astyle
+79005=Opciones
+79006=Estilo de llaves:
+79007=Estilo de sangría:
+79008=Ancho de tabulación:
+79009=Aplicar sangría a estos tipos de código:
+79010=Clases
+79011=Switch
+79012=Case
+79013=Espacios de nombres
+79014=Etiquetas
+79015=Preprocesador
+79016=Comando final (agregue aquí sus cambios):
+79017=Vista previa:
+79018=No se encontró AStyle
+79019=Usa %s
+79020=Largo máximo de línea:
+79021=// No se encontró el archivo de salida de AStyle:<CR>// %s
+79022=No se encuentra el programa clang-format. Instálelo con: sudo apt install clang-format
+79023=No se encontró clang-format
+79024=// No se encontró el archivo de salida de clang-format:<CR>// %s
+79025=Basado en el estilo:
+79026=Alineación de llaves:
+79027=Ancho de sangría:
+79028=Estilo de listas entre llaves
+79029=Límite de columnas:

@@ -3319,7 +3319,7 @@ object AboutForm: TAboutForm
       Width = 131
       Height = 13
       Cursor = crHandPoint
-      Caption = 'http://tdm-gcc.tdragon.net/'
+      Caption = 'https://clang.llvm.org'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clBlue
       Font.Height = 11

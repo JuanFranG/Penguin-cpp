@@ -161,8 +161,7 @@ y también saber si pasa sin abrir ningún archivo.
   aparte (un nombre con `"` agregaba argumentos); se quitaron
   `TTemplate.Save` (sin uso, con un nombre vacío) y las directivas de Delphi
   de `main.pas`.
-- **B. Funciones de Windows en el código** (ver la fase 6), y el diálogo
-  "Buscar compiladores", que pide poner TDM-GCC en carpetas de Windows.
+- ✅ **B. Funciones de Windows en el código** (ver la fase 6).
 - **C. Mensajes de gcc en español:** el lector de mensajes reconoce
   `error`, `aviso` y `nota`, pero no frases como "In file included from" ni
   los mensajes de `as` y `ld` traducidos, que quedan sin archivo ni línea.
@@ -550,19 +549,24 @@ Falta:
   *MDIEditor*, *WinAnim* y *Project3*, una plantilla vacía del original.
 - **Plantilla OpenGL:** está hecha con WinAPI; se reescribe con freeglut o
   GLFW (fase 8) en vez de quitarla.
-- **Quitar las funciones de Windows del código**, en su propio bloque:
-  - Archivos de recursos (`.rc`) y `windres`: la carpeta *Resources* de los
-    proyectos, la pestaña *Recursos* de los mensajes, el programa `windres`
-    de las opciones del compilador, y el icono, la información de versión y
-    el tema de XP de Opciones del proyecto, que se guardaban en el `.exe`.
-  - Al activar el perfilado en una biblioteca, el IDE ofrece agregar
-    `-lgmon`, que solo existe en MinGW: en Linux el enlazado falla.
-  - Importar proyectos de Visual C++ (Archivo → Importar). Importar de
-    Code::Blocks se queda.
-  - Las inserciones de código de Win32 (`MessageBox`, `WinMain` y los
-    procedimientos de ventana).
-  - El tipo de proyecto *Win32 GUI* pasa a ser una aplicación gráfica que se
-    ejecuta sin terminal.
+- ✅ **Funciones de Windows quitadas del código** (falta probarlo en Mint):
+  - El programa `windres` de los compiladores, su fila en Opciones del
+    compilador, la pestaña *Recursos* de los mensajes y el filtro `.rc` de
+    los diálogos. Compilar un `.rc` suelto sigue avisando que en Linux no
+    hay recursos. Las acciones del menú de mensajes (copiar, guardar,
+    limpiar) elegían la lista por la posición de la pestaña; ahora van por
+    la pestaña misma, así que quitar una no corre las demás.
+  - En Opciones del proyecto, la pestaña de versión, el icono y el tema de
+    XP del `.exe`. El `.dev` sigue leyendo y guardando esos datos, para no
+    perderlos en un proyecto que también se compila en Windows.
+  - Los tipos de proyecto se llaman aplicación gráfica, aplicación de
+    consola, biblioteca estática (`.a`) y biblioteca compartida (`.so`).
+  - La oferta de agregar `-lgmon` (de MinGW; en Linux el enlazado falla),
+    las inserciones de código de Win32 en instalaciones nuevas y la
+    importación de proyectos de Visual C++. El importador de Code::Blocks
+    ya venía oculto en el original, así que el menú Importar queda oculto.
+  - "Buscar compiladores" explica que busca gcc y clang en el PATH y cómo
+    instalarlos; Acerca de enlaza a gcc.gnu.org.
 - **Hecho cuando:** se compila y ejecuta un proyecto de consola y uno de
   varios archivos, y los errores del compilador aparecen en la lista y se
   pueden clicar.

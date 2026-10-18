@@ -60,7 +60,8 @@ end;
 
 procedure TDevRun.Execute;
 begin
-  Output := RunAndGetOutput(Command, Directory, LineOutput, FCheckAbort);
+  // The compiler, make and the linker speak English: their messages are parsed
+  Output := RunAndGetOutput(Command, Directory, LineOutput, FCheckAbort, True, True);
 end;
 
 end.

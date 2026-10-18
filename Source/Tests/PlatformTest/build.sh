@@ -17,4 +17,7 @@ if [ "$1" = "--run" ]; then
   echo
   echo "=== with XDG_CONFIG_HOME set"
   XDG_CONFIG_HOME=/tmp/xdg-config-test "$OUT/platformtest"
+  echo
+  echo "=== with the user's language forced to Spanish"
+  LC_ALL=es_ES.UTF-8 LANGUAGE=es "$OUT/platformtest"
 fi

@@ -40,16 +40,20 @@ var
   // doesn't reliably reach TProcess, so it is applied per process instead.
   ChildPath: String = '';
 
-// Gives P the IDE's environment with PATH replaced by ChildPath (if set)
-procedure PrepareProcessEnvironment(P: TProcess);
+// Gives P the IDE's environment with PATH replaced by ChildPath (if set).
+// EnglishMessages: gcc, make and the linker speak English (LC_MESSAGES=C;
+// LC_ALL and LANGUAGE would override it, so they are left out), because the
+// IDE reads their messages. The character set (LC_CTYPE, LANG) is kept.
+procedure PrepareProcessEnvironment(P: TProcess; EnglishMessages: Boolean = False);
 
 // Runs Cmd (a command line; quoted arguments may contain spaces) in WorkDir
 // with stdout and stderr merged, and returns everything it printed. When
 // ShowReturnValue is set, ' <exit code>' is appended. LineOutputFunc receives
 // output as it arrives, in chunks that end at a line break. CheckAbortFunc is
-// polled while the program runs and can stop it.
+// polled while the program runs and can stop it. EnglishMessages: see
+// PrepareProcessEnvironment.
 function RunAndGetOutput(const Cmd, WorkDir: String; LineOutputFunc: TLineOutputFunc;
-  CheckAbortFunc: TCheckAbortFunc; ShowReturnValue: Boolean = True): String;
+  CheckAbortFunc: TCheckAbortFunc; ShowReturnValue: Boolean = True; EnglishMessages: Boolean = False): String;
 
 // Directory for the IDE's settings, with trailing delimiter, e.g.
 // ~/.config/penguin-cpp/ ($XDG_CONFIG_HOME is honored). Not created here.
@@ -111,20 +115,27 @@ const
 
 {$IFDEF FPC}
 
-procedure PrepareProcessEnvironment(P: TProcess);
+procedure PrepareProcessEnvironment(P: TProcess; EnglishMessages: Boolean = False);
 var
   I: Integer;
   S: String;
 begin
-  if ChildPath = '' then
+  if (ChildPath = '') and not EnglishMessages then
     Exit;
   P.Environment.Clear;
   for I := 1 to GetEnvironmentVariableCount do begin
     S := GetEnvironmentString(I);
-    if not SameText(Copy(S, 1, 5), 'PATH=') then
-      P.Environment.Add(S);
+    if (ChildPath <> '') and SameText(Copy(S, 1, 5), 'PATH=') then
+      Continue;
+    if EnglishMessages and ((Copy(S, 1, 7) = 'LC_ALL=') or (Copy(S, 1, 12) = 'LC_MESSAGES=') or
+      (Copy(S, 1, 9) = 'LANGUAGE=')) then
+      Continue;
+    P.Environment.Add(S);
   end;
-  P.Environment.Add('PATH=' + ChildPath);
+  if ChildPath <> '' then
+    P.Environment.Add('PATH=' + ChildPath);
+  if EnglishMessages then
+    P.Environment.Add('LC_MESSAGES=C');
 end;
 
 function SearchPath: String;
@@ -146,7 +157,7 @@ begin
 end;
 
 function RunAndGetOutput(const Cmd, WorkDir: String; LineOutputFunc: TLineOutputFunc;
-  CheckAbortFunc: TCheckAbortFunc; ShowReturnValue: Boolean): String;
+  CheckAbortFunc: TCheckAbortFunc; ShowReturnValue: Boolean; EnglishMessages: Boolean): String;
 var
   P: TProcess;
   Args: TStringList;
@@ -192,7 +203,7 @@ begin
       P.CurrentDirectory := WorkDir;
     P.Options := [poUsePipes, poStderrToOutPut];
     P.ShowWindow := swoHIDE;
-    PrepareProcessEnvironment(P);
+    PrepareProcessEnvironment(P, EnglishMessages);
     try
       P.Execute;
     except

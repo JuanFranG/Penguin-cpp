@@ -50,7 +50,7 @@ procedure FilesFromWildcard(Directory: String; const Mask: String; Files: TStrin
   Multitasking: Boolean);
 
 function RunAndGetOutput(const Cmd, WorkDir: String; LineOutputFunc: TLineOutputFunc; CheckAbortFunc:
-  TCheckAbortFunc; ShowReturnValue: Boolean = True): String;
+  TCheckAbortFunc; ShowReturnValue: Boolean = True; EnglishMessages: Boolean = False): String;
 
 function GetShortName(const FileName: String): String;
 
@@ -450,10 +450,12 @@ end;
 function RunAndGetOutput(const Cmd, WorkDir: String;
   LineOutputFunc: TLineOutputFunc;
   CheckAbortFunc: TCheckAbortFunc;
-  ShowReturnValue: Boolean): String;
+  ShowReturnValue: Boolean;
+  EnglishMessages: Boolean): String;
 {$IFDEF FPC}
 begin
-  Result := devPlatform.RunAndGetOutput(Cmd, WorkDir, LineOutputFunc, CheckAbortFunc, ShowReturnValue);
+  Result := devPlatform.RunAndGetOutput(Cmd, WorkDir, LineOutputFunc, CheckAbortFunc, ShowReturnValue,
+    EnglishMessages);
 end;
 {$ELSE}
 var

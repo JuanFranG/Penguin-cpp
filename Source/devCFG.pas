@@ -1577,7 +1577,8 @@ end;
 
 function TdevCompilerSet.GetCompilerOutput(const BinDir, BinFile, Input: String): String;
 begin
-  result := Trim(RunAndGetOutput(BinDir + pd + BinFile + ' ' + Input, BinDir, nil, nil, false))
+  // English: the version and the include folders are found by gcc's own words
+  result := Trim(RunAndGetOutput(BinDir + pd + BinFile + ' ' + Input, BinDir, nil, nil, false, true))
 end;
 
 function TdevCompilerSet.ValidateDirs: boolean;

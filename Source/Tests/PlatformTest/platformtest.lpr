@@ -127,6 +127,21 @@ begin
   end;
 end;
 
+// The compiler runs with English messages, whatever LC_ALL or LANGUAGE say
+// (build.sh runs this test once with both set to Spanish)
+procedure TestEnglishMessages;
+var
+  S: String;
+begin
+  WriteLn('Compiler messages in English:');
+  S := Trim(RunAndGetOutput('/bin/sh -c "echo ${LC_ALL}:${LC_MESSAGES}:${LANGUAGE}"', '', nil, nil, False, True));
+  Check(S = ':C:', 'LC_MESSAGES=C, without LC_ALL and LANGUAGE', QuotedStr(S));
+  S := Trim(RunAndGetOutput('/bin/sh -c "echo ${LANG}"', '', nil, nil, False, True));
+  Check(S = GetEnvironmentVariable('LANG'), 'LANG (the character set) is kept', QuotedStr(S));
+  S := Trim(RunAndGetOutput('/bin/sh -c "echo ${LC_ALL}"', '', nil, nil, False));
+  Check(S = GetEnvironmentVariable('LC_ALL'), 'other programs keep the user''s language', QuotedStr(S));
+end;
+
 procedure TestConfigDir;
 var
   Expected, Xdg: String;
@@ -239,6 +254,7 @@ begin
   ForceDirectories(Dir);
   try
     TestProcesses;
+    TestEnglishMessages;
     TestConfigDir;
     TestPrivateTempDir;
     TestProcessList;

@@ -162,12 +162,12 @@ y también saber si pasa sin abrir ningún archivo.
   `TTemplate.Save` (sin uso, con un nombre vacío) y las directivas de Delphi
   de `main.pas`.
 - ✅ **B. Funciones de Windows en el código** (ver la fase 6).
-- **C. Mensajes de gcc en español:** el lector de mensajes reconoce
-  `error`, `aviso` y `nota`, pero no frases como "In file included from" ni
-  los mensajes de `as` y `ld` traducidos, que quedan sin archivo ni línea.
-  Hay que decidir entre ejecutar el compilador con mensajes en inglés
-  (`LC_MESSAGES=C`), que es lo seguro, o enseñarle al lector las frases en
-  español.
+- ✅ **C. Mensajes del compilador en inglés:** gcc, make y el enlazador se
+  ejecutan con `LC_MESSAGES=C` (sin `LC_ALL` ni `LANGUAGE`, que lo
+  anularían), porque el IDE lee sus mensajes: con gcc en español quedaban
+  sin archivo ni línea, y la detección de compiladores busca las palabras
+  "gcc version" y las carpetas de cabeceras en su salida. La codificación
+  del usuario no cambia, y el programa que se compila corre en su idioma.
 - **D. Traducción al español completa:** faltan 237 textos en
   `Spanish.lng` y `SpanishCastellano.lng` y 186 en `SpanishColombia.lng`; se
   ven en inglés. `Hebrew.lng` es de una versión muy antigua (otros números de

@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-/* run this program using the console pauser or add your own getch, system("pause") or input loop */
+/* Penguin cpp runs this program in a terminal and, when it ends, waits for Enter
+   (Tools > Environment Options > Pause console programs after return) */
 
 int main(int argc, char *argv[]) {
 	return 0;

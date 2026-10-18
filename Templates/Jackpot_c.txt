@@ -1,0 +1,72 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+/* Asks for the difficulty; returns the largest secret number, or 0 to quit */
+int ChooseMaximum() {
+	char c = 0;
+
+	printf("Select difficulty mode:\n"); /* the user has to select a difficulty level */
+	printf("1 : Easy (0-15)\n");
+	printf("2 : Medium (0-30)\n");
+	printf("3 : Difficult (0-50)\n");
+	printf("or type another key to quit\n");
+
+	scanf(" %c", &c);                    /* read the user's choice */
+	printf("\n");
+
+	switch (c) {
+		case '1':
+			return 15;                   /* the random number will be between 0 and this */
+		case '2':
+			return 30;
+		case '3':
+			return 50;
+		default:
+			return 0;
+	}
+}
+
+/* One game: returns when the player wins or has no lives left */
+void Play(int maxrand) {
+	int life = 5;                        /* number of lives of the player */
+	int secret = rand() % maxrand;       /* a random value between 0 and maxrand */
+	int guess;
+
+	while (life > 0) {
+		printf("Type a number: \n");
+		if (scanf("%d", &guess) != 1) {  /* not a number: skip it */
+			scanf("%*s");
+			continue;
+		}
+
+		if ((guess > maxrand) || (guess < 0)) { /* the number isn't valid, ask again */
+			printf("Error: number not between 0 and %d\n", maxrand);
+		} else if (guess == secret) {
+			printf("YOU WIN!\n\n");      /* the user found the secret number */
+			return;
+		} else {
+			if (guess > secret)
+				printf("Too BIG\n");
+			else
+				printf("Too SMALL\n");
+			life = life - 1;
+			printf("Lives remaining: %d\n\n", life);
+		}
+	}
+	printf("You lose !\n\n");            /* the player has no more lives */
+}
+
+int main() {
+	int maxrand;
+
+	printf("** Jackpot game **\n");
+	printf("The goal of this game is to guess a number.\n");
+	printf("Jackpot will tell you if the number is too big or too\n");
+	printf("small compared to the secret number to find.\n\n");
+
+	srand((unsigned)time(NULL));         /* init the rand() function */
+	while ((maxrand = ChooseMaximum()) != 0)
+		Play(maxrand);
+	return 0;
+}

@@ -1,21 +1,21 @@
 [Template]
 ver=1
-Name=DLL
+Name=Shared Library
 Icon=DLL.ico
 svg=DLL.svg
-Description=A Dynamic Link Library (DLL)
+Description=A shared library (.so), like a Windows DLL
 Category=Basic
 
 [Unit0]
 CName=dllmain.c
 CppName=dllmain.cpp
-C=DLL_c.txt
+C=Dll_c.txt
 Cpp=Dll_cpp.txt
 
 [Unit1]
 CName=dll.h
 CppName=dll.h
-C=DLL_h.txt
+C=Dll_h.txt
 Cpp=Dll_hpp.txt
 
 [Project]

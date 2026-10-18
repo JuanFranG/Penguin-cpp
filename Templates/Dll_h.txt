@@ -1,11 +1,10 @@
 #ifndef _DLL_H_
 #define _DLL_H_
 
-#if BUILDING_DLL
-#define DLLIMPORT __declspec(dllexport)
-#else
-#define DLLIMPORT __declspec(dllimport)
-#endif
+/* A shared library (.so). Linux exports every function of a library unless
+   it is built with -fvisibility=hidden; DLLIMPORT marks the ones to export
+   in that case too. (On Windows this was __declspec(dllexport/dllimport).) */
+#define DLLIMPORT __attribute__((visibility("default")))
 
 DLLIMPORT void HelloWorld();
 

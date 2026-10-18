@@ -9,8 +9,8 @@ Category=Basic
 [Unit0]
 CName=main.c
 CppName=main.cpp
-C=winapp_c.txt
-Cpp=winapp_c.txt
+C=WinApp_c.txt
+Cpp=WinApp_c.txt
 
 [Project]
 UnitCount=1

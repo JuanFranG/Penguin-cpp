@@ -4,7 +4,7 @@ Name=Empty Project
 Icon=Empty.ico
 svg=Empty.svg
 Description=An empty project
-Catagory=Basic
+Category=Basic
 
 [Unit0]
 CName=

@@ -58,7 +58,7 @@ void GetResults() {
 	cin >> i;
 	
 	if((i>maxrand) || (i<0)) { // if the user number isn't correct, restart
-		cout << "Error: number not between 0 and \n" << maxrand;
+		cout << "Error: number not between 0 and " << maxrand << "\n";
 		GetResults();
 	}
 

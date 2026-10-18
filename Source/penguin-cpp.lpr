@@ -83,7 +83,9 @@ uses
   AStyleFormatterOptionsFrm,
   ClangFormatterOptionsFrm,
   Classes,
-  devInstance;
+  devInstance,
+  PenguinPalette,
+  PenguinTheme;
 
 {$R *.res}
 
@@ -149,6 +151,10 @@ begin
   Application.Scaled := True;
   Application.Initialize;
   Application.Title := 'Penguin cpp';
+
+  // The icon's colors for menus and dialogs (Qt5), light or dark like the
+  // editor's scheme; before the main form, so it starts with them
+  ApplyApplicationPalette(SpaceIsDark(devEditor.Syntax.Values['Space']));
   Application.CreateForm(TMainForm, MainForm);
   Application.Run;
 end.

@@ -960,7 +960,7 @@ uses
   NewFunctionFrm, NewVarFrm, NewClassFrm, ProfileAnalysisFrm, FilePropertiesFrm, AddToDoFrm,
   ViewToDoFrm, ImportMSVCFrm, ImportCBFrm, CPUFrm, TipOfTheDayFrm, WindowListFrm, RemoveUnitFrm,
   ParamsFrm, ProcessListFrm, SynEditHighlighter, devPlatform, SynEditCompat, LCLProc,
-  EditorPrint, PdfPrint, crc, devInstance;
+  EditorPrint, PdfPrint, crc, devInstance, PenguinTheme;
 
 {$R *.lfm}
 
@@ -7301,6 +7301,7 @@ var
 begin
   dmMain.UpdateHighlighter;
   fPanelPalette := PanelPaletteFor(dmMain.Cpp.WhitespaceAttribute.Background);
+  ApplyApplicationPalette(fPanelPalette.Dark); // menus and dialogs, with Qt5
 
   // Welcome screen
   MainPanel.ParentBackground := False;

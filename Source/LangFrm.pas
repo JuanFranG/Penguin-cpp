@@ -203,6 +203,10 @@ begin
     devEditor.HighColor := clBlack
   else if cmbColors.Text = 'Visual Studio Dark' then
     devEditor.HighColor := clBlack
+  else if cmbColors.Text = 'Penguin Light' then
+    devEditor.HighColor := $00FDF6EE // a lighter tone of the icon's blue
+  else if cmbColors.Text = 'Penguin Dark' then
+    devEditor.HighColor := $005E3918 // the icon's navy
   else
     devEditor.HighColor := $FFFFCC; // Light Turquoise
 

@@ -233,7 +233,9 @@ object LangForm: TLangForm
           'PlasticCodeWrap'
           'Monokai'
           'Monokai Fresh'
-          'Visual Studio Dark')
+          'Visual Studio Dark'
+          'Penguin Light'
+          'Penguin Dark')
       end
       object cmbFont: TComboBox
         Left = 56

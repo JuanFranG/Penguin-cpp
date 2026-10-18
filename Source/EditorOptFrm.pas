@@ -1123,7 +1123,7 @@ var
   i: integer;
   attr: TSynHighlighterAttributes;
 begin
-  if cboQuickColor.ItemIndex > 13 then begin // 13 == number of built-in styles
+  if cboQuickColor.ItemIndex >= BuiltInSchemeCount then begin // a custom style
     // custom style; load from disk
     LoadSyntax(cboQuickColor.Items[cboQuickColor.ItemIndex]);
   end else begin

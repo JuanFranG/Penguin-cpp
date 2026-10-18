@@ -702,7 +702,9 @@ object EditorOptForm: TEditorOptForm
           'PlasticCodeWrap'
           'Monokai'
           'Monokai Fresh'
-          'Visual Studio Dark')
+          'Visual Studio Dark'
+          'Penguin Light'
+          'Penguin Dark')
       end
       object edSyntaxExt: TEdit
         Left = 182

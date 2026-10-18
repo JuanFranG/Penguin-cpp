@@ -247,10 +247,10 @@ var
 begin
   // Several schemes share the special colors (Classic and Classic Plus):
   // nothing to repair if the background is right for any of them
-  for Scheme := 0 to 13 do
+  for Scheme := 0 to BuiltInSchemeCount - 1 do
     if SpecialsMatch(Scheme) and SpaceIs(Scheme, 'Space') then
       Exit;
-  for Scheme := 0 to 13 do
+  for Scheme := 0 to BuiltInSchemeCount - 1 do
     if SpecialsMatch(Scheme) and SpaceIs(Scheme, 'Number') then begin
       InitHighlighterFirstTime(Scheme);
       Exit;

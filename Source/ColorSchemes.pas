@@ -21,6 +21,11 @@ interface
 // underline]". Returns '' for an unknown ID, as LoadStr did.
 function ColorSchemeString(ID: Integer): String;
 
+const
+  // Classic ... Visual Studio Dark, then Penguin Light and Penguin Dark; custom
+  // schemes saved by the user come after them in the scheme lists
+  BuiltInSchemeCount = 16;
+
 // Element number (1-14, as in that list) of a C++ highlighter attribute, from
 // its stored name; 0 if the scheme has no such element. Delphi's highlighter
 // had exactly those 14 attributes, so Dev-C++ used the position in the
@@ -44,7 +49,7 @@ type
   end;
 
 const
-  Entries: array[0..307] of TSchemeEntry = (
+  Entries: array[0..351] of TSchemeEntry = (
     // Classic
     (ID: 1; Value: 'clBlue, clNone, 0, 0, 0'),
     (ID: 2; Value: 'clBlack, clNone, 0, 0, 0'),
@@ -366,7 +371,53 @@ const
     (ID: 13019; Value: '16777215, 11570432'),
     (ID: 13020; Value: '11505963, 1973790'),
     (ID: 13021; Value: '16777215, 7884582'),
-    (ID: 13022; Value: '10197915, 5328448')
+    (ID: 13022; Value: '10197915, 5328448'),
+    // Penguin Light (the colors of the Penguin cpp icon)
+    (ID: 14001; Value: '$005E3918, clNone, 0, 0, 0'),
+    (ID: 14002; Value: '$00005EA3, clNone, 0, 0, 0'),
+    (ID: 14003; Value: '$00C28957, clNone, 0, 1, 0'),
+    (ID: 14004; Value: '$00005EA3, clNone, 0, 0, 0'),
+    (ID: 14005; Value: '$00005EA3, clNone, 0, 0, 0'),
+    (ID: 14006; Value: '$00432509, clNone, 0, 0, 0'),
+    (ID: 14007; Value: '$00FFFFFF, $002828C6, 0, 0, 0'),
+    (ID: 14008; Value: '$00005EA3, clNone, 0, 0, 0'),
+    (ID: 14009; Value: '$00005EA3, clNone, 0, 0, 0'),
+    (ID: 14010; Value: '$009D3E7A, clNone, 0, 0, 0'),
+    (ID: 14011; Value: '$005E3918, clNone, 1, 0, 0'),
+    (ID: 14012; Value: '$00432509, $00FFFFFF, 0, 0, 0'),
+    (ID: 14013; Value: '$00327D2E, clNone, 0, 0, 0'),
+    (ID: 14014; Value: '$00432509, clNone, 0, 0, 0'),
+    (ID: 14015; Value: '$00FFFFFF, $00C28957, 0, 0, 0'),
+    (ID: 14016; Value: '$00FCEEDA, clNone, 0, 0, 0'),
+    (ID: 14017; Value: '$00FFFFFF, $002828C6'),
+    (ID: 14018; Value: '$00FFFFFF, $001B1B8E'),
+    (ID: 14019; Value: '$00FFFFFF, $00C28957'),
+    (ID: 14020; Value: '$005E3918, $00FCEEDA'),
+    (ID: 14021; Value: '$00FFFFFF, $00C28957'),
+    (ID: 14022; Value: '$00C28957, $00FCEEDA'),
+    // Penguin Dark (the colors of the Penguin cpp icon)
+    (ID: 15001; Value: '$000BB5FD, clNone, 0, 0, 0'),
+    (ID: 15002; Value: '$00288CF2, clNone, 0, 0, 0'),
+    (ID: 15003; Value: '$00E2B48D, clNone, 0, 1, 0'),
+    (ID: 15004; Value: '$00288CF2, clNone, 0, 0, 0'),
+    (ID: 15005; Value: '$00288CF2, clNone, 0, 0, 0'),
+    (ID: 15006; Value: '$00FCEEDA, clNone, 0, 0, 0'),
+    (ID: 15007; Value: '$00FFFFFF, $002828C6, 0, 0, 0'),
+    (ID: 15008; Value: '$00288CF2, clNone, 0, 0, 0'),
+    (ID: 15009; Value: '$00288CF2, clNone, 0, 0, 0'),
+    (ID: 15010; Value: '$00FFA0C9, clNone, 0, 0, 0'),
+    (ID: 15011; Value: '$000BB5FD, clNone, 1, 0, 0'),
+    (ID: 15012; Value: '$00FCEEDA, $00432509, 0, 0, 0'),
+    (ID: 15013; Value: '$008ADB9C, clNone, 0, 0, 0'),
+    (ID: 15014; Value: '$00FCEEDA, clNone, 0, 0, 0'),
+    (ID: 15015; Value: '$00FFFFFF, $00C28957, 0, 0, 0'),
+    (ID: 15016; Value: '$005E3918, clNone, 0, 0, 0'),
+    (ID: 15017; Value: '$00FFFFFF, $002626A1'),
+    (ID: 15018; Value: '$00FFFFFF, $001B1B7A'),
+    (ID: 15019; Value: '$00432509, $000BB5FD'),
+    (ID: 15020; Value: '$00C28957, $005E3918'),
+    (ID: 15021; Value: '$00FFFFFF, $00C28957'),
+    (ID: 15022; Value: '$00C28957, $005E3918')
   );
 
 function ColorSchemeString(ID: Integer): String;

@@ -109,8 +109,6 @@ type
     AboutDevCppItem: TMenuItem;
     MessageControl: TPageControl;
     CompSheet: TTabSheet;
-    ResSheet: TTabSheet;
-    ResourceOutput: TListView;
     LogSheet: TTabSheet;
     ToolbarDock: TFlowPanel; // wraps the toolbars into rows as the window narrows
     tbMain: TToolBar;
@@ -798,7 +796,6 @@ type
     procedure actSearchAgainExecute(Sender: TObject);
     procedure FindOutputDeletion(Sender: TObject; Item: TListItem);
     procedure CompilerOutputDeletion(Sender: TObject; Item: TListItem);
-    procedure ResourceOutputDeletion(Sender: TObject; Item: TListItem);
     procedure actStopExecuteUpdate(Sender: TObject);
     procedure actUpdateIndent(Sender: TObject);
     procedure actRevSearchAgainExecute(Sender: TObject);
@@ -880,7 +877,7 @@ type
     procedure FormDropFiles(Sender: TObject; const FileNames: array of String);
     procedure LogEntryProc(const Msg: String);
     procedure CompOutputProc(const _Line, _Col, _Unit, _Message: String);
-    procedure CompResOutputProc(const _Line, _Col, _Unit, _Message: String);
+    function MessagePage: integer;
     procedure CompEndProc;
     procedure CompSuccessProc;
     procedure RunEndProc;
@@ -1379,7 +1376,6 @@ begin
 
   // Message Control tabs
   CompSheet.Caption := Lang[ID_SHEET_COMP];
-  ResSheet.Caption := Lang[ID_SHEET_RES];
   LogSheet.Caption := Lang[ID_SHEET_COMPLOG];
   DebugSheet.Caption := Lang[ID_SHEET_DEBUG];
   FindSheet.Caption := Lang[ID_SHEET_FIND];
@@ -1392,10 +1388,6 @@ begin
   CompilerOutput.Columns[3].Caption := Lang[ID_COL_MSG];
 
   // Resource Tab
-  ResourceOutput.Columns[0].Caption := Lang[ID_COL_LINE];
-  ResourceOutput.Columns[1].Caption := Lang[ID_COL_COL];
-  ResourceOutput.Columns[2].Caption := Lang[ID_COL_FILE];
-  ResourceOutput.Columns[3].Caption := Lang[ID_COL_MSG];
 
   // Debug Tab
   lblSendCommandGdb.Caption := Lang[ID_DEB_SENDGDBCOMMAND];
@@ -1830,25 +1822,12 @@ begin
   CompSheet.Caption := Lang[ID_SHEET_COMP] + ' (' + IntToStr(CompilerOutput.Items.Count) + ')'
 end;
 
-procedure TMainForm.CompResOutputProc(const _Line, _Col, _Unit, _Message: String);
-begin
-  with ResourceOutput.Items.Add do begin
-    Caption := _Line;
-    SubItems.Add(_Col);
-    SubItems.Add(GetRealPath(_Unit));
-    SubItems.Add(_Message);
-  end;
-
-  // Update tab caption
-  ResSheet.Caption := Lang[ID_SHEET_RES] + ' (' + IntToStr(ResourceOutput.Items.Count) + ')'
-end;
-
 procedure TMainForm.CompEndProc;
 var
   I: integer;
 begin
   // Close it if there's nothing to show
-  if (CompilerOutput.Items.Count = 0) and (ResourceOutput.Items.Count = 0) and devData.AutoCloseProgress then begin
+  if (CompilerOutput.Items.Count = 0) and devData.AutoCloseProgress then begin
     OpenCloseMessageSheet(FALSE)
 
     // Or open it if there is anything to show
@@ -1856,9 +1835,6 @@ begin
     if (CompilerOutput.Items.Count > 0) then begin
       if MessageControl.ActivePage <> CompSheet then
         MessageControl.ActivePage := CompSheet;
-    end else if (ResourceOutput.Items.Count > 0) then begin
-      if MessageControl.ActivePage <> ResSheet then
-        MessageControl.ActivePage := ResSheet;
     end;
     OpenCloseMessageSheet(TRUE);
   end;
@@ -1903,13 +1879,6 @@ begin
         CompilerOutputDblClick(CompilerOutput);
         Exit;
       end;
-    end;
-
-    // Then try to find a resource error
-    if ResourceOutput.Items.Count > 0 then begin
-      ResourceOutput.Selected := ResourceOutput.Items[0];
-      ResourceOutput.Selected.MakeVisible(False);
-      CompilerOutputDblClick(ResourceOutput);
     end;
   end;
 end;
@@ -2133,7 +2102,7 @@ end;
 procedure TMainForm.actOpenExecute(Sender: TObject);
 begin
   with TOpenDialog.Create(Self) do try
-    Filter := BuildFilter([FLT_PROJECTS, FLT_CS, FLT_CPPS, FLT_RES, FLT_HEADS]);
+    Filter := BuildFilter([FLT_PROJECTS, FLT_CS, FLT_CPPS, FLT_HEADS]);
     Title := Lang[ID_NV_OPENFILE];
     Options := Options + [ofAllowMultiSelect];
 
@@ -2798,7 +2767,7 @@ begin
   // Let the user point to a file
   with TOpenDialog.Create(nil) do try
     Title := Lang[ID_NV_OPENADD];
-    Filter := BuildFilter([FLT_CS, FLT_CPPS, FLT_RES, FLT_HEADS]);
+    Filter := BuildFilter([FLT_CS, FLT_CPPS, FLT_HEADS]);
     Options := Options + [ofAllowMultiSelect];
 
     // If sucessful, add to selected node
@@ -3659,9 +3628,26 @@ begin
   OpenFile(fCompiler.MakeFile);
 end;
 
+// The message tab shown, by what it holds: 0 compiler, 2 log, 3 debug,
+// 4 find results (1 was Windows' resource compiler), -1 none. The actions of
+// the message menu use these codes, so removing a tab does not shift them.
+function TMainForm.MessagePage: integer;
+begin
+  if MessageControl.ActivePage = CompSheet then
+    Result := 0
+  else if MessageControl.ActivePage = LogSheet then
+    Result := 2
+  else if MessageControl.ActivePage = DebugSheet then
+    Result := 3
+  else if MessageControl.ActivePage = FindSheet then
+    Result := 4
+  else
+    Result := -1;
+end;
+
 procedure TMainForm.actMsgCutExecute(Sender: TObject);
 begin
-  case MessageControl.ActivePageIndex of
+  case MessagePage of
     3: begin
         if EvaluateInput.Focused then begin
           Clipboard.AsText := EvaluateInput.SelText;
@@ -3676,11 +3662,9 @@ end;
 
 procedure TMainForm.actMsgCopyExecute(Sender: TObject);
 begin
-  case MessageControl.ActivePageIndex of
+  case MessagePage of
     0:
       Clipboard.AsText := GetPrettyLine(CompilerOutput);
-    1:
-      Clipboard.AsText := GetPrettyLine(ResourceOutput);
     2: begin
         if LogOutput.Focused then
           LogOutput.CopyToClipboard;
@@ -3704,16 +3688,11 @@ procedure TMainForm.actMsgCopyAllExecute(Sender: TObject);
 var
   i: integer;
 begin
-  case MessageControl.ActivePageIndex of
+  case MessagePage of
     0: begin
         ClipBoard.AsText := '';
         for i := 0 to pred(CompilerOutput.Items.Count) do
           Clipboard.AsText := Clipboard.AsText + GetPrettyLine(CompilerOutput, i) + #13#10;
-      end;
-    1: begin
-        ClipBoard.AsText := '';
-        for i := 0 to pred(ResourceOutput.Items.Count) do
-          Clipboard.AsText := Clipboard.AsText + GetPrettyLine(ResourceOutput, i) + #13#10;
       end;
     2:
       LogOutput.CopyToClipboard;
@@ -3737,7 +3716,7 @@ end;
 
 procedure TMainForm.actMsgPasteExecute(Sender: TObject);
 begin
-  case MessageControl.ActivePageIndex of
+  case MessagePage of
     3: begin
         if EvaluateInput.Focused then
           EvaluateInput.SelText := ClipBoard.AsText
@@ -3749,7 +3728,7 @@ end;
 
 procedure TMainForm.actMsgSelAllExecute(Sender: TObject);
 begin
-  case MessageControl.ActivePageIndex of
+  case MessagePage of
     2: begin
         if LogOutput.Focused then
           LogOutput.SelectAll;
@@ -3776,16 +3755,11 @@ var
 begin
   fulloutput := '';
   with TSaveDialog.Create(self) do try
-    case MessageControl.ActivePageIndex of
+    case MessagePage of
       0: begin
           FileName := 'Formatted Compiler Output';
           for i := 0 to CompilerOutput.Items.Count - 1 do
             fulloutput := fulloutput + GetPrettyLine(CompilerOutput, i) + #13#10;
-        end;
-      1: begin
-          FileName := 'Resource Error Log';
-          for i := 0 to ResourceOutput.Items.Count - 1 do
-            fulloutput := fulloutput + GetPrettyLine(ResourceOutput, i) + #13#10;
         end;
       2: begin
           FileName := 'Raw Build Log';
@@ -3838,11 +3812,9 @@ end;
 
 procedure TMainForm.actMsgClearExecute(Sender: TObject);
 begin
-  case MessageControl.ActivePageIndex of
+  case MessagePage of
     0:
       CompilerOutput.Items.Clear;
-    1:
-      ResourceOutput.Items.Clear;
     2:
       LogOutput.Clear;
     3: begin
@@ -4200,7 +4172,6 @@ end;
 procedure TMainForm.ClearCompileMessages;
 begin
   CompilerOutput.Clear;
-  ResourceOutput.Clear;
   LogOutput.Clear;
   fLogOutputRawData.Clear;
   DebugOutput.Clear;
@@ -6191,7 +6162,6 @@ begin
   with fCompiler do begin
     OnLogEntry := LogEntryProc;
     OnOutput := CompOutputProc;
-    OnResOutput := CompResOutputProc;
     OnCompEnd := CompEndProc;
     OnCompSuccess := CompSuccessProc;
     OnRunEnd := RunEndProc;
@@ -6700,16 +6670,6 @@ begin
     CompSheet.Caption := Lang[ID_SHEET_COMP] + ' (' + IntToStr(CompilerOutput.Items.Count - 1) + ')'
   else
     CompSheet.Caption := Lang[ID_SHEET_COMP];
-end;
-
-procedure TMainForm.ResourceOutputDeletion(Sender: TObject; Item: TListItem);
-begin
-  if Application.Terminated or not Assigned(devDirs) then
-    Exit;
-  if ResourceOutput.Items.Count > 1 then
-    ResSheet.Caption := Lang[ID_SHEET_RES] + ' (' + IntToStr(ResourceOutput.Items.Count - 1) + ')'
-  else
-    ResSheet.Caption := Lang[ID_SHEET_RES];
 end;
 
 procedure TMainForm.RichEdit0Click(Sender: TObject);
@@ -7307,7 +7267,7 @@ begin
   ClassBrowser.SecondaryColor := fPanelPalette.Secondary;
 
   // Messages
-  Lists := [CompilerOutput, ResourceOutput, FindOutput];
+  Lists := [CompilerOutput, FindOutput];
   for I := 0 to High(Lists) do begin
     Lists[I].Color := fPanelPalette.Back;
     Lists[I].Font.Color := fPanelPalette.Text;

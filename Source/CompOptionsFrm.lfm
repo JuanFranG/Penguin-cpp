@@ -314,16 +314,9 @@ object CompOptForm: TCompOptForm
         Height = 15
         Caption = 'gdb: '
       end
-      object lblwindres: TLabel
-        Left = 24
-        Top = 248
-        Width = 47
-        Height = 15
-        Caption = 'windres: '
-      end
       object lblgprof: TLabel
         Left = 24
-        Top = 288
+        Top = 248
         Width = 35
         Height = 15
         Caption = 'gprof: '
@@ -372,21 +365,10 @@ object CompOptForm: TCompOptForm
         Flat = True
         OnClick = btnBrws1Click
       end
-      object btnBrowse6: TSpeedButton
-        Tag = 6
-        Left = 419
-        Top = 243
-        Width = 23
-        Height = 22
-        ImageIndex = 59
-        Images = dmMain.SVGImageListMenuStyle
-        Flat = True
-        OnClick = btnBrws1Click
-      end
       object btnBrowse8: TSpeedButton
         Tag = 7
         Left = 419
-        Top = 288
+        Top = 243
         Width = 23
         Height = 22
         ImageIndex = 59
@@ -426,17 +408,9 @@ object CompOptForm: TCompOptForm
         TabOrder = 3
         OnChange = InterfaceChange
       end
-      object WindresEdit: TEdit
-        Left = 80
-        Top = 244
-        Width = 329
-        Height = 21
-        TabOrder = 4
-        OnChange = InterfaceChange
-      end
       object GprofEdit: TEdit
         Left = 80
-        Top = 288
+        Top = 244
         Width = 329
         Height = 21
         TabOrder = 5

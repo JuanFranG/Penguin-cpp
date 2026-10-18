@@ -55,7 +55,6 @@ type
     fgppName: String;
     fmakeName: String;
     fgdbName: String;
-    fwindresName: String;
     fgprofName: String;
 
     // Directories, mostly hardcoded too
@@ -122,7 +121,6 @@ type
     property gppName: String read fgppName write fgppName;
     property makeName: String read fmakeName write fmakeName;
     property gdbName: String read fgdbName write fgdbName;
-    property windresName: String read fwindresName write fwindresName;
     property gprofName: String read fgprofName write fgprofName;
 
     // Directories
@@ -1148,7 +1146,6 @@ begin
   fgppName := input.fgppName;
   fmakeName := input.fmakeName;
   fgdbName := input.fgdbName;
-  fwindresName := input.windresName;
   fgprofName := input.fgprofName;
 
   // Directories
@@ -1258,7 +1255,6 @@ begin
   fgppName := GPP_PROGRAM;
   fgdbName := GDB_PROGRAM;
   fmakeName := MAKE_PROGRAM;
-  fwindresName := ''; // no resource compiler on Linux
   fgprofName := GPROF_PROGRAM;
 end;
 
@@ -1735,9 +1731,6 @@ begin
   if not FindFile(fBinDir, fmakeName) then begin
     msg := msg + Format(Lang[ID_COMPVALID_BINNOTFOUND], [Lang[ID_COMPVALID_MAKE], fmakeName]) + #13#10;
   end;
-  if not FindFile(fBinDir, fwindresName) then begin
-    msg := msg + Format(Lang[ID_COMPVALID_BINNOTFOUND], [Lang[ID_COMPVALID_WINDRES], fwindresName]) + #13#10;
-  end;
   if msg <> '' then begin
     msg := Format(Lang[ID_COMPVALID_CHECKINGSET], [Name]) + #13#10#13#10 + msg + #13#10 + Lang[ID_COMPVALID_DIRSEARCHED]
       + #13#10;
@@ -1760,7 +1753,6 @@ begin
   fgppName := '';
   fgdbName := '';
   fmakeName := '';
-  fwindresName := '';
   fgprofName := '';
 
   fCompOpt := '';
@@ -1908,7 +1900,6 @@ begin
     fgppName := devData.ReadS(key, GPP_PROGRAM);
     fgdbName := devData.ReadS(key, GDB_PROGRAM);
     fmakeName := devData.ReadS(key, MAKE_PROGRAM);
-    fwindresName := devData.ReadS(key, WINDRES_PROGRAM);
     fgprofName := devData.ReadS(key, GPROF_PROGRAM);
 
     // Load the option in string format
@@ -1981,7 +1972,6 @@ begin
     devData.Write(key, GPP_PROGRAM, fgppName);
     devData.Write(key, GDB_PROGRAM, fgdbName);
     devData.Write(key, MAKE_PROGRAM, fmakeName);
-    devData.Write(key, WINDRES_PROGRAM, fwindresName);
     devData.Write(key, GPROF_PROGRAM, fgprofName);
 
     // Save option string

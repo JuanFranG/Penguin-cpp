@@ -337,7 +337,7 @@ begin
   end;
 
   if actiontype = faFindFiles then begin
-    MainForm.MessageControl.ActivePageIndex := 4; // Find Tab
+    MainForm.MessageControl.ActivePage := MainForm.FindSheet;
     if findcount > 0 then
       MainForm.FindSheet.Caption := Lang[ID_SHEET_FIND] + ' (' + IntToStr(findcount) + ')';
     MainForm.OpenCloseMessageSheet(TRUE);

@@ -90,7 +90,6 @@ const
   GPP_PROGRAM = 'g++';
   GDB_PROGRAM = 'gdb';
   GDB32_PROGRAM = 'gdb';
-  WINDRES_PROGRAM = 'windres'; // only a settings key: Linux has no resource compiler
   GPROF_PROGRAM = 'gprof';
 //  CLEAN_PROGRAM = 'rm.exe'; // cannot use del, it doesn't have a quiet mode
 //  CLEAN_PROGRAM = 'del /f /q';
@@ -103,7 +102,6 @@ const
   FLT_HEADS = 'Header files (*.h;*.hpp;*.rh;*.hh)|*.h;*.hpp;*.rh;*.hh';
   FLT_CS = 'C source files (*.c)|*.c';
   FLT_CPPS = 'C++ source files (*.cpp;*.cc;*.cxx;*.c++;*.cp)|*.cpp;*.cc;*.cxx;*.c++;*.cp';
-  FLT_RES = 'Resource scripts (*.rc)|*.rc';
   FLT_MSVCPROJECTS = 'MS Visual C++ projects (*.dsp)|*.dsp';
   FLT_CBPROJECTS = 'Code::Blocks projects (*.cbp)|*.cbp';
 

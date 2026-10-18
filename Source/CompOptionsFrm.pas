@@ -53,8 +53,6 @@ type
     MakeEdit: TEdit;
     lblgdb: TLabel;
     GdbEdit: TEdit;
-    lblwindres: TLabel;
-    WindresEdit: TEdit;
     lblgprof: TLabel;
     GprofEdit: TEdit;
     cbCompAdd: TCheckBox;
@@ -67,7 +65,6 @@ type
     btnBrowse3: TSpeedButton;
     btnBrowse4: TSpeedButton;
     btnBrowse5: TSpeedButton;
-    btnBrowse6: TSpeedButton;
     btnBrowse8: TSpeedButton;
     CompOptionsFrame1: TCompOptionsFrame;
     grpCompSet: TGroupBox;
@@ -160,7 +157,6 @@ begin
     GppEdit.Text := '';
     GdbEdit.Text := '';
     MakeEdit.Text := '';
-    WindresEdit.Text := '';
     GprofEdit.Text := '';
   end else begin
 
@@ -178,7 +174,6 @@ begin
       GppEdit.Text := gppName;
       GdbEdit.Text := gdbName;
       MakeEdit.Text := makeName;
-      WindresEdit.Text := windresName;
       GprofEdit.Text := gprofName;
     end;
   end;
@@ -218,7 +213,6 @@ begin
     gppName := gppEdit.Text;
     makeName := MakeEdit.Text;
     gdbName := GdbEdit.Text;
-    windresName := WindresEdit.Text;
     gprofName := GprofEdit.Text;
   end;
 
@@ -438,7 +432,6 @@ begin
     3: Obj := GppEdit; //gpp
     4: Obj := MakeEdit; //make
     5: Obj := GdbEdit; //gdb
-    6: Obj := WindresEdit; //windres
     7: Obj := GprofEdit; //gprof
   end;
 

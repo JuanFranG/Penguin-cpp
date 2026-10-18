@@ -28,7 +28,6 @@ uses
 type
   TLogEntryEvent = procedure(const Msg: String) of object;
   TOutputEvent = procedure(const _Line, _Col, _Unit, _Message: String) of object;
-  TResOutputEvent = procedure(const _Line, _Col, _Unit, _Message: String) of object;
   TCompEndEvent = procedure of object;
   TCompSuccessEvent = procedure of object;
   TRunEndEvent = procedure of object;
@@ -43,7 +42,6 @@ type
   private
     fOnLogEntry: TLogEntryEvent;
     fOnOutput: TOutputEvent;
-    fOnResOutput: TResOutputEvent;
     fOnCompEnd: TCompEndEvent;
     fOnCompSuccess: TCompSuccessEvent;
     fOnRunEnd: TRunEndEvent;
@@ -60,7 +58,6 @@ type
     fCompilerSet: TdevCompilerSet;
     procedure DoLogEntry(const msg: String);
     procedure DoOutput(const s1, s2, s3, s4: String);
-    procedure DoResOutput(const s1, s2, s3, s4: String);
     function GetMakeFile: String;
     function GetCompiling: Boolean;
     procedure RunTerminate(Sender: TObject);
@@ -79,7 +76,6 @@ type
     property Project: TProject read fProject write fProject;
     property OnLogEntry: TLogEntryEvent read fOnLogEntry write fOnLogEntry;
     property OnOutput: TOutputEvent read fOnOutput write fOnOutput;
-    property OnResOutput: TResOutputEvent read fOnResOutput write fOnResOutput;
     property OnCompEnd: TCompEndEvent read fOnCompEnd write fOnCompEnd;
     property OnCompSuccess: TCompSuccessEvent read fOnCompSuccess write fOnCompSuccess;
     property OnRunEnd: TRunEndEvent read fOnRunEnd write fOnRunEnd;
@@ -138,12 +134,6 @@ procedure TCompiler.DoOutput(const s1, s2, s3, s4: String);
 begin
   if Assigned(fOnOutput) then
     fOnOutput(s1, s2, s3, s4);
-end;
-
-procedure TCompiler.DoResOutput(const s1, s2, s3, s4: String);
-begin
-  if Assigned(fOnResOutput) then
-    fOnResOutput(s1, s2, s3, s4);
 end;
 
 function TCompiler.GetMakeFile: String;
@@ -1195,19 +1185,11 @@ begin
 
   GetFileName; // assume regular main.cpp:line:col: message
 
-  if SameStr(OFile, 'windres.exe') then begin // resource error
-    GetFileName;
-    GetLineNumber;
-    Inc(fErrCount); // assume it's always an error
+  GetLineNumber;
+  GetColNumber;
+  GetMessageType;
 
-    DoResOutput(OLine, '', OFile, OMsg);
-  end else begin
-    GetLineNumber;
-    GetColNumber;
-    GetMessageType;
-
-    DoOutput(OLine, OCol, OFile, OMsg);
-  end;
+  DoOutput(OLine, OCol, OFile, OMsg);
 end;
 
 // Quote: CommandArg for a command (the default), MakeShellArg for a Makefile.

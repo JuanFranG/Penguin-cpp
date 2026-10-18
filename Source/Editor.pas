@@ -283,7 +283,6 @@ begin
   end;
 
   LinesInsertedList(MainForm.CompilerOutput.Items);
-  LinesInsertedList(MainForm.ResourceOutput.Items);
   LinesInsertedList(MainForm.FindOutput.Items);
 end;
 
@@ -321,7 +320,6 @@ begin
   end;
 
   LinesDeletedList(MainForm.CompilerOutput.Items);
-  LinesDeletedList(MainForm.ResourceOutput.Items);
   LinesDeletedList(MainForm.FindOutput.Items);
 end;
 
@@ -1796,7 +1794,7 @@ begin
   Result := True;
   with TSaveDialog.Create(nil) do try
     Title := Lang[ID_NV_SAVEAS];
-    Filter := BuildFilter([FLT_CS, FLT_CPPS, FLT_HEADS, FLT_RES]);
+    Filter := BuildFilter([FLT_CS, FLT_CPPS, FLT_HEADS]);
     Options := Options + [ofOverwritePrompt];
 
     // select appropriate filter

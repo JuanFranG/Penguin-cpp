@@ -94,49 +94,6 @@ object MainForm: TMainForm
         OnKeyDown = CompilerOutputKeyDown
       end
     end
-    object ResSheet: TTabSheet
-      Caption = 'Resource'
-      ImageIndex = 1
-      object ResourceOutput: TListView
-        Left = 0
-        Top = 0
-        Width = 1277
-        Height = 135
-        Align = alClient
-        BorderStyle = bsNone
-        Columns = <
-          item
-            Caption = 'Line'
-            Width = 40
-          end
-          item
-            Caption = 'Col'
-            Width = 40
-          end
-          item
-            Caption = 'Unit'
-            Width = 320
-          end
-          item
-            AutoSize = True
-            Caption = 'Message'
-          end>
-        ColumnClick = False
-        GridLines = True
-        HideSelection = False
-        ReadOnly = True
-        RowSelect = True
-        ParentShowHint = False
-        ShowHint = True
-        TabOrder = 0
-        ViewStyle = vsReport
-        OnAdvancedCustomDraw = CompilerOutputAdvancedCustomDraw
-        OnAdvancedCustomDrawItem = CompilerOutputAdvancedCustomDrawItem
-        OnDblClick = CompilerOutputDblClick
-        OnDeletion = ResourceOutputDeletion
-        OnKeyDown = CompilerOutputKeyDown
-      end
-    end
     object LogSheet: TTabSheet
       Caption = 'Compile log'
       ImageIndex = 2

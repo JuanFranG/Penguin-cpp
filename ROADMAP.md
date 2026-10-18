@@ -110,50 +110,38 @@ al publicarla. Hoy `main` incluye las fases 1 a 6 (`fase6/compilador`).
 | 1 · Quitar lo que no se puede portar | `fase1/quitar-windows` | ✅ Hecha |
 | 2 · Parser de C++ en Free Pascal | `fase2/parser-fpc` | ✅ Hecha, probada en Mint |
 | 3 · Capa de sistema | `fase3/capa-sistema` | ✅ Hecha, probada en Mint; la instancia única se agregó en `fase6/compilador` |
-| 4 · Port a Lazarus y formularios | `fase4/lazarus` | 🔄 Abre, funciona y cierra bien en Mint con Qt5; falta Buscar/Ir a línea |
-| 4b · Identidad visual y temas | `fase4/lazarus`, `fase6/compilador` | ✅ Icono, paleta en paneles, menús y diálogos (Qt5) y esquemas Penguin claro y oscuro; falta probar la paleta de Qt5 en Mint |
+| 4 · Port a Lazarus y formularios | `fase4/lazarus` | ✅ Abre, funciona y cierra bien en Mint con Qt5, con Buscar, Reemplazar e Ir a línea |
+| 4b · Identidad visual y temas | `fase4/lazarus`, `fase6/compilador` | ✅ Icono, paleta en paneles, menús y diálogos (Qt5) y esquemas Penguin claro y oscuro, probados en Mint |
 | 5 · Editor (SynEdit de Lazarus) | `fase5/editor` | ✅ Hecha, probada en Mint: impresión, exportación a RTF/TeX y plegado |
-| 6 · Compilación con el gcc de Linux | `fase6/compilador` | 🔄 Hecha en código: gcc y clang, archivos sueltos y proyectos, terminal, Makefiles seguros, formateadores y plantillas. Falta probarla en Mint y decidir las plantillas de Windows |
+| 6 · Compilación con el gcc de Linux | `fase6/compilador` | 🔄 Probados en Mint: gcc, archivos sueltos, terminal, errores, instancia única y formateadores. Corregido el fallo al abrir proyectos; falta probarlos y quitar lo que es solo de Windows |
 | 7 · Depurador (GDB/MI) | — | ⏳ Pendiente |
 | 8 · Paquete `.deb` y pulido | — | ⏳ Pendiente |
 | 9 · macOS | — | ⏳ Después del `.deb` |
 
 ### Siguiente ciclo de trabajo
 
-Estado al 18 de octubre de 2026: el IDE abre, funciona y cierra sin errores en
-Linux Mint 22 con Qt5 (heaptrc: 0 bloques sin liberar). Las fases 1 a 5 están
-probadas en Mint. La fase 6 está escrita y compilada (también para Qt5), y
-falta probarla en Mint.
+Estado al 18 de octubre de 2026, probado en Linux Mint 22 con Qt5:
+- ✅ gcc en la lista de compiladores, F11 compila y ejecuta en una terminal,
+  y los errores aparecen en la lista y llevan a su línea.
+- ✅ Instancia única, formateadores, paleta de Qt5 y esquemas Penguin.
+- ✅ Buscar, Reemplazar e Ir a línea.
+- ❌ Proyectos: abrir un `.dev` o agregarle archivos corrompía la memoria
+  (`Wrong signature` de heaptrc en `AlphaSort`) y el IDE se colgaba. La causa
+  era un evento con los parámetros de Delphi (ver la fase 6); ya está
+  corregido y falta probarlo.
+- ❌ La marca roja de un error no se quitaba al corregirlo; ya está
+  corregido y falta probarlo.
 
-**1. Probar en Mint la fase 6:**
-- La lista de compiladores muestra *GCC 13.3.0 Release/Debug/Profiling* (y
-  *Clang*, si está instalado).
-- F11 con un "Hola mundo": compila y se abre una terminal con la salida y el
-  tiempo y valor de retorno al final. En Opciones del entorno se puede elegir
-  la terminal.
-- Un error de compilación aparece en la lista, y con doble clic se va a su
-  línea.
-- Un proyecto de consola y uno de varios archivos (Archivo → Nuevo →
-  Proyecto) compilan, se ejecutan y se limpian.
-- Abrir un archivo `.cpp` desde el explorador con el IDE abierto lo abre en
-  esa ventana (instancia única).
-- Los formateadores (Herramientas → AStyle / clang-format) con
-  `sudo apt install astyle clang-format`.
+**1. Probar en Mint los proyectos:** abrir un `.dev` de dos o más archivos,
+agregarle uno (Proyecto → Agregar), compilar, ejecutar y limpiar, y crear uno
+nuevo de consola. También, que la marca roja de un error se quite al mover
+el cursor o escribir.
 
-**2. Probar en Mint la paleta de Qt5 y los esquemas Penguin claro y oscuro:**
-menús, barras, botones y diálogos con los colores del icono, y el cambio al
-elegir un esquema claro u oscuro en Opciones del editor.
+**2. Quitar lo que es solo de Windows** (decisión de diseño: Penguin cpp es
+para Unix y Linux): los archivos de la lista de "Otros pendientes" y las
+funciones de la fase 6.
 
-**3. Decidir las plantillas de Windows** (ver la fase 6) y la limpieza de
-archivos del original (ver "Otros pendientes"): se borran solo con tu
-aprobación.
-
-**4. Buscar, Reemplazar e Ir a línea** "no aparecen o no están en su sitio"
-(reportado en Mint con GTK2). En el formulario siguen en el menú Buscar y en
-su barra, igual que en el original. Falta una captura del menú Buscar abierto
-con Qt5 para ver qué se ve distinto.
-
-**5. Fase 7:** el depurador sobre GDB/MI.
+**3. Fase 7:** el depurador sobre GDB/MI.
 
 ### Fase 0 · Preparación ✅
 - Repositorio en GitHub con el historial completo del original y el remoto
@@ -502,20 +490,44 @@ Hecho en la rama `fase6/compilador` (falta probarlo en Mint):
   de los proyectos. También se quitaron las `\` escritas a mano.
 - ✅ **Terminal a elegir** en Opciones del entorno (o automática) y **clang**
   como segundo compilador si está instalado.
+- ✅ **Eventos con los parámetros de Delphi:** la LCL enlaza los eventos de
+  los formularios solo por nombre, así que un método escrito para un evento
+  de Delphi con otros parámetros recibe los equivocados. El del árbol del
+  proyecto (`OnCompare`, con el parámetro `Data` de Delphi) escribía su
+  resultado en una dirección cualquiera al ordenar un proyecto de dos o más
+  archivos: memoria corrupta y el IDE colgado al abrir proyectos o agregarles
+  archivos. El clic en el margen de la vista previa de Opciones del editor
+  tenía el mismo problema. `LfmCheck` ahora compara los parámetros de cada
+  evento con los del tipo del evento.
+- ✅ **La marca roja del error** se quita al mover el cursor o escribir. El
+  SynEdit de Delphi avisaba del cursor con `scSelection`, y el de Lazarus con
+  `scCaretX`/`scCaretY`, así que nunca se quitaba.
 - ✅ **Plantillas:** Console Application, Windows Application y DLL nombraban
   sus archivos con otras mayúsculas (en Linux no se encontraban); Jackpot
   tiene ahora versión en C; DLL pasó a biblioteca compartida (`.so`), y las
   de consola ya no sugieren `getch` ni `system("pause")`.
 
 Falta:
-- **Probar todo lo anterior en Mint** (ver "Siguiente ciclo de trabajo").
-- **Plantillas solo de Windows**, para borrar con tu aprobación: *Windows
+- **Probar los proyectos en Mint** (ver "Siguiente ciclo de trabajo").
+- **Quitar lo que es solo de Windows** (decisión de diseño). Plantillas: *Windows
   Application* (`1-WinApp.template`, `WinApp_c.txt`), *Direct3D*
   (`Direct3D.template`, `Direct3D.txt`), *FileEditor* (`.template`, `_c`,
   `_h`, `_rc`), *MDIEditor* (`.template`, `_c`, `_h`, `_rc`), *WinAnim*
   (`.template`, `_c`, `_rc`, `ball.bmp`, `ballmask.bmp`), *OpenGL* con WinAPI
   (`OpenGL.template`, `OpenGL.txt`) y *Project3*, una plantilla vacía que
-  quedó del original.
+  quedó del original. Funciones del código:
+  - Archivos de recursos (`.rc`) y `windres`: la carpeta *Resources* de los
+    proyectos, la pestaña *Recursos* de los mensajes, el programa `windres`
+    de las opciones del compilador, y el icono, la información de versión y
+    el tema de XP de Opciones del proyecto, que se guardaban en el `.exe`.
+  - Al activar el perfilado en una biblioteca, el IDE ofrece agregar
+    `-lgmon`, que solo existe en MinGW: en Linux el enlazado falla.
+  - Importar proyectos de Visual C++ (Archivo → Importar). Importar de
+    Code::Blocks se queda.
+  - Las inserciones de código de Win32 (`MessageBox`, `WinMain` y los
+    procedimientos de ventana).
+  - El tipo de proyecto *Win32 GUI* pasa a ser una aplicación gráfica que se
+    ejecuta sin terminal.
 - **Hecho cuando:** se compila y ejecuta un proyecto de consola y uno de
   varios archivos, y los errores del compilador aparecen en la lista y se
   pueden clicar.
@@ -606,13 +618,26 @@ archivos con `open` en macOS), el monitor de archivos y los Makefiles.
     llevan a este repositorio.
   - ✅ `SECURITY.md` es el de Penguin cpp: versiones con soporte, cómo
     reportar en privado y qué cuida el IDE.
-- **Limpieza**, preguntando antes de borrar:
-  - `Source/VCL/SynEdit` y `Source/VCL/SVGIconImageList`, que ya no se usan.
-  - Los proyectos de Delphi (`devcpp.dpr/.dproj`, `DevCpp.dpk/.dproj`,
-    `ClassBrowsing.dpk/.dproj`).
-  - `FormatterOptionsFrm`, que no lo usa nada.
-  - Los iconos e imágenes del original que ya no se usan (`devcpp.ico`,
-    `Source/devcpp_Icon.ico`, `Source/Images/devcpplogo.png`…).
+- **Limpieza de lo que es solo de Windows o de Delphi** (decisión de
+  diseño), para borrar cuando lo confirmes:
+  - `Source/VCL/SynEdit` y `Source/VCL/SVGIconImageList`, componentes VCL que
+    ya no se usan.
+  - Los proyectos de Delphi: `devcpp.dpr/.dproj`, `VCL/DevCpp.dpk/.dproj/.res`,
+    `ClassBrowsing.dpk/.dproj/.res/.cfg` y los `.dcr` (iconos de la paleta de
+    Delphi).
+  - Scripts y recursos de Windows: `CleanSource.bat`, `CompileResources.bat`,
+    `Icons.rc`, `DefaultFiles.rc` (sus colores ya están en `ColorSchemes.pas`)
+    y `Fonts/InstallFonts.cmd`.
+  - Iconos de Windows: `Source/Images/associations` (asociaciones del
+    registro), `packman.ico`, `devcpp.ico` (raíz y `Source`),
+    `devcpp_Icon.ico`, `DevCpp_Icon.ico` y `ClassBrowsing_Icon.ico`.
+  - `Source/README.txt` explica cómo compilar con Delphi; se conservan sus
+    tablas de atajos e imágenes.
+  - Se quedan `Icons/*.ico`, que muestra Nuevo proyecto, y
+    `CodeToolTip.res`, que se enlaza.
+- **Otra limpieza**, preguntando antes de borrar: `FormatterOptionsFrm`, que
+  no lo usa nada, y las imágenes del original que ya no se usan
+  (`Source/Images/devcpplogo.png`, `splash.bmp`, `donate.bmp`…).
 - **Avisos de compilación**: revisar los ~150 que da hoy.
 - ✅ **Fuentes de Windows** en los formularios: cambiadas por las del sistema.
 - Más adelante: probar con Lazarus 4.x.

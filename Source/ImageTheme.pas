@@ -488,8 +488,7 @@ var
 begin
   if not DirectoryExists(ADirectory) then Exit;
 
-  if ADirectory[Length(ADirectory)] <> '\' then
-    ADirectory := ADirectory + '\';
+  ADirectory := IncludeTrailingPathDelimiter(ADirectory);
   
   if FindFirst(ADirectory + '*.bmp', faAnyFile, F) = 0 then
     repeat

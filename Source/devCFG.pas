@@ -248,7 +248,8 @@ type
     procedure SettoDefaults;
     procedure SaveSettings;
     procedure LoadSettings;
-    function Validate: Boolean; // check if AStyle.exe can be found
+    function Validate: Boolean; // check if astyle can be found
+    function ProgramFile: String; // '' when there is none
     procedure FormatMemory(Editor: TEditor; const OverrideCommand: String); // apply formatting
     function FormatFile(const FileName, OverrideCommand: String): String; // apply formatting
     function GetVersion: String;
@@ -273,6 +274,7 @@ type
   // Options for Clang-Format
   TdevFormatterClang = class(TPersistent)
   private
+    fLastExitCode: integer; // of the last FormatFile
     fBasedOnStyle: Integer;
     fBracketAlignmentStyle: Integer;
 
@@ -296,7 +298,8 @@ type
     procedure SettoDefaults;
     procedure SaveSettings;
     procedure LoadSettings;
-    function Validate: Boolean; // check if clang-format.exe can be found
+    function Validate: Boolean; // check if clang-format can be found
+    function ProgramFile: String; // '' when there is none
     procedure FormatMemory(Editor: TEditor; const OverrideCommand: String); // apply formatting
     function FormatFile(const FileName, OverrideCommand: String): String; // apply formatting
     function GetVersion: String;
@@ -2542,7 +2545,8 @@ begin
   Dir := GetPrivateTempDir;
   if Dir = '' then
     raise EInOutError.Create('Cannot create the temporary directory');
-  Name := ExtractFileName(EditorFileName);
+  // The name goes in double quotes in the formatter's command
+  Name := StringReplace(ExtractFileName(EditorFileName), '"', '_', [rfReplaceAll]);
   if Name = '' then
     Name := 'untitled.cpp';
   Result := Dir + Name;
@@ -2579,8 +2583,8 @@ begin
   fIndentLabels := False;
   fIndentPreprocessor := True;
   fFullCommand := GetFullCommand; // includes customizations
-  fAStyleDir := 'AStyle\';
-  fAStyleFile := 'AStyle.exe';
+  fAStyleDir := 'AStyle/';
+  fAStyleFile := 'astyle';
 end;
 
 function TdevFormatterAStyle.GetFullCommand: String;
@@ -2620,17 +2624,25 @@ begin
   Result := TrimLeft(Result);
 end;
 
+// A formatter shipped next to the IDE (the portable layout of Dev-C++), else
+// the system's. The settings may still hold the Windows names (AStyle\,
+// AStyle.exe); those are simply not found.
+function FormatterProgram(const Dir, FileName, SystemName: String): String;
+begin
+  Result := devDirs.Exec + IncludeTrailingPathDelimiter(StringReplace(Dir, '\', PathDelim, [rfReplaceAll])) +
+    FileName;
+  if not FileExists(Result) then
+    Result := ExeSearch(SystemName, GetEnvironmentVariable('PATH'));
+end;
+
+function TdevFormatterAStyle.ProgramFile: String;
+begin
+  Result := FormatterProgram(fAStyleDir, fAStyleFile, 'astyle'); // package astyle
+end;
+
 function TdevFormatterAStyle.Validate: Boolean;
 begin
-  Result := False;
-
-  // Check if AStyle.exe is where it should be
-  if not DirectoryExists(devDirs.Exec + fAStyleDir) then
-    Exit;
-  if not FileExists(devDirs.Exec + fAStyleDir + fAStyleFile) then
-    Exit;
-
-  Result := True;
+  Result := ProgramFile <> '';
 end;
 
 procedure TdevFormatterAStyle.FormatMemory(Editor: TEditor; const OverrideCommand: String);
@@ -2666,22 +2678,17 @@ begin
   end;
 end;
 
+// The program in quotes: its folder may have spaces, and the command is split
+// into arguments (Process.CommandToList)
 function TdevFormatterAStyle.FormatFile(const FileName, OverrideCommand: String): String;
-var
-  RunCommand, WorkingDir: String;
 begin
-  WorkingDir := devDirs.Exec + fAStyleDir;
-  RunCommand := fAStyleFile + ' ' + OverrideCommand + ' "' + FileName + '"';
-  Result := RunAndGetOutput(WorkingDir + RunCommand, GetTempDir, nil, nil, False);
+  Result := RunAndGetOutput('"' + ProgramFile + '" ' + OverrideCommand + ' "' + FileName + '"', GetTempDir, nil,
+    nil, False);
 end;
 
 function TdevFormatterAStyle.GetVersion: String;
-var
-  RunCommand, WorkingDir: String;
 begin
-  WorkingDir := devDirs.Exec + fAStyleDir;
-  RunCommand := fAStyleFile + ' --version';
-  Result := RunAndGetOutput(WorkingDir + RunCommand, GetTempDir, nil, nil, False);
+  Result := RunAndGetOutput('"' + ProgramFile + '" --version', GetTempDir, nil, nil, False);
 end;
 
 { TdevFormatter }
@@ -2720,13 +2727,13 @@ begin
   fColumnLimit := 80;
 
   fFullCommand := GetFullCommand; // includes customizations
-  fClangDir := 'ClangFormat\';
-  fClangFile := 'clang-format.exe';
+  fClangDir := 'ClangFormat/';
+  fClangFile := 'clang-format';
 end;
 
 function TdevFormatterClang.GetFullCommand: String;
 begin
-  Result := '--style="{';
+  Result := '"--style={'; // quotes around the whole argument (see FormatFile)
 
   // Add based style
   case fBasedOnStyle of
@@ -2765,17 +2772,14 @@ begin
   Result := Result + 'Language: Cpp}"';
 end;
 
+function TdevFormatterClang.ProgramFile: String;
+begin
+  Result := FormatterProgram(fClangDir, fClangFile, 'clang-format'); // package clang-format
+end;
+
 function TdevFormatterClang.Validate: Boolean;
 begin
-  Result := False;
-
-  // Check if ClangFormet.exe is where it should be
-  if not DirectoryExists(devDirs.Exec + fClangDir) then
-    Exit;
-  if not FileExists(devDirs.Exec + fClangDir + fClangFile) then
-    Exit;
-
-  Result := True;
+  Result := ProgramFile <> '';
 end;
 
 procedure TdevFormatterClang.FormatMemory(Editor: TEditor; const OverrideCommand: String);
@@ -2788,6 +2792,10 @@ begin
   try
     Editor.Text.Lines.SaveToFile(FileName);
     Formatted := FormatFile(FileName, OverrideCommand);
+    if fLastExitCode <> 0 then begin // an error message, not code
+      MessageDlg(Formatted, mtError, [mbOK], 0);
+      Exit;
+    end;
 
     // Load formatted file into dummy
     DummyEditor := TSynEdit.Create(nil);
@@ -2811,22 +2819,26 @@ begin
   end;
 end;
 
+// clang-format prints the formatted code. Its exit code tells it from an
+// error message (LastExitCode), which must not replace the user's code.
+// --style="{...}" (saved by older versions) reached clang-format with its
+// quotes: the whole argument goes in quotes instead.
 function TdevFormatterClang.FormatFile(const FileName, OverrideCommand: String): String;
 var
-  RunCommand, WorkingDir: String;
+  Output: String;
+  P: integer;
 begin
-  WorkingDir := devDirs.Exec + fClangDir;
-  RunCommand := fClangFile + ' ' + OverrideCommand + ' "' + FileName + '"';
-  Result := RunAndGetOutput(WorkingDir + RunCommand, GetTempDir, nil, nil, False);
+  Output := RunAndGetOutput('"' + ProgramFile + '" ' +
+    StringReplace(OverrideCommand, '--style="{', '"--style={', []) + ' "' + FileName + '"', GetTempDir, nil, nil,
+    True); // the exit code is appended after a space
+  P := RPos(' ', Output);
+  fLastExitCode := StrToIntDef(Copy(Output, P + 1, MaxInt), -1);
+  Result := Copy(Output, 1, P - 1);
 end;
 
 function TdevFormatterClang.GetVersion: String;
-var
-  RunCommand, WorkingDir: String;
 begin
-  WorkingDir := devDirs.Exec + fClangDir;
-  RunCommand := fClangFile + ' --version';
-  Result := RunAndGetOutput(WorkingDir + RunCommand, GetTempDir, nil, nil, False);
+  Result := RunAndGetOutput('"' + ProgramFile + '" --version', GetTempDir, nil, nil, False);
 end;
 
 { TdevExternalPrograms }

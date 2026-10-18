@@ -338,9 +338,9 @@ begin
 
     // Formatted log
     if (MainForm.CompilerOutput.Items.Count > 0) then begin
-      AssignFile(logfile, Options.LogOutput + '\Formatted Compiler Output.txt');
+      AssignFile(logfile, IncludeTrailingPathDelimiter(Options.LogOutput) + 'Formatted Compiler Output.txt');
       try
-        if FileExists(Options.LogOutput + '\Formatted Compiler Output.txt') = false then begin
+        if FileExists(IncludeTrailingPathDelimiter(Options.LogOutput) + 'Formatted Compiler Output.txt') = false then begin
           Rewrite(logfile);
           Write(logfile, DateTimeToStr(Now) + ': Creating log...' + #13#10#13#10);
         end else begin
@@ -364,9 +364,9 @@ begin
 
     // Raw log
     if Length(MainForm.LogOutput.Text) > 0 then begin
-      AssignFile(logfile, Options.LogOutput + '\Raw Build Output.txt');
+      AssignFile(logfile, IncludeTrailingPathDelimiter(Options.LogOutput) + 'Raw Build Output.txt');
       try
-        if FileExists(Options.LogOutput + '\Raw Build Output.txt') = false then begin
+        if FileExists(IncludeTrailingPathDelimiter(Options.LogOutput) + 'Raw Build Output.txt') = false then begin
           Rewrite(logfile);
           Write(logfile, DateTimeToStr(Now) + ': Creating log...' + #13#10#13#10);
         end else begin

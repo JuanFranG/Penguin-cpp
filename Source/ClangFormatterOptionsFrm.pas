@@ -96,7 +96,7 @@ end;
 procedure TClangFormatterOptionsForm.btnHelpClick(Sender: TObject);
 begin
   if fValid then
-    OpenDocument(devDirs.Exec + devFormatterClang.ClangDir + 'doc' + PathDelim + 'clang.html');
+    OpenDocument('https://clang.llvm.org/docs/ClangFormatStyleOptions.html');
 end;
 
 procedure TClangFormatterOptionsForm.LoadText;
@@ -263,7 +263,7 @@ end;
 
 function TClangFormatterOptionsForm.GetFullCommand: String;
 begin
-  Result := '--style="{';
+  Result := '"--style={';
 
   // Add based style
   case coBasedOnStyle.ItemIndex of

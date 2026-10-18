@@ -3821,7 +3821,7 @@ begin
         if Assigned(e) then
           InitialDir := ExtractFilePath(e.FileName)
         else
-          InitialDir := 'C:\';
+          InitialDir := GetUserDir;
       end;
 
       if Execute then begin

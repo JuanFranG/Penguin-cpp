@@ -92,7 +92,7 @@ end;
 procedure TAStyleFormatterOptionsForm.btnHelpClick(Sender: TObject);
 begin
   if fValid then
-    OpenDocument(devDirs.Exec + devFormatterAStyle.AStyleDir + 'doc' + PathDelim + 'astyle.html');
+    OpenDocument('https://astyle.sourceforge.net/astyle.html'); // the system's astyle has no HTML manual
 end;
 
 procedure TAStyleFormatterOptionsForm.LoadText;

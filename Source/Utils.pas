@@ -796,20 +796,16 @@ end;
 // seems stupid now but I want to expand to account for .. chars
 //in basepath and or filename
 
+// FileName relative to BasePath, made absolute without changing the
+// process's current directory (Dev-C++ did a chdir there and back)
 function ExpandFileto(const FileName, BasePath: String): String;
-var
-  oldPath: String;
 begin
-  oldPath := GetCurrentDir;
-  try
-    if DirectoryExists(BasePath) then begin
-      chdir(BasePath);
-      result := ExpandFileName(FileName);
-    end else
-      Result := Filename; // no luck...
-  finally
-    chdir(oldPath);
-  end;
+  if (FileName <> '') and (FileName[1] = PathDelim) then
+    Result := ExpandFileName(FileName)
+  else if DirectoryExists(BasePath) then
+    Result := ExpandFileName(IncludeTrailingPathDelimiter(BasePath) + FileName)
+  else
+    Result := Filename; // no luck...
 end;
 
 function FileSamePath(const FileName, TestPath: String): boolean;
@@ -1006,46 +1002,32 @@ begin
       Result := '"' + Result + '"';
 end;
 
+// An absolute, normalized file name. Relative names are taken from Directory,
+// else from the project's folder or the current editor's. Dev-C++ also
+// repaired Windows forms (C:/x, /C/x); on Linux every absolute name starts
+// with /, and that repair turned /home/u/main.c into o:e/u/main.c.
 function GetRealPath(const BrokenFileName, Directory: String): String;
 var
   e: TEditor;
 begin
   Result := BrokenFileName;
+  if Result = '' then
+    Exit;
 
-  // There are 3 kinds of bad filenames:
-  // 1: C:/Foo/Bar.txt              (must be backslashes)
-  // 2: /C/WINDOWS/Desktop/foo.c    (WinUnix paths?)
-  // 3: foo.c                       (not an absolute filename)
-
-  // First, check if this is a WinUnix path
-  if CompareText(Copy(Result, 1, 1), '/') = 0 then begin
-    Delete(Result, 1, 2);
-    Result[2] := ':';
-    Insert('\', Result, 3);
-  end;
-
-  // Second, check if this is an absolute filename
-  if (Length(Result) < 4) or not ((LowerCase(Result)[1] in TSetOfChar(['A'..'Z'])) and (Result[2] = ':')) then begin
-    // It's not
-    if Length(Directory) = 0 then begin
-      if Assigned(MainForm.Project) then
-        Result := ExpandFileTo(Result, MainForm.Project.Directory)
-      else begin
-        e := MainForm.EditorList.GetEditor;
-        if (Assigned(e)) and (Length(ExtractFileDir(e.FileName)) > 0) then
-          Result := ExpandFileTo(Result, ExtractFileDir(e.FileName))
-        else
-          Result := ExpandFileName(Result);
-      end;
-    end else begin
-      Result := ExpandFileTo(Result, Directory);
+  if Result[1] = PathDelim then
+    Result := ExpandFileName(Result) // resolves ./ and ../
+  else if Length(Directory) = 0 then begin
+    if Assigned(MainForm.Project) then
+      Result := ExpandFileTo(Result, MainForm.Project.Directory)
+    else begin
+      e := MainForm.EditorList.GetEditor;
+      if (Assigned(e)) and (Length(ExtractFileDir(e.FileName)) > 0) then
+        Result := ExpandFileTo(Result, ExtractFileDir(e.FileName))
+      else
+        Result := ExpandFileName(Result);
     end;
-  end;
-
-  // Last, replace all slashes with backslahes
-{$IFDEF MSWINDOWS}
-  Result := StringReplace(Result, '/', '\', [rfReplaceAll]);
-{$ENDIF}
+  end else
+    Result := ExpandFileTo(Result, Directory);
 end;
 
 function IncludeQuoteIfSpaces(const s: String): String;
@@ -1152,7 +1134,7 @@ begin
       for I := 0 to LibDir.Count - 1 do
         Result := StringReplace(Result, LibDir[i], '%LibDir' + IntToStr(i) + '%', [rfReplaceAll]);
     end;
-    Result := StringReplace(Result, devDirs.Exec, '%Dev-Cpp%\', [rfReplaceAll]);
+    Result := StringReplace(Result, devDirs.Exec, '%Dev-Cpp%' + PathDelim, [rfReplaceAll]);
   end;
 end;
 

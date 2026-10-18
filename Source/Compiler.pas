@@ -33,6 +33,10 @@ type
   TCompSuccessEvent = procedure of object;
   TRunEndEvent = procedure of object;
 
+  // Quotes one argument (a folder with -I or -L) for where it goes: a command
+  // split by Process.CommandToList, or a Makefile recipe run by /bin/sh
+  TArgQuote = function(const Arg: String): String;
+
   TTarget = (ctInvalid, ctNone, ctFile, ctProject);
 
   TCompiler = class
@@ -102,8 +106,9 @@ type
     procedure CreateStaticMakeFile; // static library creation
     procedure CreateDynamicMakeFile; // dynamic library creation
     procedure GetCompileParams;
-    procedure GetLibrariesParams;
-    procedure GetIncludesParams;
+    procedure GetLibrariesParams(Quote: TArgQuote = nil);
+    procedure GetIncludesParams(Quote: TArgQuote = nil);
+    function CheckMakeNames: Boolean;
     procedure LaunchThread(const s, dir: String);
     procedure ThreadCheckAbort(var AbortThread: boolean);
     procedure OnCompilationTerminated(Sender: TObject);
@@ -158,6 +163,12 @@ begin
     Exit;
   end;
 
+  // Names make cannot hold: no Makefile, and Compile stops (fMakefile = '')
+  if not CheckMakeNames then begin
+    fMakefile := '';
+    Exit;
+  end;
+
   case fProject.Options.typ of
     dptStat: CreateStaticMakeFile;
     dptDyn: CreateDynamicMakeFile;
@@ -167,6 +178,119 @@ begin
 
   if FileExists(fMakeFile) then
     FileSetDate(fMakefile, DateTimeToFileDate(Now)); // fix the "Clock skew detected" warning ;)
+end;
+
+{ Makefiles
+
+  A file name goes to two places with different rules. In a rule (target:
+  prerequisites) make reads it: $ is written $$ and a space \ . In a recipe
+  /bin/sh runs it after make: besides $$, it goes in single quotes, with ' as
+  '\'', so $(...), `...`, ; or quotes in a name are text, never code. Some
+  characters make cannot take in a name at all (CheckMakeNames). }
+
+const
+  // Line breaks and tabs; % (pattern rules); : ; = | and # (rule syntax:
+  // recipe on the same line, variable assignment, order-only prerequisites,
+  // comment); \ ; and * ? [ ] (make expands them as wildcards)
+  MakeUnsafeChars = [#0..#31, '%', ':', ';', '=', '|', '#', '\', '*', '?', '[', ']'];
+
+function MakeUnsafe(const S: String): Boolean;
+var
+  I: integer;
+begin
+  for I := 1 to Length(S) do
+    if S[I] in MakeUnsafeChars then
+      Exit(True);
+  Result := False;
+end;
+
+// A file name in a rule
+function MakeRuleName(const S: String): String;
+begin
+  Result := StringReplace(S, '$', '$$', [rfReplaceAll]);
+  Result := StringReplace(Result, ' ', '\ ', [rfReplaceAll]);
+end;
+
+// A file name or argument in a recipe
+function MakeShellArg(const S: String): String;
+begin
+  Result := StringReplace(S, '$', '$$', [rfReplaceAll]);
+  Result := '''' + StringReplace(Result, '''', '''\''''', [rfReplaceAll]) + '''';
+end;
+
+// An argument of a command split by Process.CommandToList (see Compile)
+function CommandArg(const S: String): String;
+begin
+  Result := '"' + S + '"';
+end;
+
+// Source of unit I relative to the project (the Makefile's folder)
+function UnitSource(Project: TProject; I: integer): String;
+begin
+  Result := ExtractRelativePath(Project.FileName, Project.Units[I].FileName);
+end;
+
+// Its object file: next to it, or in the project's object folder
+function UnitObject(Project: TProject; I: integer): String;
+begin
+  if Project.Options.ObjectOutput <> '' then
+    Result := ExtractRelativePath(Project.FileName, IncludeTrailingPathDelimiter(Project.Options.ObjectOutput) +
+      ChangeFileExt(ExtractFileName(Project.Units[I].FileName), OBJ_EXT))
+  else
+    Result := ChangeFileExt(UnitSource(Project, I), OBJ_EXT);
+end;
+
+// Units that are compiled into objects: C and C++ sources (headers are not,
+// and resource scripts are for Windows)
+function UnitIsBuilt(Project: TProject; I: integer): Boolean;
+begin
+  Result := Project.Units[I].Compile and (GetFileTyp(Project.Units[I].FileName) in [utcSrc, utcppSrc]);
+end;
+
+// The object files to link, and the program, quoted for a recipe
+function LinkObjects(Project: TProject): String;
+var
+  I: integer;
+begin
+  Result := '';
+  for I := 0 to Project.Units.Count - 1 do
+    if UnitIsBuilt(Project, I) and Project.Units[I].Link then
+      Result := Result + ' ' + MakeShellArg(UnitObject(Project, I));
+end;
+
+// A program name that ends in ")" (Tarea (1)) is an archive member to make
+// (archive(member)): it never sees the file and links it on every build.
+// The result is right, so such names are not refused.
+function ProgramArg(Project: TProject): String;
+begin
+  Result := MakeShellArg(ExtractRelativePath(Project.FileName, Project.Executable));
+end;
+
+function TCompiler.CheckMakeNames: Boolean;
+
+  function Check(const Name: String): Boolean;
+  begin
+    Result := not MakeUnsafe(Name);
+    if not Result then begin
+      DoLogEntry(Format(Lang[ID_ERR_MAKEUNSAFENAME], [Name]));
+      MessageDlg(Format(Lang[ID_ERR_MAKEUNSAFENAME], [Name]), mtError, [mbOK], 0);
+    end;
+  end;
+
+var
+  I: integer;
+begin
+  Result := False;
+  if not Check(ExtractRelativePath(fProject.FileName, fProject.Executable)) then
+    Exit;
+  for I := 0 to fProject.Units.Count - 1 do
+    if UnitIsBuilt(fProject, I) then
+      if not Check(UnitSource(fProject, I)) or not Check(UnitObject(fProject, I)) then
+        Exit;
+  for I := 0 to fProject.Options.MakeIncludes.Count - 1 do
+    if not Check(fProject.Options.MakeIncludes[I]) then
+      Exit;
+  Result := True;
 end;
 
 procedure TCompiler.NewMakeFile(var F: TextFile);
@@ -209,7 +333,9 @@ end;
 
 procedure TCompiler.WriteMakeHeader(var F: TextFile);
 begin
-  Writeln(F, '# Project: ' + fProject.Name);
+  // The name comes from the .dev file: one line, whatever it holds
+  Writeln(F, '# Project: ' + StringReplace(StringReplace(fProject.Name, #13, ' ', [rfReplaceAll]), #10, ' ',
+    [rfReplaceAll]));
   Writeln(F, '# Makefile created by ' + DEVCPP + ' ' + DEVCPP_VERSION);
   Writeln(F);
   if fCheckSyntax then begin
@@ -221,63 +347,23 @@ end;
 
 procedure TCompiler.WriteMakeDefines(var F: TextFile);
 var
-  Objects, ObjResFile, LinkObjects, ObjFile, RelativeName, OutputFileDir, LibOutputFile: String;
+  Objects: String;
   I: integer;
 begin
-  // Get list of object files
+  // Object files, for the rules
   Objects := '';
-  LinkObjects := '';
+  for I := 0 to fProject.Units.Count - 1 do
+    if UnitIsBuilt(fProject, I) then
+      Objects := Objects + ' ' + MakeRuleName(UnitObject(fProject, I));
 
-  // Create a list of object files
-  for i := 0 to Pred(fProject.Units.Count) do begin
-
-    if not fProject.Units[i].Compile and not fProject.Units[i].Link then
-      Continue;
-
-    // Only process source files
-    RelativeName := ExtractRelativePath(fProject.FileName, fProject.Units[i].FileName);
-    if not (GetFileTyp(RelativeName) in [utcHead, utcppHead, utResSrc]) then begin
-      if fProject.Options.ObjectOutput <> '' then begin
-
-        // ofile = C:\MyProgram\obj\main.o
-        ObjFile := IncludeTrailingPathDelimiter(fProject.Options.ObjectOutput) +
-          ExtractFileName(fProject.Units[i].FileName);
-        ObjFile := GenMakePath(ExtractRelativePath(fProject.FileName, ChangeFileExt(ObjFile, OBJ_EXT)), True, True);
-        Objects := Objects + ' ' + ObjFile;
-
-        if fProject.Units[i].Link then
-          LinkObjects := LinkObjects + ' ' + ObjFile;
-      end else begin
-        Objects := Objects + ' ' + GenMakePath(ChangeFileExt(RelativeName, OBJ_EXT), True, True);
-        if fProject.Units[i].Link then
-          LinkObjects := LinkObjects + ' ' + GenMakePath1(ChangeFileExt(RelativeName, OBJ_EXT));
-      end;
-    end;
-  end;
-
-  Objects := Trim(Objects);
-  LinkObjects := Trim(LinkObjects);
-
-  // Get windres file
-  if Length(fProject.Options.PrivateResource) = 0 then begin
-    ObjResFile := '';
-  end else begin
-    if fProject.Options.ObjectOutput <> '' then begin
-      ObjResFile := IncludeTrailingPathDelimiter(fProject.Options.ObjectOutput) +
-        ChangeFileExt(fProject.Options.PrivateResource, RES_EXT);
-    end else
-      ObjResFile := ChangeFileExt(fProject.Options.PrivateResource, RES_EXT);
-  end;
-
-  // Mention progress in the logs
-  if ObjResFile <> '' then
-    DoLogEntry(Format(Lang[ID_LOG_RESFILENAME], [ExpandFileto(ObjResFile, fProject.Directory)]));
-  DoLogEntry('');
-
-  // Get list of applicable flags
+  // Flags, with the folders quoted for /bin/sh
   GetCompileParams;
-  GetLibrariesParams;
-  GetIncludesParams;
+  GetLibrariesParams(MakeShellArg);
+  GetIncludesParams(MakeShellArg);
+  if fProject.Options.typ = dptDyn then begin // shared library: position independent code
+    fCompileParams := fCompileParams + ' -fPIC';
+    fCppCompileParams := fCppCompileParams + ' -fPIC';
+  end;
 
   if (Pos(' -g3', fCompileParams) > 0) or (Pos('-g3', fCompileParams) = 1) then begin
     Writeln(F, 'CPP      = ' + fCompilerSet.gppName + ' -D__DEBUG__');
@@ -286,36 +372,13 @@ begin
     Writeln(F, 'CPP      = ' + fCompilerSet.gppName);
     Writeln(F, 'CC       = ' + fCompilerSet.gccName);
   end;
-  Writeln(F, 'WINDRES  = ' + fCompilerSet.windresName);
-  if (ObjResFile <> '') then begin
-    Writeln(F, 'RES      = ' + GenMakePath1(ExtractRelativePath(fProject.FileName, ObjResFile)));
-    Writeln(F, 'OBJ      = ' + Objects + ' $(RES)' );
-    Writeln(F, 'LINKOBJ  = ' + LinkObjects + ' $(RES)');
-  end else begin
-    Writeln(F, 'OBJ      = ' + Objects);
-    Writeln(F, 'LINKOBJ  = ' + LinkObjects);
-  end;
-  Writeln(F, 'LIBS     = ' + StringReplace(fLibrariesParams, '\', '/', [rfReplaceAll]));
-  Writeln(F, 'INCS     = ' + StringReplace(fIncludesParams, '\', '/', [rfReplaceAll]));
-  Writeln(F, 'CXXINCS  = ' + StringReplace(fCppIncludesParams, '\', '/', [rfReplaceAll]));
-  Writeln(F, 'BIN      = ' + GenMakePath1(ExtractRelativePath(Makefile, fProject.Executable)));
+  Writeln(F, 'OBJ      =' + Objects);
+  Writeln(F, 'BIN      = ' + MakeRuleName(ExtractRelativePath(fProject.FileName, fProject.Executable)));
+  Writeln(F, 'LIBS     = ' + fLibrariesParams);
+  Writeln(F, 'INCS     = ' + fIncludesParams);
+  Writeln(F, 'CXXINCS  = ' + fCppIncludesParams);
   Writeln(F, 'CXXFLAGS = $(CXXINCS) ' + fCppCompileParams);
   Writeln(F, 'CFLAGS   = $(INCS) ' + fCompileParams);
-//  Writeln(F, 'RD       = ' + CLEAN_PROGRAM + ' -f'); // TODO: use del or rm?
-  Writeln(F, 'DEL      = ' + CLEAN_PROGRAM);
-
-  // This needs to be put in before the clean command.
-  if fProject.Options.typ = dptDyn then begin
-    OutputFileDir := ExtractFilePath(Project.Executable);
-    LibOutputFile := OutputFileDir + 'lib' + ExtractFileName(Project.Executable);
-    if FileSamePath(LibOutputFile, Project.Directory) then
-      LibOutputFile := ExtractFileName(LibOutputFile)
-    else
-      LibOutputFile := ExtractRelativePath(Makefile, LibOutputFile);
-
-    Writeln(F, 'DEF      = ' + GenMakePath1(ChangeFileExt(LibOutputFile, DEF_EXT)));
-    Writeln(F, 'STATIC   = ' + GenMakePath1(ChangeFileExt(LibOutputFile, LIB_EXT)));
-  end;
   Writeln(F);
 end;
 
@@ -334,130 +397,61 @@ procedure TCompiler.WriteMakeIncludes(var F: TextFile);
 var
   I: integer;
 begin
-  for i := 0 to fProject.Options.MakeIncludes.Count - 1 do
-    Writeln(F, 'include ' + GenMakePath1(fProject.Options.MakeIncludes.Strings[i]));
+  for I := 0 to fProject.Options.MakeIncludes.Count - 1 do
+    Writeln(F, 'include ' + MakeRuleName(fProject.Options.MakeIncludes[I]));
   if fProject.Options.MakeIncludes.Count > 0 then
     Writeln(F);
 end;
 
 procedure TCompiler.WriteMakeObjFilesRules(var F: TextFile);
 var
-  i: integer;
-  FileName, ShortFileName, ObjFileName, BuildCmd, ResFiles, ResIncludes, ResFile, PrivResName, WindresArgs: String;
+  I: integer;
+  Source, ObjFile, BuildCmd: String;
 begin
-  for i := 0 to pred(fProject.Units.Count) do begin
-    if not fProject.Units[i].Compile then
+  for I := 0 to fProject.Units.Count - 1 do begin
+    if not UnitIsBuilt(fProject, I) then
       Continue;
+    Source := UnitSource(fProject, I);
+    ObjFile := UnitObject(fProject, I);
 
-    // skip resource files
-    if GetFileTyp(fProject.Units[i].FileName) = utResSrc then
-      Continue;
-
-    // Get unit filename relative to project or relative to makefile
-    FileName := fProject.Units[i].FileName;
-    if FileSamePath(FileName, fProject.Directory) then
-      ShortFileName := ExtractFileName(FileName)
-    else
-      ShortFileName := ExtractRelativePath(Makefile, FileName);
-
-    // Only process source files
-    if GetFileTyp(ShortFileName) in [utcSrc, utcppSrc] then begin
-      Writeln(F);
-
-      // Get obj filename (e.g. obj/main.o)
-      if fProject.Options.ObjectOutput <> '' then begin
-        ObjFileName := IncludeTrailingPathDelimiter(fProject.Options.ObjectOutput) +
-          ExtractFileName(fProject.Units[i].FileName);
-        ObjFileName := GenMakePath1(ExtractRelativePath(fProject.FileName, ChangeFileExt(ObjFileName, OBJ_EXT)));
-      end else
-        ObjFileName := GenMakePath1(ChangeFileExt(ShortFileName, OBJ_EXT));
-
-      // objectfile: sourcefile
-      Writeln(F, GenMakePath2(ObjFileName) + ': ' + GenMakePath2(ShortFileName));
-
-      // Write custom build command
-      if fProject.Units[i].OverrideBuildCmd and (fProject.Units[i].BuildCmd <> '') then begin
-        BuildCmd := fProject.Units[i].BuildCmd;
-        BuildCmd := StringReplace(BuildCmd, '<CRTAB>', #10#9, [rfReplaceAll]);
-        Writeln(F, #9 + BuildCmd);
-
-        // Or roll our own
-      end else begin
-        if fCheckSyntax then begin
-          if fProject.Units[i].CompileCpp then
-            Writeln(F, #9 + '$(CPP) -c ' + GenMakePath1(ShortFileName) + ' $(CXXFLAGS)')
-          else
-            Writeln(F, #9 + '$(CC) -c ' + GenMakePath1(ShortFileName) + ' $(CFLAGS)');
-        end else begin
-          if fProject.Units[i].CompileCpp then
-            Writeln(F, #9 + '$(CPP) -c ' + GenMakePath1(ShortFileName) + ' -o ' + ObjFileName + ' $(CXXFLAGS)')
-          else
-            Writeln(F, #9 + '$(CC) -c ' + GenMakePath1(ShortFileName) + ' -o ' + ObjFileName + ' $(CFLAGS)');
-        end;
-      end;
-    end;
-  end;
-
-  if (Length(fProject.Options.PrivateResource) > 0) then begin
-
-    // Concatenate all resource include directories
-    ResIncludes := ' ';
-    for i := 0 to fProject.Options.ResourceIncludes.Count - 1 do begin
-      ShortFileName := GetShortName(fProject.Options.ResourceIncludes[i]);
-      if ShortFileName <> '' then
-        ResIncludes := ResIncludes + ' --include-dir ' + GenMakePath1(ShortFileName);
-    end;
-
-    // Concatenate all resource filenames (not created when syntax checking)
-    if not fCheckSyntax then begin
-      ResFiles := '';
-      for i := 0 to fProject.Units.Count - 1 do begin
-        if GetFileTyp(fProject.Units[i].FileName) <> utResSrc then
-          Continue;
-        ResFile := ExtractRelativePath(fProject.Executable, fProject.Units[i].FileName);
-        if FileExists(GetRealPath(ResFile, fProject.Directory)) then
-          ResFiles := ResFiles + GenMakePath2(ResFile) + ' ';
-      end;
-      ResFiles := Trim(ResFiles);
-    end;
-
-    // Determine resource output file
-    if fProject.Options.ObjectOutput <> '' then
-      ObjFileName := IncludeTrailingPathDelimiter(fProject.Options.ObjectOutput) +
-        ChangeFileExt(fProject.Options.PrivateResource, RES_EXT)
-    else
-      ObjFileName := ChangeFileExt(fProject.Options.PrivateResource, RES_EXT);
-    ObjFileName := GenMakePath1(ExtractRelativePath(fProject.FileName, ObjFileName));
-    PrivResName := GenMakePath1(ExtractRelativePath(fProject.FileName, fProject.Options.PrivateResource));
-
-    // Build final cmd
-    if ContainsStr(fCompileParams, '-m32') then
-      WindresArgs := ' -F pe-i386'
-    else
-      WindresArgs := '';
-    if fCheckSyntax then begin
-      Writeln(F);
-      Writeln(F, ObjFileName + ':');
-      Writeln(F, #9 + '$(WINDRES) -i ' + PrivResName + WindresArgs + ' --input-format=rc -o nul -O coff' + ResIncludes)
-    end else begin
-      Writeln(F);
-      Writeln(F, ObjFileName + ': ' + PrivResName + ' ' + ResFiles);
-      Writeln(F, #9 + '$(WINDRES) -i ' + PrivResName + WindresArgs + ' --input-format=rc -o ' + ObjFileName + ' -O coff'
-        + ResIncludes);
-    end;
+    // objectfile: sourcefile
     Writeln(F);
+    Writeln(F, MakeRuleName(ObjFile) + ': ' + MakeRuleName(Source));
+
+    // Write custom build command
+    if fProject.Units[I].OverrideBuildCmd and (fProject.Units[I].BuildCmd <> '') then begin
+      BuildCmd := fProject.Units[I].BuildCmd;
+      BuildCmd := StringReplace(BuildCmd, '<CRTAB>', #10#9, [rfReplaceAll]);
+      Writeln(F, #9 + BuildCmd);
+
+      // Or roll our own
+    end else if fCheckSyntax then begin
+      if fProject.Units[I].CompileCpp then
+        Writeln(F, #9 + '$(CPP) -c ' + MakeShellArg(Source) + ' $(CXXFLAGS)')
+      else
+        Writeln(F, #9 + '$(CC) -c ' + MakeShellArg(Source) + ' $(CFLAGS)');
+    end else begin
+      if fProject.Units[I].CompileCpp then
+        Writeln(F, #9 + '$(CPP) -c ' + MakeShellArg(Source) + ' -o ' + MakeShellArg(ObjFile) + ' $(CXXFLAGS)')
+      else
+        Writeln(F, #9 + '$(CC) -c ' + MakeShellArg(Source) + ' -o ' + MakeShellArg(ObjFile) + ' $(CFLAGS)');
+    end;
   end;
+  Writeln(F);
 end;
 
 procedure TCompiler.WriteMakeClean(var F: TextFile);
+var
+  I: integer;
+  Files: String;
 begin
+  // rm -f with each name; Dev-C++ ran the IDE itself (INTERNAL_DEL) on $(OBJ)
+  Files := '';
+  for I := 0 to fProject.Units.Count - 1 do
+    if UnitIsBuilt(fProject, I) then
+      Files := Files + ' ' + MakeShellArg(UnitObject(fProject, I));
   Writeln(F, 'clean: clean-custom');
-  case fProject.Options.typ of
-    dptDyn:
-      Writeln(F, #9 + '${DEL} $(OBJ) $(BIN) $(DEF) $(STATIC)');
-  else
-    Writeln(F, #9 + '${DEL} $(OBJ) $(BIN)');
-  end;
+  Writeln(F, #9 + CLEAN_PROGRAM + Files + ' ' + ProgramArg(fProject));
   Writeln(F);
 end;
 
@@ -470,9 +464,9 @@ begin
     Writeln(F, '$(BIN): $(OBJ)');
     if not fCheckSyntax then
       if fProject.Options.useGPP then
-        Writeln(F, #9 + '$(CPP) $(LINKOBJ) -o $(BIN) $(LIBS)')
+        Writeln(F, #9 + '$(CPP)' + LinkObjects(fProject) + ' -o ' + ProgramArg(fProject) + ' $(LIBS)')
       else
-        Writeln(F, #9 + '$(CC) $(LINKOBJ) -o $(BIN) $(LIBS)');
+        Writeln(F, #9 + '$(CC)' + LinkObjects(fProject) + ' -o ' + ProgramArg(fProject) + ' $(LIBS)');
     WriteMakeObjFilesRules(F);
   finally
     CloseFile(F);
@@ -485,10 +479,10 @@ var
 begin
   try
     NewMakeFile(F);
-    Writeln(F, '$(BIN): $(LINKOBJ)');
+    Writeln(F, '$(BIN): $(OBJ)');
     if not fCheckSyntax then begin
-      Writeln(F, #9 + 'ar r $(BIN) $(LINKOBJ)');
-      Writeln(F, #9 + 'ranlib $(BIN)');
+      Writeln(F, #9 + 'ar r ' + ProgramArg(fProject) + LinkObjects(fProject));
+      Writeln(F, #9 + 'ranlib ' + ProgramArg(fProject));
     end;
     WriteMakeObjFilesRules(F);
   finally
@@ -496,20 +490,20 @@ begin
   end;
 end;
 
+// A shared library (.so); the objects are built with -fPIC (WriteMakeDefines).
+// Dev-C++ wrote a Windows DLL with its .def and import library.
 procedure TCompiler.CreateDynamicMakeFile;
 var
   F: TextFile;
 begin
   try
     NewMakeFile(F);
-    Writeln(F, '$(BIN): $(LINKOBJ)');
+    Writeln(F, '$(BIN): $(OBJ)');
     if not fCheckSyntax then begin
       if fProject.Options.useGPP then
-        Writeln(F, #9 +
-          '$(CPP) -shared $(LINKOBJ) -o $(BIN) $(LIBS) -Wl,--output-def,$(DEF),--out-implib,$(STATIC),--add-stdcall-alias')
+        Writeln(F, #9 + '$(CPP) -shared' + LinkObjects(fProject) + ' -o ' + ProgramArg(fProject) + ' $(LIBS)')
       else
-        Writeln(F, #9 +
-          '$(CC) -shared $(LINKOBJ) -o $(BIN) $(LIBS) -Wl,--output-def,$(DEF),--out-implib,$(STATIC),--add-stdcall-alias')
+        Writeln(F, #9 + '$(CC) -shared' + LinkObjects(fProject) + ' -o ' + ProgramArg(fProject) + ' $(LIBS)');
     end;
     WriteMakeObjFilesRules(F);
   finally
@@ -621,8 +615,6 @@ end;
 
 procedure TCompiler.Compile;
 const
-  // windres, input, output
-  cResourceCmdLine = '%s --input-format=rc -i %s -o %s';
   // gcc, input, compileparams, includeparams, librariesparams
   cSyntaxCmdLine = '%s "%s" %s %s %s';
   // gcc, input, compileparams, includeparams, librariesparams
@@ -664,18 +656,6 @@ begin
 
         // Determine command line to execute
         case GetFileTyp(fSourceFile) of
-          utResSrc: begin
-              s := fCompilerSet.windresName;
-              if fCheckSyntax then
-                cmdline := Format(cResourceCmdLine, [s, fSourceFile, 'nul'])
-              else
-                cmdline := Format(cResourceCmdLine, [s, fSourceFile, ChangeFileExt(fSourceFile, OBJ_EXT)]);
-
-              DoLogEntry(Lang[ID_LOG_PROCESSINGRES]);
-              DoLogEntry('--------');
-              DoLogEntry(Format(Lang[ID_LOG_WINDRESNAME], [IncludeTrailingPathDelimiter(fCompilerSet.BinDir[0]) + s]));
-              DoLogEntry(Format(Lang[ID_LOG_COMMAND], [cmdLine]));
-            end;
           utcSrc: begin
               s := fCompilerSet.gccName;
               if fCheckSyntax then
@@ -748,7 +728,17 @@ begin
         DoLogEntry(Format(Lang[ID_LOG_COMPILERNAME], [fCompilerSet.Name]));
         DoLogEntry('');
 
+        // The path of the Makefile goes in double quotes (see the ctFile case)
+        if Pos('"', fProject.FileName) > 0 then begin
+          MessageDlg(Format(Lang[ID_ERR_QUOTEDFILENAME], [fProject.FileName]), mtError, [mbOK], 0);
+          EndProgressForm;
+          Exit;
+        end;
         BuildMakeFile;
+        if fMakeFile = '' then begin // a name make cannot take (CheckMakeNames)
+          EndProgressForm;
+          Exit;
+        end;
         cmdline := Format(cMakeLine, [fCompilerSet.makeName, fMakeParams, fMakeFile]);
 
         DoLogEntry(Lang[ID_LOG_PROCESSINGMAKE]);
@@ -1170,8 +1160,7 @@ begin
   if (Pos(fCompilerSet.gccName + ' ', Line) = 1) or
     (Pos(fCompilerSet.gppName + ' ', Line) = 1) or
     (Pos(fCompilerSet.makeName, Line) = 1) or // ignore all make errors for now
-  (Pos(fCompilerSet.windresName + ' ', Line) = 1) or
-    (Pos(CLEAN_PROGRAM + ' ', Line) = 1) then
+  (Pos(CLEAN_PROGRAM + ' ', Line) = 1) then
     Exit;
 
   // Direction strings
@@ -1218,17 +1207,21 @@ begin
   end;
 end;
 
-procedure TCompiler.GetLibrariesParams;
-const
-  // The whole argument in quotes: -L"dir" would reach gcc with its quotes
-  // (Process.CommandToList only strips quotes around a whole word)
-  cAppendStr = '%s "-L%s"';
+// Quote: CommandArg for a command (the default), MakeShellArg for a Makefile.
+// The whole argument in quotes: -L"dir" would reach gcc with its quotes
+// (Process.CommandToList only strips quotes around a whole word).
+procedure TCompiler.GetLibrariesParams(Quote: TArgQuote = nil);
 var
   i, val: integer;
   option: TCompilerOption;
 begin
+  if not Assigned(Quote) then
+    Quote := CommandArg;
+
   // Add libraries
-  fLibrariesParams := FormatList(fCompilerSet.LibDir, cAppendStr);
+  fLibrariesParams := '';
+  for i := 0 to fCompilerSet.LibDir.Count - 1 do
+    fLibrariesParams := fLibrariesParams + ' ' + Quote('-L' + fCompilerSet.LibDir[i]);
 
   // Add global compiler linker extras
   if fCompilerSet.AddtoLink and (Length(fCompilerSet.LinkOpts) > 0) then
@@ -1237,7 +1230,7 @@ begin
   // Add libs added via project
   if (fTarget = ctProject) and assigned(fProject) then begin
     for i := 0 to pred(fProject.Options.Libs.Count) do
-      fLibrariesParams := format(cAppendStr, [fLibrariesParams, fProject.Options.Libs[i]]);
+      fLibrariesParams := fLibrariesParams + ' ' + Quote('-L' + fProject.Options.Libs[i]);
 
     // Add project compiler linker extras
     if Length(fProject.Options.LinkerCmd) > 0 then
@@ -1269,20 +1262,24 @@ begin
   fLibrariesParams := Trim(fLibrariesParams);
 end;
 
-procedure TCompiler.GetIncludesParams;
-const
-  cAppendStr = '%s "-I%s"'; // see GetLibrariesParams
+procedure TCompiler.GetIncludesParams(Quote: TArgQuote = nil); // see GetLibrariesParams
 var
   i: integer;
 begin
-  fIncludesParams := FormatList(fCompilerSet.CDir, cAppendStr);
-  fCppIncludesParams := FormatList(fCompilerSet.CppDir, cAppendStr);
+  if not Assigned(Quote) then
+    Quote := CommandArg;
+  fIncludesParams := '';
+  for i := 0 to fCompilerSet.CDir.Count - 1 do
+    fIncludesParams := fIncludesParams + ' ' + Quote('-I' + fCompilerSet.CDir[i]);
+  fCppIncludesParams := '';
+  for i := 0 to fCompilerSet.CppDir.Count - 1 do
+    fCppIncludesParams := fCppIncludesParams + ' ' + Quote('-I' + fCompilerSet.CppDir[i]);
 
   if (fTarget = ctProject) and assigned(fProject) then
     for i := 0 to pred(fProject.Options.Includes.Count) do
       if DirectoryExists(fProject.Options.Includes[i]) then begin
-        fIncludesParams := format(cAppendStr, [fIncludesParams, fProject.Options.Includes[i]]);
-        fCppIncludesParams := format(cAppendStr, [fCppIncludesParams, fProject.Options.Includes[i]]);
+        fIncludesParams := fIncludesParams + ' ' + Quote('-I' + fProject.Options.Includes[i]);
+        fCppIncludesParams := fCppIncludesParams + ' ' + Quote('-I' + fProject.Options.Includes[i]);
       end;
 
   fIncludesParams := Trim(fIncludesParams);
@@ -1357,11 +1354,6 @@ begin
     end;
   end else if StartsStr(CLEAN_PROGRAM + ' ', Line) then begin // Cleaning obj files
     MainForm.pbCompilation.StepIt;
-  end else if StartsStr(fCompilerSet.windresName + ' ', Line) and Assigned(fProject) then begin // Resource files
-    filename := ExtractFileName(fProject.Options.PrivateResource);
-    if ContainsStr(Line, filename) then begin
-      MainForm.pbCompilation.StepIt;
-    end;
   end;
 end;
 

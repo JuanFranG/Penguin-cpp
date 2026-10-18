@@ -407,6 +407,12 @@ var
   Res, Def, Icon: String;
   comp, i: Integer;
 begin
+  // The private resource script holds what Windows puts inside a .exe (icon,
+  // version information, XP theme manifest), compiled with windres. Linux
+  // programs have none of that: no script, and the Makefile has no RES.
+  fOptions.PrivateResource := '';
+  Exit;
+
   comp := 0;
   for i := 0 to Units.Count - 1 do
     if GetFileTyp(Units[i].FileName) = utResSrc then

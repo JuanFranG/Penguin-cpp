@@ -87,25 +87,7 @@ uses
 
 var
   INIFileName, ExeFolder: String;
-  I: Integer;
 begin
-  // Helper mode used by generated Makefiles to delete files ("make clean")
-  if (ParamCount > 1) and (ParamStr(1) = 'INTERNAL_DEL') then begin
-    WriteLn('Start deleting...');
-    for I := 2 to ParamCount do
-      if FileExists(ParamStr(I)) then begin
-        Write('Deleting: ' + ParamStr(I));
-        if DeleteFile(ParamStr(I)) then
-          WriteLn(' Ok')
-        else
-          WriteLn(' fail');
-      end else
-        WriteLn('File not found: ' + ParamStr(I));
-    WriteLn('Deleting complete...');
-    WriteLn('');
-    Exit;
-  end;
-
   devData.IsPortable := EndsText('portable', ChangeFileExt(ExtractFileName(ParamStr(0)), ''))
                         or FindCmdLineSwitch('portable', True)
                         or FindCmdLineSwitch('-portable', True);

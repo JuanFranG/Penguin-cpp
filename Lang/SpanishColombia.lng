@@ -50,6 +50,7 @@ Ver=1
 1053=Presiona Enter para cerrar esta ventana... 
 1054=No se encontró una terminal (gnome-terminal, mate-terminal, xfce4-terminal, konsole o xterm), así que el programa corre sin una ventana para su salida. Instala una de ellas para verla.
 1055=No se encontró ningún compilador. Instala gcc y g++ (en una terminal: sudo apt install build-essential) y vuelve a abrir Penguin cpp.
+1056=El nombre de este archivo tiene un carácter que un Makefile no admite (salto de línea, tabulador, %% : ; = | # \ * ? [ o ]):<CR>%s<CR><CR>Cámbiale el nombre para compilar el proyecto.
 
 2001=&Abrir proyecto o archivo...
 2002=A&brir archivo reciente

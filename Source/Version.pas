@@ -120,12 +120,11 @@ const
   GPROF_CMD_GENFLAT = '-p';
   GPROF_CMD_GENMAP = '-q';
 
-var
-  CLEAN_PROGRAM: string;
+  // Deletes the files of "make clean". Dev-C++ ran the IDE itself with
+  // INTERNAL_DEL (Windows has no rm).
+  CLEAN_PROGRAM = 'rm -f';
 
 implementation
 
-initialization
-  CLEAN_PROGRAM := ParamStr(0) + ' INTERNAL_DEL';
 end.
 

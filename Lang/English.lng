@@ -44,6 +44,7 @@ Ver=1
 1053=Press Enter to close this window... 
 1054=No terminal was found (gnome-terminal, mate-terminal, xfce4-terminal, konsole or xterm), so the program runs without a window for its output. Install one of them to see it.
 1055=No compiler was found. Install gcc and g++ (in a terminal: sudo apt install build-essential) and restart Penguin cpp.
+1056=This file name has a character that a Makefile cannot hold (line break, tab, %% : ; = | # \ * ? [ or ]):<CR>%s<CR><CR>Rename the file to compile the project.
 
 
 2001=&Open...

@@ -69,7 +69,6 @@ uses
   FilePropertiesFrm,
   AddToDoFrm,
   ViewToDoFrm,
-  ImportMSVCFrm,
   ImportCBFrm,
   CPUFrm,
   TipOfTheDayFrm,

@@ -6259,10 +6259,8 @@ object MainForm: TMainForm
         Caption = '-'
       end
       object ImportItem: TMenuItem
+        Visible = False
         Caption = '&Import'
-        object ImportMSVisualCproject: TMenuItem
-          Action = actImportMSVC
-        end
         object ImportCBCproject: TMenuItem
           Caption = 'Code::Blocks project'
           Enabled = False
@@ -7646,11 +7644,6 @@ object MainForm: TMainForm
       Caption = 'Rename folder'
       OnExecute = actProjectRenameFolderExecute
       OnUpdate = actUpdateProject
-    end
-    object actImportMSVC: TAction
-      Category = 'File'
-      Caption = 'MS Visual C++ project'
-      OnExecute = actImportMSVCExecute
     end
     object actExecParams: TAction
       Category = 'Execute'

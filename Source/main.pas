@@ -335,7 +335,6 @@ type
     actProjectRenameFolder: TAction;
     Newfolder1: TMenuItem;
     N40: TMenuItem;
-    actImportMSVC: TAction;
     ImportItem: TMenuItem;
     N41: TMenuItem;
     ToggleBreakpointPopupItem: TMenuItem;
@@ -717,7 +716,6 @@ type
     procedure actProjectRenameFolderExecute(Sender: TObject);
     procedure ProjectViewDragOver(Sender, Source: TObject; X, Y: Integer; State: TDragState; var Accept: Boolean);
     procedure ProjectViewDragDrop(Sender, Source: TObject; X, Y: Integer);
-    procedure actImportMSVCExecute(Sender: TObject);
     procedure ViewCPUItemClick(Sender: TObject);
     procedure edGdbCommandKeyPress(Sender: TObject; var Key: Char);
     procedure actExecParamsExecute(Sender: TObject);
@@ -952,7 +950,7 @@ uses
   Math, IniFiles, Clipbrd, MultiLangSupport, Version, DataFrm, NewProjectFrm, AboutFrm, PrintFrm,
   CompOptionsFrm, EditorOptFrm, IncrementalFrm, EnviroFrm, SynEdit, ImageTheme, SynEditKeyCmds, Types, FindFrm, ProjectTypes, devExec, Tests, NewTemplateFrm, FunctionSearchFrm,
   NewFunctionFrm, NewVarFrm, NewClassFrm, ProfileAnalysisFrm, FilePropertiesFrm, AddToDoFrm,
-  ViewToDoFrm, ImportMSVCFrm, ImportCBFrm, CPUFrm, TipOfTheDayFrm, WindowListFrm, RemoveUnitFrm,
+  ViewToDoFrm, ImportCBFrm, CPUFrm, TipOfTheDayFrm, WindowListFrm, RemoveUnitFrm,
   ParamsFrm, ProcessListFrm, SynEditHighlighter, devPlatform, SynEditCompat, LCLProc,
   EditorPrint, PdfPrint, crc, devInstance, PenguinTheme;
 
@@ -1188,7 +1186,6 @@ begin
 
   // Import submenu
   ImportItem.Caption := Lang[ID_SUB_IMPORT];
-  actImportMSVC.Caption := Lang[ID_MSVC_MENUITEM];
 
   // Exprt submenu
   ExportItem.Caption := Lang[ID_SUB_EXPORT];
@@ -5107,14 +5104,6 @@ begin
 
       fProject.UpdateFolders;
     end;
-  end;
-end;
-
-procedure TMainForm.actImportMSVCExecute(Sender: TObject);
-begin
-  with TImportMSVCForm.Create(Self) do begin
-    if ShowModal = mrOK then
-      OpenProject(GetFilename);
   end;
 end;
 

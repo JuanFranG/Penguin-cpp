@@ -173,9 +173,10 @@ y también saber si pasa sin abrir ningún archivo.
   `SpanishColombia.lng`); los que faltan todavía (46) ya no los usa el
   código. Siete textos en inglés que hablaban de Windows, de Dev-C++ o de
   WebUpdate se reescribieron (AStyle y clang-format dicen cómo instalarlos
-  con `apt`), y Acerca de enlaza a Clang en vez de TDM-GCC. Falta decidir
-  `Hebrew.lng`, que es de una versión muy antigua (otros números de
-  mensaje): se propone quitarlo.
+  con `apt`), y Acerca de enlaza a Clang en vez de TDM-GCC. Se quitó
+  `Hebrew.lng`, que era de una versión muy antigua (otros números de
+  mensaje); queda `Hebrew.tips`, los consejos del día, que no se pueden
+  elegir sin ese idioma.
 - **E. Pruebas automáticas:** una prueba de los Makefiles con make y gcc de
   verdad (habría detectado `../../main.o`) y CI en GitHub Actions que
   compile el IDE y pase las pruebas en Ubuntu en cada push.

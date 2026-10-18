@@ -928,6 +928,7 @@ type
     procedure OpenFile(const FileName: String; AEncoding: TEncoding = nil);
     procedure OpenFileList(List: TStringList; AEncoding: TEncoding = nil);
     procedure OpenProject(const s: String);
+    function ConfirmProjectCommands(Project: TProject): Boolean;
     procedure GotoBreakpoint(const FileName: String; Line: integer);
     procedure RemoveActiveBreakpoints;
     procedure AddFindOutputItem(const line, col, filename, msg, keyword: String);
@@ -956,7 +957,7 @@ uses
   NewFunctionFrm, NewVarFrm, NewClassFrm, ProfileAnalysisFrm, FilePropertiesFrm, AddToDoFrm,
   ViewToDoFrm, ImportMSVCFrm, ImportCBFrm, CPUFrm, TipOfTheDayFrm, WindowListFrm, RemoveUnitFrm,
   ParamsFrm, ProcessListFrm, SynEditHighlighter, devPlatform, SynEditCompat, LCLProc,
-  EditorPrint, PdfPrint;
+  EditorPrint, PdfPrint, crc;
 
 {$R *.lfm}
 
@@ -1572,6 +1573,31 @@ begin // TODO: ask on SO
     devPlatform.ExecuteFile(ParseToolParams(Exec), ParseToolParams(Params), ParseToolParams(WorkDir));
 end;
 
+// Asks before opening a project that runs commands of its own when built or
+// run (TProject.ListOwnCommands). The answer is kept in the user's settings,
+// not in the project, for that project with exactly those commands.
+function TMainForm.ConfirmProjectCommands(Project: TProject): Boolean;
+var
+  Lines: TStringList;
+  Raw, Key, Hash: String;
+begin
+  Lines := TStringList.Create;
+  try
+    Project.ListOwnCommands(Lines, Raw);
+    if Lines.Count = 0 then
+      Exit(True);
+    Key := IntToHex(crc32(0, PByte(PChar(Project.FileName)), Length(Project.FileName)), 8);
+    Hash := IntToHex(crc32(0, PByte(PChar(Raw)), Length(Raw)), 8);
+    if devData.ReadS('TrustedProjects', Key) = Hash then
+      Exit(True);
+    Result := MessageDlg(Format(Lang[ID_MSG_PROJECTCOMMANDS], [Lines.Text]), mtWarning, [mbYes, mbNo], 0) = mrYes;
+    if Result then
+      devData.Write('TrustedProjects', Key, Hash);
+  finally
+    Lines.Free;
+  end;
+end;
+
 procedure TMainForm.OpenProject(const s: String);
 var
   s2: String;
@@ -1591,6 +1617,10 @@ begin
   ClassBrowser.BeginUpdate;
   try
     fProject := TProject.Create(s, DEV_INTERNAL_OPEN);
+    if (fProject.FileName <> '') and not ConfirmProjectCommands(fProject) then begin
+      actCloseProjectExecute(Self);
+      Exit;
+    end;
     if fProject.FileName <> '' then begin
       dmMain.RemoveFromHistory(s);
 

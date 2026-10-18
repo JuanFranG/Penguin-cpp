@@ -129,6 +129,9 @@ type
     function MakeProjectNode: TTreeNode;
     function MakeNewFileNode(const s: String; IsFolder: boolean; NewParent: TTreeNode): TTreeNode;
     procedure BuildPrivateResource(ForceSave: boolean = False);
+    // What the project runs besides gcc, one line each for the user, and the
+    // same as raw text (to remember that the user trusted exactly that)
+    procedure ListOwnCommands(Lines: TStrings; out Raw: String);
     procedure LoadOptions;
     procedure SaveOptions;
     function SaveUnits: Boolean;
@@ -157,7 +160,7 @@ implementation
 
 uses
   main, MultiLangSupport, devCFG, ProjectOptionsFrm, DataFrm, Utils, RemoveUnitFrm, SynEdit,
-  EditorList, FileUtil;
+  EditorList, FileUtil, StrUtils;
 
 { TProjUnit }
 
@@ -399,6 +402,61 @@ begin
     MakeNewFileNode.SelectedIndex := 1;
     MakeNewFileNode.ImageIndex := 1;
   end;
+end;
+
+// A project from someone else can make the build run anything: its own
+// Makefile or build commands, options with shell code (they end up in the
+// Makefile, run by /bin/sh), or gcc options that run or load programs.
+procedure TProject.ListOwnCommands(Lines: TStrings; out Raw: String);
+
+  function RunsCode(const S: String): Boolean;
+  const
+    ShellChars = ['$', '`', ';', '|', '&', '<', '>', #10, #13];
+  var
+    I: integer;
+    W: String;
+  begin
+    for I := 1 to Length(S) do
+      if S[I] in ShellChars then
+        Exit(True);
+    // -wrapper and -fplugin run or load programs, -specs and @file read more
+    // options from a file, -B picks where gcc finds its own programs
+    for I := 1 to WordCount(StringReplace(S, '_@@_', ' ', [rfReplaceAll]), [' ', #9]) do begin
+      W := ExtractWord(I, StringReplace(S, '_@@_', ' ', [rfReplaceAll]), [' ', #9]);
+      if StartsText('-wrapper', W) or StartsText('-fplugin', W) or StartsText('-specs', W) or
+        StartsStr('-B', W) or StartsStr('@', W) then
+        Exit(True);
+    end;
+    Result := False;
+  end;
+
+  procedure Add(const Line, Value: String);
+  begin
+    Lines.Add('- ' + Format(Line, [Value]));
+    Raw := Raw + Line + '=' + Value + #10;
+  end;
+
+var
+  I: integer;
+begin
+  Raw := '';
+  if fOptions.UseCustomMakefile then
+    Add(Lang[ID_PRJRUNS_MAKEFILE], fOptions.CustomMakefile);
+  for I := 0 to fOptions.MakeIncludes.Count - 1 do
+    Add(Lang[ID_PRJRUNS_MAKEINCLUDE], fOptions.MakeIncludes[I]);
+  for I := 0 to Units.Count - 1 do
+    if Units[I].OverrideBuildCmd and (Trim(Units[I].BuildCmd) <> '') then
+      Add(Lang[ID_PRJRUNS_BUILDCMD], ExtractFileName(Units[I].FileName));
+  if (fOptions.typ = dptDyn) and (fOptions.HostApplication <> '') then
+    Add(Lang[ID_PRJRUNS_HOST], fOptions.HostApplication);
+  if RunsCode(fOptions.CompilerCmd) then
+    Add(Lang[ID_PRJRUNS_OPTIONS], StringReplace(fOptions.CompilerCmd, '_@@_', ' ', [rfReplaceAll]));
+  if RunsCode(fOptions.CppCompilerCmd) then
+    Add(Lang[ID_PRJRUNS_OPTIONS], StringReplace(fOptions.CppCompilerCmd, '_@@_', ' ', [rfReplaceAll]));
+  if RunsCode(fOptions.LinkerCmd) then
+    Add(Lang[ID_PRJRUNS_OPTIONS], StringReplace(fOptions.LinkerCmd, '_@@_', ' ', [rfReplaceAll]));
+  if RunsCode(fOptions.CmdLineArgs) then // gdb starts the program through the shell
+    Add(Lang[ID_PRJRUNS_ARGS], fOptions.CmdLineArgs);
 end;
 
 procedure TProject.BuildPrivateResource(ForceSave: boolean = False);

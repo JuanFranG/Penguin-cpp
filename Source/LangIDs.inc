@@ -70,6 +70,15 @@ const
   ID_ERR_NOCOMPILER                     = 1055;
   ID_ERR_MAKEUNSAFENAME                 = 1056;
 
+  // projects that run commands of their own
+  ID_MSG_PROJECTCOMMANDS                = 1057;
+  ID_PRJRUNS_MAKEFILE                   = 1058;
+  ID_PRJRUNS_MAKEINCLUDE                = 1059;
+  ID_PRJRUNS_BUILDCMD                   = 1060;
+  ID_PRJRUNS_HOST                       = 1061;
+  ID_PRJRUNS_OPTIONS                    = 1062;
+  ID_PRJRUNS_ARGS                       = 1063;
+
   ID_ITEM_OPEN                          = 2001;
   ID_SUB_REOPEN                         = 2002;
   ID_ITEM_CLEARHISTORY                  = 2003;

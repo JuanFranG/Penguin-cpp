@@ -1033,6 +1033,9 @@ begin
     Exit;
   end;
 
+  // A compile still running would call back into objects freed below
+  fCompiler.StopAndWait;
+
   // Remember toolbar placement
   devData.LeftActivePage := LeftPageControl.ActivePageIndex;
   devData.ToolbarMainX := tbMain.Left;
@@ -2355,9 +2358,12 @@ begin
       end;
     end else begin
       // lp reads the file before it returns; the copy is removed below
+      // Never the shared /tmp, where a name like this can be taken over
       Target := GetPrivateTempDir;
-      if Target = '' then
-        Target := IncludeTrailingPathDelimiter(GetTempDir(False));
+      if Target = '' then begin
+        MessageDlg(Format(Lang[ID_PRT_FAILED], ['~/.cache/penguin-cpp/tmp']), mtError, [mbOK], 0);
+        Exit;
+      end;
       Target := Target + 'print-' + IntToStr(GetProcessID) + '.pdf';
     end;
 
@@ -2985,14 +2991,18 @@ begin
     MessageControl.ActivePage := LogSheet;
   end;
 
+  // No compiler at all (gcc not installed): the compiler would be nil
+  if not Assigned(devCompilerSets.CompilationSet) then begin
+    MessageDlg(Lang[ID_ERR_NOCOMPILER], mtError, [mbOK], 0);
+    Exit; // returns false
+  end;
+
   // Set PATH variable (not overriden by SetCurrentDir)
-  if Assigned(devCompilerSets.CompilationSet) then begin // should NOT be false
-    if devCompilerSets.CompilationSet.BinDir.Count > 0 then
-      SetPath(devCompilerSets.CompilationSet.BinDir[0])
-    else begin
-      LogEntryProc(Format(Lang[ID_LOG_NOBINDIRABORT], [devCompilerSets.CompilationSet.Name]));
-      Exit; // returns false
-    end;
+  if devCompilerSets.CompilationSet.BinDir.Count > 0 then
+    SetPath(devCompilerSets.CompilationSet.BinDir[0])
+  else begin
+    LogEntryProc(Format(Lang[ID_LOG_NOBINDIRABORT], [devCompilerSets.CompilationSet.Name]));
+    Exit; // returns false
   end;
 
   // Determine what to compile
@@ -3065,14 +3075,18 @@ begin
     MessageControl.ActivePage := LogSheet;
   end;
 
+  // No compiler at all (gcc not installed): the compiler would be nil
+  if not Assigned(devCompilerSets.CompilationSet) then begin
+    MessageDlg(Lang[ID_ERR_NOCOMPILER], mtError, [mbOK], 0);
+    Exit; // returns false
+  end;
+
   // Set PATH variable (not overriden by SetCurrentDir)
-  if Assigned(devCompilerSets.CompilationSet) then begin // should NOT be false
-    if devCompilerSets.CompilationSet.BinDir.Count > 0 then
-      SetPath(devCompilerSets.CompilationSet.BinDir[0])
-    else begin
-      LogEntryProc(Format(Lang[ID_LOG_NOBINDIRABORT], [devCompilerSets.CompilationSet.Name]));
-      Exit; // returns false
-    end;
+  if devCompilerSets.CompilationSet.BinDir.Count > 0 then
+    SetPath(devCompilerSets.CompilationSet.BinDir[0])
+  else begin
+    LogEntryProc(Format(Lang[ID_LOG_NOBINDIRABORT], [devCompilerSets.CompilationSet.Name]));
+    Exit; // returns false
   end;
 
   // Determine what to compile
@@ -5206,14 +5220,17 @@ procedure TMainForm.CppParserStartParsing(Sender: TObject);
 var
   e: TEditor;
 begin
-  // Update UI before the parser starts working
-  Application.ProcessMessages;
+  // No Application.ProcessMessages while parsing: the parser frees and
+  // rebuilds its statements, which the class browser, completion and tooltips
+  // point into; letting clicks and paints in at that moment read freed memory
 
   // Loading...
   Screen.Cursor := crHourglass;
 
-  // Pause updating the class browser (which will be invalidated)
+  // Pause updating the class browser (which will be invalidated), and drop
+  // its nodes, which point to the statements; EndUpdate rebuilds them
   ClassBrowser.BeginUpdate;
+  ClassBrowser.Items.Clear;
 
   // Hide anything that uses the database (which will be invalidated)
   e := fEditorList.GetEditor;
@@ -5239,7 +5256,7 @@ begin
   // Only show if needed (it's a very slow operation)
   if (Current mod ShowStep = 0) or (Current = 1) then begin
     SetStatusBarMessage(Format(Lang[ID_PARSINGFILECOUNT], [Current, Total, Filename]));
-    Application.ProcessMessages;
+    StatusBar.Update; // repaint only, see CppParserStartParsing
   end;
 end;
 

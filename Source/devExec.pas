@@ -22,7 +22,7 @@ unit devExec;
 interface
 
 uses
-  Classes, SysUtils, Forms, Process, devCFG, Utils;
+  Classes, SysUtils, SyncObjs, Forms, Process, devCFG, Utils;
 
 const
   INFINITE = Cardinal($FFFFFFFF); // no time-out
@@ -37,11 +37,14 @@ type
     fArgs: TStringList; // when set, used instead of fParams
     fTimeOut: Cardinal;
     fProcess: TProcess; // only valid while the program runs
+    fProcessLock: TCriticalSection; // Reset (main thread) vs. the thread freeing it
     fVisible: boolean;
     procedure ExecAndWait;
   public
+    constructor Create(CreateSuspended: Boolean);
     destructor Destroy; override;
     procedure Execute; override;
+    procedure TerminateProcess;
     property Args: TStringList read fArgs write fArgs; // owned
   published
     property FileName: String read fFile write fFile;
@@ -80,10 +83,28 @@ uses
 
 { TExecThread }
 
+constructor TExecThread.Create(CreateSuspended: Boolean);
+begin
+  fProcessLock := TCriticalSection.Create;
+  inherited Create(CreateSuspended);
+end;
+
 destructor TExecThread.Destroy;
 begin
   fArgs.Free;
+  fProcessLock.Free;
   inherited;
+end;
+
+procedure TExecThread.TerminateProcess;
+begin
+  fProcessLock.Enter;
+  try
+    if Assigned(fProcess) then
+      fProcess.Terminate(0);
+  finally
+    fProcessLock.Leave;
+  end;
 end;
 
 procedure TExecThread.Execute;
@@ -118,7 +139,9 @@ begin
     except
       Exit; // could not start; OnTerminate still reports the end
     end;
+    fProcessLock.Enter;
     fProcess := P;
+    fProcessLock.Leave;
 
     // Wait for it to finish, like WaitForSingleObject with a time-out
     if fTimeOut = INFINITE then
@@ -129,7 +152,9 @@ begin
         Sleep(50);
     end;
   finally
+    fProcessLock.Enter;
     fProcess := nil;
+    fProcessLock.Leave;
     Args.Free;
     P.Free;
   end;
@@ -197,14 +222,15 @@ end;
 
 procedure TdevExecutor.Reset;
 begin
-  if Assigned(fExec) and Assigned(fExec.Process) then
-    fExec.Process.Terminate(0);
+  if Assigned(fExec) then
+    fExec.TerminateProcess;
   fIsRunning := False;
 end;
 
 procedure TdevExecutor.TerminateEvent(Sender: TObject);
 begin
   fIsRunning := False;
+  fExec := nil; // freed after this (FreeOnTerminate)
   if Assigned(fOnTermEvent) then
     fOnTermEvent(Self);
 end;

@@ -87,6 +87,7 @@ type
     property WarningCount: integer read fWarnCount;
     property ErrorCount: integer read fErrCount;
     procedure AbortThread;
+    procedure StopAndWait; // before the IDE closes
   protected
     fCompileParams: String;
     fCppCompileParams: String;
@@ -869,6 +870,25 @@ begin
   end;
 end;
 
+// Whether a file is a compiled program: ELF ($7F 'E' 'L' 'F')
+function IsProgramFile(const FileName: String): Boolean;
+var
+  F: TFileStream;
+  Magic: array[0..3] of Char;
+begin
+  Result := False;
+  try
+    F := TFileStream.Create(FileName, fmOpenRead or fmShareDenyNone);
+    try
+      Result := (F.Read(Magic, SizeOf(Magic)) = SizeOf(Magic)) and (Magic = #$7F'ELF');
+    finally
+      F.Free;
+    end;
+  except
+    // unreadable: leave it alone
+  end;
+end;
+
 procedure TCompiler.Clean;
 const
   cCleanLine = '%s clean -f "%s"';
@@ -902,7 +922,10 @@ begin
             FileName := fSourceFile + GCH_EXT;
           end;
         end;
-        if FileExists(FileName) then begin
+        // Programs have no extension on Linux: main.cpp builds main. Only
+        // delete a program (ELF) by that name, not another file of the user's.
+        if FileExists(FileName) and (not (GetFileTyp(fSourceFile) in [utcSrc, utcppSrc]) or IsProgramFile(FileName))
+        then begin
           DoLogEntry(Format(Lang[ID_LOG_CLEANEDFILE], [FileName]));
           DeleteFile(FileName);
         end else
@@ -1008,6 +1031,20 @@ end;
 procedure TCompiler.ThreadCheckAbort(var AbortThread: boolean);
 begin
   AbortThread := fAbortThread;
+end;
+
+// The compile thread calls back into this object (Synchronize, OnTerminate):
+// stop it and let those calls run before the IDE frees it
+procedure TCompiler.StopAndWait;
+var
+  Started: QWord;
+begin
+  if not Assigned(fDevRun) then
+    Exit;
+  AbortThread;
+  Started := GetTickCount64;
+  while Assigned(fDevRun) and (GetTickCount64 - Started < 5000) do
+    CheckSynchronize(20);
 end;
 
 procedure TCompiler.AbortThread;

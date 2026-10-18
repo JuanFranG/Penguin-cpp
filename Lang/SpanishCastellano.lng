@@ -43,6 +43,7 @@ Ver=12
 1052=El proceso terminó después de %s segundos con el valor de retorno %d
 1053=Presiona Enter para cerrar esta ventana... 
 1054=No se encontró una terminal (gnome-terminal, mate-terminal, xfce4-terminal, konsole o xterm), así que el programa corre sin una ventana para su salida. Instala una de ellas para verla.
+1055=No se encontró ningún compilador. Instala gcc y g++ (en una terminal: sudo apt install build-essential) y vuelve a abrir Penguin cpp.
 
 
 2001=&Abrir Proyecto o Archivo
@@ -745,7 +746,7 @@ Ver=12
 55026=Directorio de Salida del Archivo objeto
 55027=Especificar Nombre del Archivo de Salida
 55028=Añadir Biblioteca u Objeto
-55029=%d archivos [%d fuentes, %d de cabecera, %d de recursos]
+55029=%d archivos [%d fuentes, %d de cabecera, %d de recursos, %d otros]
 
 
 56001=Nombre:

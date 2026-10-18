@@ -67,6 +67,7 @@ const
   ID_RUN_EXITED                         = 1052; // printf format: %s seconds, %d exit code
   ID_RUN_PRESSENTER                     = 1053;
   ID_RUN_NOTERMINAL                     = 1054;
+  ID_ERR_NOCOMPILER                     = 1055;
 
   ID_ITEM_OPEN                          = 2001;
   ID_SUB_REOPEN                         = 2002;

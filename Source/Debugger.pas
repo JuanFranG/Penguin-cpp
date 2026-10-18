@@ -125,8 +125,8 @@ begin
   // Use the GDB provided in the project if needed
   CompilerSet := devCompilerSets.CompilationSet;
 
-  // Assume it's present in the first bin dir
-  if CompilerSet.BinDir.Count = 0 then begin
+  // Assume it's present in the first bin dir (no set at all: gcc missing)
+  if not Assigned(CompilerSet) or (CompilerSet.BinDir.Count = 0) then begin
     MessageDlg(Lang[ID_ERR_GDBNOUTFOUND], mtError, [mbOK], 0);
     Executing := false;
     Exit;

@@ -7,7 +7,18 @@
     The editor's built-in color schemes. Delphi compiled them from the
     STRINGTABLE of DefaultFiles.rc and read them with LoadStr, which has no
     string resources to read under Free Pascal on Linux, so every color came
-    out empty (black). Generated from DefaultFiles.rc; same IDs and values.
+    out empty (black). Generated from that file (since removed, being a
+    Windows resource script); same IDs and values.
+
+    Elements of a scheme (ID mod 1000):
+       1 assembler          9 octal            17 breakpoint
+       2 character         10 preprocessor     18 error line
+       3 comment           11 keyword          19 active breakpoint
+       4 float             12 whitespace       20 gutter
+       5 hexadecimal       13 string           21 selected text
+       6 identifier        14 symbol           22 fold bar lines (fg only)
+       7 illegal char      15 selection color
+       8 number            16 right margin
 }
 
 unit ColorSchemes;
@@ -17,7 +28,7 @@ unit ColorSchemes;
 interface
 
 // Color string for ID = scheme index * 1000 + element (see the element list
-// at the top of DefaultFiles.rc): "foreground, background[, bold, italic,
+// above): "foreground, background[, bold, italic,
 // underline]". Returns '' for an unknown ID, as LoadStr did.
 function ColorSchemeString(ID: Integer): String;
 

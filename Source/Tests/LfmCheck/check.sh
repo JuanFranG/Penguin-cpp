@@ -13,10 +13,10 @@ SRC=$(cd "$HERE/../.." && pwd)
 OUT="$HERE/build"
 mkdir -p "$OUT"
 
-# FormatterOptionsFrm is not used by the IDE; Tools/, VCL/SynEdit and
-# VCL/SVGIconImageList are not part of it; lib/ is build output
+# FormatterOptionsFrm is not used by the IDE; Tools/ is not part of it; lib/
+# is build output
 LFMS=$(cd "$SRC" && find . -name '*.lfm' \
-  ! -path './Tests/*' ! -path './Tools/*' ! -path './lib/*' ! -path './VCL/SynEdit/*' ! -path './VCL/SVGIconImageList/*' \
+  ! -path './Tests/*' ! -path './Tools/*' ! -path './lib/*' \
   ! -name FormatterOptionsFrm.lfm | sed 's#^\./##' | sort)
 python3 "$HERE/lfmparse.py" "$OUT" "$SRC" $LFMS
 

@@ -135,11 +135,15 @@ Estado al 18 de octubre de 2026, probado en Linux Mint 22 con Qt5:
 **1. Probar en Mint los proyectos:** abrir un `.dev` de dos o más archivos,
 agregarle uno (Proyecto → Agregar), compilar, ejecutar y limpiar, y crear uno
 nuevo de consola. También, que la marca roja de un error se quite al mover
-el cursor o escribir.
+el cursor o escribir, y que Nuevo proyecto ya no muestre "Unable to open
+file" (`ValidateFile` devolvía un nombre basura para las plantillas sin
+icono). Al pulsar Opciones salía un `Access violation`; puede ser la memoria
+que corrompía el árbol del proyecto. Si sigue, hace falta la traza con gdb y
+saber qué Opciones (del proyecto, del compilador, del editor o del entorno).
 
-**2. Quitar lo que es solo de Windows** (decisión de diseño: Penguin cpp es
-para Unix y Linux): los archivos de la lista de "Otros pendientes" y las
-funciones de la fase 6.
+**2. Quitar las funciones de Windows del código** (decisión de diseño:
+Penguin cpp es para Unix y Linux; ver la fase 6). Los archivos ya se
+quitaron (ver "Otros pendientes").
 
 **3. Fase 7:** el depurador sobre GDB/MI.
 
@@ -509,13 +513,12 @@ Hecho en la rama `fase6/compilador` (falta probarlo en Mint):
 
 Falta:
 - **Probar los proyectos en Mint** (ver "Siguiente ciclo de trabajo").
-- **Quitar lo que es solo de Windows** (decisión de diseño). Plantillas: *Windows
-  Application* (`1-WinApp.template`, `WinApp_c.txt`), *Direct3D*
-  (`Direct3D.template`, `Direct3D.txt`), *FileEditor* (`.template`, `_c`,
-  `_h`, `_rc`), *MDIEditor* (`.template`, `_c`, `_h`, `_rc`), *WinAnim*
-  (`.template`, `_c`, `_rc`, `ball.bmp`, `ballmask.bmp`), *OpenGL* con WinAPI
-  (`OpenGL.template`, `OpenGL.txt`) y *Project3*, una plantilla vacía que
-  quedó del original. Funciones del código:
+- ✅ **Plantillas solo de Windows quitadas** (decisión de diseño: Penguin cpp
+  es para Unix y Linux): *Windows Application*, *Direct3D*, *FileEditor*,
+  *MDIEditor*, *WinAnim* y *Project3*, una plantilla vacía del original.
+- **Plantilla OpenGL:** está hecha con WinAPI; se reescribe con freeglut o
+  GLFW (fase 8) en vez de quitarla.
+- **Quitar las funciones de Windows del código**, en su propio bloque:
   - Archivos de recursos (`.rc`) y `windres`: la carpeta *Resources* de los
     proyectos, la pestaña *Recursos* de los mensajes, el programa `windres`
     de las opciones del compilador, y el icono, la información de versión y
@@ -557,7 +560,8 @@ El producto final del proyecto es un `.deb` que se instala con
   - Lanzador `.desktop` en `/usr/share/applications`.
   - Iconos en `/usr/share/icons/hicolor` (ya generados en
     `Source/Images/AppIcon/hicolor`).
-  - Asociación con archivos `.c`, `.cpp`, `.h` y proyectos `.dev`.
+  - Asociación con archivos `.c`, `.cpp`, `.h` y proyectos `.dev`, con los
+    iconos de `Source/Images/associations` pasados a PNG.
   - Fuentes Heebo y Source Code Pro en `/usr/share/fonts`.
 - **Dependencias del paquete**: `gcc`, `g++`, `make`, `gdb` y la biblioteca
   gráfica (`libqt5pas1`). Recomendadas: `astyle`, `clang-format`, `cups-client`
@@ -618,23 +622,26 @@ archivos con `open` en macOS), el monitor de archivos y los Makefiles.
     llevan a este repositorio.
   - ✅ `SECURITY.md` es el de Penguin cpp: versiones con soporte, cómo
     reportar en privado y qué cuida el IDE.
-- **Limpieza de lo que es solo de Windows o de Delphi** (decisión de
-  diseño), para borrar cuando lo confirmes:
-  - `Source/VCL/SynEdit` y `Source/VCL/SVGIconImageList`, componentes VCL que
-    ya no se usan.
-  - Los proyectos de Delphi: `devcpp.dpr/.dproj`, `VCL/DevCpp.dpk/.dproj/.res`,
-    `ClassBrowsing.dpk/.dproj/.res/.cfg` y los `.dcr` (iconos de la paleta de
-    Delphi).
-  - Scripts y recursos de Windows: `CleanSource.bat`, `CompileResources.bat`,
-    `Icons.rc`, `DefaultFiles.rc` (sus colores ya están en `ColorSchemes.pas`)
-    y `Fonts/InstallFonts.cmd`.
-  - Iconos de Windows: `Source/Images/associations` (asociaciones del
-    registro), `packman.ico`, `devcpp.ico` (raíz y `Source`),
-    `devcpp_Icon.ico`, `DevCpp_Icon.ico` y `ClassBrowsing_Icon.ico`.
-  - `Source/README.txt` explica cómo compilar con Delphi; se conservan sus
-    tablas de atajos e imágenes.
-  - Se quedan `Icons/*.ico`, que muestra Nuevo proyecto, y
-    `CodeToolTip.res`, que se enlaza.
+- ✅ **Limpieza de lo que es solo de Windows o de Delphi** (decisión de
+  diseño): los componentes VCL `Source/VCL/SynEdit` y
+  `Source/VCL/SVGIconImageList`; los proyectos y opciones de Delphi (`.dpr`,
+  `.dproj`, `.dpk`, `.dof`, `.cfg`, `.dcr` y sus `.res`); los scripts y
+  recursos de Windows (`CleanSource.bat`, `CompileResources.bat`,
+  `Icons.rc`, `DefaultFiles.rc`, cuyos colores ya están en
+  `ColorSchemes.pas`, y `Fonts/InstallFonts.cmd`); los iconos del `.exe` del
+  original (`devcpp.ico`, `devcpp_Icon.ico`, `packman.ico`…), y en
+  `Source/Tools`, `ConsolePauser` (lo reemplaza el script de pausa de la
+  terminal) y `KeywordHighlighter` (tablas del SynEdit de Delphi).
+- **Se quedan para adecuarlos más adelante:**
+  - `Source/Images/associations/*.ico`: los iconos de `.c`, `.cpp`, `.h` y
+    `.dev`, para pasarlos a PNG como iconos de tipos de archivo del `.deb`
+    (fase 8).
+  - `Source/README.txt`: sus instrucciones son para Delphi, pero su tabla de
+    atajos de teclado va a la ayuda.
+  - `Source/Tools/LangCheck`: compara los archivos de idioma con el inglés;
+    su interfaz es de WinAPI y su lógica se puede portar.
+  - `Icons/*.ico`, que muestra Nuevo proyecto, y `CodeToolTip.res`, que se
+    enlaza, se usan tal como están.
 - **Otra limpieza**, preguntando antes de borrar: `FormatterOptionsFrm`, que
   no lo usa nada, y las imágenes del original que ya no se usan
   (`Source/Images/devcpplogo.png`, `splash.bmp`, `donate.bmp`…).

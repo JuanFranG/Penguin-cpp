@@ -868,6 +868,7 @@ type
     fCompiler: TCompiler;
     fEditorList: TEditorList;
     fPanelPalette: TPanelPalette;
+    fInstanceTimer: TTimer; // polls devInstance for files from other starts
     fCurrentPageHint: String;
     fLogOutputRawData: TStringList;
     fCriticalSection: TCriticalSection; // protects fFilesToOpen
@@ -911,6 +912,8 @@ type
     procedure ResizeWelcomeComponent;
     procedure SetHotkeyCaption(Panel: TPanel; const Caption: String);
     procedure ApplyPanelColors;
+    procedure InstanceTimerTick(Sender: TObject);
+    procedure InstanceFiles(Files: TStrings);
 
 
   private
@@ -957,7 +960,7 @@ uses
   NewFunctionFrm, NewVarFrm, NewClassFrm, ProfileAnalysisFrm, FilePropertiesFrm, AddToDoFrm,
   ViewToDoFrm, ImportMSVCFrm, ImportCBFrm, CPUFrm, TipOfTheDayFrm, WindowListFrm, RemoveUnitFrm,
   ParamsFrm, ProcessListFrm, SynEditHighlighter, devPlatform, SynEditCompat, LCLProc,
-  EditorPrint, PdfPrint, crc;
+  EditorPrint, PdfPrint, crc, devInstance;
 
 {$R *.lfm}
 
@@ -1088,6 +1091,7 @@ end;
 
 procedure TMainForm.FormDestroy(Sender: TObject);
 begin
+  StopInstanceServer; // removes the socket
   Application.RemoveAsyncCalls(Self); // queued FitToolbarDock calls
   FreeAndNil(fFilesToOpen);
   FreeAndNil(fCriticalSection);
@@ -6355,6 +6359,12 @@ begin
   LoadText;
   ApplyPanelColors;
 
+  // Files opened while the IDE runs come here instead of a second IDE
+  StartInstanceServer(devData.INIFileName, InstanceFiles);
+  fInstanceTimer := TTimer.Create(Self);
+  fInstanceTimer.Interval := 300;
+  fInstanceTimer.OnTimer := InstanceTimerTick;
+
   // Printer Setup opens the desktop's printer settings, if they are installed
   actPrintSU.Visible := ExeSearch('system-config-printer', GetEnvironmentVariable('PATH')) <> '';
 
@@ -7250,6 +7260,32 @@ begin
   finally
     Bmp.Free;
   end;
+end;
+
+procedure TMainForm.InstanceTimerTick(Sender: TObject);
+begin
+  // Not while a dialog waits for the user: the request waits in the socket
+  if Assigned(Screen.ActiveForm) and (fsModal in Screen.ActiveForm.FormState) then
+    Exit;
+  PollInstanceServer;
+end;
+
+// Another start of the IDE sent these files (made absolute), maybe none
+procedure TMainForm.InstanceFiles(Files: TStrings);
+var
+  List: TStringList;
+begin
+  List := TStringList.Create;
+  try
+    List.Assign(Files);
+    OpenFileList(List);
+  finally
+    List.Free;
+  end;
+  if WindowState = wsMinimized then
+    WindowState := wsNormal;
+  Application.BringToFront;
+  BringToFront;
 end;
 
 // The welcome screen, the trees on the left and the message lists in the

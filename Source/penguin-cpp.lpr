@@ -81,12 +81,16 @@ uses
   ImageTheme,
   CharUtils,
   AStyleFormatterOptionsFrm,
-  ClangFormatterOptionsFrm;
+  ClangFormatterOptionsFrm,
+  Classes,
+  devInstance;
 
 {$R *.res}
 
 var
   INIFileName, ExeFolder: String;
+  StartFiles: TStringList;
+  I: Integer;
 begin
   devData.IsPortable := EndsText('portable', ChangeFileExt(ExtractFileName(ParamStr(0)), ''))
                         or FindCmdLineSwitch('portable', True)
@@ -114,6 +118,26 @@ begin
       devData.INIFileName := ExeFolder + 'config' + PathDelim + INIFileName;
       ForceDirectories(ExtractFilePath(devData.INIFileName));
     end;
+  end;
+
+  // An IDE with these settings is already running: give it the files to open
+  // and quit (devInstance)
+  StartFiles := TStringList.Create;
+  try
+    I := 1;
+    while I <= ParamCount do begin
+      if ParamStr(I) = '-c' then
+        Inc(I) // its folder
+      else if not SameText(ParamStr(I), 'portable') and not SameText(ParamStr(I), '-portable') then
+        StartFiles.Add(ParamStr(I));
+      Inc(I);
+    end;
+    if SendToRunningInstance(devData.INIFileName, StartFiles) then begin
+      DestroyOptions;
+      Exit;
+    end;
+  finally
+    StartFiles.Free;
   end;
 
   // Load settings

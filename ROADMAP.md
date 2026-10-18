@@ -93,9 +93,13 @@ Pruebas de consola:
 | Prueba | Qué comprueba | Necesita |
 |---|---|---|
 | `Source/Tests/ParserTest/build.sh --run` | El parser de C++ con las cabeceras reales del sistema (`<iostream>`, `<vector>`…) y el preprocesador (`#if/#elif/#else`) | fpc, g++ |
-| `Source/Tests/PlatformTest/build.sh --run` | Procesos, carpeta de configuración, abrir archivos y monitor de archivos | fpc |
-| `Source/Tests/LfmCheck/check.sh` | Que cada formulario (`.lfm`) solo use clases, propiedades, valores y eventos que existen | lazbuild, python3 |
+| `Source/Tests/PlatformTest/build.sh --run` | Procesos, carpeta de configuración, abrir archivos, monitor de archivos y que el compilador hable en inglés | fpc |
+| `Source/Tests/MakefileTest/build.sh --run` | Los nombres en los Makefiles de los proyectos: compila, ejecuta y limpia con make y cc un proyecto con espacios, apóstrofos, `$(…)`, comillas invertidas, una subcarpeta y una carpeta de objetos relativa | fpc, make, cc |
+| `Source/Tests/LfmCheck/check.sh` | Que cada formulario (`.lfm`) solo use clases, propiedades, valores y eventos que existen, y que cada evento tenga los parámetros de su tipo | lazbuild, python3 |
 | `Source/Tests/FoldTest/build.sh --run` | Dónde abre y cierra el plegado de C++ (llaves, regiones, llaves en cadenas y comentarios) y que `Tests/Folds/main.cpp` quede balanceado | lazbuild |
+
+En GitHub, cada push compila el IDE con Qt5 (Release y Debug) y pasa estas
+cinco pruebas en Ubuntu 24.04 (`.github/workflows/build.yml`).
 
 ---
 
@@ -177,9 +181,12 @@ y también saber si pasa sin abrir ningún archivo.
   `Hebrew.lng`, que era de una versión muy antigua (otros números de
   mensaje); queda `Hebrew.tips`, los consejos del día, que no se pueden
   elegir sin ese idioma.
-- **E. Pruebas automáticas:** una prueba de los Makefiles con make y gcc de
-  verdad (habría detectado `../../main.o`) y CI en GitHub Actions que
-  compile el IDE y pase las pruebas en Ubuntu en cada push.
+- ✅ **E. Pruebas automáticas:** `Tests/MakefileTest` compila, ejecuta y
+  limpia con make y cc un proyecto con nombres difíciles y una carpeta de
+  objetos relativa (habría detectado `../../main.o`); para eso los nombres
+  del Makefile pasaron a `MakeNames.pas`, sin LCL. El CI de GitHub Actions
+  compila el IDE y pasa las cinco pruebas en cada push; falta ver su
+  primera ejecución.
 - **F. Ayuda para Linux:** sus páginas hablan de Windows, de `devcpp.exe` y
   de MinGW, y enlazan a Embarcadero. Puede ir con la fase 8.
 
@@ -689,8 +696,8 @@ archivos con `open` en macOS), el monitor de archivos y los Makefiles.
   y su acción *Run Tests* (desactivada; ejecutaba todas las acciones del
   menú y borraba los compiladores configurados) y la acción oculta
   *Donate*; los datos de prueba del original en `Source/Tests` (`Document`,
-  `Explorer`, un proyecto de DirectX, `Folds`, `Parser`, `Project`,
-  `Fail.txt`). `NEWS.txt` es el historial de Dev-C++ 6.3: falta uno propio.
+  `Explorer`, un proyecto de DirectX, `Parser`, `Project`, `Fail.txt`;
+  `Folds` sí se usa, en `FoldTest`). `NEWS.txt` es el historial de Dev-C++ 6.3: falta uno propio.
 - **Avisos de compilación**: bajaron de 118 a 29. Se quitaron la línea de
   directivas de Delphi de `main.pas` (además de 55 avisos, apagaba la
   comprobación de rangos y desbordamientos de esa unidad incluso en el modo

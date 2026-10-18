@@ -1,0 +1,44 @@
+# Builds Penguin cpp and runs its tests on Ubuntu 24.04, the base of Linux
+# Mint 22, with the same packages the README asks for.
+name: Build and test
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Lazarus, Free Pascal and the C/C++ tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            lazarus fpc lcl-qt5-3.0 lcl-nogui-3.0 libqt5pas-dev \
+            gcc g++ gdb make python3
+
+      - name: Build the IDE (Qt5, Release and Debug)
+        run: |
+          lazbuild -B --ws=qt5 Source/penguin-cpp.lpi
+          lazbuild -B --ws=qt5 --bm=Debug Source/penguin-cpp.lpi
+          test -x penguin-cpp && test -x penguin-cpp-debug
+
+      - name: C++ parser
+        run: FPCFLAGS="-Cr -Co -Ct -CR -Sa -gh -gl" Source/Tests/ParserTest/build.sh --run
+
+      - name: Operating system layer
+        run: FPCFLAGS="-Cr -Co -Ct -CR -Sa -gh -gl" Source/Tests/PlatformTest/build.sh --run
+
+      - name: Project Makefiles with make and gcc
+        run: FPCFLAGS="-Cr -Co -Ct -CR -Sa -gh -gl" Source/Tests/MakefileTest/build.sh --run
+
+      - name: Forms (.lfm) against their classes
+        run: WS=nogui Source/Tests/LfmCheck/check.sh
+
+      - name: C++ code folding
+        run: WS=nogui Source/Tests/FoldTest/build.sh --run

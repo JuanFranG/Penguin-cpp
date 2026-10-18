@@ -102,61 +102,58 @@ Pruebas de consola:
 ## Estado por fase
 
 Cada fase se trabaja en su rama, que parte de la anterior, y se pasa a `main`
-al publicarla. Hoy `main` incluye las fases 1 a 4 (`fase4/lazarus`).
+al publicarla. Hoy `main` incluye las fases 1 a 6 (`fase6/compilador`).
 
 | Fase | Rama | Estado |
 |---|---|---|
 | 0 · Preparación | `main` | ✅ Hecha |
 | 1 · Quitar lo que no se puede portar | `fase1/quitar-windows` | ✅ Hecha |
 | 2 · Parser de C++ en Free Pascal | `fase2/parser-fpc` | ✅ Hecha, probada en Mint |
-| 3 · Capa de sistema | `fase3/capa-sistema` | ✅ Hecha, probada en Mint |
+| 3 · Capa de sistema | `fase3/capa-sistema` | ✅ Hecha, probada en Mint; la instancia única se agregó en `fase6/compilador` |
 | 4 · Port a Lazarus y formularios | `fase4/lazarus` | 🔄 Abre, funciona y cierra bien en Mint con Qt5; falta Buscar/Ir a línea |
-| 4b · Identidad visual y temas | `fase4/lazarus` | 🔄 Icono, esquemas del editor y paneles con la paleta listos; faltan menús y diálogos (con Qt5) |
+| 4b · Identidad visual y temas | `fase4/lazarus`, `fase6/compilador` | ✅ Icono, paleta en paneles, menús y diálogos (Qt5) y esquemas Penguin claro y oscuro; falta probar la paleta de Qt5 en Mint |
 | 5 · Editor (SynEdit de Lazarus) | `fase5/editor` | ✅ Hecha, probada en Mint: impresión, exportación a RTF/TeX y plegado |
-| 6 · Compilación con el gcc de Linux | `fase6/compilador` | 🔄 gcc detectado, archivos sueltos compilan y corren en una terminal; faltan proyectos y Makefiles |
+| 6 · Compilación con el gcc de Linux | `fase6/compilador` | 🔄 Hecha en código: gcc y clang, archivos sueltos y proyectos, terminal, Makefiles seguros, formateadores y plantillas. Falta probarla en Mint y decidir las plantillas de Windows |
 | 7 · Depurador (GDB/MI) | — | ⏳ Pendiente |
 | 8 · Paquete `.deb` y pulido | — | ⏳ Pendiente |
 | 9 · macOS | — | ⏳ Después del `.deb` |
 
 ### Siguiente ciclo de trabajo
 
-Estado al 17 de octubre de 2026: el IDE abre en Linux Mint 22, con GTK2 y con
-Qt5, que queda como la biblioteca gráfica oficial. Funciona
-en español y la configuración se conserva entre arranques. El editor tiene
-colores y números de línea, y las barras de herramientas son responsivas.
-Al cerrar no quedan fugas de memoria (heaptrc: 0 bloques sin liberar). Los
-acentos se escriben bien en el editor.
+Estado al 18 de octubre de 2026: el IDE abre, funciona y cierra sin errores en
+Linux Mint 22 con Qt5 (heaptrc: 0 bloques sin liberar). Las fases 1 a 5 están
+probadas en Mint. La fase 6 está escrita y compilada (también para Qt5), y
+falta probarla en Mint.
 
-**1. Verificar en Mint lo que se corrigió en esta iteración:**
-- Los esquemas oscuros (Twilight, Ocean, Borland, Matrix, Obsidian, Monokai,
-  Monokai Fresh) se ven completos: fondo oscuro y texto legible. Los colores
-  se asignaban corridos (ver la fase 4b). La configuración guardada se repara
-  sola al abrir el IDE.
-- Las vistas previas de Opciones del editor toman el fondo del esquema.
-- La lista de fuentes ya no ofrece Noto Color Emoji ni MathJax_Vector.
-- La pantalla de bienvenida está en español (BIENVENIDO, Atajos de teclado…),
-  y los atajos salen de los menús.
-- Los paneles (bienvenida, proyecto, clases, mensajes) tienen los colores del
-  icono, en versión oscura cuando el esquema del editor es oscuro.
+**1. Probar en Mint la fase 6:**
+- La lista de compiladores muestra *GCC 13.3.0 Release/Debug/Profiling* (y
+  *Clang*, si está instalado).
+- F11 con un "Hola mundo": compila y se abre una terminal con la salida y el
+  tiempo y valor de retorno al final. En Opciones del entorno se puede elegir
+  la terminal.
+- Un error de compilación aparece en la lista, y con doble clic se va a su
+  línea.
+- Un proyecto de consola y uno de varios archivos (Archivo → Nuevo →
+  Proyecto) compilan, se ejecutan y se limpian.
+- Abrir un archivo `.cpp` desde el explorador con el IDE abierto lo abre en
+  esa ventana (instancia única).
+- Los formateadores (Herramientas → AStyle / clang-format) con
+  `sudo apt install astyle clang-format`.
 
-**2. Buscar, Reemplazar e Ir a línea "no aparecen o no están en su sitio"**
-(reportado en Mint). En el formulario siguen en el menú Buscar y en su barra,
-igual que en el original (se comparó la estructura completa), y el código del
-diálogo se portó sin cambios de lógica. Falta una captura del menú Buscar
-abierto y de la barra para ver qué se ve distinto.
+**2. Probar en Mint la paleta de Qt5 y los esquemas Penguin claro y oscuro:**
+menús, barras, botones y diálogos con los colores del icono, y el cambio al
+elegir un esquema claro u oscuro en Opciones del editor.
 
-**3. Imprimir** (nuevo, falta probarlo en Mint): Archivo → Imprimir y el botón
-de la barra principal. Probar con una impresora y con "Guardar como archivo
-PDF…", con y sin colores, números de línea, ajuste de línea y solo la
-selección.
+**3. Decidir las plantillas de Windows** (ver la fase 6) y la limpieza de
+archivos del original (ver "Otros pendientes"): se borran solo con tu
+aprobación.
 
-**4. Qt5** (decidido): compila y funciona mejor que GTK2 en Mint. ✅ Ya cierra
-sin errores: heaptrc da 0 bloques sin liberar (probado en Mint el 17 de
-octubre de 2026).
+**4. Buscar, Reemplazar e Ir a línea** "no aparecen o no están en su sitio"
+(reportado en Mint con GTK2). En el formulario siguen en el menú Buscar y en
+su barra, igual que en el original. Falta una captura del menú Buscar abierto
+con Qt5 para ver qué se ve distinto.
 
-**5. Fase 6, el siguiente paso grande:** compilar y ejecutar con el gcc del
-sistema. La lista de compiladores está vacía porque el IDE solo busca TDM-GCC
-(el compilador para Windows que trae el original). Detalles en la fase 6.
+**5. Fase 7:** el depurador sobre GDB/MI.
 
 ### Fase 0 · Preparación ✅
 - Repositorio en GitHub con el historial completo del original y el remoto
@@ -199,11 +196,14 @@ Se quitó todo lo que solo existe en Windows:
     archivo (162 referencias).
   - El parser compara nombres de archivo con las reglas de cada sistema.
 - Prueba de consola `PlatformTest`.
-- Pendiente de la tabla original: **instancia única** (abrir un archivo en el
-  IDE que ya está abierto). `Instances.pas` se quitó y falta reemplazarlo con
-  un socket local o similar. El socket tiene que ser privado del usuario
-  (en `$XDG_RUNTIME_DIR`, permisos 0700); si no, otro usuario podría mandarle
-  archivos a abrir.
+- ✅ **Instancia única** (`devInstance.pas`, falta probarla en Mint): abrir un
+  archivo con el IDE ya abierto (`penguin-cpp main.cpp`, como hace el
+  explorador de archivos) se lo pasa al IDE abierto, que lo abre y se pone
+  al frente. El original usaba un mensaje de Windows; aquí el primer IDE
+  escucha en un socket Unix en `$XDG_RUNTIME_DIR` (permisos 0700), así que
+  ningún otro usuario puede mandarle archivos. Hay uno por archivo de
+  configuración (el modo portable y `-c` son otro IDE), y un socket que dejó
+  un cierre inesperado se detecta y se reemplaza.
 
 ### Fase 4 · Port a Lazarus y formularios 🔄
 Hecho:
@@ -237,9 +237,8 @@ Hecho:
 Falta:
 - **Buscar, Reemplazar e Ir a línea** no funcionan en Mint (ver "Siguiente
   ciclo de trabajo").
-- **Verificación de memoria y seguridad:** lo que se puede hacer sin
-  interfaz gráfica está hecho; los acentos en el editor funcionan. Queda
-  valgrind, opcional (ver abajo).
+- **Verificación de memoria y seguridad:** hecha (ver abajo, con la revisión
+  general del 18 de octubre). Queda valgrind, opcional.
 - ✅ **Qt5**: cierra sin errores y sin memoria sin liberar.
 - **Hecho cuando:** el IDE abre, se ven los menús, se puede abrir, editar,
   buscar y guardar un archivo, y cierra sin errores con Qt5.
@@ -268,7 +267,8 @@ Seguridad:
 | # | Qué | Resultado |
 |---|---|---|
 | 1 | **Archivos temporales con nombre fijo en `/tmp`** | ✅ Los formateadores copiaban tu código a `/tmp/<nombre del archivo>` (y `DummyInput.txt`), sin borrarlo; otro usuario podía dejar un enlace con ese nombre. Ahora usan `~/.cache/penguin-cpp/tmp/` (permisos 0700) y borran la copia |
-| 2 | **Cómo se lanzan los programas** | ✅ Ningún comando pasa por `/bin/sh`, así que `$(...)`, `;` y comillas invertidas en nombres de archivo son texto literal. ⚠️ Pero un nombre con `"` puede agregar argumentos, y los Makefiles sí pasan por el shell: ver fase 6 |
+| 2 | **Cómo se lanzan los programas** | ✅ Ningún comando del IDE pasa por `/bin/sh`, así que `$(...)`, `;` y comillas invertidas en nombres de archivo son texto literal; un nombre con `"` se rechaza. Los Makefiles citan cada nombre (fase 6). Queda gdb, que arranca el programa con sus argumentos a través del shell (fase 7) |
+| 3 | **Revisión general (18 de octubre)** | ✅ Corregido: compilar sin compilador instalado (puntero nulo); el análisis de C++ dejaba entrar clics y pintado mientras liberaba sus declaraciones (`ProcessMessages`); cerrar durante una compilación; una carrera al detener el programa; "Limpiar" podía borrar otro archivo llamado como el fuente sin extensión; imprimir nunca usa `/tmp`; un `Invalid type cast` al arrancar en el modo Debug (el navegador de clases como `TTreeView`), que cortaba la carga de los compiladores. Las traducciones con menos `%d` que el inglés no fallan (`Format` ignora lo que sobra) |
 
 Para probar en Mint con el modo Debug:
 
@@ -281,9 +281,9 @@ Al cerrarlo, la terminal muestra la memoria no liberada con archivo y línea.
 Si lazbuild da un "Internal error" del compilador después de cambios, se
 compila todo de nuevo con `-B`.
 
-Los pendientes de seguridad de otras fases están en su lugar: la instancia
-única (fase 3), los nombres de archivo en los comandos, `INTERNAL_DEL` y los
-proyectos de terceros (fase 6), y el mantenimiento de GTK2 (abajo).
+Los pendientes de seguridad de otras fases ya se resolvieron (instancia
+única, Makefiles, `INTERNAL_DEL` y proyectos de terceros, en las fases 3 y
+6), salvo gdb (fase 7). `SECURITY.md` resume las reglas.
 
 #### Biblioteca gráfica (decidido: Qt5 ahora, Qt6 con Mint 23)
 La biblioteca gráfica es la que dibuja las ventanas, botones y menús. En
@@ -365,14 +365,20 @@ Hecho:
 | Azul medio | `#5789C2` | Atajos, selección, líneas del árbol | Igual, y los tipos del navegador de clases |
 | Amarillo | `#FDB50B` | — | Versión, enlaces, avisos "Hint", argumentos |
 
-Falta:
-- Esquemas del editor **"Penguin claro"** y **"Penguin oscuro"** con esta
-  paleta, junto a los 14 que ya trae.
-- Menús, botones y diálogos los dibuja la biblioteca gráfica. Con Qt5 la
-  paleta se puede aplicar a toda la app; se hace cuando Qt5 cierre sin
-  errores (fase 4).
+- ✅ Esquemas del editor **Penguin Light** y **Penguin Dark** con esta paleta,
+  junto a los 14 que ya trae, en Opciones del editor y en la configuración
+  del primer arranque.
+- ✅ **Paleta en toda la aplicación con Qt5** (`PenguinTheme.pas`, falta
+  probarla en Mint): menús, barras, botones y diálogos toman los colores del
+  icono, claros u oscuros como el esquema del editor, en el estilo Fusion de
+  Qt para que se vean igual en cualquier escritorio. Con GTK2 siguen el tema
+  del escritorio. La versión Qt5 se compiló en macOS (solo el enlazado
+  necesita Qt).
+- ✅ Fuentes de Linux en los formularios: la del escritorio (`default`) y
+  `Monospace` en vez de Segoe UI, MS Sans Serif, Tahoma y Courier New; el
+  editor usa DejaVu Sans Mono en vez de Consolas.
 - **Hecho cuando:** con un esquema claro u oscuro, todo el IDE (editor,
-  paneles, menús y diálogos) se ve con la paleta.
+  paneles, menús y diálogos) se ve con la paleta. Falta verlo en Mint.
 
 ### Fase 5 · Editor ✅
 Gran parte se adelantó en la fase 4:
@@ -467,29 +473,49 @@ Hecho en la rama `fase6/compilador` (falta probarlo en Mint):
   a gcc como opciones. En la terminal, el programa y sus argumentos llegan a
   `sh` por separado: un nombre o argumento con `$(…)` es texto, no código.
 
+- ✅ **Proyectos y Makefiles seguros** (`Compiler.pas`): cada nombre de
+  archivo va escapado para `make` en las reglas (`$$`, `\ `) y entre comillas
+  simples para `/bin/sh` en las órdenes (`'` como `'\''`). Probado con make
+  y g++: nombres con espacios, apóstrofos, `$(…)` y comillas invertidas
+  compilan, se ejecutan y se limpian, y nada de los nombres se ejecuta. Los
+  nombres que `make` no admite (saltos de línea, `%`, `:`, `;`, `=`, `|`,
+  `#`, `\`, `*`, `?`, `[`, `]`) detienen la compilación con un aviso. Un
+  programa cuyo nombre termina en `)` se enlaza de nuevo en cada
+  compilación (para make es un miembro de biblioteca), sin otro efecto.
+- ✅ Sin `windres` ni archivo de recursos privado; las bibliotecas
+  compartidas se compilan con `-fPIC -shared`. `make clean` usa `rm -f` y
+  se quitó el modo `INTERNAL_DEL` del IDE.
+- ✅ **Proyectos de terceros:** al abrir un proyecto que ejecuta comandos
+  propios (Makefile propio o incluido, comandos de compilación por archivo,
+  programa anfitrión, opciones con código de shell o que ejecutan
+  programas, como `-wrapper`, `-fplugin`, `-specs`, `-B` o `@archivo`, o
+  argumentos con caracteres del shell) el IDE muestra lo que ejecutaría y
+  pregunta. La respuesta se guarda en tu configuración, no en el proyecto,
+  para ese proyecto con esos mismos comandos.
+- ✅ **Formateadores del sistema:** `astyle` y `clang-format` del PATH (o una
+  copia junto al IDE), con su ruta entre comillas. clang-format recibía
+  `--style="{…}"` con las comillas; ahora va el argumento completo entre
+  comillas, y si falla se muestra su mensaje en vez de reemplazar el código.
+- ✅ **Rutas de Windows:** `GetRealPath` arreglaba formas de Windows de las
+  rutas absolutas y en Linux destrozaba todas (`/home/u/main.c` quedaba
+  `o:e/u/main.c`): los archivos de los errores (doble clic) y el ejecutable
+  de los proyectos. También se quitaron las `\` escritas a mano.
+- ✅ **Terminal a elegir** en Opciones del entorno (o automática) y **clang**
+  como segundo compilador si está instalado.
+- ✅ **Plantillas:** Console Application, Windows Application y DLL nombraban
+  sus archivos con otras mayúsculas (en Linux no se encontraban); Jackpot
+  tiene ahora versión en C; DLL pasó a biblioteca compartida (`.so`), y las
+  de consola ya no sugieren `getch` ni `system("pause")`.
+
 Falta:
-- **Proyectos y Makefiles** (`Compiler.pas`, `Project.pas`):
-  - Rutas POSIX y sin `windres` ni recursos `.rc`.
-  - **Citar cada nombre para el shell:** `make` ejecuta cada receta con
-    `/bin/sh`, así que ahí un archivo llamado `$(…).cpp` **sí ejecutaría
-    código**. Comillas simples, con `'` escrito como `'\''`.
-  - **`INTERNAL_DEL`:** hoy el IDE borra los archivos que le pasen (lo usa
-    `make clean`). Reemplazarlo por `rm -f` en los Makefiles y quitar ese
-    modo.
-  - **Proyectos de terceros (`.dev`):** un proyecto puede traer su propio
-    Makefile y opciones de compilación, y compilarlo es ejecutar lo que
-    diga. Avisar al abrir un proyecto ajeno que use Makefile propio.
-- Usar el AStyle y el clang-format instalados en el sistema (hoy busca
-  `AStyle.exe` y `clang-format.exe`).
-- Plantillas (`Templates/`, 44 archivos): las de consola, biblioteca
-  estática, OpenMP, hilos y vacía sirven en Linux. Las de Windows (WinApp,
-  DLL, Direct3D, FileEditor, MDIEditor, WinAnim, OpenGL con WinAPI) se
-  reemplazan o se adaptan; la DLL pasa a biblioteca compartida `.so`. Se
-  muestra la lista antes de borrar.
-- Revisar las rutas con `\` escritas a mano que quedan (`main.pas`,
-  `Compiler.pas`, `Project.pas`, `Utils.pas`).
-- Elegir la terminal en las opciones (hoy se detecta sola).
-- clang como segundo compilador, si está instalado.
+- **Probar todo lo anterior en Mint** (ver "Siguiente ciclo de trabajo").
+- **Plantillas solo de Windows**, para borrar con tu aprobación: *Windows
+  Application* (`1-WinApp.template`, `WinApp_c.txt`), *Direct3D*
+  (`Direct3D.template`, `Direct3D.txt`), *FileEditor* (`.template`, `_c`,
+  `_h`, `_rc`), *MDIEditor* (`.template`, `_c`, `_h`, `_rc`), *WinAnim*
+  (`.template`, `_c`, `_rc`, `ball.bmp`, `ballmask.bmp`), *OpenGL* con WinAPI
+  (`OpenGL.template`, `OpenGL.txt`) y *Project3*, una plantilla vacía que
+  quedó del original.
 - **Hecho cuando:** se compila y ejecuta un proyecto de consola y uno de
   varios archivos, y los errores del compilador aparecen en la lista y se
   pueden clicar.
@@ -578,8 +604,8 @@ archivos con `open` en macOS), el monitor de archivos y los Makefiles.
   "Delphi" son marcas registradas):
   - ✅ *Acerca de* y los archivos de idioma dicen Penguin cpp, y los enlaces
     llevan a este repositorio.
-  - `SECURITY.md` todavía es el del proyecto original (versiones 6.x y un
-    contacto del equipo de Embarcadero).
+  - ✅ `SECURITY.md` es el de Penguin cpp: versiones con soporte, cómo
+    reportar en privado y qué cuida el IDE.
 - **Limpieza**, preguntando antes de borrar:
   - `Source/VCL/SynEdit` y `Source/VCL/SVGIconImageList`, que ya no se usan.
   - Los proyectos de Delphi (`devcpp.dpr/.dproj`, `DevCpp.dpk/.dproj`,
@@ -588,8 +614,7 @@ archivos con `open` en macOS), el monitor de archivos y los Makefiles.
   - Los iconos e imágenes del original que ya no se usan (`devcpp.ico`,
     `Source/devcpp_Icon.ico`, `Source/Images/devcpplogo.png`…).
 - **Avisos de compilación**: revisar los ~150 que da hoy.
-- **Fuentes de Windows** en los formularios (MS Sans Serif, Tahoma, Courier
-  New, Segoe UI): cambiarlas por las del sistema.
+- ✅ **Fuentes de Windows** en los formularios: cambiadas por las del sistema.
 - Más adelante: probar con Lazarus 4.x.
 
 ---

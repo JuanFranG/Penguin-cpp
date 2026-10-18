@@ -1,21 +1,57 @@
-# Security Policy
+# Seguridad
 
-## Supported Versions
+## Versiones con soporte
 
-Only the latest version will receive security updates.
+Penguin cpp está en desarrollo. Solo la versión más reciente recibe
+correcciones de seguridad.
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 6.3.0   | :white_check_mark: |
-| < 6.2   | :x:                |
+| Versión | Soporte |
+| ------- | ------- |
+| 0.1.x   | ✅ |
+| Dev-C++ 6.x y anteriores (Windows) | ❌ No son parte de este proyecto |
 
-## Reporting a Vulnerability
+## Cómo reportar una vulnerabilidad
 
-Vulnerabilities can be reported to:
-FMXExpress@users.noreply.github.com
+No publiques la vulnerabilidad en un *issue* abierto. Repórtala en privado
+desde la pestaña **Security** del repositorio, con **Report a vulnerability**
+(<https://github.com/JuanFranG/Penguin-cpp/security/advisories/new>).
 
-This is a community project. 
+Incluye, si puedes:
 
-Don't have any expectactions. 
+- Qué versión o *commit* usaste y en qué distribución (por ejemplo, Linux Mint 22).
+- Los pasos para reproducirla: un archivo, un proyecto `.dev` o un nombre de
+  archivo que la provoque.
+- Qué pasa y qué debería pasar.
 
-If you have a fix for the vulnerability submit it.
+Es un proyecto educativo mantenido por una persona: la respuesta puede tardar
+algunos días. Si tienes una corrección, puedes proponerla junto con el reporte.
+
+## Qué cuida el IDE
+
+Penguin cpp compila y ejecuta código, así que estas son las reglas con las que
+está hecho. Los detalles están en [ROADMAP.md](ROADMAP.md) (fases 3, 4 y 6).
+
+- **Los comandos del IDE no pasan por el shell.** gcc, make, la terminal y los
+  formateadores reciben cada argumento por separado. Un nombre de archivo con
+  `$(…)`, comillas invertidas o `;` es texto, nunca código. La excepción, por
+  ahora, es depurar: gdb arranca el programa con sus argumentos a través del
+  shell. Se corrige al pasar el depurador a GDB/MI (fase 7).
+- **Los Makefiles citan cada nombre de archivo** para `make` y para `/bin/sh`.
+  Los nombres que `make` no puede representar (saltos de línea, `%`, `:`, `;`,
+  `=`, `|`, `#`, `\`, `*`, `?`, `[`, `]`) detienen la compilación con un aviso.
+- **Proyectos de terceros.** Un proyecto `.dev` puede traer su propio Makefile,
+  comandos de compilación u opciones que ejecutan programas. Al abrir uno así,
+  el IDE muestra lo que ejecutaría y pregunta; la respuesta se guarda en tu
+  configuración, no en el proyecto.
+- **Archivos temporales privados.** Las copias para formatear o imprimir van en
+  `~/.cache/penguin-cpp/tmp` (permisos 0700), nunca en `/tmp`.
+- **Instancia única privada.** El socket con el que un segundo arranque le pasa
+  archivos al IDE abierto está en `$XDG_RUNTIME_DIR`, al que solo entra tu
+  usuario.
+
+## Fuera del alcance
+
+- Compilar o ejecutar un programa es ejecutar su código: Penguin cpp no aísla
+  los programas que compilas.
+- Las vulnerabilidades de gcc, gdb, make, Qt o Lazarus se reportan a sus
+  proyectos.

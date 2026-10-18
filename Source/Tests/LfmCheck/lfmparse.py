@@ -8,7 +8,11 @@ usage: python3 lfmparse.py OUT_DIR SOURCE_DIR FILE.lfm...
 Writes to OUT_DIR:
   checks.tsv   one check per line (format described in LfmChecks.pas);
                problems found here (image data the LCL can't read) are
-               passed on as X rows
+               passed on as X rows. A property whose value names a method of
+               the form's class carries that method's parameter list, as
+               declared in the form's unit, so lfmcheck can compare it with
+               the event type (a handler with the parameters of a Delphi
+               event is called with the wrong ones, and corrupts memory)
   units.inc    the IDE's units, so lfmcheck links every form class
   classes.inc  every component class named in the forms, to register them
 """
@@ -95,11 +99,49 @@ def skip_value(lines, i, first):
     return i + 1
 
 
+def strip_comments(text):
+    text = re.sub(r'(?s)\{.*?\}', ' ', text)
+    text = re.sub(r'(?s)\(\*.*?\*\)', ' ', text)
+    return re.sub(r'//[^\n]*', '', text)
+
+
+def normalize_params(params, result):
+    """kind:type,kind:type...|result, as LfmChecks.DeclaredSignature builds it."""
+    out = []
+    for group in filter(None, (g.strip() for g in (params or '').split(';'))):
+        group = ' '.join(group.split('=')[0].split())  # default value; one line
+        m = re.match(r'(?i)(var|constref|const|out)\s+(.*)$', group)
+        kind, rest = (m.group(1).lower(), m.group(2)) if m else ('', group)
+        names, _, typ = rest.partition(':')
+        typ = typ.strip().lower()
+        typ = re.sub(r'^array\s+of\s+', 'array of ', typ)
+        typ = typ.split('.')[-1]  # Unit.Type
+        out += [kind + ':' + typ] * len([n for n in names.split(',') if n.strip()])
+    return ','.join(out) + '|' + (result or '').strip().lower().split('.')[-1]
+
+
+def class_methods(pas, cls):
+    """Method name (lowercase) -> parameter list, from the declaration of cls in pas."""
+    if not os.path.exists(pas):
+        return {}
+    text = strip_comments(open(pas, 'rb').read().decode('latin-1'))
+    m = re.search(r'(?i)\b' + cls + r'\s*=\s*class\b', text)
+    if not m:
+        return {}
+    end = re.search(r'(?im)^\s*end\s*;', text[m.end():])
+    body = text[m.end():m.end() + end.start()] if end else text[m.end():]
+    methods = {}
+    for mm in re.finditer(r'(?is)\b(procedure|function)\s+(\w+)\s*(?:\((.*?)\))?\s*(?::\s*([\w.]+))?\s*;', body):
+        methods[mm.group(2).lower()] = normalize_params(mm.group(3), mm.group(4))
+    return methods
+
+
 def parse(path, name):
     lines = open(path, 'rb').read().decode('latin-1').replace('\r\n', '\n').split('\n')
     out = []
     stack = []  # component classes, innermost last
     root = None
+    methods = {}
     i = 0
     n = len(lines)
     while i < n:
@@ -112,6 +154,7 @@ def parse(path, name):
             cls = m.group(3)
             if root is None:
                 root = cls
+                methods = class_methods(os.path.splitext(path)[0] + '.pas', cls)
             out.append(('C', name, i + 1, cls))
             stack.append(cls)
             i += 1
@@ -145,7 +188,8 @@ def parse(path, name):
                         continue
                     i += 1
                 continue
-            out.append(('P', name, i + 1, root, cls, prop, val))
+            out.append(('P', name, i + 1, root, cls, prop, val) +
+                       ((methods[val.lower()],) if val.lower() in methods else ()))
             if val.startswith('{'):
                 problem = check_image_data(prop, binary_value(lines, i, val))
                 if problem:

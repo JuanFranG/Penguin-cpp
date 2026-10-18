@@ -7,13 +7,20 @@
     The input is the list of checks written by lfmparse.py, one per line,
     tab separated:
       C  lfm  line  class                           a component class
-      P  lfm  line  rootclass  class  path  value   a property or event
+      P  lfm  line  rootclass  class  path  value  [params]
+                                                    a property or event; params
+                                                    is the parameter list of the
+                                                    method named by value, as
+                                                    declared (kind:type,...|result)
       I  lfm  line  rootclass  class  collection  path  value
                                                     a collection item property
       X  lfm  line  message                         a problem lfmparse.py found
                                                     (image data the LCL can't read)
     Every class, property, enumeration/set value and event handler must exist;
     otherwise the window would raise an exception when it is opened.
+    An event handler must also take the parameters of the event type: the
+    LCL finds it by name only, and one written for a Delphi event with other
+    parameters gets the wrong ones and writes over memory.
 }
 
 unit LfmChecks;
@@ -53,6 +60,92 @@ begin
     (SameText(Name, 'ItemData') and Cls.InheritsFrom(TListItems));
 end;
 
+// Lazarus and Delphi names of the same type
+function CanonicalType(const T: String): String;
+begin
+  Result := LowerCase(T);
+  if Result = 'integer' then
+    Result := 'longint'
+  else if Result = 'cardinal' then
+    Result := 'longword'
+  else if Result = 'string' then
+    Result := 'ansistring'
+  else if Result = 'tgraphicscolor' then
+    Result := 'tcolor';
+end;
+
+function CanonicalSignature(const S: String): String;
+var
+  Parts: TStringList;
+  I, P: Integer;
+  Res: String;
+begin
+  P := Pos('|', S);
+  Res := CanonicalType(Copy(S, P + 1, MaxInt));
+  Parts := TStringList.Create;
+  try
+    Parts.Delimiter := ',';
+    Parts.StrictDelimiter := True;
+    Parts.DelimitedText := Copy(S, 1, P - 1);
+    Result := '';
+    for I := 0 to Parts.Count - 1 do begin
+      P := Pos(':', Parts[I]);
+      if I > 0 then
+        Result := Result + ',';
+      Result := Result + Copy(Parts[I], 1, P) + CanonicalType(Copy(Parts[I], P + 1, MaxInt));
+    end;
+  finally
+    Parts.Free;
+  end;
+  Result := Result + '|' + Res;
+end;
+
+// The parameters of a method type, in the form lfmparse.py writes them
+function EventSignature(T: PTypeInfo): String;
+var
+  D: PTypeData;
+  P: PByte;
+  I: Integer;
+  Flags: TParamFlags;
+  Kind, TypeName: String;
+begin
+  D := GetTypeData(T);
+  P := @D^.ParamList[0];
+  Result := '';
+  for I := 1 to D^.ParamCount do begin
+    Move(P^, Flags, SizeOf(Flags));
+    Inc(P, SizeOf(Flags));
+    Inc(P, P^ + 1); // ParamName
+    SetString(TypeName, PChar(P + 1), P^);
+    Inc(P, P^ + 1);
+    // each parameter starts at the alignment of its flags
+    if I < D^.ParamCount then
+      P := Align(P, SizeOf(Flags));
+    if Flags * [pfHidden, pfSelf, pfHigh, pfVmt, pfResult] <> [] then
+      Continue;
+    if pfVar in Flags then
+      Kind := 'var'
+    else if pfOut in Flags then
+      Kind := 'out'
+    else if pfConstRef in Flags then
+      Kind := 'constref'
+    else if pfConst in Flags then
+      Kind := 'const'
+    else
+      Kind := '';
+    if pfArray in Flags then
+      TypeName := 'array of ' + TypeName;
+    if Result <> '' then
+      Result := Result + ',';
+    Result := Result + Kind + ':' + LowerCase(TypeName);
+  end;
+  Result := Result + '|';
+  if D^.MethodKind in [mkFunction, mkClassFunction] then begin
+    SetString(TypeName, PChar(P + 1), P^);
+    Result := Result + LowerCase(TypeName);
+  end;
+end;
+
 function SplitSet(const S: String): TStringList;
 begin
   Result := TStringList.Create;
@@ -62,7 +155,8 @@ begin
 end;
 
 // Walks Path (Font.Style ...) from Cls; checks the value of enum/set/event properties
-procedure CheckPath(const Where: String; RootCls, Cls: TClass; const Path, Value: String);
+procedure CheckPath(const Where: String; RootCls, Cls: TClass; const Path, Value: String;
+  const Params: String = '');
 var
   Parts: TStringList;
   I, J: Integer;
@@ -94,7 +188,11 @@ begin
       case PI^.PropType^.Kind of
         tkMethod:
           if (Value <> '') and (RootCls.MethodAddress(Value) = nil) then
-            Problem(Where, 'event handler not found: ' + RootCls.ClassName + '.' + Value + ' (' + Path + ')');
+            Problem(Where, 'event handler not found: ' + RootCls.ClassName + '.' + Value + ' (' + Path + ')')
+          else if (Params <> '') and
+            (CanonicalSignature(Params) <> CanonicalSignature(EventSignature(PI^.PropType))) then
+            Problem(Where, RootCls.ClassName + '.' + Value + ' has the parameters (' + Params +
+              '), but ' + Path + ' is ' + PI^.PropType^.Name + ' (' + EventSignature(PI^.PropType) + ')');
         tkEnumeration:
           if (Value <> '') and (Value[1] in ['A'..'Z', 'a'..'z', '_']) and
             (GetEnumValue(PI^.PropType, Value) < 0) and not SameText(PI^.PropType^.Name, 'Boolean') then
@@ -182,7 +280,10 @@ begin
         RootCls := GetClass(F[3]);
         Cls := GetClass(F[4]);
         if (RootCls <> nil) and (Cls <> nil) then
-          CheckPath(Where, RootCls, Cls, F[5], F[6]);
+          if F.Count >= 8 then
+            CheckPath(Where, RootCls, Cls, F[5], F[6], F[7])
+          else
+            CheckPath(Where, RootCls, Cls, F[5], F[6]);
       end else if F[0] = 'X' then
         Problem(Where, F[3])
       else if (F[0] = 'I') and (F.Count >= 8) then begin

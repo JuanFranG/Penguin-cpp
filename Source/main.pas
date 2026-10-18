@@ -738,7 +738,7 @@ type
     procedure actWindowMenuExecute(Sender: TObject);
     procedure actGotoProjectManagerExecute(Sender: TObject);
     procedure ListItemClick(Sender: TObject);
-    procedure ProjectViewCompare(Sender: TObject; Node1, Node2: TTreeNode; Data: Integer; var Compare: Integer);
+    procedure ProjectViewCompare(Sender: TObject; Node1, Node2: TTreeNode; var Compare: Integer);
     procedure ProjectViewKeyPress(Sender: TObject; var Key: Char);
     procedure ProjectViewMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure GoToClassBrowserItemClick(Sender: TObject);
@@ -5506,8 +5506,7 @@ begin
   end;
 end;
 
-procedure TMainForm.ProjectViewCompare(Sender: TObject; Node1,
-  Node2: TTreeNode; Data: Integer; var Compare: Integer);
+procedure TMainForm.ProjectViewCompare(Sender: TObject; Node1, Node2: TTreeNode; var Compare: Integer);
 begin
   if (Node1.Data = pointer(-1)) and (Node2.Data = pointer(-1)) then
     Compare := CompareStr(Node1.Text, Node2.Text)

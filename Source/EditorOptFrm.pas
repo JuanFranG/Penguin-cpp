@@ -176,7 +176,7 @@ type
     procedure tbCompletionDelayChange(Sender: TObject);
     procedure chkEnableCompletionClick(Sender: TObject);
     procedure btnSaveSyntaxClick(Sender: TObject);
-    procedure OnGutterClick(Sender: TObject; Button: TMouseButton; X, Y, Line: Integer; Mark: TSynEditMark);
+    procedure OnGutterClick(Sender: TObject; X, Y, Line: Integer; Mark: TSynEditMark);
     procedure cbHighCurrLineClick(Sender: TObject);
     procedure cbAutoSaveClick(Sender: TObject);
     procedure MinutesDelayChange(Sender: TObject);
@@ -1422,7 +1422,7 @@ begin
     until FindNext(SR) <> 0;
 end;
 
-procedure TEditorOptForm.OnGutterClick(Sender: TObject; Button: TMouseButton; X, Y, Line: Integer; Mark: TSynEditMark);
+procedure TEditorOptForm.OnGutterClick(Sender: TObject; X, Y, Line: Integer; Mark: TSynEditMark);
 var
   idx: integer;
 begin

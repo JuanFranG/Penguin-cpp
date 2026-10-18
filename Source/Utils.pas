@@ -642,13 +642,18 @@ function ValidateFile(const FileName: String; const WorkPath: String; const Chec
 var
   fName: String;
 begin
+  // '' when it is nowhere (the original left the result unset in that case,
+  // and a template without an icon opened a garbage name)
+  result := '';
   fName := ExtractFileName(FileName);
-  if FileExists(FileName) then
+  if FileName = '' then
+    Exit
+  else if FileExists(FileName) then
     result := FileName
   else if FileExists(WorkPath + fName) then
     result := WorkPath + fName
   else if FileExists(WorkPath + FileName) then
-    result := FileName
+    result := WorkPath + FileName
   else if CheckDirs then begin
     if (devDirs.Default <> '') and FileExists(devDirs.Default + fName) then
       result := devDirs.Default + fName
@@ -662,8 +667,7 @@ begin
       result := devDirs.Icons + fName
     else if (devDirs.Templates <> '') and FileExists(devDirs.Templates + fName) then
       result := devDirs.Templates + fName;
-  end else
-    result := '';
+  end;
 end;
 
 function GetShortName(const FileName: String): String;

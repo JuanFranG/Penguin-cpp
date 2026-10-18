@@ -73,37 +73,47 @@ begin
 
   vle.OnSetEditText := nil;
 
-  vle.Strings.BeginUpdate;
-  vle.Strings.Clear;
-
-  currenttab := tabs.Tabs[tabs.TabIndex];
-
   CompilerSet := devCompilerSets[fCurrentIndex];
-  for I := 0 to CompilerSet.Options.Count - 1 do begin
-    option := PCompilerOption(CompilerSet.Options[I])^;
-    if SameStr(Lang[option.Section], currenttab) then begin
-      if Assigned(option.Choices) and (option.Value < option.Choices.Count) then
-        idx := vle.InsertRow(Lang[option.Name], option.Choices.Names[option.Value], True) // a,b,c,d
-      else
-        idx := vle.InsertRow(Lang[option.Name], BoolValYesNo[option.Value > 0], True); // No Yes
+  vle.Strings.BeginUpdate;
+  try
+    vle.Strings.Clear;
+    if tabs.TabIndex < 0 then
+      Exit;
+    currenttab := tabs.Tabs[tabs.TabIndex];
 
-      vle.Strings.Objects[idx] := Pointer(PtrInt(I));
-      vle.ItemProps[idx].EditStyle := esPickList;
-      vle.ItemProps[idx].ReadOnly := true;
+    for I := 0 to CompilerSet.Options.Count - 1 do begin
+      option := PCompilerOption(CompilerSet.Options[I])^;
+      if SameStr(Lang[option.Section], currenttab) then begin
+        if Assigned(option.Choices) and (option.Value < option.Choices.Count) then
+          idx := vle.InsertRow(Lang[option.Name], option.Choices.Names[option.Value], True) // a,b,c,d
+        else
+          idx := vle.InsertRow(Lang[option.Name], BoolValYesNo[option.Value > 0], True); // No Yes
+        vle.Strings.Objects[idx] := Pointer(PtrInt(I));
+      end;
+    end;
+  finally
+    vle.Strings.EndUpdate;
+  end;
+
+  // The LCL's ItemProps returns nil while Strings is updating (Delphi's did
+  // not), so the drop-down lists are set up afterwards
+  for idx := 0 to vle.Strings.Count - 1 do begin
+    option := PCompilerOption(CompilerSet.Options[PtrInt(vle.Strings.Objects[idx])])^;
+    with vle.ItemProps[idx] do begin
+      EditStyle := esPickList;
+      ReadOnly := true;
       if Assigned(option.Choices) then begin
-        for j := 0 to option.Choices.Count - 1 do
-          vle.ItemProps[idx].PickList.Add(option.Choices.Names[J]);
+        for J := 0 to option.Choices.Count - 1 do
+          PickList.Add(option.Choices.Names[J]);
       end else begin
-        vle.ItemProps[idx].PickList.Add(BoolValYesNo[False]);
-        vle.ItemProps[idx].PickList.Add(BoolValYesNo[True]);
+        PickList.Add(BoolValYesNo[False]);
+        PickList.Add(BoolValYesNo[True]);
       end;
     end;
   end;
   vle.ColWidths[0] := vle.ClientWidth - 90;
   vle.ColWidths[1] := 90;
   vle.OnSetEditText := vleSetEditText;
-
-  vle.Strings.EndUpdate;
 end;
 
 procedure TCompOptionsFrame.vleSetEditText(Sender: TObject; ACol, ARow: Integer; const Value: string);
@@ -117,7 +127,9 @@ begin
 
   CompilerSet := devCompilerSets[fCurrentIndex];
 
-  option := PCompilerOption(CompilerSet.Options[Integer(vle.Strings.Objects[ARow])]);
+  if (ARow < 0) or (ARow >= vle.Strings.Count) then
+    Exit;
+  option := PCompilerOption(CompilerSet.Options[PtrInt(vle.Strings.Objects[ARow])]);
 
   if SameStr(Value, 'Yes') then
     option^.Value := 1

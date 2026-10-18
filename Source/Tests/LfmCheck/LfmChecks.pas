@@ -118,9 +118,12 @@ begin
     Inc(P, P^ + 1); // ParamName
     SetString(TypeName, PChar(P + 1), P^);
     Inc(P, P^ + 1);
-    // each parameter starts at the alignment of its flags
+    // on CPUs that need aligned data (ARM, AArch64), each parameter starts
+    // at the alignment of its flags; on x86-64 they follow each other
+{$IFDEF FPC_REQUIRES_PROPER_ALIGNMENT}
     if I < D^.ParamCount then
       P := Align(P, SizeOf(Flags));
+{$ENDIF}
     if Flags * [pfHidden, pfSelf, pfHigh, pfVmt, pfResult] <> [] then
       Continue;
     if pfVar in Flags then

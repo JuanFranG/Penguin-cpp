@@ -125,27 +125,39 @@ Estado al 18 de octubre de 2026, probado en Linux Mint 22 con Qt5:
   y los errores aparecen en la lista y llevan a su línea.
 - ✅ Instancia única, formateadores, paleta de Qt5 y esquemas Penguin.
 - ✅ Buscar, Reemplazar e Ir a línea.
-- ❌ Proyectos: abrir un `.dev` o agregarle archivos corrompía la memoria
-  (`Wrong signature` de heaptrc en `AlphaSort`) y el IDE se colgaba. La causa
-  era un evento con los parámetros de Delphi (ver la fase 6); ya está
-  corregido y falta probarlo.
-- ❌ La marca roja de un error no se quitaba al corregirlo; ya está
-  corregido y falta probarlo.
+- ✅ Los `.dev` abren sin corromper la memoria (heaptrc: 0 errores; era un
+  evento con los parámetros de Delphi, ver la fase 6).
+- Corregido después de esa prueba, falta probarlo:
+  - **Compilar un proyecto:** con una carpeta de objetos relativa (`obj`),
+    make intentaba crear `../../../../../main.o` (permiso denegado).
+  - **`Range check error`** al compilar o depurar un proyecto guardado con
+    otro compilador, y el `Access violation` que seguía al ignorarlo.
+  - **Opciones del compilador:** `Access violation` al abrirlas (la lista de
+    opciones de la LCL no da sus propiedades durante `BeginUpdate`), y la
+    lista "Compilador a configurar" cortada.
+  - **Cuadros con título** (`TGroupBox`) en todos los diálogos: el contenido
+    quedaba unos 16 píxeles más abajo y la última fila cortada.
+  - La marca roja del error, el icono basura de Nuevo proyecto y el hilo que
+    vigila archivos, que se volvía a crear al cerrar.
 
-**1. Probar en Mint los proyectos:** abrir un `.dev` de dos o más archivos,
-agregarle uno (Proyecto → Agregar), compilar, ejecutar y limpiar, y crear uno
-nuevo de consola. También, que la marca roja de un error se quite al mover
-el cursor o escribir, y que Nuevo proyecto ya no muestre "Unable to open
-file" (`ValidateFile` devolvía un nombre basura para las plantillas sin
-icono). Al pulsar Opciones salía un `Access violation`; puede ser la memoria
-que corrompía el árbol del proyecto. Si sigue, hace falta la traza con gdb y
-saber qué Opciones (del proyecto, del compilador, del editor o del entorno).
+**1. Probar en Mint:** compilar, ejecutar y limpiar un proyecto de varios
+archivos; abrir Opciones del compilador y del proyecto; y mirar que los
+cuadros con título de los diálogos se vean completos.
 
-**2. Quitar las funciones de Windows del código** (decisión de diseño:
+**2. `Access violation` al cerrar después del primer arranque** (sin
+`~/.config/penguin-cpp`, con el asistente inicial): Qt5 falla al destruir una
+pestaña (`TQtTabWidget.DetachEvents`). Con la configuración ya creada cierra
+sin errores. No se pudo reproducir fuera de Linux; hace falta la traza de
+gdb, que muestra la parte de Qt:
+`rm -rf ~/.config/penguin-cpp` y luego
+`gdb -batch -ex "handle SIGSEGV stop nopass" -ex run -ex bt ./penguin-cpp-debug`,
+y también saber si pasa sin abrir ningún archivo.
+
+**3. Quitar las funciones de Windows del código** (decisión de diseño:
 Penguin cpp es para Unix y Linux; ver la fase 6). Los archivos ya se
 quitaron (ver "Otros pendientes").
 
-**3. Fase 7:** el depurador sobre GDB/MI.
+**4. Fase 7:** el depurador sobre GDB/MI.
 
 ### Fase 0 · Preparación ✅
 - Repositorio en GitHub con el historial completo del original y el remoto

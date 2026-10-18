@@ -153,9 +153,31 @@ gdb, que muestra la parte de Qt:
 `gdb -batch -ex "handle SIGSEGV stop nopass" -ex run -ex bt ./penguin-cpp-debug`,
 y también saber si pasa sin abrir ningún archivo.
 
-**3. Quitar las funciones de Windows del código** (decisión de diseño:
-Penguin cpp es para Unix y Linux; ver la fase 6). Los archivos ya se
-quitaron (ver "Otros pendientes").
+**3. Revisión general de las fases 1 a 6** (18 de octubre), por bloques:
+- ✅ **A. Correcciones seguras:** la ayuda ya no carga jQuery por `http`
+  desde Google (usa su copia local); `~/.config/penguin-cpp` es privada
+  (0700), porque guarda los proyectos de confianza y las carpetas de
+  trabajo; "Abrir con programa externo" pasa el archivo como un argumento
+  aparte (un nombre con `"` agregaba argumentos); se quitaron
+  `TTemplate.Save` (sin uso, con un nombre vacío) y las directivas de Delphi
+  de `main.pas`.
+- **B. Funciones de Windows en el código** (ver la fase 6), y el diálogo
+  "Buscar compiladores", que pide poner TDM-GCC en carpetas de Windows.
+- **C. Mensajes de gcc en español:** el lector de mensajes reconoce
+  `error`, `aviso` y `nota`, pero no frases como "In file included from" ni
+  los mensajes de `as` y `ld` traducidos, que quedan sin archivo ni línea.
+  Hay que decidir entre ejecutar el compilador con mensajes en inglés
+  (`LC_MESSAGES=C`), que es lo seguro, o enseñarle al lector las frases en
+  español.
+- **D. Traducción al español completa:** faltan 237 textos en
+  `Spanish.lng` y `SpanishCastellano.lng` y 186 en `SpanishColombia.lng`; se
+  ven en inglés. `Hebrew.lng` es de una versión muy antigua (otros números de
+  mensaje): se propone quitarlo.
+- **E. Pruebas automáticas:** una prueba de los Makefiles con make y gcc de
+  verdad (habría detectado `../../main.o`) y CI en GitHub Actions que
+  compile el IDE y pase las pruebas en Ubuntu en cada push.
+- **F. Ayuda para Linux:** sus páginas hablan de Windows, de `devcpp.exe` y
+  de MinGW, y enlazan a Embarcadero. Puede ir con la fase 8.
 
 **4. Fase 7:** el depurador sobre GDB/MI.
 
@@ -209,7 +231,7 @@ Se quitó todo lo que solo existe en Windows:
   configuración (el modo portable y `-c` son otro IDE), y un socket que dejó
   un cierre inesperado se detecta y se reemplaza.
 
-### Fase 4 · Port a Lazarus y formularios 🔄
+### Fase 4 · Port a Lazarus y formularios ✅
 Hecho:
 - `penguin-cpp.lpi`/`.lpr`. El IDE completo **compila y enlaza** con la LCL.
 - Los 39 `.dfm` pasaron a `.lfm`:
@@ -239,8 +261,7 @@ Hecho:
 - La pantalla de bienvenida se traduce desde los archivos de idioma.
 
 Falta:
-- **Buscar, Reemplazar e Ir a línea** no funcionan en Mint (ver "Siguiente
-  ciclo de trabajo").
+- ✅ **Buscar, Reemplazar e Ir a línea** funcionan en Mint.
 - **Verificación de memoria y seguridad:** hecha (ver abajo, con la revisión
   general del 18 de octubre). Queda valgrind, opcional.
 - ✅ **Qt5**: cierra sin errores y sin memoria sin liberar.
@@ -333,7 +354,7 @@ Plan:
 
 GTK3 no se recomienda todavía en Lazarus.
 
-### Fase 4b · Identidad visual y temas 🔄
+### Fase 4b · Identidad visual y temas ✅
 Hecho:
 - **Icono propio** en dos versiones (`Source/Images/AppIcon/`):
   - El dibujo completo (pingüino frente al monitor) de 48 px en adelante.
@@ -398,8 +419,7 @@ Gran parte se adelantó en la fase 4:
 
 Falta:
 - Probar el autocompletado y los tooltips. El resaltado ya funciona.
-- **Buscar, Reemplazar e Ir a línea**: no funcionan en Mint; falta saber
-  cómo fallan (ver "Siguiente ciclo de trabajo").
+- ✅ **Buscar, Reemplazar e Ir a línea** funcionan en Mint.
 - ✅ **Plegado de código para C++** (falta probarlo en Mint). En el SynEdit
   de Lazarus el plegado lo da el resaltador, y el de C++ no lo trae:
   - `SynHighlighterCppFold.pas` (`TSynCppFoldSyn`) usa el `TSynCppSyn` de
@@ -655,9 +675,20 @@ archivos con `open` en macOS), el monitor de archivos y los Makefiles.
   - `Icons/*.ico`, que muestra Nuevo proyecto, y `CodeToolTip.res`, que se
     enlaza, se usan tal como están.
 - **Otra limpieza**, preguntando antes de borrar: `FormatterOptionsFrm`, que
-  no lo usa nada, y las imágenes del original que ya no se usan
-  (`Source/Images/devcpplogo.png`, `splash.bmp`, `donate.bmp`…).
-- **Avisos de compilación**: revisar los ~150 que da hoy.
+  no lo usa nada; las imágenes del original que ya no se usan
+  (`Source/Images/devcpplogo.png`, `splash.bmp`, `donate.bmp`…); `Tests.pas`
+  y su acción *Run Tests* (desactivada; ejecutaba todas las acciones del
+  menú y borraba los compiladores configurados) y la acción oculta
+  *Donate*; los datos de prueba del original en `Source/Tests` (`Document`,
+  `Explorer`, un proyecto de DirectX, `Folds`, `Parser`, `Project`,
+  `Fail.txt`). `NEWS.txt` es el historial de Dev-C++ 6.3: falta uno propio.
+- **Avisos de compilación**: bajaron de 118 a 29. Se quitaron la línea de
+  directivas de Delphi de `main.pas` (además de 55 avisos, apagaba la
+  comprobación de rangos y desbordamientos de esa unidad incluso en el modo
+  Debug) y `UITypes` pasó a `System.UITypes`. Los que quedan son de APIs
+  del SynEdit de Lazarus marcadas como obsoletas (`OnSpecialLineColors`,
+  `CreateHTMLFragment`, `CharIndexToRowCol`), que conviene cambiar antes de
+  probar Lazarus 4.x, y algunos menores.
 - ✅ **Fuentes de Windows** en los formularios: cambiadas por las del sistema.
 - Más adelante: probar con Lazarus 4.x.
 

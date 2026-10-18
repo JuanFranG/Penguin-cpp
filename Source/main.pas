@@ -7247,7 +7247,7 @@ begin
   // Project, classes and debug trees
   Trees := [ProjectView, ClassBrowser, DebugView];
   for I := 0 to High(Trees) do
-    with TTreeView(Trees[I]) do begin
+    with Trees[I] do begin // TClassBrowser is a TCustomTreeView, not a TTreeView
       Color := fPanelPalette.Back;
       Font.Color := fPanelPalette.Text;
       SelectionColor := fPanelPalette.Selection;

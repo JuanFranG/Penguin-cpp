@@ -153,7 +153,7 @@ type
     fEncoding: string; // LConvEncoding name of the file on disk
     fCurrentWord: String;
     fCurrentEvalWord: String;
-    fIgnoreCaretChange: boolean;
+    fErrorCaret: TPoint; // where SetErrorFocus put the caret
     fPreviousEditors: TList;
     fCompletionTimer: TTimer;
     fCompletionBox: TCodeCompletion;
@@ -673,8 +673,9 @@ begin
     end;
   end;
 
-  // scSelection includes anything caret related
-  if scSelection in Changes then begin
+  // In Delphi's SynEdit scSelection included anything caret related; the
+  // LCL's has scCaretX and scCaretY for the caret
+  if Changes * [scSelection, scCaretX, scCaretY] <> [] then begin
     MainForm.SetStatusbarLineCol;
 
     // Finish symbol completion
@@ -696,15 +697,12 @@ begin
       end;
     end;
 
-    // Remove error line colors
-    if not fIgnoreCaretChange then begin
-      if (fErrorLine <> -1) then begin
-        fText.InvalidateLine(fErrorLine);
-        fText.InvalidateGutterLine(fErrorLine);
-        fErrorLine := -1;
-      end;
-    end else
-      fIgnoreCaretChange := false;
+    // Remove error line colors once the caret leaves the error (typing moves it too)
+    if (fErrorLine <> -1) and ((fText.CaretX <> fErrorCaret.X) or (fText.CaretY <> fErrorCaret.Y)) then begin
+      fText.InvalidateLine(fErrorLine);
+      fText.InvalidateGutterLine(fErrorLine);
+      fErrorLine := -1;
+    end;
   end;
 
   if scInsertMode in Changes then begin
@@ -882,18 +880,18 @@ end;
 
 procedure TEditor.SetErrorFocus(Col, Line: integer);
 begin
-  fIgnoreCaretChange := true;
-
   // Disable previous error focus
   if (fErrorLine <> -1) then begin
     fText.InvalidateGutterLine(fErrorLine);
     fText.InvalidateLine(fErrorLine);
   end;
 
-  fErrorLine := Line;
+  fErrorLine := -1;
 
-  // Set new error focus
-  SetCaretPosAndActivate(fErrorLine, col);
+  // Set new error focus; the line is marked after the caret moved there
+  SetCaretPosAndActivate(Line, col);
+  fErrorLine := Line;
+  fErrorCaret := Point(fText.CaretX, fText.CaretY);
 
   // Redraw new error line
   fText.InvalidateGutterLine(fErrorLine);

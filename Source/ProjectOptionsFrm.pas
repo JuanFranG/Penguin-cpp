@@ -32,14 +32,10 @@ type
     btnCancel: TBitBtn;
     btnHelp: TBitBtn;
     dlgOpen: TOpenDialog;
-    dlgPic: TOpenPictureDialog;
     PageControl: TPageControl;
     tabGeneral: TTabSheet;
     tabFilesDir: TTabSheet;
     lblPrjName: TLabel;
-    grpIcon: TGroupBox;
-    btnIconBrowse: TBitBtn;
-    btnIconLib: TBitBtn;
     grpType: TGroupBox;
     lstType: TListBox;
     edProjectName: TEdit;
@@ -52,9 +48,6 @@ type
     btnDirReplace: TButton;
     edDirEntry: TEdit;
     btnDirDelInval: TButton;
-    btnRemoveIcon: TBitBtn;
-    Panel1: TPanel;
-    IconPreview: TImage;
     tabOutputDir: TTabSheet;
     lblExeOutput: TLabel;
     lblObjOutput: TLabel;
@@ -78,22 +71,7 @@ type
     grpUnitOptions: TGroupBox;
     chkCompile: TCheckBox;
     chkCompileCpp: TCheckBox;
-    tabVersion: TTabSheet;
-    chkVersionInfo: TCheckBox;
-    grpVersion: TGroupBox;
-    lblVerMajor: TLabel;
-    lblVerMinor: TLabel;
-    lblVerRel: TLabel;
-    lblVerBuild: TLabel;
-    lblVerLang: TLabel;
-    spnMajor: TSpinEdit;
-    spnMinor: TSpinEdit;
-    spnRelease: TSpinEdit;
-    spnBuild: TSpinEdit;
-    vleVersion: TValueListEditor;
-    cmbLangID: TComboBox;
     tabCompiler: TTabSheet;
-    chkSupportXP: TCheckBox;
     chkOverrideBuildCmd: TCheckBox;
     txtOverrideBuildCmd: TMemo;
     lblFname: TLabel;
@@ -105,8 +83,6 @@ type
     chkLink: TCheckBox;
     lblPriority: TLabel;
     spnPriority: TSpinEdit;
-    chkAutoIncBuild: TCheckBox;
-    chkSyncProduct: TCheckBox;
     tabCompOpts: TTabSheet;
     CompOptionsFrame1: TCompOptionsFrame;
     cmbCompiler: TComboBox;
@@ -144,10 +120,7 @@ type
     procedure BrowseClick(Sender: TObject);
     procedure SubTabsChange(Sender: TObject);
     procedure SubTabsChanging(Sender: TObject; NewIndex: Integer; var AllowChange: Boolean);
-    procedure btnIconLibClick(Sender: TObject);
-    procedure btnIconBrowseClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
-    procedure btnRemoveIconClick(Sender: TObject);
     procedure BrowseExecutableOutDirClick(Sender: TObject);
     procedure BrowseLogDirClick(Sender: TObject);
     procedure btnMakeBrowseClick(Sender: TObject);
@@ -159,11 +132,9 @@ type
     procedure btnHelpClick(Sender: TObject);
     procedure chkOverrideOutputClick(Sender: TObject);
     procedure chkCompileClick(Sender: TObject);
-    procedure chkVersionInfoClick(Sender: TObject);
     procedure lvFilesChange(Sender: TObject; Node: TTreeNode);
     procedure cmbCompilerChange(Sender: TObject);
     procedure btnCancelClick(Sender: TObject);
-    procedure lstTypeClick(Sender: TObject);
     procedure btnOkClick(Sender: TObject);
     procedure btnAddLibClick(Sender: TObject);
     procedure txtOverrideBuildCmdChange(Sender: TObject);
@@ -171,7 +142,6 @@ type
     procedure btnCustomMakeBrowseClick(Sender: TObject);
     procedure cbUseCustomMakefileClick(Sender: TObject);
     procedure lbMakeIncludesDrawItem(Control: TWinControl; Index: Integer; Rect: TRect; State: TOwnerDrawState);
-    procedure SetFileVersion(Sender: TObject);
     procedure btnLogOutputDirClick(Sender: TObject);
     procedure chkLogOutputClick(Sender: TObject);
     procedure OptionsLinkClick(Sender: TObject);
@@ -180,7 +150,6 @@ type
     procedure UpdateDirButtons;
     procedure UpdateMakButtons;
     procedure LoadText;
-    procedure InitVersionInfo;
     function DefaultBuildCommand(idx: integer): String;
     procedure SaveDirSettings;
   public
@@ -340,9 +309,7 @@ begin
   with Destination.Options do begin
 
     // General tab
-    SupportXPThemes := chkSupportXP.Checked;
     useGPP := chkDefCpp.Checked;
-    Icon := fProjectCopy.Options.Icon;
     typ := lstType.ItemIndex;
 
     // Files tab
@@ -385,49 +352,14 @@ begin
     MakeIncludes.Clear;
     MakeIncludes.AddStrings(lbMakeIncludes.Items);
 
-    // Version tab
-    IncludeVersionInfo := chkVersionInfo.Checked;
-
-    VersionInfo.Major := spnMajor.Value;
-    VersionInfo.Minor := spnMinor.Value;
-    VersionInfo.Release := spnRelease.Value;
-    VersionInfo.Build := spnBuild.Value;
-    VersionInfo.AutoIncBuildNr := chkAutoIncBuild.Checked;
-    VersionInfo.SyncProduct := chkSyncProduct.Checked;
-
-    VersionInfo.FileDescription := vleVersion.Cells[1, 0];
-    VersionInfo.FileVersion := vleVersion.Cells[1, 1];
-    VersionInfo.ProductName := vleVersion.Cells[1, 2];
-    VersionInfo.ProductVersion := vleVersion.Cells[1, 3];
-    VersionInfo.OriginalFilename := vleVersion.Cells[1, 4];
-    VersionInfo.InternalName := vleVersion.Cells[1, 5];
-    VersionInfo.CompanyName := vleVersion.Cells[1, 6];
-    VersionInfo.LegalCopyright := vleVersion.Cells[1, 7];
-    VersionInfo.LegalTrademarks := vleVersion.Cells[1, 8];
-
-    // The language ID of the Windows version resource is kept as loaded:
-    // there is no Windows locale list to pick from here
-  end;
-end;
-
-procedure TProjectOptionsFrm.SetFileVersion(Sender: TObject);
-begin
-  with fProjectCopy.Options do begin
-    VersionInfo.FileVersion := Format('%d.%d.%d.%d', [spnMajor.Value, spnMinor.Value, spnRelease.Value,
-      spnBuild.Value]);
-    if chkSyncProduct.Checked then
-      VersionInfo.ProductVersion := Format('%d.%d.%d.%d', [spnMajor.Value, spnMinor.Value, spnRelease.Value,
-        spnBuild.Value]);
-
-    vleVersion.Values['File Version'] := VersionInfo.FileVersion;
-    vleVersion.Values['Product Version'] := VersionInfo.ProductVersion;
+    // The icon, version information and XP theme of a Windows executable are
+    // kept as loaded, for projects also built with Dev-C++ on Windows
   end;
 end;
 
 procedure TProjectOptionsFrm.SetInterface(Source: TProject);
 var
   I, cntSrc, cntHdr, cntRes, cntOther: integer;
-  IconTmp: String;
 begin
   fProjectCopy := Source;
 
@@ -438,18 +370,7 @@ begin
     edProjectName.Text := fProjectCopy.Name;
     lblPrjFname.Caption := fProjectCopy.FileName;
     lblPrjOutputFname.Caption := fProjectCopy.Executable;
-    chkSupportXP.Checked := SupportXPThemes;
     chkDefCpp.Checked := useGPP;
-
-    // Load icon if possible
-    IconTmp := GetRealPath(fProjectCopy.Options.Icon, fProjectCopy.Directory);
-    if (IconTmp <> '') and FileExists(IconTmp) then try
-      IconPreview.Picture.LoadFromFile(fProjectCopy.Options.Icon);
-      Icon := IconTmp;
-    except
-      Icon := '';
-    end;
-    btnRemoveIcon.Enabled := Length(Icon) > 0;
 
     cntSrc := 0;
     cntHdr := 0;
@@ -508,9 +429,6 @@ begin
     edCustomMakefile.Text := fProjectCopy.Options.CustomMakefile;
     cbUseCustomMakefileClick(nil);
     lbMakeIncludes.Items.AddStrings(MakeIncludes);
-
-    // Version tab
-    InitVersionInfo;
   end;
 end;
 
@@ -545,32 +463,6 @@ begin
   UpdateDirButtons;
 end;
 
-procedure TProjectOptionsFrm.btnIconLibClick(Sender: TObject);
-begin
-  with TIconForm.Create(Self) do try
-    if ShowModal = mrOk then
-      if Selected <> '' then begin
-        fProjectCopy.Options.Icon := Selected;
-        IconPreview.Picture.LoadFromFile(Selected);
-        btnRemoveIcon.Enabled := Length(Selected) > 0;
-      end;
-  finally
-    Free;
-  end;
-end;
-
-procedure TProjectOptionsFrm.btnIconBrowseClick(Sender: TObject);
-begin
-  if dlgPic.Execute then begin
-    if FileExists(dlgPic.FileName) then begin
-      fProjectCopy.Options.Icon := dlgPic.FileName;
-      IconPreview.Picture.LoadFromFile(dlgPic.FileName);
-      btnRemoveIcon.Enabled := Length(dlgPic.FileName) > 0;
-    end else
-      MessageDlg(format(Lang[ID_MSG_COULDNOTOPENFILE], [dlgPic.FileName]), mtError, [mbOK], 0);
-  end;
-end;
-
 procedure TProjectOptionsFrm.FormCreate(Sender: TObject);
 begin
   LoadText;
@@ -600,21 +492,14 @@ begin
   tabFilesDir.Caption := Lang[ID_POPT_DIRTAB];
   tabOutputDir.Caption := Lang[ID_POPT_OUTTAB];
   tabMakefile.Caption := Lang[ID_POPT_MAKTAB];
-  tabVersion.Caption := Lang[ID_POPT_VERTAB];
 
   // General tab
   lblPrjName.Caption := Lang[ID_POPT_PRJNAME];
   lblFname.Caption := Lang[ID_PROPS_FILENAME];
   lblPrjOutput.Caption := Lang[ID_POPT_OUTPUTFILENAME];
   lblUnits.Caption := Lang[ID_POPT_FILES];
-  grpIcon.Caption := Lang[ID_POPT_GRP_ICON];
-  btnIconLib.Caption := Lang[ID_POPT_ICOLIB];
-  btnIconBrowse.Caption := Lang[ID_BTN_BROWSE];
-  btnRemoveIcon.Caption := Lang[ID_BTN_REMOVEICON];
   grpType.Caption := Lang[ID_POPT_GRP_TYPE];
-  chkSupportXP.Caption := Lang[ID_POPT_SUPPORTXP];
   chkDefCpp.Caption := Lang[ID_POPT_DEFCPP];
-  dlgPic.Title := Lang[ID_POPT_OPENICO];
   dlgOpen.Title := Lang[ID_POPT_OPENOBJ];
 
   // Populate project type list
@@ -669,28 +554,10 @@ begin
   btnMakDelete.Caption := Lang[ID_BTN_DELETE];
   btnMakDelInval.Caption := Lang[ID_BTN_DELINVAL];
 
-  // version info tab
-  chkVersionInfo.Caption := Lang[ID_POPT_INCLUDEVERSION];
-  grpVersion.Caption := Lang[ID_POPT_VDETAILS];
-  lblVerMajor.Caption := Lang[ID_POPT_VMAJOR];
-  lblVerMinor.Caption := Lang[ID_POPT_VMINOR];
-  lblVerRel.Caption := Lang[ID_POPT_VRELEASE];
-  lblVerBuild.Caption := Lang[ID_POPT_VBUILD];
-  lblVerLang.Caption := Lang[ID_POPT_VLANG];
-  chkAutoIncBuild.Caption := Lang[ID_POPT_VAUTOINCBUILDNR];
-  chkSyncProduct.Caption := Lang[ID_POPT_SYNCPRODUCT];
-
   // Misc. buttons
   btnOk.Caption := Lang[ID_BTN_OK];
   btnCancel.Caption := Lang[ID_BTN_CANCEL];
   btnHelp.Caption := Lang[ID_BTN_HELP];
-end;
-
-procedure TProjectOptionsFrm.btnRemoveIconClick(Sender: TObject);
-begin
-  btnRemoveIcon.Enabled := False;
-  fProjectCopy.Options.Icon := '';
-  IconPreview.Picture.Graphic := nil;
 end;
 
 procedure TProjectOptionsFrm.BrowseExecutableOutDirClick(Sender: TObject);
@@ -946,51 +813,6 @@ begin
   end;
 end;
 
-procedure TProjectOptionsFrm.InitVersionInfo;
-var
-  I: integer;
-begin
-  with fProjectCopy.Options.VersionInfo do begin
-    chkVersionInfo.Checked := fProjectCopy.Options.IncludeVersionInfo;
-    chkVersionInfoClick(nil);
-
-    vleVersion.Strings.Clear;
-    vleVersion.InsertRow('File Description', FileDescription, True);
-    vleVersion.InsertRow('File Version', FileVersion, True);
-    vleVersion.InsertRow('Product Name', ProductName, True);
-    vleVersion.InsertRow('Product Version', ProductVersion, True);
-    vleVersion.InsertRow('Original Filename', OriginalFilename, True);
-    vleVersion.InsertRow('Internal Name', InternalName, True);
-    vleVersion.InsertRow('Company Name', CompanyName, True);
-    vleVersion.InsertRow('Legal Copyright', LegalCopyright, True);
-    vleVersion.InsertRow('Legal Trademarks', LegalTrademarks, True);
-
-    spnMajor.Value := Major;
-    spnMinor.Value := Minor;
-    spnRelease.Value := Release;
-    spnBuild.Value := Build;
-    chkAutoIncBuild.Checked := AutoIncBuildNr;
-    chkSyncProduct.Checked := SyncProduct;
-
-    // Windows locale list for the version resource language: not available here
-    cmbLangID.Items.Clear;
-    cmbLangID.Visible := false;
-    lblVerLang.Visible := false;
-  end;
-end;
-
-procedure TProjectOptionsFrm.chkVersionInfoClick(Sender: TObject);
-begin
-  spnMajor.Enabled := chkVersionInfo.Checked;
-  spnMinor.Enabled := chkVersionInfo.Checked;
-  spnRelease.Enabled := chkVersionInfo.Checked;
-  spnBuild.Enabled := chkVersionInfo.Checked;
-  cmbLangID.Enabled := chkVersionInfo.Checked;
-  vleVersion.Enabled := chkVersionInfo.Checked;
-  chkAutoIncBuild.Enabled := chkVersionInfo.Checked;
-  chkSyncProduct.Enabled := chkVersionInfo.Checked;
-end;
-
 procedure TProjectOptionsFrm.cmbCompilerChange(Sender: TObject);
 begin
   if fOldIndex = cmbCompiler.ItemIndex then
@@ -1021,11 +843,6 @@ end;
 procedure TProjectOptionsFrm.btnOkClick(Sender: TObject);
 begin
   ModalResult := mrOk;
-end;
-
-procedure TProjectOptionsFrm.lstTypeClick(Sender: TObject);
-begin
-  chkSupportXP.Enabled := (lstType.ItemIndex = 0);
 end;
 
 procedure TProjectOptionsFrm.btnAddLibClick(Sender: TObject);

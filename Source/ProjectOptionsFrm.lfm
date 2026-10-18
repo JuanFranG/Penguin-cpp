@@ -110,69 +110,8 @@ object ProjectOptionsFrm: TProjectOptionsFrm
         Height = 15
         Caption = 'Output:'
       end
-      object grpIcon: TGroupBox
-        Left = 12
-        Top = 166
-        Width = 245
-        Height = 138
-        Caption = '  Icon:  '
-        TabOrder = 0
-        object btnIconBrowse: TBitBtn
-          Left = 128
-          Top = 44
-          Width = 105
-          Height = 30
-          Hint = 'Select a custom icon'
-          Caption = 'Browse...'
-          ImageIndex = 59
-          Images = dmMain.SVGImageListMenuStyle
-          TabOrder = 0
-          OnClick = btnIconBrowseClick
-        end
-        object btnIconLib: TBitBtn
-          Left = 128
-          Top = 5
-          Width = 105
-          Height = 30
-          Hint = 'Select a icon from Dev-C++'#39's icon collection'
-          Caption = 'Library'
-          ImageIndex = 58
-          Images = dmMain.SVGImageListMenuStyle
-          TabOrder = 1
-          OnClick = btnIconLibClick
-        end
-        object btnRemoveIcon: TBitBtn
-          Left = 128
-          Top = 81
-          Width = 105
-          Height = 30
-          Hint = 'Do not use an icon for this project'
-          Caption = 'Remove'
-          Enabled = False
-          ImageIndex = 5
-          Images = dmMain.SVGImageListMenuStyle
-          TabOrder = 2
-          OnClick = btnRemoveIconClick
-        end
-        object Panel1: TPanel
-          Left = 38
-          Top = 34
-          Width = 44
-          Height = 44
-          BevelOuter = bvLowered
-          TabOrder = 3
-          object IconPreview: TImage
-            Left = 6
-            Top = 6
-            Width = 32
-            Height = 32
-            Center = True
-            Stretch = True
-          end
-        end
-      end
       object grpType: TGroupBox
-        Left = 272
+        Left = 12
         Top = 166
         Width = 245
         Height = 138
@@ -191,15 +130,6 @@ object ProjectOptionsFrm: TProjectOptionsFrm
             'Win32 Static Lib'
             'Win32 DLL')
           TabOrder = 0
-          OnClick = lstTypeClick
-        end
-        object chkSupportXP: TCheckBox
-          Left = 7
-          Top = 99
-          Width = 230
-          Height = 17
-          Caption = 'Support Windows XP Themes'
-          TabOrder = 1
         end
         object chkDefCpp: TCheckBox
           Left = 7
@@ -823,141 +753,6 @@ object ProjectOptionsFrm: TProjectOptionsFrm
         OnDrawItem = lbMakeIncludesDrawItem
       end
     end
-    object tabVersion: TTabSheet
-      Caption = 'Version Info'
-      object chkVersionInfo: TCheckBox
-        Left = 12
-        Top = 8
-        Width = 509
-        Height = 17
-        Caption = 'Include version info in project'
-        TabOrder = 0
-        OnClick = chkVersionInfoClick
-      end
-      object grpVersion: TGroupBox
-        Left = 3
-        Top = 31
-        Width = 505
-        Height = 278
-        Caption = 'Version details'
-        TabOrder = 1
-        object lblVerMajor: TLabel
-          Left = 12
-          Top = 4
-          Width = 34
-          Height = 15
-          Caption = 'Major:'
-        end
-        object lblVerMinor: TLabel
-          Left = 72
-          Top = 4
-          Width = 35
-          Height = 15
-          Caption = 'Minor:'
-        end
-        object lblVerRel: TLabel
-          Left = 132
-          Top = 4
-          Width = 42
-          Height = 15
-          Caption = 'Release:'
-        end
-        object lblVerBuild: TLabel
-          Left = 192
-          Top = 4
-          Width = 30
-          Height = 15
-          Caption = 'Build:'
-        end
-        object lblVerLang: TLabel
-          Left = 280
-          Top = 4
-          Width = 55
-          Height = 15
-          Caption = 'Language:'
-        end
-        object spnMajor: TSpinEdit
-          Left = 12
-          Top = 22
-          Width = 57
-          Height = 24
-          MaxValue = 0
-          MinValue = 0
-          TabOrder = 0
-          Value = 0
-          OnChange = SetFileVersion
-        end
-        object spnMinor: TSpinEdit
-          Left = 72
-          Top = 22
-          Width = 57
-          Height = 24
-          MaxValue = 0
-          MinValue = 0
-          TabOrder = 1
-          Value = 0
-          OnChange = SetFileVersion
-        end
-        object spnRelease: TSpinEdit
-          Left = 132
-          Top = 22
-          Width = 57
-          Height = 24
-          MaxValue = 0
-          MinValue = 0
-          TabOrder = 2
-          Value = 0
-          OnChange = SetFileVersion
-        end
-        object spnBuild: TSpinEdit
-          Left = 192
-          Top = 22
-          Width = 57
-          Height = 24
-          MaxValue = 0
-          MinValue = 0
-          TabOrder = 3
-          Value = 0
-          OnChange = SetFileVersion
-        end
-        object vleVersion: TValueListEditor
-          Left = 12
-          Top = 76
-          Width = 477
-          Height = 175
-          DisplayOptions = [doAutoColResize, doKeyColFixed]
-          FixedCols = 1
-          Options = [goVertLine, goHorzLine, goColSizing, goEditing, goAlwaysShowEditor, goThumbTracking]
-          TabOrder = 7
-        end
-        object cmbLangID: TComboBox
-          Left = 280
-          Top = 22
-          Width = 209
-          Height = 23
-          Style = csDropDownList
-          Sorted = True
-          TabOrder = 4
-        end
-        object chkAutoIncBuild: TCheckBox
-          Left = 12
-          Top = 51
-          Width = 269
-          Height = 17
-          Caption = 'Auto-increment build number on compile'
-          TabOrder = 5
-        end
-        object chkSyncProduct: TCheckBox
-          Left = 300
-          Top = 51
-          Width = 181
-          Height = 17
-          Caption = 'Sync product with file version'
-          TabOrder = 6
-          OnClick = SetFileVersion
-        end
-      end
-    end
   end
   object dlgOpen: TOpenDialog
     Filter = 
@@ -966,13 +761,6 @@ object ProjectOptionsFrm: TProjectOptionsFrm
     Options = [ofHideReadOnly, ofAllowMultiSelect]
     Title = 'Open object file'
     Left = 38
-    Top = 342
-  end
-  object dlgPic: TOpenPictureDialog
-    DefaultExt = 'ico'
-    Filter = 'Icons (*.ico)|*.ico'
-    Title = 'Open icon'
-    Left = 3
     Top = 342
   end
   object dlgMakeInclude: TOpenDialog

@@ -61,7 +61,6 @@ type
    procedure ReadTemplateFile(const FileName: String; const TypeImage: string = 'svg');
    function AddUnit: integer;
    procedure RemoveUnit(const index: integer);
-   function Save: boolean;
    property Category: String read fCategory write fCategory;
    property Description: String read fDesc write fDesc;
    property FileName: String read fFileName write fFileName;
@@ -170,28 +169,6 @@ begin
         // units are read on demand
       end;
    end;
-end;
-
-// need to actually save values. (basically TTemplate is readonly right now)
-function TTemplate.Save: boolean;
-var
- fName: String;
-begin
-  result:= FALSE;
-  try
-   if assigned(fTemplate) then
-    begin
-      if (fTemplate.FileName = '') then
-       begin
-         // ** prompt for name place in fname
-         fTemplate.Rename(fName, FALSE);
-       end;
-      fTemplate.UpdateFile;
-      result:= TRUE;
-    end;
-  except
-   // swallow
-  end;
 end;
 
 function TTemplate.AddUnit: integer;

@@ -150,7 +150,7 @@ type
 implementation
 
 uses
-  UITypes, main, devCFG, CPUFrm, MultiLangSupport, Debugger, Utils, Controls, Math;
+  System.UITypes, main, devCFG, CPUFrm, MultiLangSupport, Debugger, Utils, Controls, Math;
 
 // macro for all the things that need to be done when we are finished parsing the current block
 

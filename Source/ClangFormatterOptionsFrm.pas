@@ -73,7 +73,7 @@ type
 implementation
 
 uses
-  UITypes, main, FileCtrl, Version, devCFG, Utils, MultiLangSupport, DataFrm, devPlatform;
+  System.UITypes, main, FileCtrl, Version, devCFG, Utils, MultiLangSupport, DataFrm, devPlatform;
 
 {$R *.lfm}
 

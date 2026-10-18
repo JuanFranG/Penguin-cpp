@@ -218,7 +218,7 @@ function Lang: TdevMultiLangSupport;
 implementation
 
 uses
-  UITypes, LangFrm, Forms, Utils, Version, Controls, devCFG, LConvEncoding, LazUTF8;
+  System.UITypes, LangFrm, Forms, Utils, Version, Controls, devCFG, LConvEncoding, LazUTF8;
 
 var
   fLangSingleton: TdevMultiLangSupport = nil;

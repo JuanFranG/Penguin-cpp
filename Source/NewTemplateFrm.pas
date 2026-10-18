@@ -23,7 +23,7 @@ interface
 
 uses
   LCLIntf, LCLType, LMessages, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, CheckLst, ExtCtrls, Buttons, ComCtrls, Project, ImgList, ExtDlgs, IniFiles, UITypes,
+  StdCtrls, CheckLst, ExtCtrls, Buttons, ComCtrls, Project, ImgList, ExtDlgs, IniFiles, System.UITypes,
   DataFrm;
 
 type

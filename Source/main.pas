@@ -17,14 +17,12 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 }
 
-{$A+,B-,C+,D+,E-,F-,G+,H+,I+,J-,K-,L+,M-,N+,O+,P+,Q-,R-,S-,T-,U-,V+,W-,X+,Y+,Z1}
-{$APPTYPE GUI}
 unit main;
 
 interface
 
 uses
-  LCLIntf, LCLType, LMessages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs, UITypes,
+  LCLIntf, LCLType, LMessages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs, System.UITypes,
   Menus, StdCtrls, ComCtrls, ExtCtrls, Buttons, Utils, Project, Editor, DateUtils, Compiler,
   ActnList, ToolFrm, Debugger, ClassBrowser, CodeCompletion, CppParser, CppTokenizer, SyncObjs,
   StrUtils, SynEditTypes, devFileMonitor, devMonitorTypes, EditorList, devShortcuts, DebugReader,

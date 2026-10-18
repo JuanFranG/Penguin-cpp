@@ -74,7 +74,7 @@ type
 implementation
 
 uses
-  UITypes, main, Editor, Project, StrUtils, MultiLangSupport, devCFG;
+  System.UITypes, main, Editor, Project, StrUtils, MultiLangSupport, devCFG;
 
 {$R *.lfm}
 

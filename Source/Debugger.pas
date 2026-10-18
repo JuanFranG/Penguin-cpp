@@ -83,7 +83,7 @@ type
 implementation
 
 uses
-  UITypes, main, devCFG, Utils, CPUFrm;
+  System.UITypes, main, devCFG, Utils, CPUFrm;
 
 constructor TDebugger.Create;
 begin

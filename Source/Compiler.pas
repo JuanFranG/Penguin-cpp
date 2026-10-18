@@ -126,7 +126,7 @@ type
 implementation
 
 uses
-  UITypes, MultiLangSupport, Macros, devExec, main, StrUtils, Process, devPlatform;
+  System.UITypes, MultiLangSupport, Macros, devExec, main, StrUtils, Process, devPlatform;
 
 procedure TCompiler.DoLogEntry(const msg: String);
 begin

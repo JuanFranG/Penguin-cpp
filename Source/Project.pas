@@ -23,7 +23,7 @@ interface
 
 uses
   IniFiles, SysUtils, Dialogs, ComCtrls, Editor, Contnrs, SynExportHTML, Classes, Controls,
-  Version, Forms, Templates, ProjectTypes, LCLIntf, LCLType, UITypes;
+  Version, Forms, Templates, ProjectTypes, LCLIntf, LCLType, System.UITypes;
 
 type
   TProjUnit = class;

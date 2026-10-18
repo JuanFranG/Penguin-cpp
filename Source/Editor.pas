@@ -25,7 +25,7 @@ uses
   LCLIntf, LCLType, LMessages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   CodeCompletion, CppParser, SynEditExport, Menus, ImgList, ComCtrls, StdCtrls, ExtCtrls, SynEdit,
   SynEditKeyCmds, Version, SynExportHTML, SynEditTextBuffer, Math, StrUtils, SynEditTypes,
-  SynEditHighlighter, DateUtils, CodeToolTip, CBUtils, UITypes, Contnrs, ExtDlgs,
+  SynEditHighlighter, DateUtils, CodeToolTip, CBUtils, System.UITypes, Contnrs, ExtDlgs,
   SynEditCompat, SynEditMarks, LazSynEditText, LazUTF8, LConvEncoding, SynEditFoldedView;
 
 type

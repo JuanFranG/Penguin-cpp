@@ -23,7 +23,7 @@ interface
 
 uses
   LCLIntf, LCLType, SysUtils, Dialogs, StdCtrls, Controls, ComCtrls, Forms, devRun, Version,
-  Project, Utils, ProjectTypes, Classes, Graphics, devCFG;
+  Project, Utils, ProjectTypes, Classes, Graphics, devCFG, MakeNames;
 
 type
   TLogEntryEvent = procedure(const Msg: String) of object;
@@ -170,43 +170,8 @@ begin
     FileSetDate(fMakefile, DateTimeToFileDate(Now)); // fix the "Clock skew detected" warning ;)
 end;
 
-{ Makefiles
-
-  A file name goes to two places with different rules. In a rule (target:
-  prerequisites) make reads it: $ is written $$ and a space \ . In a recipe
-  /bin/sh runs it after make: besides $$, it goes in single quotes, with ' as
-  '\'', so $(...), `...`, ; or quotes in a name are text, never code. Some
-  characters make cannot take in a name at all (CheckMakeNames). }
-
-const
-  // Line breaks and tabs; % (pattern rules); : ; = | and # (rule syntax:
-  // recipe on the same line, variable assignment, order-only prerequisites,
-  // comment); \ ; and * ? [ ] (make expands them as wildcards)
-  MakeUnsafeChars = [#0..#31, '%', ':', ';', '=', '|', '#', '\', '*', '?', '[', ']'];
-
-function MakeUnsafe(const S: String): Boolean;
-var
-  I: integer;
-begin
-  for I := 1 to Length(S) do
-    if S[I] in MakeUnsafeChars then
-      Exit(True);
-  Result := False;
-end;
-
-// A file name in a rule
-function MakeRuleName(const S: String): String;
-begin
-  Result := StringReplace(S, '$', '$$', [rfReplaceAll]);
-  Result := StringReplace(Result, ' ', '\ ', [rfReplaceAll]);
-end;
-
-// A file name or argument in a recipe
-function MakeShellArg(const S: String): String;
-begin
-  Result := StringReplace(S, '$', '$$', [rfReplaceAll]);
-  Result := '''' + StringReplace(Result, '''', '''\''''', [rfReplaceAll]) + '''';
-end;
+{ Makefiles: file names are written with MakeNames (MakeRuleName in rules,
+  MakeShellArg in recipes) }
 
 // An argument of a command split by Process.CommandToList (see Compile)
 function CommandArg(const S: String): String;
@@ -217,20 +182,13 @@ end;
 // Source of unit I relative to the project (the Makefile's folder)
 function UnitSource(Project: TProject; I: integer): String;
 begin
-  Result := ExtractRelativePath(Project.FileName, Project.Units[I].FileName);
+  Result := MakeSourceName(Project.FileName, Project.Units[I].FileName);
 end;
 
-// Its object file: next to it, or in the project's object folder. That folder
-// is usually relative to the project ("obj"); ExtractRelativePath needs both
-// names absolute, or it climbs to / ("../../../../main.o")
+// Its object file: next to it, or in the project's object folder
 function UnitObject(Project: TProject; I: integer): String;
 begin
-  if Project.Options.ObjectOutput <> '' then
-    Result := ExtractRelativePath(Project.FileName,
-      IncludeTrailingPathDelimiter(ExpandFileto(Project.Options.ObjectOutput, Project.Directory)) +
-      ChangeFileExt(ExtractFileName(Project.Units[I].FileName), OBJ_EXT))
-  else
-    Result := ChangeFileExt(UnitSource(Project, I), OBJ_EXT);
+  Result := MakeObjectName(Project.FileName, Project.Units[I].FileName, Project.Options.ObjectOutput, OBJ_EXT);
 end;
 
 // Units that are compiled into objects: C and C++ sources (headers are not,

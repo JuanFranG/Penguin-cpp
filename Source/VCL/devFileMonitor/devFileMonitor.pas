@@ -107,7 +107,7 @@ end;
 procedure TdevFileMonitor.EndUpdate;
 begin
   Dec(fUpdateCount);
-  if fUpdateCount = 0 then
+  if (fUpdateCount = 0) and (fFiles.Count > 0) then
     Activate;
 end;
 
@@ -128,14 +128,13 @@ begin
   end;
 end;
 
+// A new thread for the new list of files; none when no file is left (the
+// last editors close when the IDE quits) or during BeginUpdate/EndUpdate
 procedure TdevFileMonitor.Refresh;
 begin
-  if not Assigned(fMonitor) then
-    Activate
-  else begin
-    Deactivate;
+  Deactivate;
+  if (fFiles.Count > 0) and (fUpdateCount = 0) then
     Activate;
-  end;
 end;
 
 end.

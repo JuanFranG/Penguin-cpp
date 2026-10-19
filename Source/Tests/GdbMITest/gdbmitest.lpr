@@ -215,10 +215,26 @@ begin
   Check((N = '') and (V = '"x = y"'), 'an array element has no name', N + '|' + V);
 end;
 
+procedure TestPassive;
+const
+  Passive: array[0..7] of String = ('x', 'p->next', 'a[i] + 1', 'x == 5', 'a != b', 'x <= y', '"f(x) = 1"',
+    'c == ' + #39 + '=' + #39);
+  Active: array[0..7] of String = ('f(x)', 'x = 5', 'x += 2', 'i++', '--i', 'borrar()', 'a[i]=1', '(int)x');
+var
+  I: Integer;
+begin
+  WriteLn('Expressions that hovering may evaluate:');
+  for I := 0 to High(Passive) do
+    Check(not MayChangeProgram(Passive[I]), 'only looks: ' + Passive[I]);
+  for I := 0 to High(Active) do
+    Check(MayChangeProgram(Active[I]), 'could change the program: ' + Active[I]);
+end;
+
 begin
   TestRecords;
   TestQuote;
   TestValues;
+  TestPassive;
   TestDamaged;
   WriteLn;
   if Failures > 0 then begin

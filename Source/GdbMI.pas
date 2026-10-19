@@ -114,6 +114,13 @@ function SplitGdbValue(const Value: String; Members: TStrings): Boolean;
 // 'name = value' into its two parts; Name is '' for an array element
 procedure SplitGdbMember(const Member: String; out Name, Value: String);
 
+// True when evaluating Expr could change the program: gdb runs function
+// calls, assignments and ++/-- in the program being debugged. Looking at a
+// value (hovering over it, a watch) must not: x, p->next, a[i] + 1 are
+// fine; f(x), x = 5, i++ are not (casts are refused too, with their
+// parentheses). Strings and characters are not looked into.
+function MayChangeProgram(const Expr: String): Boolean;
+
 implementation
 
 { TMIValue }
@@ -539,6 +546,46 @@ begin
   end;
   Name := '';
   Value := Member;
+end;
+
+function MayChangeProgram(const Expr: String): Boolean;
+var
+  I: Integer;
+  C, Prev, Next: Char;
+  Quote: Char;
+begin
+  Quote := #0;
+  I := 1;
+  while I <= Length(Expr) do begin
+    C := Expr[I];
+    if Quote <> #0 then begin
+      if C = '\' then
+        Inc(I)
+      else if C = Quote then
+        Quote := #0;
+    end else begin
+      if I > 1 then
+        Prev := Expr[I - 1]
+      else
+        Prev := #0;
+      if I < Length(Expr) then
+        Next := Expr[I + 1]
+      else
+        Next := #0;
+      case C of
+        '"', #39: Quote := C;
+        '(', ')': Exit(True); // a call (or a cast)
+        '=': // an assignment, but not == != <= >=
+          if not ((Next = '=') or (Prev in ['=', '!', '<', '>'])) then
+            Exit(True);
+        '+', '-':
+          if Next = C then
+            Exit(True); // ++ --
+      end;
+    end;
+    Inc(I);
+  end;
+  Result := False;
 end;
 
 end.

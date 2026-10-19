@@ -141,6 +141,8 @@ uses
 
 const
   MaxWatchChildren = 200; // long arrays: the first ones are enough
+  MaxOutputLines = 5000;  // the debug panel keeps the latest lines
+  MaxLineLength = 65536;  // output without line breaks is cut into lines
 
 constructor TDebugger.Create;
 begin
@@ -397,13 +399,31 @@ end;
 procedure TDebugger.AddOutput(const Text: String);
 var
   P: integer;
+  Lines: TStrings;
 begin
+  Lines := MainForm.DebugOutput.Lines;
   fPartialOutput := fPartialOutput + Text;
-  P := Pos(#10, fPartialOutput);
-  while P > 0 do begin
-    MainForm.DebugOutput.Lines.Add(TrimRight(Copy(fPartialOutput, 1, P - 1)));
-    Delete(fPartialOutput, 1, P);
+  repeat
     P := Pos(#10, fPartialOutput);
+    if (P > 0) and (P <= MaxLineLength + 1) then begin
+      Lines.Add(TrimRight(Copy(fPartialOutput, 1, P - 1)));
+      Delete(fPartialOutput, 1, P);
+    end else if Length(fPartialOutput) > MaxLineLength then begin
+      // a program printing without line breaks
+      Lines.Add(Copy(fPartialOutput, 1, MaxLineLength));
+      Delete(fPartialOutput, 1, MaxLineLength);
+    end else
+      Break;
+  until False;
+  // A program printing in a loop (with no terminal of its own) would fill memory
+  if Lines.Count > MaxOutputLines then begin
+    Lines.BeginUpdate;
+    try
+      while Lines.Count > MaxOutputLines * 9 div 10 do
+        Lines.Delete(0);
+    finally
+      Lines.EndUpdate;
+    end;
   end;
 end;
 

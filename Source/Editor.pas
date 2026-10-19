@@ -237,7 +237,7 @@ type
 implementation
 
 uses
-  main, Project, MultiLangSupport, devCFG, Utils, DataFrm, GotoLineFrm, Macros, Debugger,
+  main, Project, MultiLangSupport, devCFG, Utils, DataFrm, GotoLineFrm, Macros, Debugger, GdbMI,
   IncrementalFrm, CodeCompletionForm, SynEditMiscClasses, CharUtils, EditorPrint, PdfPrint, CodeExport;
 
 { TCloseTabSheet }
@@ -1569,6 +1569,11 @@ var
 
   procedure ShowDebugHint;
   begin
+    // Hovering only looks: gdb would run a call, an assignment or ++ in the
+    // program (a selection like f() or x = 5); the Evaluate tab still can
+    if MayChangeProgram(s) then
+      Exit;
+
     // Add to list
     if devData.WatchHint then
       MainForm.Debugger.AddWatchVar(s);

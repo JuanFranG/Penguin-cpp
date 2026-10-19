@@ -13,7 +13,7 @@ program platformtest;
 
 uses
   {$IFDEF UNIX}cthreads,{$ENDIF}
-  Classes, SysUtils, StrUtils, {$IFDEF UNIX}BaseUnix,{$ENDIF} devPlatform, devFileMonitor, devMonitorTypes;
+  Classes, SysUtils, StrUtils, Process, {$IFDEF UNIX}BaseUnix,{$ENDIF} devPlatform, devFileMonitor, devMonitorTypes;
 
 var
   Failures: Integer = 0;
@@ -92,6 +92,39 @@ begin
   Deadline := GetTickCount64 + Timeout;
   while (R.Events.Count < Count) and (GetTickCount64 < Deadline) do
     CheckSynchronize(50);
+end;
+
+// A pipe whose reader has gone must not end the IDE (SIGPIPE), and the
+// programs the IDE starts must still get SIGPIPE as usual
+procedure TestBrokenPipe;
+var
+  P: TProcess;
+  Data, S: String;
+  Failed: Boolean;
+begin
+  WriteLn('Broken pipes:');
+  P := TProcess.Create(nil);
+  try
+    P.Executable := '/bin/sh';
+    P.Parameters.Add('-c');
+    P.Parameters.Add('exit 0');
+    P.Options := [poUsePipes];
+    P.Execute;
+    P.WaitOnExit;
+    Data := StringOfChar('x', 1 shl 20);
+    Failed := False;
+    try
+      P.Input.WriteBuffer(Data[1], Length(Data));
+    except
+      Failed := True;
+    end;
+    Check(Failed, 'writing to a program that ended fails, and the IDE goes on');
+  finally
+    P.Free;
+  end;
+  S := Run('/bin/sh -c "yes | head -n 1"', '', False);
+  Check((Trim(S) = 'y') and (Pos('Broken pipe', S) = 0), 'a program started by the IDE still gets SIGPIPE',
+    QuotedStr(S));
 end;
 
 procedure TestProcesses;
@@ -254,6 +287,7 @@ begin
   ForceDirectories(Dir);
   try
     TestProcesses;
+    TestBrokenPipe;
     TestEnglishMessages;
     TestConfigDir;
     TestPrivateTempDir;

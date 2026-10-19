@@ -516,4 +516,27 @@ begin
 end;
 {$ENDIF}
 
+{$IFDEF UNIX}
+// Writing to a pipe whose reader has gone (gdb or the formatter crashed)
+// raises SIGPIPE, which by default ends the IDE on the spot. With a handler
+// that does nothing the write just fails (an exception the callers catch).
+// Not SIG_IGN: an ignored signal stays ignored in the programs the IDE
+// starts, a handler goes back to the default there.
+procedure SigPipeHandler(Signal: cint); cdecl;
+begin
+end;
+
+procedure IgnoreBrokenPipes;
+var
+  Action: SigActionRec;
+begin
+  FillChar(Action, SizeOf(Action), 0);
+  Action.sa_handler := SigActionHandler(@SigPipeHandler);
+  FpSigAction(SIGPIPE, @Action, nil);
+end;
+
+initialization
+  IgnoreBrokenPipes;
+{$ENDIF}
+
 end.

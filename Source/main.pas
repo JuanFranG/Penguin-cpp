@@ -825,7 +825,7 @@ type
     procedure actRunTestsExecute(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure ButtonChangeThemeClick(Sender: TObject);
-    procedure RichEdit0Click(Sender: TObject);
+    procedure RecentFileClick(Sender: TObject);
     procedure SpeedButton0Click(Sender: TObject);
     procedure SpeedButton1Click(Sender: TObject);
     procedure SpeedButton2Click(Sender: TObject);
@@ -6622,12 +6622,18 @@ begin
     CompSheet.Caption := Lang[ID_SHEET_COMP];
 end;
 
-procedure TMainForm.RichEdit0Click(Sender: TObject);
+// A recent file on the welcome screen. Its text is a memo over a speed
+// button; Windows passes a click on a disabled control to what lies below,
+// Qt does not, so the memo itself opens the file (Tag: its index in the
+// history)
+procedure TMainForm.RecentFileClick(Sender: TObject);
 var
-  s: string;
+  Index: integer;
 begin
-  s := PMRUItem(dmMain.MRU.Items[RichEdit0.Tag])^.FileName;
-  OpenFileProject(s);
+  Index := TComponent(Sender).Tag;
+  if (Index < 0) or (Index >= dmMain.MRU.Count) then
+    Exit;
+  OpenFileProject(PMRUItem(dmMain.MRU.Items[Index])^.FileName);
   MainPanel.Visible := False;
 end;
 

@@ -6091,13 +6091,16 @@ object MainForm: TMainForm
           OnClick = actEnviroOptionsExecute
         end
         object RichEdit1: TMemo
+          OnClick = RecentFileClick
+          TabStop = False
+          Cursor = crHandPoint
           Tag = 1
           Left = 70
           Top = 339
           Width = 443
           Height = 41
           BorderStyle = bsNone
-          Enabled = False
+          Enabled = True
           Font.Charset = ANSI_CHARSET
           Font.Color = clWindowText
           Font.Height = -13
@@ -6110,13 +6113,16 @@ object MainForm: TMainForm
           Visible = False
         end
         object RichEdit2: TMemo
+          OnClick = RecentFileClick
+          TabStop = False
+          Cursor = crHandPoint
           Tag = 2
           Left = 70
           Top = 389
           Width = 443
           Height = 41
           BorderStyle = bsNone
-          Enabled = False
+          Enabled = True
           Font.Charset = ANSI_CHARSET
           Font.Color = clWindowText
           Font.Height = -13
@@ -6129,13 +6135,16 @@ object MainForm: TMainForm
           Visible = False
         end
         object RichEdit3: TMemo
+          OnClick = RecentFileClick
+          TabStop = False
+          Cursor = crHandPoint
           Tag = 3
           Left = 70
           Top = 440
           Width = 443
           Height = 41
           BorderStyle = bsNone
-          Enabled = False
+          Enabled = True
           Font.Charset = ANSI_CHARSET
           Font.Color = clWindowText
           Font.Height = -13
@@ -6148,13 +6157,16 @@ object MainForm: TMainForm
           Visible = False
         end
         object RichEdit4: TMemo
+          OnClick = RecentFileClick
+          TabStop = False
+          Cursor = crHandPoint
           Tag = 4
           Left = 70
           Top = 491
           Width = 443
           Height = 41
           BorderStyle = bsNone
-          Enabled = False
+          Enabled = True
           Font.Charset = ANSI_CHARSET
           Font.Color = clWindowText
           Font.Height = -13
@@ -6167,12 +6179,15 @@ object MainForm: TMainForm
           Visible = False
         end
         object RichEdit0: TMemo
+          OnClick = RecentFileClick
+          TabStop = False
+          Cursor = crHandPoint
           Left = 71
           Top = 290
           Width = 443
           Height = 41
           BorderStyle = bsNone
-          Enabled = False
+          Enabled = True
           Font.Charset = ANSI_CHARSET
           Font.Color = clWindowText
           Font.Height = -13

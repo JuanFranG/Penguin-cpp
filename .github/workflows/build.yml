@@ -22,11 +22,17 @@ jobs:
             lazarus fpc lcl-qt5-3.0 lcl-nogui-3.0 libqt5pas-dev \
             gcc g++ gdb make python3
 
-      - name: Build the IDE (Qt5, Release and Debug)
+      - name: Build the IDE (Qt5, Release and Debug), with no warnings or notes
         run: |
-          lazbuild -B --ws=qt5 Source/penguin-cpp.lpi
-          lazbuild -B --ws=qt5 --bm=Debug Source/penguin-cpp.lpi
+          set -o pipefail # a failed build fails the step, through tee
+          lazbuild -B --ws=qt5 Source/penguin-cpp.lpi | tee build-release.log
+          lazbuild -B --ws=qt5 --bm=Debug Source/penguin-cpp.lpi | tee build-debug.log
           test -x penguin-cpp && test -x penguin-cpp-debug
+          # Warnings and notes of the IDE's own units (not Lazarus' packages)
+          if grep -E "Source/.*\) (Warning|Note):" build-release.log build-debug.log; then
+            echo "The IDE should build with no warnings or notes"
+            exit 1
+          fi
 
       - name: C++ parser
         run: FPCFLAGS="-Cr -Co -Ct -CR -Sa -gh -gl" Source/Tests/ParserTest/build.sh --run

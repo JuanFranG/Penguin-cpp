@@ -636,6 +636,24 @@ para programas, por bloques:
 5. ✅ **Ventana CPU** (en el bloque 4; falta probarla en Mint): desensamblado
    de la función con `=>` en la instrucción actual (`-data-disassemble`),
    sintaxis Intel o AT&T, registros con su valor decimal, y la pila.
+- ✅ **Revisión de memoria y seguridad de la fase 7:**
+  - Pasar el ratón sobre una selección le pedía a gdb evaluarla, y gdb
+    ejecuta llamadas, asignaciones y `++`/`--` en el programa: seleccionar
+    `f()` o `x = 5` y pasar el ratón las ejecutaba (con "vigilar al pasar el
+    ratón", en cada parada). Ahora esas expresiones se saltan
+    (`MayChangeProgram`, con prueba); la pestaña Evaluar sigue evaluando todo.
+  - Escribir a una tubería cuyo lector murió (gdb caído) mandaba SIGPIPE, que
+    cerraba el IDE. Un manejador vacío lo evita sin cambiar la señal en los
+    programas que el IDE ejecuta (`PlatformTest` prueba las dos cosas).
+  - El panel del depurador corta la salida sin saltos de línea cada 64 KiB y
+    guarda las últimas 5000 líneas.
+  - gdb no carga el `.gdbinit` ni los scripts que traiga la carpeta de un
+    proyecto (su `auto-load safe-path` no la incluye); el archivo con el
+    nombre de la terminal está en la carpeta temporal privada.
+  - Fuera de la fase 7, el log de Mint mostró 32 bytes perdidos en cada
+    compilación: `GetFileSize` no cerraba su `FindFirst` (memoria y una
+    carpeta abierta). Lo mismo en Opciones del editor y en la biblioteca de
+    iconos; corregido.
 6. **Adjuntarse a un proceso**, con un aviso claro cuando Linux no lo
    permite (`/proc/sys/kernel/yama/ptrace_scope`).
 

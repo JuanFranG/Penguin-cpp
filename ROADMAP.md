@@ -594,10 +594,18 @@ para programas, por bloques:
    un registro (respuesta, estado del programa, noticias, texto) con su árbol
    de valores. `Tests/GdbMITest` lo prueba con líneas reales de gdb y con más
    de 3000 cortes y daños: nunca falla ni pierde memoria.
-2. **Motor del depurador:** una interfaz propia del IDE y su versión para
-   gdb. El hilo lector solo lee y pasa los registros al hilo principal.
-   Prueba en el CI con gdb de verdad: breakpoint, paso a paso, evaluar, pila
-   y fin del programa.
+2. 🔄 **Motor del depurador** (falta verlo pasar en el CI con gdb):
+   `DebugEngine.pas` es la interfaz del IDE (tipos neutros: marcos, motivo
+   de parada, eventos y respuestas), y `GdbEngine.pas` su versión para gdb.
+   El hilo lector solo lee y analiza; los registros pasan al hilo principal
+   por una cola protegida, y cada respuesta llega a quien hizo la pregunta
+   por su número (token). gdb arranca en inglés, con `mi-async on` (para
+   pausar un programa que corre) y `startup-with-shell off`: los argumentos
+   llegan tal como se escribieron, sin shell. `Tests/GdbEngineTest` depura de
+   verdad un programa en `hola mundo.c`: breakpoint, evaluar, pila, `next`,
+   `finish`, asignar, código de salida, comandos de consola, un argumento con
+   `$(touch pwned)` que no se ejecuta y la pausa de un ciclo infinito. Sin
+   gdb (macOS) se salta; en la Mac se probó el circuito con un gdb simulado.
 3. **Terminal propia para el programa depurado** (`-inferior-tty-set`): hoy
    escribiría en la tubería de gdb y no podría leer del teclado (`set
    new-console on` solo existe en Windows). Los argumentos se pasan sin

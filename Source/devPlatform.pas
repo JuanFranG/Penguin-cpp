@@ -46,6 +46,10 @@ var
 // IDE reads their messages. The character set (LC_CTYPE, LANG) is kept.
 procedure PrepareProcessEnvironment(P: TProcess; EnglishMessages: Boolean = False);
 
+// The full path of program Name, searched in the PATH the IDE gives the
+// programs it starts (ChildPath); Name itself if it is not found there
+function FindExecutable(const Name: String): String;
+
 // Runs Cmd (a command line; quoted arguments may contain spaces) in WorkDir
 // with stdout and stderr merged, and returns everything it printed. When
 // ShowReturnValue is set, ' <exit code>' is appended. LineOutputFunc receives

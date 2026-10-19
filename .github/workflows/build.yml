@@ -37,6 +37,9 @@ jobs:
       - name: GDB/MI reader
         run: FPCFLAGS="-Cr -Co -Ct -CR -Sa -gh -gl" Source/Tests/GdbMITest/build.sh --run
 
+      - name: Debugger engine with gdb
+        run: FPCFLAGS="-Cr -Co -Ct -CR -Sa -gh -gl" Source/Tests/GdbEngineTest/build.sh --run
+
       - name: Project Makefiles with make and gcc
         run: FPCFLAGS="-Cr -Co -Ct -CR -Sa -gh -gl" Source/Tests/MakefileTest/build.sh --run
 

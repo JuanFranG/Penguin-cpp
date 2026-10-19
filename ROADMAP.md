@@ -118,7 +118,7 @@ al publicarla. Hoy `main` incluye las fases 1 a 6 (`fase6/compilador`).
 | 4b · Identidad visual y temas | `fase4/lazarus`, `fase6/compilador` | ✅ Icono, paleta en paneles, menús y diálogos (Qt5) y esquemas Penguin claro y oscuro, probados en Mint |
 | 5 · Editor (SynEdit de Lazarus) | `fase5/editor` | ✅ Hecha, probada en Mint: impresión, exportación a RTF/TeX y plegado |
 | 6 · Compilación con el gcc de Linux | `fase6/compilador` | 🔄 Probados en Mint: gcc, archivos sueltos, terminal, errores, instancia única y formateadores. Corregido el fallo al abrir proyectos; falta probarlos y quitar lo que es solo de Windows |
-| 7 · Depurador (GDB/MI) | `fase7/depurador` | 🔄 Lector de GDB/MI listo; sigue el motor del depurador |
+| 7 · Depurador (GDB/MI) | `fase7/depurador` | 🔄 Lector de GDB/MI y motor del depurador listos (probados con gdb en el CI); sigue la terminal del programa |
 | 8 · Paquete `.deb` y pulido | — | ⏳ Pendiente |
 | 9 · macOS | — | ⏳ Después del `.deb` |
 
@@ -594,7 +594,7 @@ para programas, por bloques:
    un registro (respuesta, estado del programa, noticias, texto) con su árbol
    de valores. `Tests/GdbMITest` lo prueba con líneas reales de gdb y con más
    de 3000 cortes y daños: nunca falla ni pierde memoria.
-2. 🔄 **Motor del depurador** (falta verlo pasar en el CI con gdb):
+2. ✅ **Motor del depurador** (pasa en el CI con gdb, sin memoria sin liberar):
    `DebugEngine.pas` es la interfaz del IDE (tipos neutros: marcos, motivo
    de parada, eventos y respuestas), y `GdbEngine.pas` su versión para gdb.
    El hilo lector solo lee y analiza; los registros pasan al hilo principal

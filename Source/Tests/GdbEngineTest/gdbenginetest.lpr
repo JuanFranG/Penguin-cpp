@@ -16,7 +16,7 @@ program gdbenginetest;
 
 uses
   {$IFDEF UNIX}cthreads,{$ENDIF}
-  Classes, SysUtils, Process, DebugEngine, GdbEngine;
+  Classes, SysUtils, Process, DebugEngine, GdbEngine, DebugTerminal;
 
 const
   Source: array[0..11] of String = (
@@ -302,6 +302,140 @@ begin
   end;
 end;
 
+// What the pseudo-terminal of script(1) showed so far
+procedure ReadAvailable(P: TProcess; var Text: String);
+var
+  Buffer: array[0..1023] of Char;
+  N: Integer;
+  S: String;
+begin
+  while P.Output.NumBytesAvailable > 0 do begin
+    N := P.Output.Read(Buffer[0], SizeOf(Buffer));
+    if N <= 0 then
+      Break;
+    SetString(S, PChar(@Buffer[0]), N);
+    Text := Text + S;
+  end;
+end;
+
+// Handles engine events and reads the terminal until it shows What
+function WaitForText(P: TProcess; var Text: String; const What: String; Timeout: Integer = 10000): Boolean;
+var
+  Deadline: QWord;
+begin
+  Deadline := GetTickCount64 + QWord(Timeout);
+  repeat
+    ReadAvailable(P, Text);
+    if Pos(What, Text) > 0 then
+      Exit(True);
+    CheckSynchronize(20);
+  until GetTickCount64 >= Deadline;
+  Result := False;
+end;
+
+// The holder of DebugTerminal under script(1), which gives it a
+// pseudo-terminal as a terminal window would; with gdb, a program that reads
+// the keyboard and writes there
+procedure TestTerminal(const Dir: String; WithGdb: Boolean);
+const
+  Reader: array[0..3] of String = (
+    '#include <stdio.h>',
+    'int main(void) {',
+    '    int n = 0; if (scanf("%d", &n) != 1) return 2;',
+    '    printf("doble=%d\n", n * 2); return 0; }');
+var
+  T: TDebugTerminal;
+  P: TProcess;
+  E: TGdbEngine;
+  Command: TStringList;
+  Error, Tty, Text, Output, Line: String;
+  I: Integer;
+  Deadline: QWord;
+  L: TStringList;
+begin
+  WriteLn('A terminal for the program:');
+  if ExeSearch('script', GetEnvironmentVariable('PATH')) = '' then begin
+    WriteLn('  (skipped: script is not installed)');
+    Exit;
+  end;
+  T := TDebugTerminal.Create;
+  P := TProcess.Create(nil);
+  Command := TStringList.Create;
+  E := nil;
+  try
+    Check(T.Prepare(Error), 'a private file for the terminal name', Error);
+    TDebugTerminal.HolderCommand(T.FileName, 'Penguin cpp: programa depurado', Command);
+    P.Executable := ExeSearch('script', GetEnvironmentVariable('PATH'));
+{$IFDEF DARWIN}
+    P.Parameters.Add('-q');
+    P.Parameters.Add('/dev/null');
+    P.Parameters.AddStrings(Command);
+{$ELSE}
+    Line := '';
+    for I := 0 to Command.Count - 1 do
+      Line := Line + ' ' + ShellArgument(Command[I]);
+    P.Parameters.Add('-qfc');
+    P.Parameters.Add(Line);
+    P.Parameters.Add('/dev/null');
+{$ENDIF}
+    P.Options := [poUsePipes, poStderrToOutPut];
+    P.Execute;
+    Text := '';
+
+    Tty := T.WaitForTty(5000);
+    Check(Copy(Tty, 1, 5) = '/dev/', 'the holder tells its terminal', Tty);
+    Check(WaitForText(P, Text, 'programa depurado', 3000), 'it shows its header');
+
+    if WithGdb and (Tty <> '') then begin
+      L := TStringList.Create;
+      try
+        L.AddStrings(Reader);
+        L.SaveToFile(Dir + 'lee.c');
+      finally
+        L.Free;
+      end;
+      RunCommandInDir(Dir, 'gcc', ['-g', '-o', Dir + 'lee', Dir + 'lee.c'], Output, [poStderrToOutPut]);
+      E := TGdbEngine.Create('', False);
+      E.OnRunning := R.OnRunning;
+      E.OnExited := R.OnExited;
+      E.OnOutput := R.OnOutput;
+      Check(E.Start(Error), 'gdb starts', Error);
+      R.Reset;
+      E.LoadProgram(Dir + 'lee', R.OnDone);
+      Wait(R.Answered);
+      E.SetTerminal(Tty);
+      R.Exited := False;
+      R.Output := '';
+      E.Run;
+      Check(Wait(R.Running), 'the program runs');
+      Sleep(300);
+      Line := '21' + LineEnding;
+      P.Input.Write(Line[1], Length(Line)); // typed in its terminal
+      Check(WaitForText(P, Text, 'doble=42'), 'it reads the keyboard and writes in its terminal',
+        Copy(Text, 1, 300));
+      Check(Wait(R.Exited) and (R.ExitCode = 0), 'and ends', IntToStr(R.ExitCode));
+      Check(Pos('doble=42', R.Output) = 0, 'its output is not mixed with gdb''s');
+      FreeAndNil(E);
+    end;
+
+    T.ProgramEnded('El programa terminó: 0');
+    Check(WaitForText(P, Text, 'El programa terminó: 0', 3000), 'the end message shows in the terminal');
+    Line := LineEnding;
+    P.Input.Write(Line[1], Length(Line)); // Enter
+    Deadline := GetTickCount64 + 5000;
+    while P.Running and (GetTickCount64 < Deadline) do
+      Sleep(50);
+    Check(not P.Running, 'Enter closes it');
+  finally
+    E.Free;
+    if P.Running then
+      P.Terminate(1);
+    Command.Free;
+    P.Free;
+    T.Free;
+  end;
+end;
+
 procedure TestGdbEnds;
 var
   E: TGdbEngine;
@@ -345,9 +479,12 @@ begin
     if Found('gdb') and Found('gcc') then begin
       TestDebugSession(Dir);
       TestInterrupt(Dir);
+      TestTerminal(Dir, True);
       TestGdbEnds;
-    end else
+    end else begin
       WriteLn('(the debugging part is skipped: gdb or gcc is not installed)');
+      TestTerminal(Dir, False);
+    end;
   finally
     RemoveTree(Dir);
     R.Free;

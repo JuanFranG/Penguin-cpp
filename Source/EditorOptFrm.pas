@@ -1417,9 +1417,13 @@ var
   SR: TSearchRec;
 begin
   if FindFirst(devDirs.Config + '*' + SYNTAX_EXT, faAnyFile, SR) = 0 then
-    repeat
-      cboQuickColor.Items.Add(StringReplace(SR.Name, SYNTAX_EXT, '', [rfIgnoreCase]));
-    until FindNext(SR) <> 0;
+    try
+      repeat
+        cboQuickColor.Items.Add(StringReplace(SR.Name, SYNTAX_EXT, '', [rfIgnoreCase]));
+      until FindNext(SR) <> 0;
+    finally
+      FindClose(SR);
+    end;
 end;
 
 procedure TEditorOptForm.OnGutterClick(Sender: TObject; X, Y, Line: Integer; Mark: TSynEditMark);

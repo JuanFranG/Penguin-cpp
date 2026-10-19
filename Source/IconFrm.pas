@@ -98,6 +98,7 @@ begin
 				// pase filename with full path
 				Self.AddItem(IncludeTrailingPathDelimiter(devDirs.Icons)+ srec.Name);
 			until FindNext(SRec) <> 0;
+			FindClose(SRec);
 		end;
 	finally
 		Items.EndUpdate;

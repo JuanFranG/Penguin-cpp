@@ -118,9 +118,9 @@ function GetPrettyLine(hwnd: TListView; i: integer = -1): String; // removes #10
 
 function IsWindows64: boolean;
 
-function GetFileSize(const FileName: String): integer;
+function GetFileSize(const FileName: String): Int64;
 
-function FormatFileSize(Size: integer): String;
+function FormatFileSize(Size: Int64): String;
 
 function ShortenLogOutput(const Input: String): String;
 
@@ -1099,17 +1099,20 @@ begin
     Directory := Chosen;
 end;
 
-function GetFileSize(const FileName: String): integer;
+function GetFileSize(const FileName: String): Int64;
 var
   F: TSearchRec;
 begin
+  Result := 0;
   if FindFirst(FileName, faAnyFile, F) = 0 then
-    Result := F.Size
-  else
-    Result := 0;
+    try
+      Result := F.Size;
+    finally
+      FindClose(F); // its memory and an open folder on Linux (one per compile)
+    end;
 end;
 
-function FormatFileSize(Size: integer): String;
+function FormatFileSize(Size: Int64): String;
 begin
   if Size = 0 then
     Result := '0'

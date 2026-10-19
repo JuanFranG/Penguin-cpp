@@ -164,7 +164,6 @@ end;
 
 procedure TEnviroForm.btnOkClick(Sender: TObject);
 var
-  I: integer;
   s: String;
 begin
   with devData do begin

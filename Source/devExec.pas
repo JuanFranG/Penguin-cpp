@@ -61,8 +61,8 @@ type
     fIsRunning: boolean;
     fOnTermEvent: TNotifyEvent;
     procedure TerminateEvent(Sender: TObject);
-    constructor Create;
   public
+    constructor Create; // use devExecutor, which creates the only one
     destructor Destroy; override;
     procedure Reset;
     procedure ExecuteAndWatch(sFileName, sParams, sPath: String; bVisible: boolean; iTimeOut: Cardinal; OnTermEvent:

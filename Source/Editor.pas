@@ -26,7 +26,7 @@ uses
   CodeCompletion, CppParser, SynEditExport, Menus, ImgList, ComCtrls, StdCtrls, ExtCtrls, SynEdit,
   SynEditKeyCmds, Version, SynExportHTML, SynEditTextBuffer, Math, StrUtils, SynEditTypes,
   SynEditHighlighter, DateUtils, CodeToolTip, CBUtils, System.UITypes, Contnrs, ExtDlgs,
-  SynEditCompat, SynEditMarks, LazSynEditText, LazUTF8, LConvEncoding, SynEditFoldedView;
+  SynEditCompat, SynEditMarks, LazSynEditText, LazUTF8, LConvEncoding, SynEditFoldedView, SynEditMiscClasses;
 
 type
   TCloseTabSheet = class(TTabSheet)
@@ -66,14 +66,15 @@ type
     procedure DoCommentInline;
     procedure MoveLines(Down: Boolean);
     procedure DuplicateLine;
-    function GetCaretX: Integer;
-    procedure SetCaretX(Value: Integer);
-    function GetCaretXY: TBufferCoord;
-    procedure SetCaretXY(const Value: TBufferCoord);
-    function GetBlockBegin: TBufferCoord;
-    procedure SetBlockBegin(const Value: TBufferCoord);
-    function GetBlockEnd: TBufferCoord;
-    procedure SetBlockEnd(const Value: TBufferCoord);
+    // Dev-C++'s TBufferCoord versions of SynEdit's TPoint ones (on purpose)
+    function GetCaretX: Integer; reintroduce;
+    procedure SetCaretX(Value: Integer); reintroduce;
+    function GetCaretXY: TBufferCoord; reintroduce;
+    procedure SetCaretXY(const Value: TBufferCoord); reintroduce;
+    function GetBlockBegin: TBufferCoord; reintroduce;
+    procedure SetBlockBegin(const Value: TBufferCoord); reintroduce;
+    function GetBlockEnd: TBufferCoord; reintroduce;
+    procedure SetBlockEnd(const Value: TBufferCoord); reintroduce;
     function GetDisplayXY: TDisplayCoord;
   public
     constructor Create(AOwner: TComponent); override;
@@ -177,6 +178,8 @@ type
     procedure EditorExit(Sender: TObject);
     procedure EditorGutterClick(Sender: TObject; X, Y, Line: integer; mark: TSynEditMark);
     procedure EditorSpecialLineColors(Sender: TObject; Line: integer; var Special: boolean; var FG, BG: TColor);
+    procedure EditorSpecialLineMarkup(Sender: TObject; Line: integer; var Special: boolean;
+      Markup: TSynSelectedColor);
     procedure EditorEnter(Sender: TObject);
     procedure CompletionKeyPress(Sender: TObject; var Key: Char);
     procedure CompletionInsert(const append: String);
@@ -238,7 +241,7 @@ implementation
 
 uses
   main, Project, MultiLangSupport, devCFG, Utils, DataFrm, GotoLineFrm, Macros, Debugger, GdbMI,
-  IncrementalFrm, CodeCompletionForm, SynEditMiscClasses, CharUtils, EditorPrint, PdfPrint, CodeExport;
+  IncrementalFrm, CodeCompletionForm, CharUtils, EditorPrint, PdfPrint, CodeExport;
 
 { TCloseTabSheet }
 constructor TCloseTabSheet.Create(AOwner:TComponent);
@@ -446,7 +449,7 @@ begin
   fText.OnMouseUp := EditorMouseUp;
   fText.OnMouseMove := EditorMouseMove;
   fText.OnGutterClick := EditorGutterClick;
-  fText.OnSpecialLineColors := EditorSpecialLineColors;
+  fText.OnSpecialLineMarkup := EditorSpecialLineMarkup;
   fText.OnEnter := EditorEnter;
   fText.OnExit := EditorExit;
   fText.OnKeyPress := EditorKeyPress;
@@ -563,6 +566,25 @@ begin
         Result := I;
         break;
       end;
+end;
+
+// SynEdit's OnSpecialLineColors is deprecated; this feeds the colors to the
+// markup exactly as SynEdit did with it
+procedure TEditor.EditorSpecialLineMarkup(Sender: TObject; Line: integer; var Special: boolean;
+  Markup: TSynSelectedColor);
+var
+  FG, BG: TColor;
+begin
+  if Special then begin
+    FG := Markup.Foreground;
+    BG := Markup.Background;
+  end else begin
+    FG := clNone;
+    BG := clNone;
+  end;
+  EditorSpecialLineColors(Sender, Line, Special, FG, BG);
+  Markup.Foreground := FG;
+  Markup.Background := BG;
 end;
 
 procedure TEditor.EditorSpecialLineColors(Sender: TObject; Line: Integer; var Special: Boolean; var FG, BG: TColor);
@@ -761,7 +783,7 @@ begin
     end;
 
     SynExporterHTML.Title := ExtractFileName(SaveFileName);
-    SynExporterHTML.CreateHTMLFragment := False;
+    SynExporterHTML.Options := SynExporterHTML.Options - [heoFragmentOnly]; // a whole page
     SynExporterHTML.ExportAsText := True;
     SynExporterHTML.UseBackground := True;
     SynExporterHTML.Font := fText.Font;

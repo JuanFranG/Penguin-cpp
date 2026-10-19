@@ -237,13 +237,13 @@ end;
 
 procedure TAStyleFormatterOptionsForm.CommandChange(Sender: TObject);
 var
-  AStyleOutput, DummyFileName: String;
+  DummyFileName: String;
 begin
   if fCreating then
     Exit;
   // Apply to dummy file
   DummyFileName := FormatterTempFile('DummyInput.cpp');
-  AStyleOutput := devFormatterAStyle.FormatFile(DummyFileName, memFullCommand.Text);
+  devFormatterAStyle.FormatFile(DummyFileName, memFullCommand.Text); // formats the file in place
 
   // Check if formatting finished correctly
   if FileExists(DummyFileName) then begin

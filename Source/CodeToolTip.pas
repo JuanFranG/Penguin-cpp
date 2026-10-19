@@ -119,7 +119,7 @@ type
 implementation
 
 uses
-  Types, devCFG, SynEditCompat;
+  Types, Math, devCFG, SynEditCompat;
 
 // contains the up/down buttons
 // I tried to draw them using DrawFrameControl first,
@@ -131,6 +131,41 @@ resourcestring
 
 var
   Identifiers: array[#0..#255] of boolean;
+
+// A position in the text as one string (0-based, line breaks counted) to
+// a line and column, and back. SynEdit's CharIndexToRowCol and
+// RowColToCharIndex do the same and are deprecated.
+function CharIndexToRowCol(Editor: TCustomSynEdit; Index: integer): TPoint;
+var
+  X, Y, Chars, LineEndLen: integer;
+begin
+  X := 0;
+  Y := 0;
+  Chars := 0;
+  LineEndLen := Length(LineEnding);
+  while Y < Editor.Lines.Count do begin
+    X := Length(Editor.Lines[Y]);
+    if Chars + X + LineEndLen > Index then begin
+      X := Index - Chars;
+      Break;
+    end;
+    Inc(Chars, X + LineEndLen);
+    X := 0;
+    Inc(Y);
+  end;
+  Result := Point(X + 1, Y + 1);
+end;
+
+function RowColToCharIndex(Editor: TCustomSynEdit; RowCol: TPoint): integer;
+var
+  I: integer;
+begin
+  Result := 0;
+  RowCol.Y := Min(Editor.Lines.Count, RowCol.Y) - 1;
+  for I := 0 to RowCol.Y - 1 do
+    Result := Result + Length(Editor.Lines[I]) + Length(LineEnding);
+  Result := Result + RowCol.X;
+end;
 
 procedure MakeIdentTable;
 var
@@ -652,9 +687,9 @@ begin
 
   // this displays the rect below the current line and at the same position where the token begins
   Pt.X :=
-    FEditor.ClientToScreen(FEditor.RowColumnToPixels(FEditor.LogicalToPhysicalPos(FEditor.CharIndexToRowCol(FTokenPos)))).X;
+    FEditor.ClientToScreen(FEditor.RowColumnToPixels(FEditor.LogicalToPhysicalPos(CharIndexToRowCol(FEditor, FTokenPos)))).X;
   Pt.Y :=
-    FEditor.ClientToScreen(FEditor.RowColumnToPixels(FEditor.LogicalToPhysicalPos(FEditor.CharIndexToRowCol(FFunctionEnd)))).Y;
+    FEditor.ClientToScreen(FEditor.RowColumnToPixels(FEditor.LogicalToPhysicalPos(CharIndexToRowCol(FEditor, FFunctionEnd)))).Y;
 
   ActivateHint(Rect(Pt.X,
     Pt.Y + FEditor.LineHeight + 2,
@@ -694,7 +729,7 @@ var
 begin
 
   // get the current position in the collapsed text
-  CaretPos := FEditor.RowColToCharIndex(FEditor.CaretXY);
+  CaretPos := RowColToCharIndex(FEditor, FEditor.CaretXY);
   CurPos := CaretPos;
 
   // get a pointer to the collapsed text
@@ -797,7 +832,7 @@ begin
     Dec(CurPos);
 
   // Get the name of the function we're about to show
-  FuncStartXY := FEditor.CharIndexToRowCol(CurPos - 1);
+  FuncStartXY := CharIndexToRowCol(FEditor, CurPos - 1);
   S := FEditor.GetWordAtRowCol(FuncStartXY);
 
   // Don't bother scanning the database when there's no identifier to scan for

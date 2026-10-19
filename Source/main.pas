@@ -1971,7 +1971,7 @@ begin
   end;
 
   // Open the file that belongs to said node
-  if Assigned(Node) and (PtrInt(Node.Data) <> -1) then begin
+  if Assigned(Node) and (Node.Data <> Pointer(-1)) then begin
 
     // Do not accept the project node
     if (Node.Level >= 1) then begin
@@ -3236,7 +3236,6 @@ end;
 procedure TMainForm.actDebugExecute(Sender: TObject);
 var
   e: TEditor;
-  i: integer;
   filepath: String;
   DebugEnabled, StripEnabled: boolean;
 begin
@@ -4497,7 +4496,6 @@ var
   PageIndex: integer;
   SenderPageControl: TPageControl;
   e: TEditor;
-  PageControl: TPageControl;
 begin
   SenderPageControl := TPageControl(Sender);
   if Button = mbRight then begin // select new tab even with right mouse button
@@ -4516,9 +4514,7 @@ begin
   end
   else // see if it's a drag operation
   begin
-    PageControl := Sender as TPageControl;
-
-    if Button = mbLeft then
+    if (Button = mbLeft) and (SenderPageControl.ActivePageIndex >= 0) then
       SenderPageControl.Pages[SenderPageControl.ActivePageIndex].BeginDrag(False);
   end;
 end;
@@ -5778,8 +5774,6 @@ begin
 end;
 
 procedure TMainForm.actAttachProcessExecute(Sender: TObject);
-var
-  s: String;
 begin
   PrepareDebugger;
   if assigned(fProject) then begin
@@ -6500,7 +6494,7 @@ begin
     LineToDraw := Item.SubItems[SubItem - 1];
 
     // Make text location appear 'native', like Windows would draw it
-    OffsetRect(Rect, 4, 2);
+    Types.OffsetRect(Rect, 4, 2);
 
     // Get location of bold part
     BoldStart := StrToIntDef(Item.SubItems[1], 1);

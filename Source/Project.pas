@@ -1553,7 +1553,7 @@ begin
     sl.Add('<tr><td><b><u>Filename</u></b></td><td><b><u>Location</u></b></td><td><b><u>Size</u></b></td></tr>');
 
     // Use this one to export files to HTML (copy from TEditor.ExportToHTML)
-    SynExporterHTML.CreateHTMLFragment := False;
+    SynExporterHTML.Options := SynExporterHTML.Options - [heoFragmentOnly]; // a whole page
     SynExporterHTML.ExportAsText := True;
     SynExporterHTML.UseBackground := True;
     SynExporterHTML.Font := devEditor.Font;

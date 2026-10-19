@@ -735,7 +735,6 @@ end;
 procedure TCppTokenizer.TokenizeBuffer(StartAt: PChar);
 var
   S: String;
-  Command: String;
   bSkipBlocks: boolean;
   {  I: integer;
     DebugFile: TFileStream;
@@ -752,7 +751,6 @@ begin
 
   S := '';
   bSkipBlocks := False;
-  Command := '';
   fCurrLine := 1;
   repeat
     fLastToken := S;

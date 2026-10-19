@@ -44,8 +44,8 @@ type
     fDefaultLangStrings: TStringList;
     function GetString(ID: integer): String;
     function GetLangName: String;
-    constructor Create;
   public
+    constructor Create; // use Lang, which creates the only one
     destructor Destroy; override;
     procedure SelectLanguage;
     procedure CheckLanguageFiles;
@@ -210,7 +210,7 @@ type
       //(CPID: 57010; CPName: 'x-iscii-gu'),
       //(CPID: 57011; CPName: 'x-iscii-pa'),
       //(CPID: 65000; CPName: 'utf-7'),
-      (CPID: 65001; CPName: 'utf-8')
+      (CPID: 65001; CPName: 'utf-8'; CPLang: '')
     );
 
 function Lang: TdevMultiLangSupport;

@@ -71,7 +71,6 @@ procedure TAddToDoForm.btnOKClick(Sender: TObject);
 var
   e: TEditor;
   I: integer;
-  st: TBufferCoord;
   Line: integer;
   LineText: String;
   Hdr: String;
@@ -85,8 +84,6 @@ begin
 
   Line := e.Text.CaretY - 1;
   LineText := e.Text.Lines[Line];
-  st.Line := Line + 1;
-  st.Char := 1;
 
   I := 1;
   while (I <= Length(LineText)) and CharInSet(LineText[I], [#9, ' ']) do

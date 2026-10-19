@@ -1018,6 +1018,8 @@ procedure TCppParser.HandleOtherTypedefs;
 var
   NewType, OldType: String;
 begin
+  NewType := '';
+  OldType := '';
   // Skip typedef word
   Inc(fIndex);
 
@@ -1644,6 +1646,7 @@ var
   I: integer;
 begin
   EnumName := '';
+  Args := '';
   Inc(fIndex); //skip 'enum'
   if fTokenizer[fIndex]^.Text[1] = '{' then begin // enum {...} NAME
 

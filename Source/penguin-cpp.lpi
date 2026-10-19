@@ -61,6 +61,7 @@
             <Verbosity>
               <ShowHints Value="False"/>
             </Verbosity>
+            <CustomOptions Value="-vm6058"/>
           </Other>
         </CompilerOptions>
       </Item>
@@ -109,6 +110,7 @@
       <Verbosity>
         <ShowHints Value="False"/>
       </Verbosity>
+      <CustomOptions Value="-vm6058"/>
     </Other>
   </CompilerOptions>
 </CONFIG>

@@ -118,7 +118,7 @@ al publicarla. Hoy `main` incluye las fases 1 a 6 (`fase6/compilador`).
 | 4b · Identidad visual y temas | `fase4/lazarus`, `fase6/compilador` | ✅ Icono, paleta en paneles, menús y diálogos (Qt5) y esquemas Penguin claro y oscuro, probados en Mint |
 | 5 · Editor (SynEdit de Lazarus) | `fase5/editor` | ✅ Hecha, probada en Mint: impresión, exportación a RTF/TeX y plegado |
 | 6 · Compilación con el gcc de Linux | `fase6/compilador` | 🔄 Probados en Mint: gcc, archivos sueltos, terminal, errores, instancia única y formateadores. Corregido el fallo al abrir proyectos; falta probarlos y quitar lo que es solo de Windows |
-| 7 · Depurador (GDB/MI) | `fase7/depurador` | 🔄 Lector de GDB/MI y motor del depurador listos (probados con gdb en el CI); sigue la terminal del programa |
+| 7 · Depurador (GDB/MI) | `fase7/depurador` | 🔄 Lector de GDB/MI, motor y terminal del programa listos (probados con gdb en el CI); sigue conectarlos al IDE |
 | 8 · Paquete `.deb` y pulido | — | ⏳ Pendiente |
 | 9 · macOS | — | ⏳ Después del `.deb` |
 
@@ -609,11 +609,16 @@ para programas, por bloques:
    `finish`, asignar, código de salida, comandos de consola, un argumento con
    `$(touch pwned)` que no se ejecuta y la pausa de un ciclo infinito. Sin
    gdb (macOS) se salta; en la Mac se probó el circuito con un gdb simulado.
-3. **Terminal propia para el programa depurado** (`-inferior-tty-set`): hoy
-   escribiría en la tubería de gdb y no podría leer del teclado (`set
-   new-console on` solo existe en Windows). Con los argumentos entre
-   comillas simples (bloque 2) se cierra la excepción anotada en
-   `SECURITY.md`.
+3. ✅ **Terminal propia para el programa depurado** (`DebugTerminal.pas`,
+   pasa en el CI): la entrada y salida de gdb son tuberías del IDE, así que
+   el programa no podía leer el teclado ni mostrar su salida (`set
+   new-console on` solo existe en Windows). El IDE abre la terminal del
+   usuario con un pequeño script que escribe el nombre de su terminal
+   (`/dev/pts/N`) en un archivo de la carpeta temporal privada, para
+   `-inferior-tty-set`; espera sin leer el teclado, así lo que se escribe
+   llega al programa; y al final muestra el mensaje del IDE y espera Enter.
+   La prueba lo corre bajo `script(1)`: con gdb, el programa lee un número
+   escrito en su terminal y responde ahí, sin mezclarse con gdb.
 4. **El IDE sobre el motor:** breakpoints y línea activa, paso a paso,
    continuar y detener, variables vigiladas como árbol (`-var-create`), valor
    al pasar el ratón, la pestaña Evaluar, la caja de comandos de gdb, señales

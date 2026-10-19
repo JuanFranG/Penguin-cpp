@@ -53,7 +53,7 @@ type
     fErrCount: integer;
     fCheckSyntax: Boolean;
     fWarnCount: integer;
-    fStartTime: cardinal;
+    fStartTime: QWord; // GetTickCount64: a cardinal overflows after 49.7 days of uptime
     fShowOutputInfo: boolean;
     fCompilerSet: TdevCompilerSet;
     procedure DoLogEntry(const msg: String);

@@ -853,7 +853,7 @@ type
     fItemPopup: TPopupMenu; // shows a main menu item's submenu at the mouse
     fRunEndAction: TRunEndAction; // determines what to do when program execution finishes
     fCompSuccessAction: TCompSuccessAction; // determines what to do when compilation finishes
-    fParseStartTime: Cardinal; // TODO: move to CppParser?
+    fParseStartTime: QWord; // GetTickCount64: a Cardinal overflows after 49.7 days of uptime
     fOldCompilerToolbarIndex: integer;
     fAutoSaveTimer: TTimer;
     fProject: TProject;
@@ -1031,6 +1031,8 @@ begin
 
   // A compile still running would call back into objects freed below
   fCompiler.StopAndWait;
+  // So would a debugging session (it walks the editors when it stops)
+  fDebugger.Stop;
 
   // Remember toolbar placement
   devData.LeftActivePage := LeftPageControl.ActivePageIndex;

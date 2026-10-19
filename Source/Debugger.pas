@@ -65,6 +65,7 @@ type
     fWatchQueue: TStringList; // watches still to evaluate after a stop
     fWatchPending: String;    // the one being evaluated
     fSignalText: String;
+    fErrorText: String;
     procedure EngineStopped(Sender: TObject; const Info: TDebugStopInfo);
     procedure EngineRunning(Sender: TObject);
     procedure EngineExited(Sender: TObject; ExitCode: Integer);
@@ -78,6 +79,7 @@ type
     procedure EvaluateNextWatch;
     procedure ShowWatchValue(Watch: PWatchVar; const Value: String);
     procedure ShowSignal(Data: PtrInt);
+    procedure ShowErrorAndStop(Data: PtrInt);
     procedure AddOutput(const Text: String);
     function FindWatch(const Name: String): PWatchVar;
     function StartEngine: Boolean;
@@ -315,11 +317,19 @@ begin
   Application.HintHidePause := 2500;
 end;
 
+// Answers arrive while the engine hands over gdb's records: a modal dialog
+// there would handle later records inside it, out of order. So it waits.
+procedure TDebugger.ShowErrorAndStop(Data: PtrInt);
+begin
+  Stop;
+  MessageDlg(fErrorText, mtError, [mbOK], 0);
+end;
+
 procedure TDebugger.ProgramLoaded(Ok: Boolean; const Error: String);
 begin
   if not Ok then begin
-    MessageDlg(Error, mtError, [mbOK], 0);
-    Stop;
+    fErrorText := Error;
+    Application.QueueAsyncCall(ShowErrorAndStop, 0);
   end;
 end;
 
@@ -327,8 +337,8 @@ procedure TDebugger.Attached(Ok: Boolean; const Error: String);
 begin
   if not Ok then begin
     // Usually Linux' ptrace_scope: only a debugger's own children can be attached to
-    MessageDlg(Error, mtError, [mbOK], 0);
-    Stop;
+    fErrorText := Error;
+    Application.QueueAsyncCall(ShowErrorAndStop, 0);
   end;
 end;
 
@@ -657,6 +667,13 @@ procedure TDebugger.WatchEvaluated(Ok: Boolean; const Value: String);
 var
   Watch: PWatchVar;
 begin
+  if not fPaused then begin
+    // It runs again (Continue while the watches were being evaluated): gdb
+    // could not answer; the next stop evaluates them all again
+    fWatchPending := '';
+    fWatchQueue.Clear;
+    Exit;
+  end;
   Watch := FindWatch(fWatchPending);
   if Assigned(Watch) then begin
     Watch^.Available := Ok;

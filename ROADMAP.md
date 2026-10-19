@@ -599,17 +599,20 @@ para programas, por bloques:
    de parada, eventos y respuestas), y `GdbEngine.pas` su versión para gdb.
    El hilo lector solo lee y analiza; los registros pasan al hilo principal
    por una cola protegida, y cada respuesta llega a quien hizo la pregunta
-   por su número (token). gdb arranca en inglés, con `mi-async on` (para
-   pausar un programa que corre) y `startup-with-shell off`: los argumentos
-   llegan tal como se escribieron, sin shell. `Tests/GdbEngineTest` depura de
+   por su número (token). gdb arranca en inglés y con `mi-async on` (para
+   pausar un programa que corre). gdb inicia el programa con `$SHELL`; sin
+   shell (`startup-with-shell off`) parte los argumentos en cada espacio,
+   con comillas o sin ellas, así que el shell se queda, siempre `/bin/sh`, y
+   cada argumento va entre comillas simples: llega tal como se escribió y
+   nada en él se ejecuta. `Tests/GdbEngineTest` depura de
    verdad un programa en `hola mundo.c`: breakpoint, evaluar, pila, `next`,
    `finish`, asignar, código de salida, comandos de consola, un argumento con
    `$(touch pwned)` que no se ejecuta y la pausa de un ciclo infinito. Sin
    gdb (macOS) se salta; en la Mac se probó el circuito con un gdb simulado.
 3. **Terminal propia para el programa depurado** (`-inferior-tty-set`): hoy
    escribiría en la tubería de gdb y no podría leer del teclado (`set
-   new-console on` solo existe en Windows). Los argumentos se pasan sin
-   shell (`startup-with-shell off`), lo que cierra la excepción anotada en
+   new-console on` solo existe en Windows). Con los argumentos entre
+   comillas simples (bloque 2) se cierra la excepción anotada en
    `SECURITY.md`.
 4. **El IDE sobre el motor:** breakpoints y línea activa, paso a paso,
    continuar y detener, variables vigiladas como árbol (`-var-create`), valor

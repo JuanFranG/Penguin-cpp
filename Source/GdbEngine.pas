@@ -10,12 +10,16 @@
     commands (by their token) and raises the events. Nothing here touches the
     interface, so the engine also runs in a console test (Tests/GdbEngineTest).
 
-    gdb starts with:
-      mi-async on            the program runs while gdb still takes commands,
-                             so Interrupt can pause it
-      startup-with-shell off the program starts directly, not through
-                             /bin/sh: its arguments are text, never commands
-      confirm off, width 0, height 0, and English messages (LC_MESSAGES=C)
+    gdb starts with mi-async on (the program runs while gdb still takes
+    commands, so Interrupt can pause it), confirm off, width 0, height 0,
+    English messages (LC_MESSAGES=C) and SHELL=/bin/sh.
+
+    gdb starts the program through $SHELL. Without a shell
+    (startup-with-shell off) it splits the arguments at every space, quotes
+    or not, so an argument with a space could not be passed at all. So the
+    shell stays, it is always /bin/sh (csh or fish quote otherwise), and each
+    argument goes in single quotes (ShellArgument): /bin/sh reads it as text,
+    and $(...), `...` or ; in it never run.
 }
 
 unit GdbEngine;
@@ -111,26 +115,28 @@ type
     procedure Execute(const Command: String; Handler: TDebugDoneHandler = nil);
   end;
 
-// One argument as gdb splits a command line without a shell (gdb_buildargv):
-// in double quotes, with \ and " escaped
-function GdbArgument(const Arg: String): String;
+// One argument for /bin/sh: in single quotes, with ' written '\''; a line
+// break becomes a space (gdb takes the arguments as one line)
+function ShellArgument(const Arg: String): String;
 
 implementation
 
 uses
   devPlatform;
 
-function GdbArgument(const Arg: String): String;
+function ShellArgument(const Arg: String): String;
 var
   I: Integer;
 begin
-  Result := '"';
-  for I := 1 to Length(Arg) do begin
-    if Arg[I] in ['"', '\'] then
-      Result := Result + '\';
-    Result := Result + Arg[I];
-  end;
-  Result := Result + '"';
+  Result := '''';
+  for I := 1 to Length(Arg) do
+    case Arg[I] of
+      '''': Result := Result + '''\''''';
+      #10, #13: Result := Result + ' ';
+    else
+      Result := Result + Arg[I];
+    end;
+  Result := Result + '''';
 end;
 
 // gdb writes exit codes in octal ("03", "0377")
@@ -448,6 +454,7 @@ end;
 function TGdbEngine.Start(out Error: String): Boolean;
 var
   Exe: String;
+  I: Integer;
 begin
   Error := '';
   Result := False;
@@ -468,6 +475,12 @@ begin
     fProcess.Parameters.Add('--nx');
   fProcess.Options := [poUsePipes, poStderrToOutPut];
   PrepareProcessEnvironment(fProcess, True); // gdb in English: its messages are read
+  // gdb starts the program through $SHELL: always /bin/sh, whose quoting
+  // ShellArgument follows
+  for I := fProcess.Environment.Count - 1 downto 0 do
+    if Copy(fProcess.Environment[I], 1, 6) = 'SHELL=' then
+      fProcess.Environment.Delete(I);
+  fProcess.Environment.Add('SHELL=/bin/sh');
   try
     fProcess.Execute;
   except
@@ -484,7 +497,6 @@ begin
   fReader := TGdbReader.Create(Self, fProcess.Output);
 
   Send('-gdb-set mi-async on');
-  Send('-gdb-set startup-with-shell off');
   Send('-gdb-set confirm off');
   Send('-gdb-set width 0');
   Send('-gdb-set height 0');
@@ -545,12 +557,11 @@ var
   Line: String;
   I: Integer;
 begin
-  // MI unquotes each parameter and joins them with spaces; gdb then splits
-  // that line without a shell, honoring the double quotes of GdbArgument
-  Line := '-exec-arguments';
+  // Through the console, so gdb gets exactly this line; /bin/sh splits it
+  Line := 'set args';
   for I := 0 to High(Args) do
-    Line := Line + ' ' + MIQuote(GdbArgument(Args[I]));
-  Send(Line);
+    Line := Line + ' ' + ShellArgument(Args[I]);
+  Send('-interpreter-exec console ' + MIQuote(Line));
 end;
 
 procedure TGdbEngine.SetWorkingDir(const Dir: String);

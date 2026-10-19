@@ -157,6 +157,24 @@ begin
   Result := ExeSearch(Exe, GetEnvironmentVariable('PATH')) <> '';
 end;
 
+// gdb starts the program through /bin/sh: each argument must reach it as it
+// was written, and nothing in it may run (no gdb needed)
+procedure TestShellArgument(const Dir: String);
+const
+  Args: array[0..5] of String = (Tricky, 'it''s', '`touch pwned2`', 'a; touch pwned3', '''''', '');
+var
+  I: Integer;
+  Output: String;
+begin
+  WriteLn('Arguments through /bin/sh:');
+  for I := 0 to High(Args) do begin
+    RunCommandInDir(Dir, '/bin/sh', ['-c', 'printf "[%s]" ' + ShellArgument(Args[I])], Output);
+    Check(Output = '[' + Args[I] + ']', 'arrives as written: ' + Args[I], Output);
+  end;
+  Check(not FileExists(Dir + 'pwned') and not FileExists(Dir + 'pwned2') and not FileExists(Dir + 'pwned3'),
+    'nothing in them ran');
+end;
+
 procedure TestDebugSession(const Dir: String);
 var
   E: TGdbEngine;
@@ -319,18 +337,17 @@ end;
 var
   Dir: String;
 begin
-  if not (Found('gdb') and Found('gcc')) then begin
-    WriteLn('(skipped: gdb or gcc is not installed)');
-    WriteLn('All checks passed');
-    Exit;
-  end;
   R := TRecorder.Create;
   Dir := IncludeTrailingPathDelimiter(GetTempDir) + 'penguin-gdbtest-' + IntToStr(GetProcessID) + PathDelim;
   ForceDirectories(Dir);
   try
-    TestDebugSession(Dir);
-    TestInterrupt(Dir);
-    TestGdbEnds;
+    TestShellArgument(Dir);
+    if Found('gdb') and Found('gcc') then begin
+      TestDebugSession(Dir);
+      TestInterrupt(Dir);
+      TestGdbEnds;
+    end else
+      WriteLn('(the debugging part is skipped: gdb or gcc is not installed)');
   finally
     RemoveTree(Dir);
     R.Free;

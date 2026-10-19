@@ -86,8 +86,9 @@ type
     procedure Quit; virtual; abstract;
     function Running: Boolean; virtual; abstract;
 
-    // The program, its arguments (passed as they are, never through a
-    // shell), its folder, and the terminal it reads and writes ('' none)
+    // The program, its arguments (each one arrives as it is: no shell reads
+    // it as commands), its folder, and the terminal it reads and writes
+    // ('' none)
     procedure LoadProgram(const FileName: String; Handler: TDebugDoneHandler = nil); virtual; abstract;
     procedure SetArguments(const Args: array of String); virtual; abstract;
     procedure SetWorkingDir(const Dir: String); virtual; abstract;

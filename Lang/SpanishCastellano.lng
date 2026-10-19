@@ -53,6 +53,12 @@ Ver=12
 1061=otro programa al ejecutarlo: %s
 1062=opciones del compilador o del enlazador que pueden ejecutar comandos: %s
 1063=argumentos del programa con caracteres del shell (se usan al depurar): %s
+1064=Penguin cpp - %s: el programa que se depura lee y escribe aquí.
+1065=No se pudo abrir una terminal (%s): la salida del programa aparece en este panel, y el programa no puede leer el teclado.
+1066=El programa terminó con el código de salida %d. Presione Enter para cerrar esta ventana.
+1067=El programa recibió la señal %s (%s).
+1068=no disponible aquí
+1069=ejecute el programa para ver su valor
 
 
 2001=&Abrir Proyecto o Archivo

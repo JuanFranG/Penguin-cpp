@@ -104,6 +104,16 @@ function ParseMILine(const Line: String): TMIRecord;
 // escaped, so a file name or an expression is always one argument
 function MIQuote(const S: String): String;
 
+// A value as gdb prints it, split into its members: '{a = 1, b = {c = 2}}'
+// gives 'a = 1' and 'b = {c = 2}'; an array '{1, 2}' gives '1' and '2'.
+// False (and nothing added) for a value without members. Commas inside
+// strings, characters, braces, brackets, parentheses or <...> (templates,
+// <repeats 5 times>) do not split. Members may be nil: just the question.
+function SplitGdbValue(const Value: String; Members: TStrings): Boolean;
+
+// 'name = value' into its two parts; Name is '' for an array element
+procedure SplitGdbMember(const Member: String; out Name, Value: String);
+
 implementation
 
 { TMIValue }
@@ -453,6 +463,82 @@ begin
       Result := Result + S[I];
     end;
   Result := Result + '"';
+end;
+
+// Moves through S like gdb's value syntax: Depth counts the brackets of any
+// kind, Quote is the open quote (#0 none). True when S[I] is at depth 0 and
+// outside quotes.
+function OutsideAt(const S: String; var I, Depth: Integer; var Quote: Char): Boolean;
+var
+  C: Char;
+begin
+  C := S[I];
+  Result := False;
+  if Quote <> #0 then begin
+    if C = '\' then
+      Inc(I) // the escaped character
+    else if C = Quote then
+      Quote := #0;
+    Exit;
+  end;
+  case C of
+    '"', #39: Quote := C;
+    '{', '[', '(', '<': Inc(Depth);
+    '}', ']', ')', '>':
+      if Depth > 0 then
+        Dec(Depth);
+  else
+    Result := Depth = 0;
+  end;
+end;
+
+function SplitGdbValue(const Value: String; Members: TStrings): Boolean;
+var
+  S: String;
+  I, Depth, Start: Integer;
+  Quote: Char;
+begin
+  S := Trim(Value);
+  Result := (Length(S) >= 2) and (S[1] = '{') and (S[Length(S)] = '}');
+  if not Result then
+    Exit;
+  S := Copy(S, 2, Length(S) - 2);
+  if Trim(S) = '' then
+    Exit(False); // {}: no members
+  Depth := 0;
+  Quote := #0;
+  Start := 1;
+  I := 1;
+  while I <= Length(S) do begin
+    if OutsideAt(S, I, Depth, Quote) and (S[I] = ',') then begin
+      if Assigned(Members) then
+        Members.Add(Trim(Copy(S, Start, I - Start)));
+      Start := I + 1;
+    end;
+    Inc(I);
+  end;
+  if Assigned(Members) then
+    Members.Add(Trim(Copy(S, Start, MaxInt)));
+end;
+
+procedure SplitGdbMember(const Member: String; out Name, Value: String);
+var
+  I, Depth: Integer;
+  Quote: Char;
+begin
+  Depth := 0;
+  Quote := #0;
+  I := 1;
+  while I <= Length(Member) - 2 do begin
+    if OutsideAt(Member, I, Depth, Quote) and (Member[I] = ' ') and (Copy(Member, I, 3) = ' = ') then begin
+      Name := Copy(Member, 1, I - 1);
+      Value := Copy(Member, I + 3, MaxInt);
+      Exit;
+    end;
+    Inc(I);
+  end;
+  Name := '';
+  Value := Member;
 end;
 
 end.

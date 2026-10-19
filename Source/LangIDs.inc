@@ -78,6 +78,12 @@ const
   ID_PRJRUNS_HOST                       = 1061;
   ID_PRJRUNS_OPTIONS                    = 1062;
   ID_PRJRUNS_ARGS                       = 1063;
+  ID_DEBUG_TERMINALHEADER               = 1064;
+  ID_DEBUG_NOTERMINAL                   = 1065;
+  ID_DEBUG_PROGRAMENDED                 = 1066;
+  ID_DEBUG_SIGNAL                       = 1067;
+  ID_DEBUG_NOTINCONTEXT                 = 1068;
+  ID_DEBUG_RUNTOEVALUATE                = 1069;
 
   ID_ITEM_OPEN                          = 2001;
   ID_SUB_REOPEN                         = 2002;

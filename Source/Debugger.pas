@@ -17,41 +17,96 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 }
 
+{ The IDE's side of debugging (Penguin cpp): breakpoints, watches, the
+  active line, the debug panel. It drives a TDebugEngine (GdbEngine on
+  Linux) and gives the program a terminal of its own (DebugTerminal).
+  Dev-C++ talked to gdb's --annotate=2 output through a reader thread that
+  also changed the watch tree outside the main thread; the engine's events
+  all arrive on the main thread. }
+
 unit Debugger;
+
+{$MODE DELPHI}
 
 interface
 
 uses
-  Sysutils, LCLIntf, LCLType, LMessages, Forms, Classes, Controls, DebugReader, Version, Editor,
-  ComCtrls, Dialogs, MultiLangSupport, Process;
+  SysUtils, Classes, Forms, Controls, ComCtrls, Dialogs, Editor, DebugEngine, GdbEngine, DebugTerminal,
+  MultiLangSupport;
 
 type
+  PWatchVar = ^TWatchVar;
+  TWatchVar = record
+    Name: String;
+    Node: TTreeNode;
+    Available: boolean; // it has a value in the current context
+  end;
 
-  TEvalReadyEvent = procedure(const evalvalue: String) of object;
+  PBreakPoint = ^TBreakPoint;
+  TBreakPoint = record
+    line: integer;
+    editor: TEditor;
+    id: integer; // the debugger's number while a session runs, -1 otherwise
+  end;
 
   TDebugger = class(TObject)
   private
-    fProcess: TProcess; // gdb; kept until the next Start so the reader thread never reads a freed pipe
+    fEngine: TGdbEngine;
+    fTerminal: TDebugTerminal;
     fExecuting: boolean;
+    fPaused: boolean;
     fCommandChanged: boolean;
     fDebugView: TTreeView;
     fLeftPageIndexBackup: integer;
     fBreakPointList: TList;
     fWatchVarList: TList;
-    fOnEvalReady: TEvalReadyEvent;
-    fReader: TDebugReader;
-    fRunningReader: TDebugReader; // the reader thread until it has really ended
-    function GetBreakPointFile: String;
-    procedure ReaderTerminated(Sender: TObject);
-    function WaitForReader: Boolean;
+    fActiveFile: String;
+    fPartialOutput: String;   // output without its line break yet
+    fWatchQueue: TStringList; // watches still to evaluate after a stop
+    fWatchPending: String;    // the one being evaluated
+    fSignalText: String;
+    procedure EngineStopped(Sender: TObject; const Info: TDebugStopInfo);
+    procedure EngineRunning(Sender: TObject);
+    procedure EngineExited(Sender: TObject; ExitCode: Integer);
+    procedure EngineOutput(Sender: TObject; const Text: String; Kind: TDebugOutputKind);
+    procedure EngineTerminated(Sender: TObject);
+    procedure ProgramLoaded(Ok: Boolean; const Error: String);
+    procedure Attached(Ok: Boolean; const Error: String);
+    procedure BreakpointInserted(Ok: Boolean; Id: Integer; const FileName: String; Line: Integer;
+      const Error: String);
+    procedure WatchEvaluated(Ok: Boolean; const Value: String);
+    procedure EvaluateNextWatch;
+    procedure ShowWatchValue(Watch: PWatchVar; const Value: String);
+    procedure ShowSignal(Data: PtrInt);
+    procedure AddOutput(const Text: String);
+    function FindWatch(const Name: String): PWatchVar;
+    function StartEngine: Boolean;
+    procedure OpenTerminal(const Exe: String; out TtyName: String);
   public
     constructor Create;
     destructor Destroy; override;
 
-    // Play/pause
-    procedure Start;
+    // A session: the program (for a library, its host program), its
+    // command line as the user typed it, and its folder
+    function Start(const Exe, Args, WorkDir: String): Boolean;
+    function Attach(const Exe: String; Pid: Integer): Boolean;
     procedure Stop;
-    procedure SendCommand(const command, params: String; viewinui: boolean = false);
+
+    // While paused
+    procedure Next;
+    procedure Step;
+    procedure Continue;
+    procedure Finish;
+    procedure NextInstruction;
+    procedure StepInstruction;
+    // While running
+    procedure Pause;
+
+    procedure Evaluate(const Expression: String; Handler: TDebugValueHandler);
+    procedure Assign(const Expression, Value: String);
+    procedure UserCommand(const Command: String);
+    // Forgets the pending answers of an object that goes away
+    procedure CancelHandlers(Owner: TObject);
 
     // breakpoints
     procedure AddBreakPoint(i: integer); overload;
@@ -61,252 +116,433 @@ type
     procedure DeleteBreakPointsOf(editor: TEditor);
 
     // watch var
-    procedure AddWatchVar(i: integer); overload;
-    procedure RemoveWatchVar(i: integer); overload;
-    procedure AddWatchVar(const namein: String); overload;
-    procedure RemoveWatchVar(nodein: TTreeNode); overload;
+    procedure AddWatchVar(const namein: String);
+    procedure RemoveWatchVar(nodein: TTreeNode);
     procedure RefreshWatchVars;
     procedure DeleteWatchVars(deleteparent: boolean);
 
     // Access
-    property Executing: boolean read fExecuting write fExecuting;
+    property Executing: boolean read fExecuting;
+    property Paused: boolean read fPaused;
     property LeftPageIndexBackup: integer read fLeftPageIndexBackup write fLeftPageIndexBackup;
-    property WatchVarList: TList read fWatchVarList write fWatchVarList;
-    property BreakPointList: TList read fBreakPointList write fBreakPointList;
+    property WatchVarList: TList read fWatchVarList;
+    property BreakPointList: TList read fBreakPointList;
     property CommandChanged: boolean read fCommandChanged write fCommandChanged;
     property DebugView: TTreeView read fDebugView write fDebugView;
-    property OnEvalReady: TEvalReadyEvent read fOnEvalReady write fOnEvalReady;
-    property Reader: TDebugReader read fReader write fReader;
-    property BreakPointFile: String read GetBreakPointFile;
+    property BreakPointFile: String read fActiveFile;
+    // For the CPU window; nil when no session runs
+    property Engine: TGdbEngine read fEngine;
   end;
 
 implementation
 
 uses
-  System.UITypes, main, devCFG, Utils, CPUFrm;
+  System.UITypes, Process, Math, main, devCFG, Utils, CPUFrm, GdbMI, Version;
+
+const
+  MaxWatchChildren = 200; // long arrays: the first ones are enough
 
 constructor TDebugger.Create;
 begin
   inherited;
-  BreakPointList := TList.Create;
-  WatchVarList := TList.Create;
+  fBreakPointList := TList.Create;
+  fWatchVarList := TList.Create;
+  fWatchQueue := TStringList.Create;
+  fTerminal := TDebugTerminal.Create;
 end;
 
 destructor TDebugger.Destroy;
 var
   I: integer;
 begin
+  Application.RemoveAsyncCalls(Self);
   Stop;
-  if WaitForReader then
-    FreeAndNil(fProcess)
-  else
-    fProcess := nil; // still read by a stuck thread: leak it rather than free it under it
+  FreeAndNil(fEngine);
+  fTerminal.Free;
+  fWatchQueue.Free;
 
-  // Remove watch vars
-  for i := 0 to WatchVarList.Count - 1 do
-    Dispose(PWatchVar(WatchVarList.Items[i]));
-  WatchVarList.Free;
+  for I := 0 to fWatchVarList.Count - 1 do
+    Dispose(PWatchVar(fWatchVarList.Items[I]));
+  fWatchVarList.Free;
 
-  // Remove the breakpoints
-  for i := 0 to BreakPointList.Count - 1 do
-    Dispose(PBreakPoint(BreakPointList.Items[i]));
-  BreakPointList.Free;
+  for I := 0 to fBreakPointList.Count - 1 do
+    Dispose(PBreakPoint(fBreakPointList.Items[I]));
+  fBreakPointList.Free;
 
   inherited;
 end;
 
-procedure TDebugger.Start;
+function TDebugger.StartEngine: Boolean;
 var
-  GDBFile: String;
   CompilerSet: TdevCompilerSet;
+  GdbFile, Error: String;
 begin
-  Executing := true;
-
-  // Use the GDB provided in the project if needed
+  Result := False;
   CompilerSet := devCompilerSets.CompilationSet;
-
-  // Assume it's present in the first bin dir (no set at all: gcc missing)
-  if not Assigned(CompilerSet) or (CompilerSet.BinDir.Count = 0) then begin
+  if not Assigned(CompilerSet) or (CompilerSet.gdbName = '') then begin
     MessageDlg(Lang[ID_ERR_GDBNOUTFOUND], mtError, [mbOK], 0);
-    Executing := false;
     Exit;
   end;
-  GDBFile := CompilerSet.BinDir[0] + pd + CompilerSet.gdbName;
+  // The compiler set's gdb, or the one in PATH
+  GdbFile := CompilerSet.gdbName;
+  if (CompilerSet.BinDir.Count > 0) and FileExists(CompilerSet.BinDir[0] + pd + CompilerSet.gdbName) then
+    GdbFile := CompilerSet.BinDir[0] + pd + CompilerSet.gdbName;
 
-  // The previous session's reader may still be reading its pipe
-  if WaitForReader then
-    FreeAndNil(fProcess)
-  else
-    fProcess := nil; // still read by a stuck thread: leak it rather than free it under it
-  fProcess := TProcess.Create(nil);
-  fProcess.Executable := GDBFile;
-  fProcess.Parameters.Add('--annotate=2');
-  fProcess.Parameters.Add('--silent');
-  fProcess.Options := [poUsePipes, poStderrToOutPut];
-  fProcess.ShowWindow := swoHIDE;
-  try
-    fProcess.Execute;
-  except
-    on E: Exception do begin
-      MessageDlg(Format(Lang[ID_ERR_ERRORLAUNCHINGGDB], [GDBFile, E.Message]), mtError, [mbOK], 0);
-      FreeAndNil(fProcess);
-      Executing := false;
-      Exit;
-    end;
+  FreeAndNil(fEngine);
+  fEngine := TGdbEngine.Create(GdbFile);
+  fEngine.OnStopped := EngineStopped;
+  fEngine.OnRunning := EngineRunning;
+  fEngine.OnExited := EngineExited;
+  fEngine.OnOutput := EngineOutput;
+  fEngine.OnTerminated := EngineTerminated;
+  if not fEngine.Start(Error) then begin
+    MessageDlg(Format(Lang[ID_ERR_ERRORLAUNCHINGGDB], [GdbFile, Error]), mtError, [mbOK], 0);
+    FreeAndNil(fEngine);
+    Exit;
   end;
+  Result := True;
+end;
 
-  // Create a thread that will read GDB output.
-  Reader := TDebugReader.Create(true);
-  Reader.Pipe := fProcess.Output;
-  Reader.FreeOnTerminate := true;
-  Reader.OnTerminate := ReaderTerminated;
-  fRunningReader := Reader;
-  Reader.BreakpointList := BreakPointList;
-  Reader.WatchVarList := WatchVarList;
-  Reader.DebugView := DebugView;
-  Reader.Start;
+// The program's own terminal; without one, its output comes to the panel
+procedure TDebugger.OpenTerminal(const Exe: String; out TtyName: String);
+var
+  Error: String;
+begin
+  TtyName := '';
+  if fTerminal.Open(Format(Lang[ID_DEBUG_TERMINALHEADER], [ExtractFileName(Exe)]), devData.TerminalProgram,
+    Error) then
+    TtyName := fTerminal.WaitForTty(8000);
+  if TtyName = '' then begin
+    fTerminal.Close;
+    if Error = '' then
+      Error := 'timeout';
+    AddOutput(Format(Lang[ID_DEBUG_NOTERMINAL], [Error]) + LineEnding);
+  end;
+end;
+
+function TDebugger.Start(const Exe, Args, WorkDir: String): Boolean;
+var
+  ArgList: TStringList;
+  ArgArray: array of String;
+  TtyName: String;
+  I: integer;
+begin
+  Stop;
+  Result := StartEngine;
+  if not Result then
+    Exit;
+  fExecuting := True;
+  fPaused := False;
+  fPartialOutput := '';
+
+  OpenTerminal(Exe, TtyName);
+  fEngine.LoadProgram(Exe, ProgramLoaded);
+
+  // The command line as typed, split like a shell would split it
+  ArgList := TStringList.Create;
+  try
+    CommandToList(Args, ArgList);
+    SetLength(ArgArray, ArgList.Count);
+    for I := 0 to ArgList.Count - 1 do
+      ArgArray[I] := ArgList[I];
+  finally
+    ArgList.Free;
+  end;
+  fEngine.SetArguments(ArgArray);
+  if WorkDir <> '' then
+    fEngine.SetWorkingDir(WorkDir);
+  fEngine.SetTerminal(TtyName);
+
+  for I := 0 to fBreakPointList.Count - 1 do
+    AddBreakPoint(I);
+
+  // Pauses at the start of main, as Dev-C++'s 'start' did
+  fEngine.Run(True);
 
   MainForm.UpdateAppTitle;
+  Application.HintHidePause := 5000;
+end;
 
+function TDebugger.Attach(const Exe: String; Pid: Integer): Boolean;
+var
+  I: integer;
+begin
+  Stop;
+  Result := StartEngine;
+  if not Result then
+    Exit;
+  fExecuting := True;
+  fPaused := False;
+  fPartialOutput := '';
+  fEngine.LoadProgram(Exe, ProgramLoaded);
+  for I := 0 to fBreakPointList.Count - 1 do
+    AddBreakPoint(I);
+  fEngine.Attach(Pid, Attached);
+  MainForm.UpdateAppTitle;
   Application.HintHidePause := 5000;
 end;
 
 procedure TDebugger.Stop;
+var
+  I: integer;
 begin
-  if Executing then begin
-    Executing := false;
+  if not fExecuting then
+    Exit;
+  fExecuting := False;
+  fPaused := False;
 
-    if WatchVarList.Count = 0 then // nothing worth showing, restore view
-      MainForm.LeftPageControl.ActivePageIndex := LeftPageIndexBackup;
+  if fWatchVarList.Count = 0 then // nothing worth showing, restore view
+    MainForm.LeftPageControl.ActivePageIndex := LeftPageIndexBackup;
 
-    // Close CPU window
-    if Assigned(CPUForm) then
-      CPUForm.Close;
+  if Assigned(CPUForm) then
+    CPUForm.Close;
 
-    if Assigned(fProcess) then
-      fProcess.Terminate(0); // stop gdb; the reader thread ends when the pipe closes
+  // gdb ends the program it started, then itself; no event comes after it
+  if Assigned(fEngine) then
+    fEngine.Quit;
+  fTerminal.Close;
+  fWatchQueue.Clear;
+  fWatchPending := '';
+  for I := 0 to fBreakPointList.Count - 1 do
+    PBreakPoint(fBreakPointList[I])^.id := -1;
+  if fPartialOutput <> '' then
+    AddOutput(LineEnding);
 
-    // Don't wait for the thread here: it calls Stop from its own Synchronize
-    if Assigned(Reader) then
-      Reader.Terminate;
-    Reader := nil;
+  MainForm.RemoveActiveBreakpoints;
+  MainForm.UpdateAppTitle;
+  Application.HintHidePause := 2500;
+end;
 
-    MainForm.RemoveActiveBreakpoints;
-
-    MainForm.UpdateAppTitle;
-
-    Application.HintHidePause := 2500;
+procedure TDebugger.ProgramLoaded(Ok: Boolean; const Error: String);
+begin
+  if not Ok then begin
+    MessageDlg(Error, mtError, [mbOK], 0);
+    Stop;
   end;
 end;
 
-procedure TDebugger.SendCommand(const Command, Params: String; ViewInUI: boolean);
-var
-  Line: String;
+procedure TDebugger.Attached(Ok: Boolean; const Error: String);
 begin
-  if Executing and Assigned(fProcess) then begin
-
-    Line := Trim(command + ' ' + params) + #10;
-    try
-      fProcess.Input.WriteBuffer(Line[1], Length(Line));
-    except
-      MessageDlg(Lang[ID_ERR_WRITEGDB], mtError, [mbOK], 0);
-    end;
-
-    if ViewInUI then
-      if (not CommandChanged) or (MainForm.edGdbCommand.Text = '') then begin
-        // Convert command to C string
-        if Length(params) > 0 then
-          MainForm.edGdbCommand.Text := Command + ' ' + params
-        else
-          MainForm.edGdbCommand.Text := Command;
-
-        CommandChanged := false;
-      end;
+  if not Ok then begin
+    // Usually Linux' ptrace_scope: only a debugger's own children can be attached to
+    MessageDlg(Error, mtError, [mbOK], 0);
+    Stop;
   end;
 end;
 
-// Runs in the main thread (TThread calls OnTerminate through Synchronize) just
-// before the reader frees itself, so nothing keeps a pointer to a freed thread
-procedure TDebugger.ReaderTerminated(Sender: TObject);
+{ Events of the engine, on the main thread }
+
+procedure TDebugger.EngineRunning(Sender: TObject);
 begin
-  if Sender = fRunningReader then
-    fRunningReader := nil;
-  if Sender = fReader then
-    fReader := nil;
+  fPaused := False;
+  MainForm.RemoveActiveBreakpoints;
 end;
 
-// Waits (handling the thread's Synchronize calls) until the reader thread has
-// ended, so its pipe and the lists it uses can be freed. False after a timeout.
-function TDebugger.WaitForReader: Boolean;
+procedure TDebugger.EngineStopped(Sender: TObject; const Info: TDebugStopInfo);
 var
-  Started: QWord;
+  FileName: String;
 begin
-  Started := GetTickCount64;
-  while Assigned(fRunningReader) and (GetTickCount64 - Started < 5000) do
-    CheckSynchronize(20);
-  Result := not Assigned(fRunningReader);
+  fPaused := True;
+  FileName := Info.Frame.FullName;
+  if FileName = '' then
+    FileName := Info.Frame.FileName;
+  if (FileName <> '') and (Info.Frame.Line > 0) then begin
+    fActiveFile := FileName;
+    MainForm.GotoBreakpoint(FileName, Info.Frame.Line);
+  end else begin
+    MainForm.RemoveActiveBreakpoints; // in a library without its source
+    AddOutput(Info.Frame.Func + ' (' + Info.Frame.Addr + ')' + LineEnding);
+  end;
+
+  RefreshWatchVars;
+  if Assigned(CPUForm) then
+    CPUForm.UpdateView;
+
+  if Info.Reason = dsSignal then begin
+    // After the events of this stop, not inside them
+    fSignalText := Format(Lang[ID_DEBUG_SIGNAL], [Info.SignalName, Info.SignalMeaning]);
+    Application.QueueAsyncCall(ShowSignal, 0);
+  end;
 end;
 
-function TDebugger.GetBreakPointFile: String;
+procedure TDebugger.ShowSignal(Data: PtrInt);
 begin
-  if Executing and Assigned(fReader) then
-    Result := fReader.BreakPointFile
-  else
-    Result := '';
+  if not fExecuting then
+    Exit;
+  Beep;
+  MessageDlg(fSignalText, mtError, [mbOK], 0);
+  if devData.ShowCPUSignal and not Assigned(CPUForm) then
+    MainForm.ViewCPUItemClick(nil);
 end;
+
+procedure TDebugger.EngineExited(Sender: TObject; ExitCode: Integer);
+begin
+  // The terminal stays until the user reads it and presses Enter
+  fTerminal.ProgramEnded(Format(Lang[ID_DEBUG_PROGRAMENDED], [ExitCode]));
+  AddOutput(Format(Lang[ID_DEBUG_PROGRAMENDED], [ExitCode]) + LineEnding);
+  Stop;
+end;
+
+procedure TDebugger.EngineTerminated(Sender: TObject);
+begin
+  Stop; // gdb ended by itself (or crashed)
+end;
+
+procedure TDebugger.EngineOutput(Sender: TObject; const Text: String; Kind: TDebugOutputKind);
+begin
+  AddOutput(Text);
+end;
+
+// The debug panel takes whole lines
+procedure TDebugger.AddOutput(const Text: String);
+var
+  P: integer;
+begin
+  fPartialOutput := fPartialOutput + Text;
+  P := Pos(#10, fPartialOutput);
+  while P > 0 do begin
+    MainForm.DebugOutput.Lines.Add(TrimRight(Copy(fPartialOutput, 1, P - 1)));
+    Delete(fPartialOutput, 1, P);
+    P := Pos(#10, fPartialOutput);
+  end;
+end;
+
+{ Commands }
+
+procedure TDebugger.Next;
+begin
+  if fExecuting and fPaused then
+    fEngine.Next;
+end;
+
+procedure TDebugger.Step;
+begin
+  if fExecuting and fPaused then
+    fEngine.Step;
+end;
+
+procedure TDebugger.Continue;
+begin
+  if fExecuting and fPaused then
+    fEngine.Continue;
+end;
+
+procedure TDebugger.Finish;
+begin
+  if fExecuting and fPaused then
+    fEngine.Finish;
+end;
+
+procedure TDebugger.NextInstruction;
+begin
+  if fExecuting and fPaused then
+    fEngine.NextInstruction;
+end;
+
+procedure TDebugger.StepInstruction;
+begin
+  if fExecuting and fPaused then
+    fEngine.StepInstruction;
+end;
+
+procedure TDebugger.Pause;
+begin
+  if fExecuting and not fPaused then
+    fEngine.Interrupt;
+end;
+
+procedure TDebugger.Evaluate(const Expression: String; Handler: TDebugValueHandler);
+begin
+  if fExecuting then
+    fEngine.Evaluate(Expression, Handler);
+end;
+
+procedure TDebugger.Assign(const Expression, Value: String);
+begin
+  if fExecuting then begin
+    fEngine.Assign(Expression, Value);
+    RefreshWatchVars;
+  end;
+end;
+
+procedure TDebugger.UserCommand(const Command: String);
+begin
+  if fExecuting then begin
+    AddOutput('(gdb) ' + Command + LineEnding);
+    fEngine.UserCommand(Command);
+  end;
+end;
+
+procedure TDebugger.CancelHandlers(Owner: TObject);
+begin
+  if Assigned(fEngine) then
+    fEngine.CancelHandlers(Owner);
+end;
+
+{ Breakpoints }
 
 procedure TDebugger.AddBreakPoint(i: integer);
-var
-  filename: String;
 begin
-  // "filename":linenum
-  filename := StringReplace(PBreakPoint(BreakPointList.Items[i])^.editor.FileName, '\', '/', [rfReplaceAll]);
-  SendCommand('break', '"' + filename + '":' + inttostr(PBreakPoint(BreakPointList.Items[i])^.line), true);
+  with PBreakPoint(fBreakPointList.Items[i])^ do
+    fEngine.InsertBreakpoint(editor.FileName, line, BreakpointInserted);
+end;
+
+procedure TDebugger.BreakpointInserted(Ok: Boolean; Id: Integer; const FileName: String; Line: Integer;
+  const Error: String);
+var
+  I: integer;
+  BP: PBreakPoint;
+begin
+  if not Ok then begin
+    AddOutput(Error + LineEnding);
+    Exit;
+  end;
+  for I := 0 to fBreakPointList.Count - 1 do begin
+    BP := PBreakPoint(fBreakPointList[I]);
+    if (BP^.id = -1) and (BP^.line = Line) and SameFileName(BP^.editor.FileName, FileName) then begin
+      BP^.id := Id;
+      Exit;
+    end;
+  end;
+  // Removed before gdb answered
+  if fExecuting then
+    fEngine.DeleteBreakpoint(Id);
 end;
 
 procedure TDebugger.RemoveBreakPoint(i: integer);
-var
-  filename: String;
 begin
-  // "filename":linenum
-  filename := StringReplace(PBreakPoint(BreakPointList.Items[i])^.editor.FileName, '\', '/', [rfReplaceAll]);
-  SendCommand('clear', '"' + filename + '":' + inttostr(PBreakPoint(BreakPointList.Items[i])^.line), true);
+  if PBreakPoint(fBreakPointList.Items[i])^.id > 0 then
+    fEngine.DeleteBreakpoint(PBreakPoint(fBreakPointList.Items[i])^.id);
 end;
 
 procedure TDebugger.AddBreakPoint(linein: integer; e: TEditor);
 var
   APBreakPoint: PBreakPoint;
 begin
-  APBreakPoint := new(PBreakPoint);
-  with APBreakPoint^ do begin
-    line := Linein;
-    editor := e;
-  end;
-  BreakPointList.Add(APBreakPoint);
+  New(APBreakPoint);
+  APBreakPoint^.line := Linein;
+  APBreakPoint^.editor := e;
+  APBreakPoint^.id := -1;
+  fBreakPointList.Add(APBreakPoint);
 
-  // Debugger already running? Add it to GDB
-  if Executing then
-    AddBreakPoint(BreakPointList.Count - 1);
+  // Debugger already running? Add it to gdb
+  if fExecuting then
+    AddBreakPoint(fBreakPointList.Count - 1);
 end;
 
 procedure TDebugger.RemoveBreakPoint(Linein: integer; e: TEditor);
 var
   i: integer;
 begin
-  for i := 0 to BreakPointList.Count - 1 do begin
-    if (PBreakPoint(BreakPointList.Items[i])^.line = Linein) and (PBreakPoint(BreakPointList.Items[i])^.editor = e) then
-      begin
-
-      // Debugger already running? Remove it from GDB
-      if Executing then
+  for i := 0 to fBreakPointList.Count - 1 do
+    if (PBreakPoint(fBreakPointList.Items[i])^.line = Linein) and (PBreakPoint(fBreakPointList.Items[i])^.editor = e)
+      then begin
+      if fExecuting then
         RemoveBreakPoint(i);
-
-      // Remove from list
-      Dispose(PBreakPoint(BreakPointList.Items[i]));
-      BreakPointList.Delete(i);
-      break;
+      Dispose(PBreakPoint(fBreakPointList.Items[i]));
+      fBreakPointList.Delete(i);
+      Break;
     end;
-  end;
 end;
 
 procedure TDebugger.DeleteBreakPointsOf(editor: TEditor);
@@ -314,81 +550,62 @@ var
   I: integer;
 begin
   // Breakpoints in closed files need to be deleted
-  for i := BreakPointList.Count - 1 downto 0 do
-
-    if PBreakPoint(BreakPointList.Items[i])^.editor = editor then begin
-
-      // Remove from list
-      Dispose(PBreakPoint(BreakPointList.Items[i]));
-      BreakPointList.Delete(i);
+  for i := fBreakPointList.Count - 1 downto 0 do
+    if PBreakPoint(fBreakPointList.Items[i])^.editor = editor then begin
+      if fExecuting then
+        RemoveBreakPoint(i);
+      Dispose(PBreakPoint(fBreakPointList.Items[i]));
+      fBreakPointList.Delete(i);
     end;
 end;
 
-procedure TDebugger.AddWatchVar(i: integer);
-begin
-  SendCommand('display', PWatchVar(WatchVarList.Items[i])^.name, true);
-end;
+{ Watches: each one is evaluated after every stop, one after another (each
+  answer names no watch, so the one asked is remembered), and shown as a
+  tree of its members }
 
-procedure TDebugger.RemoveWatchVar(i: integer);
+function TDebugger.FindWatch(const Name: String): PWatchVar;
+var
+  I: integer;
 begin
-  SendCommand('undisplay', IntToStr(PWatchVar(WatchVarList.Items[i])^.gdbindex), true);
+  for I := 0 to fWatchVarList.Count - 1 do
+    if SameStr(PWatchVar(fWatchVarList[I])^.Name, Name) then
+      Exit(PWatchVar(fWatchVarList[I]));
+  Result := nil;
 end;
 
 procedure TDebugger.AddWatchVar(const namein: String);
 var
-  parentnode: TTreeNode;
-  I: integer;
-  wparent: PWatchVar;
+  Watch: PWatchVar;
 begin
+  if (Trim(namein) = '') or Assigned(FindWatch(namein)) then
+    Exit;
+  New(Watch);
+  Watch^.Name := namein;
+  Watch^.Available := False;
+  Watch^.Node := DebugView.Items.AddObject(nil, namein + ' = ' + Lang[ID_DEBUG_RUNTOEVALUATE], Watch);
+  Watch^.Node.ImageIndex := 21;
+  Watch^.Node.SelectedIndex := 21;
+  fWatchVarList.Add(Watch);
 
-  // Don't allow duplicates...
-  for I := 0 to WatchVarList.Count - 1 do
-    if SameStr(PWatchVar(WatchVarList.Items[i])^.name, namein) then
-      Exit;
-
-  // Add parent to list
-  wparent := New(PWatchVar);
-  wparent^.name := namein;
-  //	wparent^.value := 'Execute to evaluate';
-  wparent^.gdbindex := -1; // filled by GDB
-  WatchVarList.Add(wparent);
-
-  // Add parent to GUI
-  parentnode := DebugView.Items.AddObject(nil, wparent^.name + ' = Execute to evaluate', wparent);
-  parentnode.ImageIndex := 21;
-  parentnode.SelectedIndex := 21;
-
-  // Refer to list from GUI
-  wparent^.node := parentnode;
-
-  // Debugger already running? Add it to GDB
-  if Executing then
-    AddWatchVar(WatchVarList.Count - 1);
+  if fExecuting and fPaused then begin
+    fWatchQueue.Add(namein);
+    if fWatchPending = '' then
+      EvaluateNextWatch;
+  end;
 end;
 
 procedure TDebugger.RemoveWatchVar(nodein: TTreeNode);
 var
   I: integer;
-  wparent: PWatchVar;
+  Watch: PWatchVar;
 begin
-  for i := 0 to WatchVarList.Count - 1 do begin
-    wparent := PWatchVar(WatchVarList.Items[I]);
-
-    if SameStr(wparent^.name, PWatchVar(nodein.Data)^.name) then begin
-
-      // Debugger already running and GDB scanned this one? Remove it from GDB
-      if Executing and (wparent^.gdbindex <> -1) then
-        RemoveWatchVar(i);
-
-      // Remove from UI
-      nodein.DeleteChildren;
+  for I := 0 to fWatchVarList.Count - 1 do begin
+    Watch := PWatchVar(fWatchVarList.Items[I]);
+    if Watch^.Node = nodein then begin
       nodein.Delete;
-
-      // Remove from list
-      Dispose(PWatchVar(WatchVarList.Items[i]));
-      WatchVarList.Delete(i);
-
-      break;
+      Dispose(Watch);
+      fWatchVarList.Delete(I);
+      Break;
     end;
   end;
 end;
@@ -397,41 +614,116 @@ procedure TDebugger.RefreshWatchVars;
 var
   I: integer;
 begin
-  // Variables that aren't found need to be re-displayed!
-  for i := 0 to WatchVarList.Count - 1 do
-    if PWatchVar(WatchVarList.Items[i])^.gdbindex = -1 then
-      AddWatchVar(i); // resends command to display to GDB
+  if not (fExecuting and fPaused) then
+    Exit;
+  fWatchQueue.Clear;
+  for I := 0 to fWatchVarList.Count - 1 do
+    fWatchQueue.Add(PWatchVar(fWatchVarList[I])^.Name);
+  if fWatchPending = '' then
+    EvaluateNextWatch;
+end;
+
+procedure TDebugger.EvaluateNextWatch;
+begin
+  fWatchPending := '';
+  if not fExecuting or (fWatchQueue.Count = 0) then
+    Exit;
+  fWatchPending := fWatchQueue[0];
+  fWatchQueue.Delete(0);
+  fEngine.Evaluate(fWatchPending, WatchEvaluated);
+end;
+
+procedure TDebugger.WatchEvaluated(Ok: Boolean; const Value: String);
+var
+  Watch: PWatchVar;
+begin
+  Watch := FindWatch(fWatchPending);
+  if Assigned(Watch) then begin
+    Watch^.Available := Ok;
+    if Ok then
+      ShowWatchValue(Watch, Value)
+    else begin
+      Watch^.Node.DeleteChildren;
+      Watch^.Node.Text := Watch^.Name + ' = ' + Lang[ID_DEBUG_NOTINCONTEXT];
+    end;
+  end;
+  EvaluateNextWatch;
+end;
+
+procedure TDebugger.ShowWatchValue(Watch: PWatchVar; const Value: String);
+
+  // Text of a node: name = value; a struct or array shows {...} and gets
+  // a child per member
+  procedure AddMembers(Node: TTreeNode; const NodeValue: String);
+  var
+    Members: TStringList;
+    I: integer;
+    Name, MemberValue: String;
+    Child: TTreeNode;
+  begin
+    Members := TStringList.Create;
+    try
+      if not SplitGdbValue(NodeValue, Members) then
+        Exit;
+      for I := 0 to Min(Members.Count, MaxWatchChildren) - 1 do begin
+        SplitGdbMember(Members[I], Name, MemberValue);
+        if Name = '' then
+          Name := '[' + IntToStr(I) + ']';
+        if SplitGdbValue(MemberValue, nil) then
+          Child := DebugView.Items.AddChild(Node, Name + ' = {...}')
+        else
+          Child := DebugView.Items.AddChild(Node, Name + ' = ' + MemberValue);
+        AddMembers(Child, MemberValue);
+      end;
+    finally
+      Members.Free;
+    end;
+  end;
+
+var
+  WasExpanded: boolean;
+  Probe: TStringList;
+  IsCompound: boolean;
+begin
+  WasExpanded := Watch^.Node.Expanded or not Watch^.Node.HasChildren;
+  Probe := TStringList.Create;
+  try
+    IsCompound := SplitGdbValue(Value, Probe);
+  finally
+    Probe.Free;
+  end;
+  DebugView.Items.BeginUpdate;
+  try
+    Watch^.Node.DeleteChildren;
+    if IsCompound then
+      Watch^.Node.Text := Watch^.Name + ' = {...}'
+    else
+      Watch^.Node.Text := Watch^.Name + ' = ' + Value;
+    AddMembers(Watch^.Node, Value);
+    if WasExpanded then
+      Watch^.Node.Expand(False);
+  finally
+    DebugView.Items.EndUpdate;
+  end;
 end;
 
 procedure TDebugger.DeleteWatchVars(deleteparent: boolean);
 var
   I: integer;
-  wparent: PWatchVar;
+  Watch: PWatchVar;
 begin
   DebugView.Items.BeginUpdate;
   try
-    for I := WatchVarList.Count - 1 downto 0 do begin
-      wparent := PWatchVar(WatchVarList.Items[I]);
-
+    for I := fWatchVarList.Count - 1 downto 0 do begin
+      Watch := PWatchVar(fWatchVarList.Items[I]);
       if deleteparent then begin
-
-        // Remove from UI
-        if wparent^.node.HasChildren then
-          wparent^.node.DeleteChildren;
-        wparent^.node.Delete;
-
-        // Remove from list
-        Dispose(PWatchVar(WatchVarList.Items[i]));
-        WatchVarList.Delete(i);
+        Watch^.Node.Delete;
+        Dispose(Watch);
+        fWatchVarList.Delete(I);
       end else begin
-
-        // Remove from UI
-        if wparent^.node.HasChildren then
-          wparent^.node.DeleteChildren;
-
-        // Leave parent node intact...
-        wparent^.gdbindex := -1;
-        wparent^.node.Text := wparent^.name + ' = Execute to evaluate';
+        Watch^.Node.DeleteChildren;
+        Watch^.Node.Text := Watch^.Name + ' = ' + Lang[ID_DEBUG_RUNTOEVALUATE];
+        Watch^.Available := False;
       end;
     end;
   finally
@@ -440,4 +732,3 @@ begin
 end;
 
 end.
-

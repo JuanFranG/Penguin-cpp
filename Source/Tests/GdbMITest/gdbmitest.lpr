@@ -13,7 +13,7 @@ program gdbmitest;
 {$MODE DELPHI}
 
 uses
-  SysUtils, GdbMI;
+  Classes, SysUtils, GdbMI;
 
 var
   Failures: Integer = 0;
@@ -186,9 +186,39 @@ begin
   R.Free;
 end;
 
+procedure TestValues;
+var
+  M: TStringList;
+  N, V: String;
+begin
+  WriteLn('Values as gdb prints them:');
+  M := TStringList.Create;
+  try
+    Check(SplitGdbValue('{x = 1, p = {a = 2, b = 3}, s = "a, {b}", c = 44 ' + #39 + ',' + #39 + '}', M) and
+      (M.Count = 4) and (M[1] = 'p = {a = 2, b = 3}') and (M[2] = 's = "a, {b}"'),
+      'members of a struct, strings and characters kept whole', M.CommaText);
+    M.Clear;
+    Check(SplitGdbValue('{1, 2, 0 <repeats 14 times>}', M) and (M.Count = 3) and (M[2] = '0 <repeats 14 times>'),
+      'array elements', M.CommaText);
+    M.Clear;
+    Check(SplitGdbValue('{m = std::map<int, int> with 0 elements, v = 5}', M) and (M.Count = 2),
+      'a comma inside <...> does not split', M.CommaText);
+    M.Clear;
+    Check(not SplitGdbValue('42', M) and not SplitGdbValue('{}', M) and (M.Count = 0), 'no members');
+    Check(not SplitGdbValue('0x601040 <arr> "{x, y}"', M), 'a pointer to a string is not a struct');
+  finally
+    M.Free;
+  end;
+  SplitGdbMember('p = {a = 2, b = 3}', N, V);
+  Check((N = 'p') and (V = '{a = 2, b = 3}'), 'name and value of a member', N + '|' + V);
+  SplitGdbMember('"x = y"', N, V);
+  Check((N = '') and (V = '"x = y"'), 'an array element has no name', N + '|' + V);
+end;
+
 begin
   TestRecords;
   TestQuote;
+  TestValues;
   TestDamaged;
   WriteLn;
   if Failures > 0 then begin

@@ -44,13 +44,15 @@ type
     constructor Create(Engine: TGdbEngine; Pipe: TStream);
   end;
 
-  TGdbHandlerKind = (hkDone, hkValue, hkBreakpoint, hkFrames);
+  TGdbHandlerKind = (hkDone, hkValue, hkBreakpoint, hkFrames, hkLines, hkRegNames, hkRegValues);
 
   PGdbHandler = ^TGdbHandler;
   TGdbHandler = record
     Token: Int64;
     Kind: TGdbHandlerKind;
     Method: TMethod;
+    Text: String;  // what the answer needs to be understood: a file name,
+    Line: Integer; // a line, the register names
   end;
 
   TGdbEngine = class(TDebugEngine)
@@ -66,13 +68,17 @@ type
     fHandlers: TList;       // PGdbHandler
     fNextToken: Int64;
     fQuitting: Boolean;
+    fLastPC: String;        // where the program last stopped, for the disassembly
     procedure Enqueue(Rec: TMIRecord);
     procedure ReaderEnded;
     procedure Drain;
     procedure DispatchRecord(Rec: TMIRecord);
     procedure Answer(Rec: TMIRecord);
     procedure Stopped(Rec: TMIRecord);
-    function Send(const Command: String; Kind: TGdbHandlerKind; const Handler: TMethod): Int64; overload;
+    function Send(const Command: String; Kind: TGdbHandlerKind; const Handler: TMethod;
+      const Text: String = ''; Line: Integer = 0): Int64; overload;
+    procedure AnswerLines(Rec: TMIRecord; const H: TGdbHandler; Ok: Boolean);
+    procedure AnswerRegisters(Rec: TMIRecord; const H: TGdbHandler; Ok: Boolean);
     procedure Send(const Command: String); overload;
     procedure ClearHandlers;
     procedure StopReader;
@@ -95,7 +101,8 @@ type
       override;
     procedure DeleteBreakpoint(Id: Integer); override;
 
-    procedure Run; override;
+    procedure Run(StopAtMain: Boolean = False); override;
+    procedure Attach(Pid: Integer; Handler: TDebugDoneHandler = nil); override;
     procedure Continue; override;
     procedure Next; override;
     procedure Step; override;
@@ -107,6 +114,9 @@ type
     procedure Evaluate(const Expression: String; Handler: TDebugValueHandler); override;
     procedure Assign(const Expression, Value: String; Handler: TDebugValueHandler = nil); override;
     procedure GetFrames(Handler: TDebugFramesHandler); override;
+    procedure Disassemble(const Location: String; Handler: TDebugLinesHandler); override;
+    procedure SetIntelSyntax(Intel: Boolean); override;
+    procedure GetRegisters(Handler: TDebugRegistersHandler); override;
     procedure UserCommand(const Command: String; Handler: TDebugDoneHandler = nil); override;
 
     procedure CancelHandlers(Owner: TObject); override;
@@ -347,7 +357,11 @@ begin
       else
         TDebugValueHandler(H.Method)(False, Error);
     hkBreakpoint:
-      TDebugBreakpointHandler(H.Method)(Ok, Rec.Results.GetInt('bkpt.number', -1), Error);
+      TDebugBreakpointHandler(H.Method)(Ok, Rec.Results.GetInt('bkpt.number', -1), H.Text, H.Line, Error);
+    hkLines:
+      AnswerLines(Rec, H, Ok);
+    hkRegNames, hkRegValues:
+      AnswerRegisters(Rec, H, Ok);
     hkFrames: begin
         SetLength(Frames, 0);
         Stack := Rec.Results.Find('stack');
@@ -381,6 +395,7 @@ begin
   end;
 
   Info.Frame := FrameOf(Rec.Results.Find('frame'));
+  fLastPC := Info.Frame.Addr;
   Info.BreakpointId := Rec.Results.GetInt('bkptno', -1);
   Info.SignalName := Rec.Results.Get('signal-name');
   Info.SignalMeaning := Rec.Results.Get('signal-meaning');
@@ -398,10 +413,11 @@ begin
   DoStopped(Info);
 end;
 
-function TGdbEngine.Send(const Command: String; Kind: TGdbHandlerKind; const Handler: TMethod): Int64;
+function TGdbEngine.Send(const Command: String; Kind: TGdbHandlerKind; const Handler: TMethod;
+  const Text: String; Line: Integer): Int64;
 var
   H: PGdbHandler;
-  Line: String;
+  CommandLine: String;
 begin
   Result := fNextToken;
   Inc(fNextToken);
@@ -410,13 +426,15 @@ begin
     H^.Token := Result;
     H^.Kind := Kind;
     H^.Method := Handler;
+    H^.Text := Text;
+    H^.Line := Line;
     fHandlers.Add(H);
   end;
   if not Running then
     Exit;
-  Line := IntToStr(Result) + Command + #10;
+  CommandLine := IntToStr(Result) + Command + #10;
   try
-    fProcess.Input.WriteBuffer(Line[1], Length(Line));
+    fProcess.Input.WriteBuffer(CommandLine[1], Length(CommandLine));
   except
     // gdb has gone: OnTerminated follows when the reader sees it
   end;
@@ -582,7 +600,7 @@ begin
   // -f: pending if the file is not loaded yet (a library); explicit
   // location, so a file name with spaces is never split
   Send('-break-insert -f --source ' + MIQuote(FileName) + ' --line ' + IntToStr(Line), hkBreakpoint,
-    TMethod(Handler));
+    TMethod(Handler), FileName, Line);
 end;
 
 procedure TGdbEngine.DeleteBreakpoint(Id: Integer);
@@ -590,9 +608,17 @@ begin
   Send('-break-delete ' + IntToStr(Id));
 end;
 
-procedure TGdbEngine.Run;
+procedure TGdbEngine.Run(StopAtMain: Boolean);
 begin
-  Send('-exec-run');
+  if StopAtMain then
+    Send('-exec-run --start')
+  else
+    Send('-exec-run');
+end;
+
+procedure TGdbEngine.Attach(Pid: Integer; Handler: TDebugDoneHandler);
+begin
+  Send('-target-attach ' + IntToStr(Pid), hkDone, TMethod(Handler));
 end;
 
 procedure TGdbEngine.Continue;
@@ -643,6 +669,113 @@ end;
 procedure TGdbEngine.GetFrames(Handler: TDebugFramesHandler);
 begin
   Send('-stack-list-frames', hkFrames, TMethod(Handler));
+end;
+
+// Same address? gdb writes them in hexadecimal, with or without zeros
+function SameAddress(const A, B: String): Boolean;
+begin
+  Result := (A <> '') and (B <> '') and
+    (StrToQWordDef('$' + Copy(A, 3, MaxInt), 0) = StrToQWordDef('$' + Copy(B, 3, MaxInt), 1));
+end;
+
+procedure TGdbEngine.Disassemble(const Location: String; Handler: TDebugLinesHandler);
+var
+  Where: String;
+begin
+  if Location = '' then
+    Where := '$pc'
+  else
+    Where := MIQuote(Location);
+  // -a: the whole function around that address; mode 0: instructions only
+  Send('-data-disassemble -a ' + Where + ' -- 0', hkLines, TMethod(Handler), Location);
+end;
+
+procedure TGdbEngine.AnswerLines(Rec: TMIRecord; const H: TGdbHandler; Ok: Boolean);
+var
+  Lines: TStringList;
+  Insns, Insn: TMIValue;
+  I: Integer;
+  Mark: String;
+begin
+  Lines := TStringList.Create;
+  try
+    Insns := Rec.Results.Find('asm_insns');
+    if Ok and Assigned(Insns) then begin
+      if Insns.Count > 0 then
+        Lines.Add(Insns[0].Get('func-name', H.Text))
+      else
+        Lines.Add(H.Text);
+      for I := 0 to Insns.Count - 1 do begin
+        Insn := Insns[I];
+        if SameAddress(Insn.Get('address'), fLastPC) then
+          Mark := '=> '
+        else
+          Mark := '   ';
+        Lines.Add(Mark + Insn.Get('address') + ' <+' + Insn.Get('offset') + '>:' + #9 + Insn.Get('inst'));
+      end;
+    end else
+      Lines.Add(Rec.Results.Get('msg'));
+    TDebugLinesHandler(H.Method)(Ok, Lines);
+  finally
+    Lines.Free;
+  end;
+end;
+
+procedure TGdbEngine.SetIntelSyntax(Intel: Boolean);
+begin
+  if Intel then
+    Send('-gdb-set disassembly-flavor intel')
+  else
+    Send('-gdb-set disassembly-flavor att');
+end;
+
+procedure TGdbEngine.GetRegisters(Handler: TDebugRegistersHandler);
+begin
+  // First the names, then the values (by number); see AnswerRegisters
+  Send('-data-list-register-names', hkRegNames, TMethod(Handler));
+end;
+
+procedure TGdbEngine.AnswerRegisters(Rec: TMIRecord; const H: TGdbHandler; Ok: Boolean);
+var
+  Names, Values, AllNames: TStringList;
+  List: TMIValue;
+  I, Number: Integer;
+begin
+  if H.Kind = hkRegNames then begin
+    List := Rec.Results.Find('register-names');
+    if Ok and Assigned(List) then begin
+      AllNames := TStringList.Create;
+      try
+        for I := 0 to List.Count - 1 do
+          AllNames.Add(List[I].Text);
+        // the values come next, for the same handler
+        Send('-data-list-register-values --skip-unavailable x', hkRegValues, H.Method, AllNames.Text);
+      finally
+        AllNames.Free;
+      end;
+      Exit;
+    end;
+  end;
+  Names := TStringList.Create;
+  Values := TStringList.Create;
+  AllNames := TStringList.Create;
+  try
+    AllNames.Text := H.Text;
+    List := Rec.Results.Find('register-values');
+    if Ok and Assigned(List) then
+      for I := 0 to List.Count - 1 do begin
+        Number := List[I].GetInt('number', -1);
+        if (Number >= 0) and (Number < AllNames.Count) and (AllNames[Number] <> '') then begin
+          Names.Add(AllNames[Number]);
+          Values.Add(List[I].Get('value'));
+        end;
+      end;
+    TDebugRegistersHandler(H.Method)(Ok, Names, Values);
+  finally
+    AllNames.Free;
+    Values.Free;
+    Names.Free;
+  end;
 end;
 
 procedure TGdbEngine.UserCommand(const Command: String; Handler: TDebugDoneHandler);

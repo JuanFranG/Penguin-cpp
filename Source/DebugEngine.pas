@@ -63,8 +63,15 @@ type
   // Answers. Ok is False when the debugger refused; Error says why
   TDebugDoneHandler = procedure(Ok: Boolean; const Error: String) of object;
   TDebugValueHandler = procedure(Ok: Boolean; const Value: String) of object;
-  TDebugBreakpointHandler = procedure(Ok: Boolean; Id: Integer; const Error: String) of object;
+  // FileName and Line are the ones asked for, to tell answers apart
+  TDebugBreakpointHandler = procedure(Ok: Boolean; Id: Integer; const FileName: String; Line: Integer;
+    const Error: String) of object;
   TDebugFramesHandler = procedure(Ok: Boolean; const Frames: TDebugFrames) of object;
+  // Disassembly: Lines[0] is the function, then one instruction per line,
+  // "=> " before the one about to run. Lines lives only during the call
+  TDebugLinesHandler = procedure(Ok: Boolean; Lines: TStrings) of object;
+  // Registers: Names[I] holds Values[I] (hexadecimal); only during the call
+  TDebugRegistersHandler = procedure(Ok: Boolean; Names, Values: TStrings) of object;
 
   TDebugEngine = class
   private
@@ -98,8 +105,11 @@ type
       virtual; abstract;
     procedure DeleteBreakpoint(Id: Integer); virtual; abstract;
 
-    // Moving: each one ends with OnStopped, OnExited or OnTerminated
-    procedure Run; virtual; abstract;
+    // Moving: each one ends with OnStopped, OnExited or OnTerminated.
+    // Run with StopAtMain pauses at the start of main
+    procedure Run(StopAtMain: Boolean = False); virtual; abstract;
+    // Debugs a running process instead (Pid); OnStopped when attached
+    procedure Attach(Pid: Integer; Handler: TDebugDoneHandler = nil); virtual; abstract;
     procedure Continue; virtual; abstract;
     procedure Next; virtual; abstract;            // the next line, over calls
     procedure Step; virtual; abstract;            // the next line, into calls
@@ -111,6 +121,11 @@ type
     procedure Evaluate(const Expression: String; Handler: TDebugValueHandler); virtual; abstract;
     procedure Assign(const Expression, Value: String; Handler: TDebugValueHandler = nil); virtual; abstract;
     procedure GetFrames(Handler: TDebugFramesHandler); virtual; abstract;
+
+    // The CPU window. Location: a function or address; '' where it stopped
+    procedure Disassemble(const Location: String; Handler: TDebugLinesHandler); virtual; abstract;
+    procedure SetIntelSyntax(Intel: Boolean); virtual; abstract;
+    procedure GetRegisters(Handler: TDebugRegistersHandler); virtual; abstract;
     // A command typed by the user, in the debugger's own language; what it
     // prints arrives through OnOutput
     procedure UserCommand(const Command: String; Handler: TDebugDoneHandler = nil); virtual; abstract;

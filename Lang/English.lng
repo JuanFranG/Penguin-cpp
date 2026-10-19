@@ -52,6 +52,12 @@ Ver=1
 1061=another program when run: %s
 1062=compiler or linker options that can run commands: %s
 1063=program arguments with shell characters (used when debugging): %s
+1064=Penguin cpp - %s: the program being debugged reads and writes here.
+1065=No terminal could be opened (%s): the output of the program appears in this panel, and the program cannot read the keyboard.
+1066=The program ended with exit code %d. Press Enter to close this window.
+1067=The program received the signal %s (%s).
+1068=not available here
+1069=run the program to see its value
 
 
 2001=&Open...

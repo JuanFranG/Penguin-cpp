@@ -187,7 +187,7 @@ type
     procedure HandleCodeCompletion(var Key: Char);
     function HandpointAllowed(var MousePos: TBufferCoord; ShiftState: TShiftState): THandPointReason;
     procedure SetFileName(const value: String);
-    procedure OnMouseOverEvalReady(const evalvalue: String);
+    procedure OnMouseOverEvalReady(Ok: Boolean; const evalvalue: String);
     function HasBreakPoint(Line: integer): integer;
     procedure EditorPaint(Sender: TObject; ACanvas: TCanvas);
     procedure LinesInserted(FirstLine, Count: integer);
@@ -237,7 +237,7 @@ type
 implementation
 
 uses
-  main, Project, MultiLangSupport, devCFG, Utils, DataFrm, GotoLineFrm, Macros, DebugReader,
+  main, Project, MultiLangSupport, devCFG, Utils, DataFrm, GotoLineFrm, Macros, Debugger,
   IncrementalFrm, CodeCompletionForm, SynEditMiscClasses, CharUtils, EditorPrint, PdfPrint, CodeExport;
 
 { TCloseTabSheet }
@@ -483,6 +483,7 @@ begin
 
   // Delete breakpoints in this editor
   MainForm.Debugger.DeleteBreakPointsOf(self);
+  MainForm.Debugger.CancelHandlers(Self); // no answer may reach a freed editor
 
   // Destroy code completion stuff
   DestroyCompletion;
@@ -511,10 +512,12 @@ begin
     fTabSheet.PageControl := Value;
 end;
 
-procedure TEditor.OnMouseOverEvalReady(const evalvalue: String);
+procedure TEditor.OnMouseOverEvalReady(Ok: Boolean; const evalvalue: String);
 begin
-  fText.Hint := fCurrentEvalWord + ' = ' + evalvalue;
-  MainForm.Debugger.OnEvalReady := nil;
+  if Ok then
+    fText.Hint := fCurrentEvalWord + ' = ' + evalvalue
+  else
+    fText.Hint := '';
 end;
 
 procedure TEditor.Activate;
@@ -555,7 +558,7 @@ var
 begin
   result := -1;
   for I := 0 to MainForm.Debugger.BreakPointList.Count - 1 do
-    if integer(PBreakPoint(MainForm.Debugger.BreakPointList.Items[I])^.editor) = integer(self) then
+    if PBreakPoint(MainForm.Debugger.BreakPointList.Items[I])^.editor = Self then
       if PBreakPoint(MainForm.Debugger.BreakPointList.Items[I])^.line = Line then begin
         Result := I;
         break;
@@ -1572,8 +1575,8 @@ var
 
     // Evaluate s
     fCurrentEvalWord := s; // remember name when debugger finishes
-    MainForm.Debugger.OnEvalReady := OnMouseOverEvalReady;
-    MainForm.Debugger.SendCommand('print', s);
+    MainForm.Debugger.CancelHandlers(Self); // only the latest word
+    MainForm.Debugger.Evaluate(s, OnMouseOverEvalReady);
   end;
 
   procedure ShowParserHint;
@@ -1597,7 +1600,7 @@ var
 
   procedure CancelHint;
   begin
-    MainForm.Debugger.OnEvalReady := nil;
+    MainForm.Debugger.CancelHandlers(Self);
 
     // disable editor hint
     Application.CancelHint;

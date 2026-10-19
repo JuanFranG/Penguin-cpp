@@ -23,7 +23,7 @@ interface
 
 uses
   LCLIntf, LCLType, LMessages, SysUtils, Variants, Classes, Math, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Buttons, SynEdit, SynEditTypes, ClipBrd, StrUtils, ComCtrls, ExtCtrls, Menus;
+  Dialogs, StdCtrls, Buttons, SynEdit, SynEditTypes, ClipBrd, StrUtils, ComCtrls, ExtCtrls, Menus, DebugEngine;
 
 type
   TCPUForm = class(TForm)
@@ -60,15 +60,13 @@ type
     procedure CPUSelectAllClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
   private
-    fRegisters: TList;
-    fAssembler: TStringList;
-    fBacktrace: TList;
-
     procedure LoadText;
+    procedure AssemblerReady(Ok: Boolean; Lines: TStrings);
+    procedure RegistersReady(Ok: Boolean; Names, Values: TStrings);
+    procedure FramesReady(Ok: Boolean; const Frames: TDebugFrames);
   public
-    procedure OnAssemblerReady;
-    procedure OnRegistersReady;
-    procedure OnBacktraceReady;
+    // Asks the debugger for the code, registers and stack where it stopped
+    procedure UpdateView;
   end;
 
 var
@@ -77,30 +75,14 @@ var
 implementation
 
 uses
-  main, Version, MultiLangSupport, Debugger, DebugReader, DataFrm, Utils, devCFG, Editor, Types, SynEditCompat;
+  main, Version, MultiLangSupport, Debugger, DataFrm, Utils, devCFG, Editor, Types, SynEditCompat;
 
 {$R *.lfm}
 
 procedure TCPUForm.FormClose(Sender: TObject; var Action: TCloseAction);
-var
-  I: integer;
 begin
-  for I := 0 to fRegisters.Count - 1 do
-    Dispose(PRegister(fRegisters.Items[I]));
-  fRegisters.Free;
-
-  fAssembler.Free;
-
-  for I := 0 to fBacktrace.Count - 1 do
-    Dispose(PTrace(fBacktrace.Items[I]));
-  fBackTrace.Free;
-
-  // Clear contents of the debug reader (gone if the session has ended)
-  if Assigned(MainForm.Debugger.Reader) then begin
-    MainForm.Debugger.Reader.Registers := nil;
-    MainForm.Debugger.Reader.Disassembly := nil;
-    MainForm.Debugger.Reader.Backtrace := nil;
-  end;
+  // Answers still on their way must not reach a freed window
+  MainForm.Debugger.CancelHandlers(Self);
 
   // Save column widths of registerbox
   devData.CPURegisterCol1 := RegisterListbox.Column[0].Width;
@@ -123,7 +105,8 @@ begin
       propercmd := edFunc.Text;
       if EndsStr('()', propercmd) then
         propercmd := ReplaceLastStr(propercmd, '()', '(void)');
-      MainForm.Debugger.SendCommand('disas', propercmd);
+      if Assigned(MainForm.Debugger.Engine) then
+        MainForm.Debugger.Engine.Disassemble(propercmd, AssemblerReady);
       if (Length(edFunc.Text) > 0) and (edFunc.Items.IndexOf(edFunc.Text) = -1) then
         edFunc.AddItem(edFunc.Text, nil);
     end;
@@ -147,72 +130,90 @@ begin
   CPUSelectAll.Caption := Lang[ID_ITEM_SELECTALL];
 end;
 
-procedure TCPUForm.OnBacktraceReady;
+procedure TCPUForm.FramesReady(Ok: Boolean; const Frames: TDebugFrames);
 var
   I: integer;
   item: TListItem;
 begin
   StackTrace.Items.BeginUpdate;
-  StackTrace.Clear;
-  for I := 0 to fBacktrace.Count - 1 do begin
-    item := StackTrace.Items.Add;
-    item.Caption := PTrace(fBacktrace.Items[I])^.funcname;
-    item.SubItems.Add(PTrace(fBacktrace.Items[I])^.filename);
-    item.SubItems.Add(PTrace(fBacktrace.Items[I])^.line);
+  try
+    StackTrace.Clear;
+    for I := 0 to High(Frames) do begin
+      item := StackTrace.Items.Add;
+      item.Caption := Frames[I].Func;
+      if Frames[I].FullName <> '' then
+        item.SubItems.Add(Frames[I].FullName)
+      else
+        item.SubItems.Add(Frames[I].FileName);
+      if Frames[I].Line > 0 then
+        item.SubItems.Add(IntToStr(Frames[I].Line))
+      else
+        item.SubItems.Add('');
+    end;
+  finally
+    StackTrace.Items.EndUpdate;
   end;
-  StackTrace.Items.EndUpdate;
-
-  // Free list for reuse
-  for I := 0 to fBacktrace.Count - 1 do
-    Dispose(PTrace(fBacktrace.Items[I]));
-  fBacktrace.Clear;
 end;
 
-procedure TCPUForm.OnAssemblerReady;
+procedure TCPUForm.AssemblerReady(Ok: Boolean; Lines: TStrings);
 var
   I, activeline: integer;
 begin
+  if Lines.Count = 0 then
+    Exit;
   activeline := -1;
-  edFunc.Text := fAssembler.Strings[0];
+  if Ok then
+    edFunc.Text := Lines[0];
 
   CodeList.BeginUpdate;
   try
     CodeList.Clear;
-    for I := 1 to fAssembler.Count - 1 do begin
-      CodeList.Lines.Add(fAssembler.Strings[i]);
-      if StartsStr('=>', fAssembler.Strings[i]) then
-        activeline := i + 1;
+    for I := 1 to Lines.Count - 1 do begin
+      CodeList.Lines.Add(Lines[I]);
+      if StartsStr('=>', Lines[I]) then
+        activeline := I;
     end;
+    if not Ok then
+      CodeList.Lines.Add(Lines[0]); // gdb's message
   finally
     CodeList.EndUpdate;
   end;
-
-  // Free list for reuse
-  fAssembler.Clear;
 
   if activeline <> -1 then
     CodeList.CaretXY := BufferCoord(1, activeline);
 end;
 
-procedure TCPUForm.OnRegistersReady;
+procedure TCPUForm.RegistersReady(Ok: Boolean; Names, Values: TStrings);
 var
   item: TListItem;
   I: integer;
+  Number: Int64;
 begin
   RegisterListbox.Items.BeginUpdate;
-  RegisterListBox.Clear;
-  for I := 0 to fRegisters.Count - 1 do begin
-    item := RegisterListbox.Items.Add;
-    item.Caption := UpperCase(PRegister(fRegisters.Items[I])^.name);
-    item.SubItems.Add(PRegister(fRegisters.Items[I])^.valuehex);
-    item.SubItems.Add(PRegister(fRegisters.Items[I])^.valuedec);
+  try
+    RegisterListBox.Clear;
+    for I := 0 to Names.Count - 1 do begin
+      item := RegisterListbox.Items.Add;
+      item.Caption := UpperCase(Names[I]);
+      item.SubItems.Add(Values[I]);
+      // the decimal value, for the registers that hold a number
+      if StartsStr('0x', Values[I]) and TryStrToInt64('$' + Copy(Values[I], 3, MaxInt), Number) then
+        item.SubItems.Add(IntToStr(Number))
+      else
+        item.SubItems.Add('');
+    end;
+  finally
+    RegisterListBox.Items.EndUpdate;
   end;
-  RegisterListBox.Items.EndUpdate;
+end;
 
-  // Free list for reuse
-  for I := 0 to fRegisters.Count - 1 do
-    Dispose(PRegister(fRegisters.Items[I]));
-  fRegisters.Clear;
+procedure TCPUForm.UpdateView;
+begin
+  if not (MainForm.Debugger.Executing and MainForm.Debugger.Paused and Assigned(MainForm.Debugger.Engine)) then
+    Exit;
+  MainForm.Debugger.Engine.Disassemble('', AssemblerReady);
+  MainForm.Debugger.Engine.GetRegisters(RegistersReady);
+  MainForm.Debugger.Engine.GetFrames(FramesReady);
 end;
 
 procedure TCPUForm.FormCreate(Sender: TObject);
@@ -225,24 +226,9 @@ begin
   RadioATT.Checked := devData.UseATTSyntax;
   RadioIntel.Checked := not devData.UseATTSyntax;
 
-  fRegisters := TList.Create;
-  fAssembler := TStringList.Create;
-  fBacktrace := TList.Create;
-
-  if MainForm.Debugger.Executing and Assigned(MainForm.Debugger.Reader) then begin
-
-    // Load the registers...
-    MainForm.Debugger.Reader.Registers := fRegisters;
-    MainForm.Debugger.SendCommand('info', 'registers');
-
-    // Set disassembly flavor and load the current function
-    MainForm.Debugger.Reader.Disassembly := fAssembler;
-    if devData.UseATTSyntax then // gbSyntaxClick has NOT been called yet...
-      gbSyntaxClick(nil);
-
-    // Obtain stack trace too
-    MainForm.Debugger.Reader.Backtrace := fBacktrace;
-    MainForm.Debugger.SendCommand('backtrace', '');
+  if MainForm.Debugger.Executing and Assigned(MainForm.Debugger.Engine) then begin
+    MainForm.Debugger.Engine.SetIntelSyntax(not devData.UseATTSyntax);
+    UpdateView;
   end;
 end;
 
@@ -252,11 +238,13 @@ var
 begin
   // Set disassembly flavor
   if RadioAtt.Checked then begin
-    MainForm.Debugger.SendCommand('set disassembly-flavor', 'att');
+    if Assigned(MainForm.Debugger.Engine) then
+      MainForm.Debugger.Engine.SetIntelSyntax(False);
     RadioIntel.Checked := false;
     devData.UseATTSyntax := true;
   end else if RadioIntel.Checked then begin
-    MainForm.Debugger.SendCommand('set disassembly-flavor', 'intel');
+    if Assigned(MainForm.Debugger.Engine) then
+      MainForm.Debugger.Engine.SetIntelSyntax(True);
     RadioAtt.Checked := false;
     devData.UseATTSyntax := false;
   end;

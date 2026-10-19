@@ -118,7 +118,7 @@ al publicarla. Hoy `main` incluye las fases 1 a 6 (`fase6/compilador`).
 | 4b · Identidad visual y temas | `fase4/lazarus`, `fase6/compilador` | ✅ Icono, paleta en paneles, menús y diálogos (Qt5) y esquemas Penguin claro y oscuro, probados en Mint |
 | 5 · Editor (SynEdit de Lazarus) | `fase5/editor` | ✅ Hecha, probada en Mint: impresión, exportación a RTF/TeX y plegado |
 | 6 · Compilación con el gcc de Linux | `fase6/compilador` | 🔄 Probados en Mint: gcc, archivos sueltos, terminal, errores, instancia única y formateadores. Corregido el fallo al abrir proyectos; falta probarlos y quitar lo que es solo de Windows |
-| 7 · Depurador (GDB/MI) | `fase7/depurador` | 🔄 Lector de GDB/MI, motor y terminal del programa listos (probados con gdb en el CI); sigue conectarlos al IDE |
+| 7 · Depurador (GDB/MI) | `fase7/depurador` | 🔄 Hecho en código (motor probado con gdb en el CI); falta probar el IDE depurando en Mint |
 | 8 · Paquete `.deb` y pulido | — | ⏳ Pendiente |
 | 9 · macOS | — | ⏳ Después del `.deb` |
 
@@ -619,12 +619,23 @@ para programas, por bloques:
    llega al programa; y al final muestra el mensaje del IDE y espera Enter.
    La prueba lo corre bajo `script(1)`: con gdb, el programa lee un número
    escrito en su terminal y responde ahí, sin mezclarse con gdb.
-4. **El IDE sobre el motor:** breakpoints y línea activa, paso a paso,
-   continuar y detener, variables vigiladas como árbol (`-var-create`), valor
-   al pasar el ratón, la pestaña Evaluar, la caja de comandos de gdb, señales
-   y fin del programa.
-5. **Ventana CPU:** desensamblado, registros y pila (`-data-disassemble`,
-   `-data-list-register-values`, `-stack-list-frames`).
+4. ✅ **El IDE sobre el motor** (compila; falta probarlo en Mint):
+   `Debugger.pas` se reescribió sobre el motor y la terminal, y se quitó
+   `DebugReader.pas`. Breakpoints (con su número de gdb, aunque el archivo
+   tenga espacios), pausa al inicio de `main` como el `start` del original,
+   línea activa, paso a paso, continuar, salir de la función, instrucciones,
+   la caja de comandos de gdb, la pestaña Evaluar, el valor al pasar el
+   ratón, modificar una variable (`a.b`, `a[2]`), señales (el aviso se
+   muestra después de procesar la parada, no en medio) y el fin del programa
+   (el código de salida queda en su terminal hasta Enter). Las variables
+   vigiladas se evalúan en cada parada, una tras otra, y se muestran como
+   árbol de sus miembros (`SplitGdbValue`, con prueba). Cada respuesta que
+   espera un editor o una ventana se cancela si se cierra antes. De paso:
+   `GotoBreakpoint` cambiaba `/` por `\` (en Linux no marcaba la línea
+   activa) y `HasBreakPoint` comparaba punteros truncados a `integer`.
+5. ✅ **Ventana CPU** (en el bloque 4; falta probarla en Mint): desensamblado
+   de la función con `=>` en la instrucción actual (`-data-disassemble`),
+   sintaxis Intel o AT&T, registros con su valor decimal, y la pila.
 6. **Adjuntarse a un proceso**, con un aviso claro cuando Linux no lo
    permite (`/proc/sys/kernel/yama/ptrace_scope`).
 

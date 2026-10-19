@@ -25,7 +25,7 @@ uses
   LCLIntf, LCLType, LMessages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs, System.UITypes,
   Menus, StdCtrls, ComCtrls, ExtCtrls, Buttons, Utils, Project, Editor, DateUtils, Compiler,
   ActnList, ToolFrm, Debugger, ClassBrowser, CodeCompletion, CppParser, CppTokenizer, SyncObjs,
-  StrUtils, SynEditTypes, devFileMonitor, devMonitorTypes, EditorList, devShortcuts, DebugReader,
+  StrUtils, SynEditTypes, devFileMonitor, devMonitorTypes, EditorList, devShortcuts,
   devCFG, SynEditTextBuffer, CppPreprocessor, CBUtils, StatementList, AStyleFormatterOptionsFrm,
   ClangFormatterOptionsFrm, ExtDlgs, PenguinPalette;
 
@@ -928,7 +928,7 @@ type
     procedure RemoveActiveBreakpoints;
     procedure AddFindOutputItem(const line, col, filename, msg, keyword: String);
     procedure EditorSaveTimer(sender: TObject);
-    procedure OnInputEvalReady(const evalvalue: String);
+    procedure OnInputEvalReady(Ok: Boolean; const evalvalue: String);
     procedure SetStatusbarLineCol;
     procedure SetStatusbarMessage(const msg: String);
 
@@ -3277,15 +3277,12 @@ begin
         // Reset UI, remove invalid breakpoints
         PrepareDebugger;
 
+        // A library runs inside its host program
         filepath := fProject.Executable;
-
-        fDebugger.Start;
-        fDebugger.SendCommand('file', '"' + StringReplace(filepath, '\', '/', [rfReplaceAll]) + '"');
-
         if fProject.Options.typ = dptDyn then
-          fDebugger.SendCommand('exec-file', '"' + StringReplace(fProject.Options.HostApplication, '\', '/',
-            [rfReplaceAll])
-            + '"');
+          fDebugger.Start(fProject.Options.HostApplication, fProject.Options.CmdLineArgs, ExtractFileDir(filepath))
+        else
+          fDebugger.Start(filepath, fProject.Options.CmdLineArgs, ExtractFileDir(filepath));
       end;
     ctFile: begin
         // Check if we enabled proper options
@@ -3332,48 +3329,13 @@ begin
           PrepareDebugger;
 
           filepath := ChangeFileExt(e.FileName, EXE_EXT);
-
-          fDebugger.Start;
-          fDebugger.SendCommand('file', '"' + StringReplace(filepath, '\', '/', [rfReplaceAll]) + '"');
+          fDebugger.Start(filepath, fCompiler.RunParams, ExtractFileDir(filepath));
         end;
       end;
     ctNone: Exit;
   end;
-
-  // Add library folders
-  with devCompilerSets.CompilationSet do begin
-    for I := 0 to LibDir.Count - 1 do
-      fDebugger.SendCommand('dir', '"' + StringReplace(LibDir[i], '\', '/', [rfReplaceAll]) + '"');
-
-    // Add include folders
-    for I := 0 to CDir.Count - 1 do
-      fDebugger.SendCommand('dir', '"' + StringReplace(CDir[i], '\', '/', [rfReplaceAll]) + '"');
-
-    // Add more include folders, duplicates will be added/moved to front of list
-    for I := 0 to CppDir.Count - 1 do
-      fDebugger.SendCommand('dir', '"' + StringReplace(CppDir[i], '\', '/', [rfReplaceAll]) + '"');
-  end;
-
-  // Add breakpoints and watch vars
-  for i := 0 to fDebugger.WatchVarList.Count - 1 do
-    fDebugger.AddWatchVar(i);
-
-  for i := 0 to fDebugger.BreakPointList.Count - 1 do
-    fDebugger.AddBreakpoint(i);
-
-  // Run the debugger
-  fDebugger.SendCommand('set', 'width 0'); // don't wrap output, very annoying
-  fDebugger.SendCommand('set', 'new-console on');
-  fDebugger.SendCommand('set', 'confirm off');
-  fDebugger.SendCommand('cd', ExtractFileDir(filepath)); // restore working directory
-  case GetCompileTarget of
-    ctNone:
-      Exit;
-    ctFile:
-      fDebugger.SendCommand('start', fCompiler.RunParams);                    // was 'run'
-    ctProject:
-      fDebugger.SendCommand('start', fProject.Options.CmdLineArgs);           // was 'run'
-  end;
+  // The debugger pauses at the start of main, sets the breakpoints, and
+  // evaluates the watches at every stop
 end;
 
 procedure TMainForm.actEnviroOptionsExecute(Sender: TObject);
@@ -4044,14 +4006,14 @@ end;
 procedure TMainForm.actNextLineExecute(Sender: TObject);
 begin
   if fDebugger.Executing then begin
-    fDebugger.SendCommand('next', '', true);
+    fDebugger.Next;
   end;
 end;
 
 procedure TMainForm.actStepLineExecute(Sender: TObject);
 begin
   if fDebugger.Executing then begin
-    fDebugger.SendCommand('step', '', true);
+    fDebugger.Step;
   end;
 end;
 
@@ -4086,7 +4048,7 @@ begin
   RemoveActiveBreakpoints;
 
   // Then active the current line in the current file
-  e := fEditorList.GetEditorFromFileName(StringReplace(FileName, '/', '\', [rfReplaceAll]), TEncoding.Default);
+  e := fEditorList.GetEditorFromFileName(FileName, TEncoding.Default);
   if Assigned(e) then begin
     e.SetActiveBreakpointFocus(Line);
     e.Activate;
@@ -4097,8 +4059,7 @@ end;
 procedure TMainForm.actStepOverExecute(Sender: TObject);
 begin
   if fDebugger.Executing then begin
-    RemoveActiveBreakpoints;
-    fDebugger.SendCommand('continue', '', true);
+    fDebugger.Continue;
   end;
 end;
 
@@ -5126,7 +5087,7 @@ begin
         EvaluateInput.SelLength := 0;
         Key := #0;
 
-        fDebugger.SendCommand(edGDBCommand.Text, '');
+        fDebugger.UserCommand(edGDBCommand.Text);
 
         if edGDBCommand.Items.IndexOf(edGDBCommand.Text) = -1 then
           edGDBCommand.AddItem(edGDBCommand.Text, nil);
@@ -5826,11 +5787,8 @@ begin
     try
       ProcessListForm := TProcessListForm.Create(self);
       if (ProcessListForm.ShowModal = mrOK) and (ProcessListForm.ProcessCombo.ItemIndex > -1) then begin
-        s := IntToStr(PtrInt(ProcessListForm.ProcessList[ProcessListForm.ProcessCombo.ItemIndex]));
-
-        fDebugger.Start;
-        fDebugger.SendCommand('file', '"' + StringReplace(fProject.Executable, '\', '\\', [rfReplaceAll]) + '"');
-        fDebugger.SendCommand('attach', s);
+        fDebugger.Attach(fProject.Executable,
+          PtrInt(ProcessListForm.ProcessList[ProcessListForm.ProcessCombo.ItemIndex]));
       end
     finally
       ProcessListForm.Free;
@@ -5870,17 +5828,19 @@ begin
 
     fullname := GetNodeName(curnode);
 
-    // Assemble full name including parents
+    // Assemble full name including parents: a.b, or a[2] for array elements
     while Assigned(curnode.Parent) do begin
       curnode := curnode.Parent;
-      if not StartsStr('{', GetNodeName(curnode)) then
+      if StartsStr('[', fullname) then
+        fullname := GetNodeName(curnode) + fullname
+      else
         fullname := GetNodeName(curnode) + '.' + fullname;
     end;
 
     value := GetNodeValue(DebugView.Selected);
 
     if InputQuery(Lang[ID_NV_MODIFYVALUE], fullname, value) then
-      fDebugger.SendCommand('set variable', fullname + ' = ' + value, true);
+      fDebugger.Assign(fullname, value);
   end;
 end;
 
@@ -6374,11 +6334,10 @@ begin
     e.ToggleBreakPoint(e.Text.CaretY);
 end;
 
-procedure TMainForm.OnInputEvalReady(const evalvalue: String);
+procedure TMainForm.OnInputEvalReady(Ok: Boolean; const evalvalue: String);
 begin
   EvalOutput.Text := evalvalue;
   EvalOutput.Font.Color := fPanelPalette.Text;
-  MainForm.fDebugger.OnEvalReady := nil;
 end;
 
 procedure TMainForm.EvaluateInputKeyPress(Sender: TObject; var Key: Char);
@@ -6392,8 +6351,8 @@ begin
         EvaluateInput.SelLength := 0;
         Key := #0;
 
-        fDebugger.OnEvalReady := OnInputEvalReady;
-        fDebugger.SendCommand('print', EvaluateInput.Text, true);
+        fDebugger.CancelHandlers(Self); // an earlier answer would overwrite this one
+        fDebugger.Evaluate(EvaluateInput.Text, OnInputEvalReady);
 
         // Tell the user we're updating...
         EvalOutput.Font.Color := fPanelPalette.Secondary;
@@ -6441,21 +6400,21 @@ end;
 procedure TMainForm.actSkipFunctionExecute(Sender: TObject);
 begin
   if fDebugger.Executing then begin
-    fDebugger.SendCommand('finish', '', true);
+    fDebugger.Finish;
   end;
 end;
 
 procedure TMainForm.actNextInsExecute(Sender: TObject);
 begin
   if fDebugger.Executing then begin
-    fDebugger.SendCommand('nexti', '', true);
+    fDebugger.NextInstruction;
   end;
 end;
 
 procedure TMainForm.actStepInsExecute(Sender: TObject);
 begin
   if fDebugger.Executing then begin
-    fDebugger.SendCommand('stepi', '', true);
+    fDebugger.StepInstruction;
   end;
 end;
 
@@ -6473,7 +6432,7 @@ begin
     Exit;
 
   // Paint top level items in red if they aren't found
-  if (curnode.Level = 0) and (PWatchVar(curnode.Data)^.gdbindex = -1) then begin
+  if (curnode.Level = 0) and not PWatchVar(curnode.Data)^.Available then begin
     if cdsSelected in State then
       Sender.Canvas.Font.Color := clWhite
     else

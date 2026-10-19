@@ -33,9 +33,10 @@ está hecho. Los detalles están en [ROADMAP.md](ROADMAP.md) (fases 3, 4 y 6).
 
 - **Los comandos del IDE no pasan por el shell.** gcc, make, la terminal y los
   formateadores reciben cada argumento por separado. Un nombre de archivo con
-  `$(…)`, comillas invertidas o `;` es texto, nunca código. La excepción, por
-  ahora, es depurar: gdb arranca el programa con sus argumentos a través del
-  shell. Se corrige al pasar el depurador a GDB/MI (fase 7).
+  `$(…)`, comillas invertidas o `;` es texto, nunca código. Al depurar, gdb
+  arranca el programa a través de `/bin/sh` (sin shell partiría los
+  argumentos en cada espacio): cada argumento va entre comillas simples, así
+  que llega tal como se escribió y nada en él se ejecuta.
 - **Los Makefiles citan cada nombre de archivo** para `make` y para `/bin/sh`.
   Los nombres que `make` no puede representar (saltos de línea, `%`, `:`, `;`,
   `=`, `|`, `#`, `\`, `*`, `?`, `[`, `]`) detienen la compilación con un aviso.

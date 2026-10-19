@@ -46,7 +46,9 @@ type
     procedure Reset;
     procedure OnDone(AOk: Boolean; const Error: String);
     procedure OnValue(AOk: Boolean; const Value: String);
-    procedure OnBreak(AOk: Boolean; Id: Integer; const Error: String);
+    procedure OnBreak(AOk: Boolean; Id: Integer; const FileName: String; Line: Integer; const Error: String);
+    procedure OnLines(AOk: Boolean; Lines: TStrings);
+    procedure OnRegisters(AOk: Boolean; Names, Values: TStrings);
     procedure OnFrames(AOk: Boolean; const AFrames: TDebugFrames);
     procedure OnStopped(Sender: TObject; const AInfo: TDebugStopInfo);
     procedure OnRunning(Sender: TObject);
@@ -92,12 +94,31 @@ begin
   Text := Value;
 end;
 
-procedure TRecorder.OnBreak(AOk: Boolean; Id: Integer; const Error: String);
+procedure TRecorder.OnBreak(AOk: Boolean; Id: Integer; const FileName: String; Line: Integer;
+  const Error: String);
 begin
   Answered := True;
   Ok := AOk;
   BreakId := Id;
-  Text := Error;
+  Text := Error + '|' + ExtractFileName(FileName) + ':' + IntToStr(Line);
+end;
+
+procedure TRecorder.OnLines(AOk: Boolean; Lines: TStrings);
+begin
+  Answered := True;
+  Ok := AOk;
+  Text := Lines.Text;
+end;
+
+procedure TRecorder.OnRegisters(AOk: Boolean; Names, Values: TStrings);
+var
+  I: Integer;
+begin
+  Answered := True;
+  Ok := AOk;
+  Text := '';
+  for I := 0 to Names.Count - 1 do
+    Text := Text + Names[I] + '=' + Values[I] + LineEnding;
 end;
 
 procedure TRecorder.OnFrames(AOk: Boolean; const AFrames: TDebugFrames);
@@ -211,7 +232,8 @@ begin
     E.SetWorkingDir(Dir);
     R.Reset;
     E.InsertBreakpoint(Src, 3, R.OnBreak);
-    Check(Wait(R.Answered) and R.Ok and (R.BreakId > 0), 'breakpoint in a file with a space', R.Text);
+    Check(Wait(R.Answered) and R.Ok and (R.BreakId > 0) and (Pos('|hola mundo.c:3', R.Text) > 0),
+      'breakpoint in a file with a space, answered with its place', R.Text);
 
     R.Reset;
     E.Run;
@@ -223,6 +245,16 @@ begin
     R.Reset;
     E.Evaluate('a', R.OnValue);
     Check(Wait(R.Answered) and R.Ok and (R.Text = '40'), 'evaluate a = 40', R.Text);
+
+    R.Reset;
+    E.Disassemble('', R.OnLines);
+    Check(Wait(R.Answered) and R.Ok and (Pos('suma', R.Text) = 1) and (Pos('=> ', R.Text) > 0),
+      'disassembly of suma, marking where it stopped', Copy(R.Text, 1, 300));
+
+    R.Reset;
+    E.GetRegisters(R.OnRegisters);
+    Check(Wait(R.Answered) and R.Ok and ((Pos('rip=0x', R.Text) > 0) or (Pos('pc=0x', R.Text) > 0)),
+      'registers, with the program counter', Copy(R.Text, 1, 300));
 
     R.Reset;
     E.GetFrames(R.OnFrames);

@@ -481,6 +481,11 @@ end;
 
 destructor TEditor.Destroy;
 begin
+  // Freeing the page makes the page control change its active page, and its
+  // handlers find the editor through the page: this one is half gone by then
+  if Assigned(fTabSheet) then
+    fTabSheet.Tag := 0;
+
   // Deactivate the file change monitor
   MainForm.FileMonitor.UnMonitor(fFileName);
 

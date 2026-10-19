@@ -392,9 +392,13 @@ begin
   end;
 end;
 
+// The parser is about to free its statements, which the nodes point to. Drop
+// them now: UpdateView rebuilds them only while the tab is visible, and a
+// hidden tab would keep them pointing to freed memory
 procedure TClassBrowser.OnParserBusy(Sender: TObject);
 begin
   BeginUpdate;
+  Items.Clear;
 end;
 
 procedure TClassBrowser.OnParserUpdate(Sender: TObject);

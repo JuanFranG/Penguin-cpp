@@ -111,7 +111,7 @@ begin
     lstBoth: begin
         // Check if right is focused, otherwise assume left one is focused
         ActivePage := fRightPageControl.ActivePage;
-        if TEditor(ActivePage.Tag).Text.Focused then
+        if Assigned(ActivePage) and (ActivePage.Tag <> 0) and TEditor(ActivePage.Tag).Text.Focused then
           Result := fRightPageControl
         else
           Result := fLeftPageControl; // no focus -> left one

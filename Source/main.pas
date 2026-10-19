@@ -881,6 +881,7 @@ type
     procedure CompEndProc;
     procedure CompSuccessProc;
     procedure RunEndProc;
+    procedure AppException(Sender: TObject; E: Exception);
     procedure LoadText;
     procedure OpenUnit;
     function PrepareForRun(ForcedCompileTarget: TTarget = ctInvalid): Boolean;
@@ -1088,6 +1089,7 @@ end;
 procedure TMainForm.FormDestroy(Sender: TObject);
 begin
   StopInstanceServer; // removes the socket
+  Application.OnException := nil; // AppException is a method of this form
   Application.RemoveAsyncCalls(Self); // queued FitToolbarDock calls
   FreeAndNil(fFilesToOpen);
   FreeAndNil(fCriticalSection);
@@ -1823,6 +1825,20 @@ begin
   CompSheet.Caption := Lang[ID_SHEET_COMP] + ' (' + IntToStr(CompilerOutput.Items.Count) + ')'
 end;
 
+// An error nobody handled: besides the usual dialog, its backtrace goes to
+// the terminal (with line numbers in the Debug build), so that a report of
+// it says where it happened
+procedure TMainForm.AppException(Sender: TObject; E: Exception);
+begin
+  try
+    WriteLn(StdErr, 'Penguin cpp: ', E.ClassName, ': ', E.Message);
+    DumpExceptionBackTrace(StdErr);
+  except
+    // no terminal to write to
+  end;
+  Application.ShowException(E);
+end;
+
 procedure TMainForm.CompEndProc;
 var
   I: integer;
@@ -2261,9 +2277,13 @@ begin
       // Clear error browser
       ClearMessageControl;
 
+      // The compiler keeps the project it built last
+      fCompiler.Project := nil;
+
       // Clear class browser
       ClassBrowser.ProjectDir := '';
       CppParser.Reset;
+      RebuildClassesToolbar; // its lists point to the statements just freed
 
       // Because fProject was assigned during editor closing, force update trigger again
       EditorPageControlLeft.OnChange(EditorPageControlLeft);
@@ -4194,6 +4214,7 @@ var
 begin
   // Configure parser
   CppParser.Reset;
+  RebuildClassesToolbar; // its lists point to the statements just freed
   CppParser.Tokenizer := CppTokenizer;
   CppParser.Preprocessor := CppPreprocessor;
   CppParser.Enabled := devCodeCompletion.Enabled;
@@ -4249,8 +4270,11 @@ var
   I: integer;
   e: TEditor;
 begin
+  // The class toolbar's lists point to the statements Reset frees; ParseFileList
+  // rebuilds it, but does nothing when code completion is off
+  CppParser.Reset;
+  RebuildClassesToolbar;
   with CppParser do begin
-    Reset;
     if Assigned(fProject) then begin
       ProjectDir := fProject.Directory;
       for I := 0 to fProject.Units.Count - 1 do
@@ -6100,6 +6124,7 @@ procedure TMainForm.FormCreate(Sender: TObject);
 
 begin
   fFirstShow := true;
+  Application.OnException := AppException;
 
   // Backup PATH variable
   devDirs.OriginalPath := GetEnvironmentVariable('PATH');

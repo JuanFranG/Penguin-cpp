@@ -5285,7 +5285,7 @@ begin
       // Create an action that executes when clicking on the item
       Act := TAction.Create(Item);
       Act.Name := 'dynactOpenEditorByTag';
-      Act.Tag := Integer(e);
+      Act.Tag := PtrInt(e); // Integer cut the address in half on 64 bits
       Act.OnExecute := actOpenEditorByTagExecute;
 
       // Attach it to the new menu item

@@ -46,7 +46,7 @@ type
     function FileIsOpen(const FileName: String; ProjectOnly: boolean = FALSE): TEditor;
     function GetEditor(PageIndex: integer = -1; PageControl: TPageControl = nil): TEditor;
     function GetEditorFromFileName(const FileName: String; AEncoding: TEncoding = nil): TEditor;
-    function GetEditorFromTag(tag: integer): TEditor;
+    function GetEditorFromTag(tag: PtrInt): TEditor; // tag: the editor itself, as a tab's Tag
     function GetPreviousEditor(Editor: TEditor): TEditor;
     procedure ForceCloseEditor(Editor: TEditor); // close, no questions asked
     function CloseEditor(Editor: TEditor): Boolean;
@@ -472,7 +472,7 @@ begin
     Result := NewEditor(FullFileName, False, False, nil, AEncoding);
 end;
 
-function TEditorList.GetEditorFromTag(tag: integer): TEditor;
+function TEditorList.GetEditorFromTag(tag: PtrInt): TEditor; // tag: the editor itself, as a tab's Tag
 var
   I: integer;
 begin

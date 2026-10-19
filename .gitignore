@@ -66,6 +66,7 @@ Source/Tests/PlatformTest/build/
 Source/Tests/LfmCheck/build/
 Source/Tests/FoldTest/build/
 Source/Tests/MakefileTest/build/
+Source/Tests/GdbMITest/build/
 Source/lib/
 Source/penguin-cpp.lps
 Source/penguin-cpp.res

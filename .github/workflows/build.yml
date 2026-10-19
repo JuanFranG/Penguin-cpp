@@ -34,6 +34,9 @@ jobs:
       - name: Operating system layer
         run: FPCFLAGS="-Cr -Co -Ct -CR -Sa -gh -gl" Source/Tests/PlatformTest/build.sh --run
 
+      - name: GDB/MI reader
+        run: FPCFLAGS="-Cr -Co -Ct -CR -Sa -gh -gl" Source/Tests/GdbMITest/build.sh --run
+
       - name: Project Makefiles with make and gcc
         run: FPCFLAGS="-Cr -Co -Ct -CR -Sa -gh -gl" Source/Tests/MakefileTest/build.sh --run
 

@@ -118,7 +118,7 @@ al publicarla. Hoy `main` incluye las fases 1 a 6 (`fase6/compilador`).
 | 4b · Identidad visual y temas | `fase4/lazarus`, `fase6/compilador` | ✅ Icono, paleta en paneles, menús y diálogos (Qt5) y esquemas Penguin claro y oscuro, probados en Mint |
 | 5 · Editor (SynEdit de Lazarus) | `fase5/editor` | ✅ Hecha, probada en Mint: impresión, exportación a RTF/TeX y plegado |
 | 6 · Compilación con el gcc de Linux | `fase6/compilador` | 🔄 Probados en Mint: gcc, archivos sueltos, terminal, errores, instancia única y formateadores. Corregido el fallo al abrir proyectos; falta probarlos y quitar lo que es solo de Windows |
-| 7 · Depurador (GDB/MI) | — | ⏳ Pendiente |
+| 7 · Depurador (GDB/MI) | `fase7/depurador` | 🔄 Lector de GDB/MI listo; sigue el motor del depurador |
 | 8 · Paquete `.deb` y pulido | — | ⏳ Pendiente |
 | 9 · macOS | — | ⏳ Después del `.deb` |
 
@@ -583,15 +583,39 @@ Falta:
   varios archivos, y los errores del compilador aparecen en la lista y se
   pueden clicar.
 
-### Fase 7 · Depurador ⏳
-- `Debugger.pas` ya lanza gdb con `TProcess`, pero usa `--annotate=2`, un
-  modo obsoleto de gdb.
-- Plan: reescribir `DebugReader.pas` sobre **GDB/MI**
-  (`--interpreter=mi`), que es estable.
-- La ventana CPU (desensamblado y registros) sale de gdb, así que se puede
-  portar.
-- El IDE habla con el depurador a través de una interfaz propia, separada de
-  gdb, para poder agregar lldb en macOS (fase 9) sin rehacer esta fase.
+### Fase 7 · Depurador 🔄
+Rama `fase7/depurador`. El depurador del original leía la salida
+`--annotate=2` de gdb, un modo que gdb ya no desarrolla, y su hilo lector
+modificaba el árbol de variables de la interfaz fuera del hilo principal. Se
+rehace sobre **GDB/MI** (`gdb --interpreter=mi`), la interfaz estable de gdb
+para programas, por bloques:
+
+1. ✅ **Lector de GDB/MI** (`GdbMI.pas`, sin LCL): cada línea de gdb pasa a
+   un registro (respuesta, estado del programa, noticias, texto) con su árbol
+   de valores. `Tests/GdbMITest` lo prueba con líneas reales de gdb y con más
+   de 3000 cortes y daños: nunca falla ni pierde memoria.
+2. **Motor del depurador:** una interfaz propia del IDE y su versión para
+   gdb. El hilo lector solo lee y pasa los registros al hilo principal.
+   Prueba en el CI con gdb de verdad: breakpoint, paso a paso, evaluar, pila
+   y fin del programa.
+3. **Terminal propia para el programa depurado** (`-inferior-tty-set`): hoy
+   escribiría en la tubería de gdb y no podría leer del teclado (`set
+   new-console on` solo existe en Windows). Los argumentos se pasan sin
+   shell (`startup-with-shell off`), lo que cierra la excepción anotada en
+   `SECURITY.md`.
+4. **El IDE sobre el motor:** breakpoints y línea activa, paso a paso,
+   continuar y detener, variables vigiladas como árbol (`-var-create`), valor
+   al pasar el ratón, la pestaña Evaluar, la caja de comandos de gdb, señales
+   y fin del programa.
+5. **Ventana CPU:** desensamblado, registros y pila (`-data-disassemble`,
+   `-data-list-register-values`, `-stack-list-frames`).
+6. **Adjuntarse a un proceso**, con un aviso claro cuando Linux no lo
+   permite (`/proc/sys/kernel/yama/ptrace_scope`).
+
+En macOS con Apple Silicon no hay gdb: la fase 9 usará **lldb** a través de
+`lldb-dap` (el Debug Adapter Protocol, que viene con las herramientas de
+Xcode) detrás de la misma interfaz del bloque 2, sin rehacer esta fase.
+
 - **Hecho cuando:** funcionan los breakpoints, el paso a paso, las variables
   vigiladas, la pila de llamadas y ver valores al pasar el ratón.
 

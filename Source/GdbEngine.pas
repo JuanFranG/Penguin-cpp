@@ -316,13 +316,16 @@ var
   Frames: TDebugFrames;
   Stack: TMIValue;
 begin
-  if Rec.Token < 0 then
-    Exit;
   I := 0;
-  while (I < fHandlers.Count) and (PGdbHandler(fHandlers[I])^.Token <> Rec.Token) do
+  while (Rec.Token >= 0) and (I < fHandlers.Count) and (PGdbHandler(fHandlers[I])^.Token <> Rec.Token) do
     Inc(I);
-  if I >= fHandlers.Count then
-    Exit; // nobody waits for this one (or it was cancelled)
+  if (Rec.Token < 0) or (I >= fHandlers.Count) then begin
+    // Nobody waits for this answer (Run, Next...): gdb's refusal still has
+    // to reach the user
+    if Rec.RecordClass = 'error' then
+      DoOutput(Rec.Results.Get('msg') + LineEnding, doLog);
+    Exit;
+  end;
   H := PGdbHandler(fHandlers[I])^;
   Dispose(PGdbHandler(fHandlers[I]));
   fHandlers.Delete(I);

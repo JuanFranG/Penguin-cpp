@@ -42,6 +42,7 @@ type
     Info: TDebugStopInfo;
     Frames: TDebugFrames;
     Output: String;
+    History: String; // every event, to show when a check fails
     procedure Reset;
     procedure OnDone(AOk: Boolean; const Error: String);
     procedure OnValue(AOk: Boolean; const Value: String);
@@ -110,22 +111,29 @@ procedure TRecorder.OnStopped(Sender: TObject; const AInfo: TDebugStopInfo);
 begin
   Stopped := True;
   Info := AInfo;
+  History := History + Format('[stopped reason=%d %s:%d %s]', [Ord(AInfo.Reason), AInfo.Frame.Func,
+    AInfo.Frame.Line, AInfo.SignalName]) + LineEnding;
 end;
 
 procedure TRecorder.OnRunning(Sender: TObject);
 begin
   Running := True;
+  History := History + '[running]' + LineEnding;
 end;
 
 procedure TRecorder.OnExited(Sender: TObject; Code: Integer);
 begin
   Exited := True;
   ExitCode := Code;
+  History := History + '[exited ' + IntToStr(Code) + ']' + LineEnding;
 end;
 
 procedure TRecorder.OnOutput(Sender: TObject; const S: String; Kind: TDebugOutputKind);
+const
+  Tags: array[TDebugOutputKind] of String = ('console', 'program', 'log');
 begin
   Output := Output + S;
+  History := History + '[' + Tags[Kind] + '] ' + S;
 end;
 
 procedure TRecorder.OnTerminated(Sender: TObject);
@@ -235,6 +243,8 @@ begin
     R.Exited := False;
     E.Continue;
     Check(Wait(R.Exited) and (R.ExitCode = 3), 'the program ends with exit code 3', IntToStr(R.ExitCode));
+    if not R.Exited then
+      WriteLn('  what happened:', LineEnding, R.History);
     Check(Pos('[' + Tricky + ']', R.Output) > 0, 'the argument arrives as it was written', Copy(R.Output, 1, 200));
     Check(not FileExists(Dir + 'pwned'), 'no shell ran it');
 

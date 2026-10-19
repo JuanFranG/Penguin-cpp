@@ -826,6 +826,8 @@ type
     procedure FormResize(Sender: TObject);
     procedure ButtonChangeThemeClick(Sender: TObject);
     procedure RecentFileClick(Sender: TObject);
+    procedure RecentFileEnter(Sender: TObject);
+    procedure RecentFileLeave(Sender: TObject);
     procedure SpeedButton0Click(Sender: TObject);
     procedure SpeedButton1Click(Sender: TObject);
     procedure SpeedButton2Click(Sender: TObject);
@@ -952,7 +954,7 @@ uses
   NewFunctionFrm, NewVarFrm, NewClassFrm, ProfileAnalysisFrm, FilePropertiesFrm, AddToDoFrm,
   ViewToDoFrm, ImportCBFrm, CPUFrm, TipOfTheDayFrm, WindowListFrm, RemoveUnitFrm,
   ParamsFrm, ProcessListFrm, SynEditHighlighter, devPlatform, SynEditCompat, LCLProc,
-  EditorPrint, PdfPrint, crc, devInstance, PenguinTheme;
+  EditorPrint, PdfPrint, crc, devInstance, PenguinTheme, FileCtrl;
 
 {$R *.lfm}
 
@@ -7090,10 +7092,28 @@ begin
   end;
 end;
 
+// A recent file: its name, then its folder shortened in the middle to fit
+// the box (the whole path shows as a hint)
 procedure TMainForm.AddFileRTB(RBName: TMemo; aFileName: string; aDirection: string);
 begin
   RBName.Lines.Add(aFileName);
-  RBName.Lines.Add(aDirection);
+  Canvas.Font := RBName.Font;
+  RBName.Lines.Add(MinimizeName(aDirection, Canvas, RBName.Width - 12));
+  RBName.Hint := aDirection;
+  RBName.ShowHint := True;
+end;
+
+// The recent file under the mouse lights up, as a button would
+procedure TMainForm.RecentFileEnter(Sender: TObject);
+begin
+  TMemo(Sender).Color := fPanelPalette.Selection;
+  TMemo(Sender).Font.Color := fPanelPalette.SelectionText;
+end;
+
+procedure TMainForm.RecentFileLeave(Sender: TObject);
+begin
+  TMemo(Sender).Color := fPanelPalette.Back;
+  TMemo(Sender).Font.Color := fPanelPalette.Text;
 end;
 
 procedure TMainForm.FormDropFiles(Sender: TObject; const FileNames: array of String);
@@ -7288,6 +7308,7 @@ begin
   SpeedButton3.Left := ButtonNewDocument.Left;
   RichEdit4.Left := ButtonNewDocument.Left;
   SpeedButton4.Left := ButtonNewDocument.Left;
+  GetProjectHistory; // the folders are shortened to the boxes' width
 end;
 
 // https://stackoverflow.com/questions/2201850/how-to-implement-a-close-button-for-a-ttabsheet-of-a-tpagecontrol

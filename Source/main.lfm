@@ -6091,6 +6091,8 @@ object MainForm: TMainForm
           OnClick = actEnviroOptionsExecute
         end
         object RichEdit1: TMemo
+          OnMouseLeave = RecentFileLeave
+          OnMouseEnter = RecentFileEnter
           OnClick = RecentFileClick
           TabStop = False
           Cursor = crHandPoint
@@ -6113,6 +6115,8 @@ object MainForm: TMainForm
           Visible = False
         end
         object RichEdit2: TMemo
+          OnMouseLeave = RecentFileLeave
+          OnMouseEnter = RecentFileEnter
           OnClick = RecentFileClick
           TabStop = False
           Cursor = crHandPoint
@@ -6135,6 +6139,8 @@ object MainForm: TMainForm
           Visible = False
         end
         object RichEdit3: TMemo
+          OnMouseLeave = RecentFileLeave
+          OnMouseEnter = RecentFileEnter
           OnClick = RecentFileClick
           TabStop = False
           Cursor = crHandPoint
@@ -6157,6 +6163,8 @@ object MainForm: TMainForm
           Visible = False
         end
         object RichEdit4: TMemo
+          OnMouseLeave = RecentFileLeave
+          OnMouseEnter = RecentFileEnter
           OnClick = RecentFileClick
           TabStop = False
           Cursor = crHandPoint
@@ -6179,6 +6187,8 @@ object MainForm: TMainForm
           Visible = False
         end
         object RichEdit0: TMemo
+          OnMouseLeave = RecentFileLeave
+          OnMouseEnter = RecentFileEnter
           OnClick = RecentFileClick
           TabStop = False
           Cursor = crHandPoint

@@ -105,6 +105,8 @@ begin
   TemplateFileNames := TStringList.Create;
   try
     FilesFromWildCard(devDirs.Templates, '*' + TEMPLATE_EXT, TemplateFileNames, FALSE, FALSE, TRUE);
+    if DirectoryExists(devDirs.UserTemplates) then // the ones the user made
+      FilesFromWildCard(devDirs.UserTemplates, '*' + TEMPLATE_EXT, TemplateFileNames, FALSE, FALSE, TRUE);
     if TemplateFileNames.Count > 0 then begin
       for i := 0 to TemplateFileNames.Count - 1 do
         AddTemplate(TemplateFileNames[i]);
@@ -211,7 +213,7 @@ begin
         ListItem := ProjView.Items.Add;
         ListItem.Caption := TemplateItem.Name;
         ListItem.Data := Pointer(PtrInt(I));
-        IconFileName := ValidateFile(TemplateItem.Icon, '', true);
+        IconFileName := ValidateFile(TemplateItem.Icon, ExtractFilePath(TemplateItem.FileName), true);
         if IconFileName <> '' then begin
           // Add icon to central dump and tell ListItem to use it
           IconItem := TIcon.Create;

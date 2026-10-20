@@ -63,6 +63,16 @@ function RunAndGetOutput(const Cmd, WorkDir: String; LineOutputFunc: TLineOutput
 // ~/.config/penguin-cpp/ ($XDG_CONFIG_HOME is honored). Not created here.
 function GetConfigDir: String;
 
+// Directory of the IDE's own files (Lang/, Templates/, Help/...), with trailing
+// delimiter. A build run where it was compiled has them next to it (ExeDir);
+// the installed one, /usr/lib/penguin-cpp/penguin-cpp, in /usr/share/penguin-cpp/
+function GetDataDir(const ExeDir: String): String;
+
+// Directory for what the user adds to the IDE (their project templates), with
+// trailing delimiter, e.g. ~/.local/share/penguin-cpp/ ($XDG_DATA_HOME is
+// honored). Not created here.
+function GetUserDataDir: String;
+
 // Creates Dir (and its parents) and makes Dir itself readable by the user
 // alone (mode 0700): the settings list the projects the user trusts and the
 // folders they work in. An existing Dir is made private too.
@@ -254,6 +264,31 @@ begin
 {$ELSE}
   Result := IncludeTrailingPathDelimiter(
     ExtractFilePath(ExcludeTrailingPathDelimiter(GetAppConfigDir(False))) + AppDirName);
+{$ENDIF}
+end;
+
+function GetDataDir(const ExeDir: String): String;
+var
+  Shared: String;
+begin
+  Result := IncludeTrailingPathDelimiter(ExeDir);
+  if DirectoryExists(Result + 'Lang') then
+    Exit;
+  // <prefix>/lib/penguin-cpp/ -> <prefix>/share/penguin-cpp/
+  Shared := ExpandFileName(Result + '..' + PathDelim + '..' + PathDelim + 'share' + PathDelim + AppDirName);
+  if DirectoryExists(Shared + PathDelim + 'Lang') then
+    Result := IncludeTrailingPathDelimiter(Shared);
+end;
+
+function GetUserDataDir: String;
+begin
+{$IFDEF UNIX}
+  Result := GetEnvironmentVariable('XDG_DATA_HOME');
+  if Result = '' then
+    Result := IncludeTrailingPathDelimiter(GetUserDir) + '.local' + PathDelim + 'share';
+  Result := IncludeTrailingPathDelimiter(IncludeTrailingPathDelimiter(Result) + AppDirName);
+{$ELSE}
+  Result := GetConfigDir;
 {$ENDIF}
 end;
 

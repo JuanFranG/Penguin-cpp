@@ -354,8 +354,9 @@ type
     fLang: String; // Language
     fTemp: String; // Templates
     fDefault: String; // user defined default
-    fExec: String; // dev-c start
+    fExec: String; // the IDE's own files: next to it, or /usr/share/penguin-cpp/
     fConfig: String; // config files directory
+    fUserTemplates: String; // templates the user creates
     fOldPath: String; // Enviroment Path at program start
   public
     constructor Create;
@@ -367,6 +368,7 @@ type
     property OriginalPath: String read fOldPath write fOldPath;
     property Exec: String read fExec write fExec;
     property Config: String read fConfig write fConfig;
+    property UserTemplates: String read fUserTemplates;
   published
     property Default: String read fDefault write fDefault;
     property Help: String read fHelp write fHelp;
@@ -2204,8 +2206,10 @@ const
   CSIDL_MYDOCUMENTS = $05;
 {$ENDIF}
 begin
-  fExec := IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName));
+  fExec := devPlatform.GetDataDir(ExtractFilePath(Application.ExeName));
   fConfig := fExec;
+  // The installed templates can't be written to
+  fUserTemplates := devPlatform.GetUserDataDir + TEMPLATE_DIR;
 
   fHelp := fExec + HELP_DIR;
   fIcons := fExec + ICON_DIR;

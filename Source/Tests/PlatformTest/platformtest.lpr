@@ -188,6 +188,36 @@ begin
   Check(GetConfigDir = Expected, 'follows XDG (' + GetConfigDir + ')', 'expected ' + Expected);
 end;
 
+// Built in its folder, the IDE has Lang/ next to it; installed, its files are
+// in <prefix>/share/penguin-cpp/ and it is <prefix>/lib/penguin-cpp/penguin-cpp
+procedure TestDataDir(const Dir: String);
+var
+  Built, Prefix: String;
+begin
+  WriteLn('GetDataDir:');
+  Built := Dir + 'built' + PathDelim;
+  ForceDirectories(Built + 'Lang');
+  Prefix := Dir + 'usr' + PathDelim;
+  ForceDirectories(Prefix + 'lib' + PathDelim + 'penguin-cpp');
+  ForceDirectories(Prefix + 'share' + PathDelim + 'penguin-cpp' + PathDelim + 'Lang');
+  try
+    Check(GetDataDir(Built) = Built, 'files next to a build');
+    Check(GetDataDir(Prefix + 'lib' + PathDelim + 'penguin-cpp' + PathDelim) =
+      Prefix + 'share' + PathDelim + 'penguin-cpp' + PathDelim, 'installed files in share/penguin-cpp',
+      GetDataDir(Prefix + 'lib' + PathDelim + 'penguin-cpp' + PathDelim));
+    Check(GetDataDir(Dir) = Dir, 'with neither, the program''s folder');
+  finally
+    RemoveDir(Built + 'Lang');
+    RemoveDir(Built);
+    RemoveDir(Prefix + 'share' + PathDelim + 'penguin-cpp' + PathDelim + 'Lang');
+    RemoveDir(Prefix + 'share' + PathDelim + 'penguin-cpp');
+    RemoveDir(Prefix + 'share');
+    RemoveDir(Prefix + 'lib' + PathDelim + 'penguin-cpp');
+    RemoveDir(Prefix + 'lib');
+    RemoveDir(Prefix);
+  end;
+end;
+
 procedure TestPrivateTempDir;
 var
   Dir: String;
@@ -290,6 +320,7 @@ begin
     TestBrokenPipe;
     TestEnglishMessages;
     TestConfigDir;
+    TestDataDir(Dir);
     TestPrivateTempDir;
     TestProcessList;
     TestExecuteFile(Dir);

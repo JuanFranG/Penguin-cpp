@@ -1700,7 +1700,7 @@ begin
 
     // Copy icon to project directory
     if Length(fOptions.Icon) > 0 then begin
-      OriginalIcon := ValidateFile(fOptions.Icon, '', true);
+      OriginalIcon := ValidateFile(fOptions.Icon, ExtractFilePath(aTemplate.FileName), true);
       if OriginalIcon <> '' then begin // file found!
         DestIcon := ExpandFileTo(ExtractFileName(ChangeFileExt(FileName, '.ico')), Directory);
         CopyFile(OriginalIcon, DestIcon);
@@ -1739,7 +1739,7 @@ begin
             end;
 
             // if file isn't found blindly inserts text of unit
-            s2 := ValidateFile(s, devDirs.Templates);
+            s2 := ValidateFile(s, ExtractFilePath(aTemplate.FileName)); // next to the template
             if s2 <> '' then begin
               Editor.Text.Lines.LoadFromFile(s2);
             end else if s <> '' then begin
@@ -1765,7 +1765,7 @@ begin
           s := aTemplate.OldData.CppText
         else
           s := aTemplate.OldData.CText;
-        s := ValidateFile(s, ExpandFileto(devDirs.Templates, devDirs.Exec));
+        s := ValidateFile(s, ExtractFilePath(aTemplate.FileName));
         if s <> '' then begin
           Editor.Text.Lines.LoadFromFile(s);
           Editor.Text.Modified := TRUE;

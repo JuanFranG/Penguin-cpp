@@ -214,6 +214,8 @@ begin
   try
     FilesFromWildCard(devDirs.Templates, '*' + TEMPLATE_EXT,
       Templates, FALSE, FALSE, TRUE);
+    if DirectoryExists(devDirs.UserTemplates) then
+      FilesFromWildCard(devDirs.UserTemplates, '*' + TEMPLATE_EXT, Templates, FALSE, FALSE, TRUE);
     if Templates.Count > 0 then begin
       for i := 0 to Templates.Count - 1 do
         AddCategory(Templates[i]);
@@ -283,9 +285,15 @@ procedure TNewTemplateForm.CreateTemplate;
 var
   tmpIni: TIniFile;
   I, C: integer;
-  S, filename: String;
+  S, filename, Dir: String;
 begin
-  filename := devDirs.Templates + cmbName.Text + '.template';
+  // The user's own folder: the installed templates can't be written to
+  Dir := devDirs.UserTemplates;
+  if not ForceDirectories(Dir) then begin
+    MessageDlg(Format(Lang[ID_ERR_SAVEFILE], [Dir]), mtError, [mbOk], 0);
+    Exit;
+  end;
+  filename := Dir + cmbName.Text + '.template';
   if FileExists(filename) then begin
     if MessageDlg(Lang[ID_MSG_FILEEXISTS],
                   mtWarning, [mbYes, mbNo], 0) = mrYes then
@@ -299,7 +307,7 @@ begin
     WriteInteger('Template', 'ver', 1);
     WriteString('Template', 'Name', cmbName.Text);
     if IconFiles[0] <> '' then begin
-      CopyFile(IconFiles[0], devDirs.Templates + cmbName.Text + '.ico');
+      CopyFile(IconFiles[0], Dir + cmbName.Text + '.ico');
       WriteString('Template', 'Icon', cmbName.Text + '.ico');
     end;
     WriteString('Template', 'Description', txtDescr.Text);
@@ -311,7 +319,7 @@ begin
         WriteString('Unit' + IntToStr(C), 'CppName', lstFiles.Items[I]);
         S := StringReplace(cmbName.Text + '_' + lstFiles.Items[I] + '.txt', ' ', '_', [rfReplaceAll]);
         WriteString('Unit' + IntToStr(C), 'Cpp', S);
-        CopyFile(TempProject.Units[I].FileName, devDirs.Templates + S);
+        CopyFile(TempProject.Units[I].FileName, Dir + S);
         Inc(C);
       end;
 
@@ -334,7 +342,7 @@ begin
       WriteString('Project', 'ResourceIncludes', TempProject.Options.ResourceIncludes.DelimitedText);
 
     if IconFiles[1] <> '' then begin
-      CopyFile(IconFiles[1], devDirs.Templates + cmbName.Text + '.project.ico');
+      CopyFile(IconFiles[1], Dir + cmbName.Text + '.project.ico');
       WriteString('Project', 'Icon', cmbName.Text + '.project.ico');
     end;
     MessageDlg('The new template has been created!'#10#10 +

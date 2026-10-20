@@ -115,6 +115,8 @@ procedure TNewTemplateForm.btnLibClick(Sender: TObject);
 var
   IconFile: String;
 begin
+  if lstIcons.ItemIndex < 0 then // no icon picked yet
+    Exit;
   IconFile := '';
   with TIconForm.Create(Self) do try
     if ShowModal = mrOk then
@@ -135,6 +137,8 @@ end;
 
 procedure TNewTemplateForm.btnRemoveClick(Sender: TObject);
 begin
+  if lstIcons.ItemIndex < 0 then // no icon picked yet
+    Exit;
   FreeAndNil(Icons[lstIcons.ItemIndex]);
   IconFiles[lstIcons.ItemIndex] := '';
   lstIcons.Repaint;
@@ -144,6 +148,8 @@ procedure TNewTemplateForm.btnBrowseClick(Sender: TObject);
 var
   IconFile: String;
 begin
+  if lstIcons.ItemIndex < 0 then // no icon picked yet
+    Exit;
   if dlgPic.Execute then begin
     IconFile := dlgPic.FileName;
     if IconFile <> '' then begin

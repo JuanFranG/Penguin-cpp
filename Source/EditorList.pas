@@ -341,14 +341,16 @@ begin
   try
     // We're allowed to close...
     Result := True;
-    if Editor.InProject and Assigned(MainForm.Project) then begin
+    projindex := -1;
+    if Editor.InProject and Assigned(MainForm.Project) then
       projindex := MainForm.Project.Units.IndexOf(Editor);
-      if projindex <> -1 then
-      begin
-        MainForm.Project.CloseUnit(projindex); // calls ForceCloseEditor
-      end;
+    if projindex <> -1 then begin
+      MainForm.Project.CloseUnit(projindex); // calls ForceCloseEditor
     end else begin
-      dmMain.AddtoHistory(Editor.FileName);
+      // Also a project file the project no longer lists: left open, Close
+      // All would ask to close it forever
+      if not Editor.InProject then
+        dmMain.AddtoHistory(Editor.FileName);
       FreeAndNil(Editor);
       // Force layout update when creating, destroying or moving editors
       UpdateLayout;

@@ -899,6 +899,9 @@ procedure TEditorOptForm.ElementListClick(Sender: TObject);
 var
   pt: TPoint;
 begin
+  if ElementList.ItemIndex < 0 then
+    Exit;
+
   // Special additions not directly exposed by TSynHighlighter
   if ElementList.ItemIndex > pred(cpp.AttrCount) then begin
 

@@ -87,7 +87,10 @@ begin
     sl.Free;
   end;
 
-  cmbClass.ItemIndex := cmbClass.Items.IndexOf(PStatement(MainForm.ClassBrowser.Selected.Data)^._Command);
+  // The class picked in the class browser, if any
+  with MainForm.ClassBrowser do
+    if Assigned(Selected) and Assigned(Selected.Data) then
+      cmbClass.ItemIndex := cmbClass.Items.IndexOf(PStatement(Selected.Data)^._Command);
 
   txtType.SetFocus;
 end;

@@ -364,7 +364,8 @@ end;
 
 procedure TFilePropertiesForm.cmbFilesClick(Sender: TObject);
 begin
-  ShowPropsFor(String(cmbFiles.Items.Objects[cmbFiles.ItemIndex]));
+  if cmbFiles.ItemIndex >= 0 then
+    ShowPropsFor(String(cmbFiles.Items.Objects[cmbFiles.ItemIndex]));
 end;
 
 procedure TFilePropertiesForm.SetFile(const Filename: String);

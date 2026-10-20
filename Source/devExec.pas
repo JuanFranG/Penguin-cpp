@@ -177,8 +177,19 @@ begin
   inherited;
 end;
 
+// The watching thread reports the end of the program to this object: end the
+// program and let that report arrive before the object goes
 destructor TdevExecutor.Destroy;
+var
+  Started: QWord;
 begin
+  if Assigned(fExec) then begin
+    fOnTermEvent := nil; // the IDE is going away too
+    fExec.TerminateProcess;
+    Started := GetTickCount64;
+    while Assigned(fExec) and (GetTickCount64 - Started < 5000) do
+      CheckSynchronize(20);
+  end;
   fDevExecutorSingleton := nil;
   inherited;
 end;

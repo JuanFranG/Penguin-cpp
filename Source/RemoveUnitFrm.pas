@@ -68,15 +68,13 @@ procedure TRemoveUnitForm.DelBtnClick(Sender: TObject);
 var
   I: integer;
 begin
-  // Delete selection from project
-  for i := UnitList.Count - 1 downto 0 do
-    if UnitList.Selected[i] then
-      MainForm.Project.RemoveEditor(i, true);
-
-  // Delete selection from list
+  // Delete selection from project, and from the list only what really left
+  // it (the user may keep a modified file): the list must keep the
+  // project's order, its indexes are the units'
   for I := UnitList.Count - 1 downto 0 do
     if UnitList.Selected[I] then
-      UnitList.Items.Delete(I);
+      if MainForm.Project.RemoveEditor(I, true) then
+        UnitList.Items.Delete(I);
 end;
 
 end.

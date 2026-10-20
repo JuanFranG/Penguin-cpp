@@ -1340,7 +1340,17 @@ begin
   { this causes problems if the project isn't saved after this, since the erase happens phisically at this moment }
   //if not fUnits.GetItem(index).fNew then
   finifile.EraseSection('Unit' + inttostr(index + 1));
-  fUnits.GetItem(index).fNode.Delete;
+  with fUnits.GetItem(index) do begin
+    if Assigned(fNode) then
+      fNode.Delete;
+    fNode := nil;
+    // Not closed: the editor stays open, as a file outside the project
+    if Assigned(fEditor) then begin
+      fEditor.InProject := False;
+      fEditor := nil;
+    end;
+    Free; // the list only drops it
+  end;
   fUnits.Remove(index);
 
   UpdateNodeIndexes;

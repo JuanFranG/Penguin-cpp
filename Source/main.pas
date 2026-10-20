@@ -2637,17 +2637,13 @@ var
 begin
   if not assigned(fProject) then
     exit;
-  while ProjectView.SelectionCount > 0 do begin
-    node := ProjectView.Selections[0];
-    if not assigned(node) or (node.Level < 1) then
-      Continue;
-    if node.Data = Pointer(-1) then
-      Continue;
-
-    idx := PtrInt(node.Data);
-
-    if not fProject.RemoveEditor(idx, true) then
-      exit;
+  // The selected files, last unit first: removing one renumbers those after
+  // it. (Looping while something is selected hung on a selected folder.)
+  for idx := fProject.Units.Count - 1 downto 0 do begin
+    node := fProject.Units[idx].Node;
+    if Assigned(node) and (node.Selected or node.MultiSelected) then
+      if not fProject.RemoveEditor(idx, true) then
+        exit;
   end;
 end;
 
@@ -2684,13 +2680,16 @@ begin
 
         // Close the target file...
         e := fEditorList.FileIsOpen(NewName);
-        if Assigned(e) then
-          fEditorList.CloseEditor(e);
+        if Assigned(e) and not fEditorList.CloseEditor(e) then
+          Exit; // the user kept it
 
         // Remove it from the current project...
         projindex := fProject.Units.IndexOf(NewName);
-        if projindex <> -1 then
+        if projindex <> -1 then begin
           fProject.RemoveEditor(projindex, false);
+          if projindex < I then
+            Dec(I); // the unit being renamed moved up one place
+        end;
 
         // All references to the file are removed. Delete the file from disk
         DeleteFile(NewName);
@@ -2743,7 +2742,9 @@ procedure TMainForm.actUnitCloseExecute(Sender: TObject);
 var
   e: TEditor;
 begin
-  if Assigned(fProject) and Assigned(ProjectView.Selected) then begin
+  // A file, not the project (Data nil) or a folder (Data -1)
+  if Assigned(fProject) and Assigned(ProjectView.Selected) and (ProjectView.Selected.Level >= 1) and
+    (ProjectView.Selected.Data <> Pointer(-1)) then begin
     e := fEditorList.FileIsOpen(fProject.Units[PtrInt(ProjectView.Selected.Data)].FileName, TRUE);
     if Assigned(e) then
       fEditorList.CloseEditor(e);
@@ -4629,7 +4630,7 @@ begin
     fFileName := e.FileName;
     fParser := CppParser;
 
-    if ShowModal = mrOK then begin
+    if (ShowModal = mrOK) and Assigned(lvEntries.Selected) then begin
       st := PStatement(lvEntries.Selected.Data);
       if Assigned(st) then begin
         if st^._HasDefinition then
@@ -4968,7 +4969,7 @@ begin
   with TFilePropertiesForm.Create(Self) do begin
     if TAction(Sender).ActionComponent = mnuUnitProperties then
       if Assigned(fProject) and
-        Assigned(ProjectView.Selected) and
+        Assigned(ProjectView.Selected) and (ProjectView.Selected.Level >= 1) and
         (ProjectView.Selected.Data <> Pointer(-1)) then
         SetFile(fProject.Units[PtrInt(ProjectView.Selected.Data)].FileName);
     ShowModal;
@@ -5069,8 +5070,12 @@ begin
     Item := nil;
   for I := 0 to ProjectView.SelectionCount - 1 do begin
     srcNode := ProjectView.Selections[I];
+    // Not the project itself, nor a folder into itself or its own subfolder
+    if (srcNode.Level < 1) or (Assigned(Item) and ((Item = srcNode) or Item.HasAsParent(srcNode))) then
+      Continue;
     if not Assigned(Item) then begin
-      fProject.Units[PtrInt(srcNode.Data)].Folder := '';
+      if srcNode.Data <> Pointer(-1) then
+        fProject.Units[PtrInt(srcNode.Data)].Folder := '';
       srcNode.MoveTo(ProjectView.Items[0], naAddChild);
     end else begin
       if srcNode.Data <> Pointer(-1) then begin

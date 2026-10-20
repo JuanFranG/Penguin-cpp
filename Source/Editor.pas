@@ -496,6 +496,10 @@ begin
     fText.OnPaint := nil;
   end;
 
+  // The incremental search would keep searching in the freed text
+  if Assigned(IncrementalForm) and (IncrementalForm.Editor = fText) then
+    IncrementalForm.Close;
+
   // Deactivate the file change monitor
   MainForm.FileMonitor.UnMonitor(fFileName);
 
@@ -1020,6 +1024,11 @@ end;
 
 procedure TEditor.SetCaretPosAndActivate(Line, Col: integer);
 begin
+  // Lines from the compiler, gdb or the parser may be past the end of a file
+  // that changed since
+  Line := Max(1, Min(Line, fText.Lines.Count));
+  Col := Max(1, Col);
+
   // Open up the closed folds around the focused line until we can see the line we're looking for
   fText.UncollapseAroundLine(Line);
 
@@ -1206,7 +1215,7 @@ begin
 
   // Find the end of the first nonblank line above us
   HighlightPos := BufferCoord(fText.CaretX - 1, fText.CaretY);
-  while (HighlightPos.Line > 0) and (Length(fText.Lines[HighlightPos.Line - 1]) = 0) do
+  while (HighlightPos.Line > 1) and (Length(fText.Lines[HighlightPos.Line - 1]) = 0) do // not past line 1
     Dec(HighlightPos.Line);
   HighlightPos.Char := Length(fText.Lines[HighlightPos.Line - 1]);
 

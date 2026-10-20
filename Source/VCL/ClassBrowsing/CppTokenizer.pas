@@ -579,7 +579,7 @@ begin
       if StartsStr('#include', Result) then begin // if we find
         DelimPos := LastPos(':', Result);
         if DelimPos > 0 then
-          fCurrLine := StrToInt(TrimRight(Copy(Result, DelimPos + 1, MaxInt))) - 1; // fCurrLine is 0 based
+          fCurrLine := StrToIntDef(TrimRight(Copy(Result, DelimPos + 1, MaxInt)), fCurrLine + 1) - 1; // 0 based; a ':' in a path is no line
       end;
       Done := Result <> '';
     end else if IsForInit then begin

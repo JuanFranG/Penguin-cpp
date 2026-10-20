@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Dev-C++ and Penguin cpp project files (.dev), an INI text file -->
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+  <mime-type type="application/x-penguin-cpp-project">
+    <comment>Dev-C++ project</comment>
+    <comment xml:lang="es">Proyecto de Dev-C++</comment>
+    <sub-class-of type="text/plain"/>
+    <icon name="application-x-penguin-cpp-project"/>
+    <glob pattern="*.dev"/>
+    <magic priority="60">
+      <match type="string" offset="0" value="[Project]"/>
+    </magic>
+  </mime-type>
+</mime-info>

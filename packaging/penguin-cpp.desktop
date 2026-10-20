@@ -1,0 +1,15 @@
+[Desktop Entry]
+Type=Application
+Name=Penguin cpp
+GenericName=C/C++ IDE
+GenericName[es]=Entorno de desarrollo C/C++
+Comment=Write, build, run and debug C and C++ programs
+Comment[es]=Escribe, compila, ejecuta y depura programas en C y C++
+Exec=penguin-cpp %F
+Icon=penguin-cpp
+Terminal=false
+Categories=Development;IDE;Education;
+Keywords=C;C++;compiler;gcc;debugger;gdb;Dev-C++;programming;
+Keywords[es]=C;C++;compilador;gcc;depurador;gdb;Dev-C++;programación;
+MimeType=application/x-penguin-cpp-project;text/x-csrc;text/x-c++src;text/x-chdr;text/x-c++hdr;
+StartupWMClass=penguin-cpp

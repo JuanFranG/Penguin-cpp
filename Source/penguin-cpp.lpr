@@ -105,15 +105,12 @@ begin
   ExeFolder := ExtractFilePath(Application.ExeName);
 
   // Did someone pass the -c command to us?
-  if (ParamCount >= 2) and SameStr(ParamStr(1), '-c') then begin
-    if not DirectoryExists(ParamStr(2)) then
-      CreateDir(ParamStr(2));
-
-    // Store the INI file in the directory given to us
-    if not (ParamStr(2)[1] in AllowDirectorySeparators) and (ExtractFileDrive(ParamStr(2)) = '') then // relative path
-      devData.INIFileName := ExeFolder + IncludeTrailingPathDelimiter(ParamStr(2)) + INIFileName
-    else
-      devData.INIFileName := IncludeTrailingPathDelimiter(ParamStr(2)) + INIFileName;
+  if (ParamCount >= 2) and SameStr(ParamStr(1), '-c') and (ParamStr(2) <> '') then begin
+    // Store the INI file in the directory given to us; a relative one starts
+    // from the current directory (the program's own can't be written to once
+    // installed)
+    devData.INIFileName := IncludeTrailingPathDelimiter(ExpandFileName(ParamStr(2))) + INIFileName;
+    ForcePrivateDirectory(ExtractFilePath(devData.INIFileName));
   end else begin
     // ~/.config/penguin-cpp/, or a config folder next to the program when portable
     if (not devData.IsPortable) and ForcePrivateDirectory(GetConfigDir) then

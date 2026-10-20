@@ -1,0 +1,51 @@
+.TH PENGUIN-CPP 1 "Octubre de 2026" "Penguin cpp @VERSION@" "Órdenes de usuario"
+.SH NOMBRE
+penguin-cpp \- entorno de desarrollo sencillo para aprender C y C++
+.SH SINOPSIS
+.B penguin-cpp
+[\fB\-c\fR \fIcarpeta\fR] [\fIarchivo\fR...]
+.SH DESCRIPCIÓN
+.B Penguin cpp
+es un entorno de desarrollo integrado para C y C++, una versión para Linux
+de Dev-C++. Edita archivos y proyectos, los compila con
+.BR gcc (1)
+y
+.BR make (1),
+ejecuta los programas en una ventana de terminal y los depura con
+.BR gdb (1).
+.PP
+Cada \fIarchivo\fR se abre en el editor; un archivo \fB.dev\fR se abre como
+proyecto. Si el IDE ya está abierto con la misma configuración, los archivos
+se abren en esa ventana.
+.SH OPCIONES
+.TP
+.BI \-c " carpeta"
+Guarda la configuración en \fIcarpeta\fR en lugar de la carpeta de
+configuración del usuario. Una \fIcarpeta\fR relativa parte de la carpeta
+actual. Debe ser la primera opción.
+.SH ARCHIVOS
+.TP
+.I ~/.config/penguin-cpp/
+Configuración, esquemas de color y la lista de proyectos de confianza
+(respeta \fB$XDG_CONFIG_HOME\fR).
+.TP
+.I ~/.local/share/penguin-cpp/Templates/
+Plantillas de proyecto que crea el usuario (respeta \fB$XDG_DATA_HOME\fR).
+.TP
+.I ~/.cache/penguin-cpp/
+Archivos temporales (respeta \fB$XDG_CACHE_HOME\fR).
+.TP
+.I /usr/share/penguin-cpp/
+Idiomas, plantillas y ayuda que vienen con el IDE.
+.SH VÉASE TAMBIÉN
+.BR gcc (1),
+.BR g++ (1),
+.BR make (1),
+.BR gdb (1),
+.BR astyle (1),
+.BR clang-format (1)
+.PP
+https://github.com/JuanFranG/Penguin-cpp
+.SH AUTOR
+Juan Francisco Gonzalez Pacheco <jfgonzalez@unimagdalena.edu.co>, a partir
+del trabajo de los autores de Bloodshed, Orwell y Embarcadero Dev-C++.

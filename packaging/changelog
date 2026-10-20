@@ -1,0 +1,10 @@
+penguin-cpp (0.1.0) unstable; urgency=medium
+
+  * First release of Penguin cpp, the Linux port of Dev-C++:
+    - Editor with syntax colors, code completion, folding and class browser.
+    - Single files and projects built with the system's gcc and make.
+    - Programs run in a terminal window.
+    - Debugger on top of gdb: breakpoints, watches, call stack, step by step.
+    - Formatting with astyle and clang-format, printing and PDF export.
+
+ -- Juan Francisco Gonzalez Pacheco <jfgonzalez@unimagdalena.edu.co>  Mon, 19 Oct 2026 20:00:00 -0500

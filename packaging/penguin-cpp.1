@@ -1,0 +1,51 @@
+.TH PENGUIN-CPP 1 "October 2026" "Penguin cpp @VERSION@" "User Commands"
+.SH NAME
+penguin-cpp \- simple C and C++ IDE for learning
+.SH SYNOPSIS
+.B penguin-cpp
+[\fB\-c\fR \fIdirectory\fR] [\fIfile\fR...]
+.SH DESCRIPTION
+.B Penguin cpp
+is an integrated development environment for C and C++, a Linux port of
+Dev-C++. It edits source files and projects, builds them with
+.BR gcc (1)
+and
+.BR make (1),
+runs programs in a terminal window and debugs them with
+.BR gdb (1).
+.PP
+Each \fIfile\fR is opened in the editor; a \fB.dev\fR file is opened as a
+project. If the IDE is already running with the same settings, the files are
+opened in that window instead.
+.SH OPTIONS
+.TP
+.BI \-c " directory"
+Keep the settings in \fIdirectory\fR instead of the user's settings folder.
+A relative \fIdirectory\fR starts from the current directory. It must be the
+first option.
+.SH FILES
+.TP
+.I ~/.config/penguin-cpp/
+Settings, color schemes and the list of trusted projects
+(\fB$XDG_CONFIG_HOME\fR is honored).
+.TP
+.I ~/.local/share/penguin-cpp/Templates/
+Project templates the user creates (\fB$XDG_DATA_HOME\fR is honored).
+.TP
+.I ~/.cache/penguin-cpp/
+Temporary files (\fB$XDG_CACHE_HOME\fR is honored).
+.TP
+.I /usr/share/penguin-cpp/
+Languages, templates and help that come with the IDE.
+.SH SEE ALSO
+.BR gcc (1),
+.BR g++ (1),
+.BR make (1),
+.BR gdb (1),
+.BR astyle (1),
+.BR clang-format (1)
+.PP
+https://github.com/JuanFranG/Penguin-cpp
+.SH AUTHOR
+Juan Francisco Gonzalez Pacheco <jfgonzalez@unimagdalena.edu.co>, from the
+work of the Bloodshed, Orwell and Embarcadero Dev-C++ authors.

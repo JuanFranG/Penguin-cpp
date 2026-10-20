@@ -54,3 +54,45 @@ jobs:
 
       - name: C++ code folding
         run: WS=nogui Source/Tests/FoldTest/build.sh --run
+
+      - name: Build the .deb package and check it with lintian
+        run: |
+          sudo apt-get install -y --no-install-recommends dpkg-dev lintian
+          packaging/build-deb.sh --no-build
+
+      - name: Install the package
+        run: |
+          sudo apt-get install -y ./build/deb/penguin-cpp_*.deb
+          test -L /usr/bin/penguin-cpp
+          test -f /usr/share/penguin-cpp/Lang/English.lng
+          test -f /usr/share/applications/penguin-cpp.desktop
+          sudo apt-get install -y --no-install-recommends desktop-file-utils man-db xvfb strace
+          desktop-file-validate /usr/share/applications/penguin-cpp.desktop
+          man -w penguin-cpp
+
+      - name: The installed IDE starts and reads its files from /usr/share
+        run: |
+          # Runs for 15 seconds (124 is timeout's code), then the trace must
+          # show the language file read from the installed folder
+          set +e
+          xvfb-run -a strace -f -e trace=openat -o trace.log timeout 15 penguin-cpp > run.log 2>&1
+          CODE=$?
+          set -e
+          cat run.log
+          test $CODE -eq 124
+          if grep -q "Penguin cpp: E" run.log; then exit 1; fi # an unhandled error
+          grep '/usr/share/penguin-cpp/Lang/English.lng' trace.log | grep -v ENOENT
+
+      - name: Remove the package without leaving files behind
+        run: |
+          sudo apt-get remove -y penguin-cpp
+          for P in /usr/bin/penguin-cpp /usr/lib/penguin-cpp /usr/share/penguin-cpp \
+                   /usr/share/fonts/truetype/penguin-cpp /usr/share/applications/penguin-cpp.desktop; do
+            if [ -e "$P" ]; then echo "left behind: $P"; exit 1; fi
+          done
+
+      - name: Keep the package
+        uses: actions/upload-artifact@v4
+        with:
+          name: penguin-cpp-deb
+          path: build/deb/*.deb

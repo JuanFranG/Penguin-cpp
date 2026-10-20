@@ -486,6 +486,16 @@ begin
   if Assigned(fTabSheet) then
     fTabSheet.Tag := 0;
 
+  // Nor may its text control call back into it: freeing the control moves the
+  // focus, and the exit handler would use the code tooltip, freed before it
+  if Assigned(fText) then begin
+    fText.OnEnter := nil;
+    fText.OnExit := nil;
+    fText.OnStatusChange := nil;
+    fText.OnMouseMove := nil;
+    fText.OnPaint := nil;
+  end;
+
   // Deactivate the file change monitor
   MainForm.FileMonitor.UnMonitor(fFileName);
 
@@ -653,7 +663,8 @@ end;
 
 procedure TEditor.EditorExit(Sender: TObject);
 begin
-  fFunctionTip.ReleaseHandle;
+  if Assigned(fFunctionTip) then
+    fFunctionTip.ReleaseHandle;
 end;
 
 // Handling this here instead of in PageControlChange because when switching between two active editors side by side

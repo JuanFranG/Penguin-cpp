@@ -61,6 +61,7 @@ sed "s/@VERSION@/$VERSION/" packaging/penguin-cpp.1 | gzip -9n > "$STAGE/usr/sha
 sed "s/@VERSION@/$VERSION/" packaging/penguin-cpp.es.1 | gzip -9n > "$STAGE/usr/share/man/es/man1/penguin-cpp.1.gz"
 install -m 644 packaging/copyright "$STAGE/usr/share/doc/penguin-cpp/copyright"
 gzip -9n < packaging/changelog > "$STAGE/usr/share/doc/penguin-cpp/changelog.gz"
+install -D -m 644 packaging/lintian-overrides "$STAGE/usr/share/lintian/overrides/penguin-cpp"
 
 find "$STAGE/usr" -type d -exec chmod 755 {} +
 find "$STAGE/usr" -type f -exec chmod 644 {} +

@@ -1,0 +1,6 @@
+# The translations keep the code page each one was written in (as Dev-C++
+# did); the IDE converts them to UTF-8 when it reads them (MultiLangSupport)
+national-encoding [usr/share/penguin-cpp/Lang/*]
+
+# Free Pascal 3.2 does not build position independent executables
+hardening-no-pie [usr/lib/penguin-cpp/penguin-cpp]

@@ -73,14 +73,16 @@ jobs:
       - name: The installed IDE starts and reads its files from /usr/share
         run: |
           # Runs for 15 seconds (124 is timeout's code), then the trace must
-          # show the language file read from the installed folder
+          # show the language file read from the installed folder (Free
+          # Pascal calls open, not openat)
           set +e
-          xvfb-run -a strace -f -e trace=openat -o trace.log timeout 15 penguin-cpp > run.log 2>&1
+          xvfb-run -a strace -f -e trace=open,openat -o trace.log timeout 15 penguin-cpp > run.log 2>&1
           CODE=$?
           set -e
           cat run.log
           test $CODE -eq 124
           if grep -q "Penguin cpp: E" run.log; then exit 1; fi # an unhandled error
+          grep -c 'penguin-cpp' trace.log
           grep '/usr/share/penguin-cpp/Lang/English.lng' trace.log | grep -v ENOENT
 
       - name: Remove the package without leaving files behind

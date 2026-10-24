@@ -59,6 +59,7 @@ Ver=1
 1067=El programa recibió la señal %s (%s).
 1068=no disponible aquí
 1069=ejecute el programa para ver su valor
+1070=Penguin cpp tuvo %d error(es) durante esta sesión. Quedaron registrados en %s; puede enviar ese archivo con su reporte. ¿Abrirlo ahora?
 
 
 2001=&Abrir Proyecto o Archivo

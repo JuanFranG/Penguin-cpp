@@ -950,7 +950,7 @@ var
 implementation
 
 uses
-  Math, IniFiles, Clipbrd, MultiLangSupport, Version, DataFrm, NewProjectFrm, AboutFrm, PrintFrm,
+  ErrorLog, Math, IniFiles, Clipbrd, MultiLangSupport, Version, DataFrm, NewProjectFrm, AboutFrm, PrintFrm,
   CompOptionsFrm, EditorOptFrm, IncrementalFrm, EnviroFrm, SynEdit, ImageTheme, SynEditKeyCmds, Types, FindFrm, ProjectTypes, devExec, Tests, NewTemplateFrm, FunctionSearchFrm,
   NewFunctionFrm, NewVarFrm, NewClassFrm, ProfileAnalysisFrm, FilePropertiesFrm, AddToDoFrm,
   ViewToDoFrm, ImportCBFrm, CPUFrm, TipOfTheDayFrm, WindowListFrm, RemoveUnitFrm,
@@ -1036,6 +1036,12 @@ begin
   fCompiler.StopAndWait;
   // So would a debugging session (it walks the editors when it stops)
   fDebugger.Stop;
+
+  // Errors during this session: say where their report is
+  if ErrorsLogged > 0 then
+    if MessageDlg(Format(Lang[ID_MSG_ERRORLOG], [ErrorsLogged, ErrorLogFileName]), mtWarning, [mbYes, mbNo],
+      0) = mrYes then
+      OpenDocument(ErrorLogFileName);
 
   // Remember toolbar placement
   devData.LeftActivePage := LeftPageControl.ActivePageIndex;
@@ -1826,8 +1832,9 @@ begin
 end;
 
 // An error nobody handled: besides the usual dialog, its backtrace goes to
-// the terminal (with line numbers in the Debug build), so that a report of
-// it says where it happened
+// the terminal (with line numbers in the Debug build) and to the error
+// report on the desktop (ErrorLog), so that a report of it says where it
+// happened
 procedure TMainForm.AppException(Sender: TObject; E: Exception);
 begin
   try
@@ -1836,6 +1843,7 @@ begin
   except
     // no terminal to write to
   end;
+  LogException(E);
   Application.ShowException(E);
 end;
 

@@ -73,6 +73,11 @@ function GetDataDir(const ExeDir: String): String;
 // honored). Not created here.
 function GetUserDataDir: String;
 
+// The user's desktop folder, with trailing delimiter: XDG_DESKTOP_DIR from
+// ~/.config/user-dirs.dirs (~/Escritorio on a Spanish desktop), else
+// ~/Desktop when it exists, else the home folder
+function GetDesktopDir: String;
+
 // Creates Dir (and its parents) and makes Dir itself readable by the user
 // alone (mode 0700): the settings list the projects the user trusts and the
 // folders they work in. An existing Dir is made private too.
@@ -290,6 +295,44 @@ begin
 {$ELSE}
   Result := GetConfigDir;
 {$ENDIF}
+end;
+
+function GetDesktopDir: String;
+var
+  Home, Config, Line, Value: String;
+  Lines: TStringList;
+  I: Integer;
+begin
+  Home := ExcludeTrailingPathDelimiter(GetUserDir);
+  Result := '';
+  Config := GetEnvironmentVariable('XDG_CONFIG_HOME');
+  if Config = '' then
+    Config := Home + PathDelim + '.config';
+  Lines := TStringList.Create;
+  try
+    try
+      Lines.LoadFromFile(IncludeTrailingPathDelimiter(Config) + 'user-dirs.dirs');
+    except
+      Lines.Clear; // no such file: the defaults below
+    end;
+    // XDG_DESKTOP_DIR="$HOME/Escritorio" (a line of shell)
+    for I := 0 to Lines.Count - 1 do begin
+      Line := Trim(Lines[I]);
+      if Pos('XDG_DESKTOP_DIR=', Line) = 1 then begin
+        Value := AnsiDequotedStr(Copy(Line, Length('XDG_DESKTOP_DIR=') + 1, MaxInt), '"');
+        Value := StringReplace(Value, '$HOME', Home, []);
+        if (Value <> '') and (Value[1] = PathDelim) and DirectoryExists(Value) then
+          Result := Value;
+      end;
+    end;
+  finally
+    Lines.Free;
+  end;
+  if (Result = '') and DirectoryExists(Home + PathDelim + 'Desktop') then
+    Result := Home + PathDelim + 'Desktop';
+  if Result = '' then
+    Result := Home;
+  Result := IncludeTrailingPathDelimiter(Result);
 end;
 
 function ForcePrivateDirectory(const Dir: String): Boolean;

@@ -98,3 +98,15 @@ jobs:
         with:
           name: penguin-cpp-deb
           path: build/deb/*.deb
+
+      # The packaged program has no symbols, so the error report on the
+      # user's desktop has only addresses: this same build, with its
+      # symbols, turns them into files and lines (addr2line -f -C -e penguin-cpp ADDRESS...)
+      - name: Check that the build kept its symbols
+        run: file penguin-cpp | tee /dev/stderr | grep -q "with debug_info"
+
+      - name: Keep the program with its symbols
+        uses: actions/upload-artifact@v4
+        with:
+          name: penguin-cpp-symbols
+          path: penguin-cpp

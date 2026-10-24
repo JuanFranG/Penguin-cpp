@@ -218,6 +218,17 @@ begin
   end;
 end;
 
+// Where the error report goes
+procedure TestDesktopDir;
+var
+  Dir: String;
+begin
+  WriteLn('GetDesktopDir:');
+  Dir := GetDesktopDir;
+  Check((Dir <> '') and (Dir[Length(Dir)] = PathDelim) and DirectoryExists(Dir), 'an existing folder (' + Dir + ')');
+  Check(Pos(IncludeTrailingPathDelimiter(GetUserDir), Dir) = 1, 'inside the home folder');
+end;
+
 procedure TestPrivateTempDir;
 var
   Dir: String;
@@ -321,6 +332,7 @@ begin
     TestEnglishMessages;
     TestConfigDir;
     TestDataDir(Dir);
+    TestDesktopDir;
     TestPrivateTempDir;
     TestProcessList;
     TestExecuteFile(Dir);

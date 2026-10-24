@@ -57,6 +57,7 @@ uses
   DebugEngine,
   GdbEngine,
   DebugTerminal,
+  ErrorLog,
   Debugger,
   EditorList,
   CFGData,

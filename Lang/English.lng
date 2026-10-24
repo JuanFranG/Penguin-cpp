@@ -58,6 +58,7 @@ Ver=1
 1067=The program received the signal %s (%s).
 1068=not available here
 1069=run the program to see its value
+1070=Penguin cpp had %d error(s) during this session. They are recorded in %s; you can send that file with your report. Open it now?
 
 
 2001=&Open...

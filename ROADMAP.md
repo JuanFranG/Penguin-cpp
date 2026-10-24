@@ -117,9 +117,9 @@ al publicarla. Hoy `main` incluye las fases 1 a 6 (`fase6/compilador`).
 | 4 · Port a Lazarus y formularios | `fase4/lazarus` | ✅ Abre, funciona y cierra bien en Mint con Qt5, con Buscar, Reemplazar e Ir a línea |
 | 4b · Identidad visual y temas | `fase4/lazarus`, `fase6/compilador` | ✅ Icono, paleta en paneles, menús y diálogos (Qt5) y esquemas Penguin claro y oscuro, probados en Mint |
 | 5 · Editor (SynEdit de Lazarus) | `fase5/editor` | ✅ Hecha, probada en Mint: impresión, exportación a RTF/TeX y plegado |
-| 6 · Compilación con el gcc de Linux | `fase6/compilador` | 🔄 Probados en Mint: gcc, archivos sueltos, terminal, errores, instancia única y formateadores. Corregido el fallo al abrir proyectos; falta probarlos y quitar lo que es solo de Windows |
-| 7 · Depurador (GDB/MI) | `fase7/depurador` | 🔄 Hecho en código (motor probado con gdb en el CI); falta probar el IDE depurando en Mint |
-| 8 · Paquete `.deb` y pulido | — | ⏳ Pendiente |
+| 6 · Compilación con el gcc de Linux | `fase6/compilador` | ✅ Hecha, probada en Mint: gcc, archivos sueltos, proyectos, terminal, errores, instancia única y formateadores |
+| 7 · Depurador (GDB/MI) | `fase7/depurador` | ✅ Hecha, probada en Mint, con la revisión general de errores de rango y de memoria |
+| 8 · Paquete `.deb` y pulido | `fase8/paquete` | 🔄 El paquete se arma, se revisa con lintian, se instala y se desinstala en el CI; falta probarlo en un Linux Mint limpio |
 | 9 · macOS | — | ⏳ Después del `.deb` |
 
 ### Siguiente ciclo de trabajo
@@ -664,9 +664,36 @@ Xcode) detrás de la misma interfaz del bloque 2, sin rehacer esta fase.
 - **Hecho cuando:** funcionan los breakpoints, el paso a paso, las variables
   vigiladas, la pila de llamadas y ver valores al pasar el ratón.
 
-### Fase 8 · Paquete `.deb` y pulido ⏳
+### Fase 8 · Paquete `.deb` y pulido 🔄
 El producto final del proyecto es un `.deb` que se instala con
 `sudo apt install ./penguin-cpp_<versión>_amd64.deb`.
+
+**Hecho** (rama `fase8/paquete`):
+- El IDE instalado encuentra sus archivos: el programa va en
+  `/usr/lib/penguin-cpp/` (con un enlace en `/usr/bin`) y busca `Lang/`,
+  `Templates/`, `Help/` e `Icons/` junto a él o, si no están, en
+  `/usr/share/penguin-cpp/` (`devPlatform.GetDataDir`, probado en
+  PlatformTest). Las plantillas que crea el usuario van a
+  `~/.local/share/penguin-cpp/Templates/`.
+- `packaging/`: descripción del paquete (`control.in`), licencias
+  (`copyright`), `changelog`, lanzador `.desktop` (en el menú; en "Abrir con"
+  para C y C++; abre los proyectos `.dev`), el tipo de archivo `.dev` con su
+  icono y las páginas de manual en inglés y español.
+- `packaging/build-deb.sh` arma `build/deb/penguin-cpp_<versión>_amd64.deb`
+  y lo revisa con lintian. Dependencias: gcc, g++, make, gdb, astyle,
+  clang-format, cups-client, fonts-dejavu-core y una terminal, más las
+  bibliotecas que encuentra `dpkg-shlibdeps` (libqt5pas1). Las fuentes Heebo y
+  Source Code Pro van en `/usr/share/fonts/truetype/penguin-cpp/`.
+- El CI arma el paquete, lo revisa con lintian, lo instala con `apt`, abre el
+  IDE instalado (comprueba que lee sus archivos de `/usr/share`), lo
+  desinstala, revisa que no quede nada y guarda el `.deb` como artefacto.
+- Responsable del paquete: Juan Francisco Gonzalez Pacheco
+  <jfgonzalez@unimagdalena.edu.co>.
+
+**Falta:** la prueba en un Linux Mint 22 limpio (abajo) y publicar la versión
+0.1.0 en Releases.
+
+Lo que se planeó:
 
 - **Rutas de instalación** (requiere cambios en el código):
   - Hoy el IDE busca `Lang/`, `Templates/` y `Help/` junto al ejecutable

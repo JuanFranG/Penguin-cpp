@@ -10,9 +10,9 @@ Penguin cpp expande Embarcadero Dev-C++ a Linux. Es el mismo entorno ligero
 con el que mucha gente aprende C y C++, ahora como programa nativo de Linux,
 sin Wine.
 
-> **Estado: en desarrollo.** Todavía no hay una versión instalable. El IDE ya
-> compila con Lazarus y está en su primera fase de pruebas en Linux Mint. Ver
-> [ROADMAP.md](ROADMAP.md).
+> **Estado: versión 0.1.0 en pruebas.** El IDE ya funciona en Linux Mint y
+> el paquete `.deb` se arma en cada cambio; falta probarlo en un Linux Mint
+> limpio antes de publicarlo. Ver [ROADMAP.md](ROADMAP.md).
 
 ---
 
@@ -52,13 +52,31 @@ Qué funciona hoy y qué falta está en [ROADMAP.md](ROADMAP.md).
 
 ## Instalación
 
-Cuando exista la primera versión, el `.deb` se publicará en
-[Releases](https://github.com/JuanFranG/Penguin-cpp/releases) y se instalará
-así:
+Penguin cpp se instala con un paquete `.deb` en Debian, Ubuntu, Linux Mint y
+derivadas (amd64). `apt` instala también todo lo que necesita: gcc, g++, make,
+gdb, astyle y clang-format.
 
 ```bash
-sudo apt install ./penguin-cpp_<versión>_amd64.deb
+sudo apt install ./penguin-cpp_0.1.0_amd64.deb
 ```
+
+Después aparece en el menú, en *Programación* y *Educación*. También se abre
+desde una terminal con `penguin-cpp`, y `man penguin-cpp` explica sus opciones.
+
+Mientras se publica la primera versión en
+[Releases](https://github.com/JuanFranG/Penguin-cpp/releases), el `.deb` de
+cada cambio se descarga desde
+[Actions](https://github.com/JuanFranG/Penguin-cpp/actions) (artefacto
+`penguin-cpp-deb`, dentro de un `.zip`), o se arma como se explica abajo.
+
+Para desinstalarlo:
+
+```bash
+sudo apt remove penguin-cpp
+```
+
+La configuración de cada usuario queda en `~/.config/penguin-cpp` y sus
+plantillas en `~/.local/share/penguin-cpp`; se pueden borrar a mano.
 
 ## Compilar desde el código
 
@@ -71,6 +89,13 @@ git clone https://github.com/JuanFranG/Penguin-cpp.git
 cd Penguin-cpp
 lazbuild -B --ws=qt5 Source/penguin-cpp.lpi
 ./penguin-cpp
+```
+
+Para armar el paquete `.deb` (queda en `build/deb/`):
+
+```bash
+sudo apt install dpkg-dev lintian
+packaging/build-deb.sh
 ```
 
 Las pruebas y más detalles están en [ROADMAP.md](ROADMAP.md#cómo-compilar-y-probar-linux).

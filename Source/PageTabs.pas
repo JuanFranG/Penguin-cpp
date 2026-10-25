@@ -8,7 +8,7 @@
     always centered, which leaves the file tabs in the middle of the editor
     and the message tabs in the middle of the window. On macOS the page
     controls hide their tabs and keep room above them, where a strip drawn
-    here is anchored: it reads the pages each time it paints, so it always
+    here is placed: it reads the pages each time it paints, so it always
     shows what the page control has, and it acts on the page control as its
     tabs would (select, right-click menu, close).
 }
@@ -75,19 +75,13 @@ begin
     H := 13;
   H := H * 2 + 6; // one line of text with room around it
 
-  // The page control keeps a band above its pages; the strip lives there,
-  // anchored to it, so it follows its size, its splitters and its moves
+  // The page control keeps a band above its pages; the strip lives there and
+  // is placed again whenever the page control moved (anchoring it to the
+  // page control kept the place it had before the band was made)
   fPages.ShowTabs := False;
   fPages.BorderSpacing.Top := fPages.BorderSpacing.Top + H;
   Parent := fPages.Parent;
   Height := H;
-  AnchorSideLeft.Control := fPages;
-  AnchorSideLeft.Side := asrLeft;
-  AnchorSideRight.Control := fPages;
-  AnchorSideRight.Side := asrRight;
-  AnchorSideBottom.Control := fPages;
-  AnchorSideBottom.Side := asrTop;
-  Anchors := [akLeft, akRight, akBottom];
   Application.AddOnIdleHandler(@IdleCheck);
 end;
 
@@ -107,19 +101,18 @@ begin
       Result := Result + fPages.Pages[I].Caption + #1;
 end;
 
-// Pages come and go, captions change ("[*]"), the control moves to a floating
-// window or hides: follow it, and draw again when anything shown changed
+// Pages come and go, captions change ("[*]"), the control moves, resizes,
+// goes to a floating window or hides: follow it, and draw again when anything
+// shown changed
 procedure TPageTabStrip.IdleCheck(Sender: TObject; var Done: Boolean);
 var
   S: String;
   Wanted: Boolean;
 begin
-  if Parent <> fPages.Parent then begin
+  if Parent <> fPages.Parent then
     Parent := fPages.Parent;
-    AnchorSideLeft.Control := fPages;
-    AnchorSideRight.Control := fPages;
-    AnchorSideBottom.Control := fPages;
-  end;
+  if (Left <> fPages.Left) or (Top <> fPages.Top - Height) or (Width <> fPages.Width) then
+    SetBounds(fPages.Left, fPages.Top - Height, fPages.Width, Height);
   Wanted := fPages.Visible and (fPages.Width > 0) and (fPages.PageCount > 0);
   if Visible <> Wanted then
     Visible := Wanted;

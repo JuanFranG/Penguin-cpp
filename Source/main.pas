@@ -7166,9 +7166,11 @@ end;
 // the box (the whole path shows as a hint)
 procedure TMainForm.AddFileRTB(RBName: TMemo; aFileName: string; aDirection: string);
 begin
-  RBName.Lines.Add(aFileName);
+  // Two lines and no line break after them: Lines.Add left an empty third
+  // line, and Cocoa scrolled the box to it, cutting the name at the top
   Canvas.Font := RBName.Font;
-  RBName.Lines.Add(MinimizeName(aDirection, Canvas, RBName.Width - 12));
+  RBName.Text := aFileName + LineEnding + MinimizeName(aDirection, Canvas, RBName.Width - 12);
+  RBName.SelStart := 0;
   RBName.Hint := aDirection;
   RBName.ShowHint := True;
 end;

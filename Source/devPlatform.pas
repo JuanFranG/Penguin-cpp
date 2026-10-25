@@ -595,8 +595,16 @@ begin
     Args.Add('1')
   else
     Args.Add('0');
-  Args.Add(ExitFormat);
-  Args.Add(PausePrompt);
+  // TProcess drops empty arguments, and the script counts them: a space
+  // stands for none (the debugger's terminal has no pause)
+  if ExitFormat = '' then
+    Args.Add(' ')
+  else
+    Args.Add(ExitFormat);
+  if PausePrompt = '' then
+    Args.Add(' ')
+  else
+    Args.Add(PausePrompt);
   Args.AddStrings(Command);
   Exit(True);
 {$ENDIF}

@@ -917,6 +917,8 @@ type
     procedure ForwardMenuClick(Sender: TObject);
   public
     procedure ZoomEditors(WheelDelta: Integer);
+    procedure EvaluateInputKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    function EvaluateTyped: Boolean;
     procedure LayOutWelcomeRight;
     procedure EditorTabClose(Sender: TObject; Page: TTabSheet);
     procedure ReleaseTabImages; // before closing without FormClose (Halt)
@@ -6225,6 +6227,7 @@ begin
   AddSecondaryShortCut(actCodeCompletion, VK_ESCAPE, [ssAlt]);
   AddSecondaryShortCut(actRedo, VK_Z, [ssMeta, ssShift]);
 {$ENDIF}
+  EvaluateInput.OnKeyDown := EvaluateInputKeyDown; // Enter, also on macOS
   // macOS: tabs on the left, as on Linux (Cocoa centers its own)
   AttachTabStrip(EditorPageControlLeft, EditorTabClose);
   AttachTabStrip(EditorPageControlRight, EditorTabClose);
@@ -6416,27 +6419,39 @@ end;
 
 procedure TMainForm.EvaluateInputKeyPress(Sender: TObject; var Key: Char);
 begin
-  if fDebugger.Executing then begin
-    if Key = Chr(VK_RETURN) then begin
-      if Length(EvaluateInput.Text) > 0 then begin
+  if Key = Chr(VK_RETURN) then
+    if EvaluateTyped then
+      Key := #0;
+end;
 
-        // Disable key, but make sure not to remove selected text
-        EvaluateInput.SelStart := 0;
-        EvaluateInput.SelLength := 0;
-        Key := #0;
+// macOS: Cocoa's combo box takes Enter before KeyPress, only KeyDown sees it
+procedure TMainForm.EvaluateInputKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+  if Key = VK_RETURN then
+    if EvaluateTyped then
+      Key := 0;
+end;
 
-        fDebugger.CancelHandlers(Self); // an earlier answer would overwrite this one
-        fDebugger.Evaluate(EvaluateInput.Text, OnInputEvalReady);
+// The expression typed in the Debug tab, evaluated; False when there is none
+function TMainForm.EvaluateTyped: Boolean;
+begin
+  Result := fDebugger.Executing and (Length(EvaluateInput.Text) > 0);
+  if not Result then
+    Exit;
 
-        // Tell the user we're updating...
-        EvalOutput.Font.Color := fPanelPalette.Secondary;
+  // Make sure not to remove selected text
+  EvaluateInput.SelStart := 0;
+  EvaluateInput.SelLength := 0;
 
-        // Add to history
-        if EvaluateInput.Items.IndexOf(EvaluateInput.Text) = -1 then
-          EvaluateInput.AddItem(EvaluateInput.Text, nil);
-      end;
-    end;
-  end;
+  fDebugger.CancelHandlers(Self); // an earlier answer would overwrite this one
+  fDebugger.Evaluate(EvaluateInput.Text, OnInputEvalReady);
+
+  // Tell the user we're updating...
+  EvalOutput.Font.Color := fPanelPalette.Secondary;
+
+  // Add to history
+  if EvaluateInput.Items.IndexOf(EvaluateInput.Text) = -1 then
+    EvaluateInput.AddItem(EvaluateInput.Text, nil);
 end;
 
 procedure TMainForm.FormShow(Sender: TObject);
@@ -7394,10 +7409,29 @@ procedure TMainForm.LayOutWelcomeRight;
 const
   Gap = 24;
 var
-  Row, Top, Block, I: Integer;
+  Row, Top, Block, I, TextH: Integer;
   Memos: array[0..4] of TMemo;
   Buttons: array[0..4] of TSpeedButton;
+  Tiles, Small: array[0..2] of TBitBtn;
 begin
+  // The large buttons: icon and caption centered as one (Cocoa puts the
+  // icon against the top edge). The small ones: the system's font, and room
+  // between their icon and their caption.
+  Tiles[0] := ButtonNewDocument; Tiles[1] := ButtonOpenDocument; Tiles[2] := ButtonOptions;
+  Small[0] := ButtonChangeTheme; Small[1] := ButtonChangeFont; Small[2] := ButtonChangeLanguage;
+  TextH := Abs(Font.Height);
+  if TextH = 0 then
+    TextH := 16;
+  for I := 0 to 2 do begin
+    Tiles[I].Spacing := 12;
+    Tiles[I].Margin := Max(6, (Tiles[I].Height - 37 - 12 - TextH) div 2);
+    Small[I].Font.Name := 'default';
+    Small[I].Font.Size := 12;
+    Small[I].Height := 36;
+    Small[I].Margin := 10;
+    Small[I].Spacing := 8;
+  end;
+
   Memos[0] := RichEdit0; Memos[1] := RichEdit1; Memos[2] := RichEdit2; Memos[3] := RichEdit3; Memos[4] := RichEdit4;
   Buttons[0] := SpeedButton0; Buttons[1] := SpeedButton1; Buttons[2] := SpeedButton2; Buttons[3] := SpeedButton3;
   Buttons[4] := SpeedButton4;

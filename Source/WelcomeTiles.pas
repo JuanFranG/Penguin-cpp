@@ -19,7 +19,7 @@ unit WelcomeTiles;
 interface
 
 uses
-  Classes, SysUtils, Types, Controls, Graphics, Buttons, LCLType, LCLIntf;
+  Classes, SysUtils, Types, Controls, Graphics, Buttons, Forms, LCLType, LCLIntf;
 
 type
   TWelcomeTile = class(TCustomControl)
@@ -27,46 +27,66 @@ type
     fSource: TBitBtn;
     fHot: Boolean;
     fLarge: Boolean;
+    fImageIndex: Integer;
+    procedure IdleFollow(Sender: TObject; var Done: Boolean);
   protected
     procedure Paint; override;
     procedure MouseEnter; override;
     procedure MouseLeave; override;
     procedure Click; override;
   public
-    constructor Create(ASource: TBitBtn; ALarge: Boolean); reintroduce;
+    // AImageIndex: the button's icon in its Images (the LCL gives the
+    // button's ImageIndex back as -1 at run time)
+    constructor Create(ASource: TBitBtn; ALarge: Boolean; AImageIndex: Integer); reintroduce;
+    destructor Destroy; override;
     // Takes the place the button has now
     procedure Follow;
   end;
 
 // On macOS, a tile over Source, which is hidden; elsewhere nil
-function ReplaceWelcomeButton(Source: TBitBtn; Large: Boolean): TWelcomeTile;
+function ReplaceWelcomeButton(Source: TBitBtn; Large: Boolean; ImageIndex: Integer): TWelcomeTile;
 
 implementation
 
-function ReplaceWelcomeButton(Source: TBitBtn; Large: Boolean): TWelcomeTile;
+function ReplaceWelcomeButton(Source: TBitBtn; Large: Boolean; ImageIndex: Integer): TWelcomeTile;
 begin
 {$IFDEF DARWIN}
-  Result := TWelcomeTile.Create(Source, Large);
+  Result := TWelcomeTile.Create(Source, Large, ImageIndex);
 {$ELSE}
   Result := nil;
 {$ENDIF}
 end;
 
-constructor TWelcomeTile.Create(ASource: TBitBtn; ALarge: Boolean);
+constructor TWelcomeTile.Create(ASource: TBitBtn; ALarge: Boolean; AImageIndex: Integer);
 begin
   inherited Create(ASource.Owner);
   fSource := ASource;
   fLarge := ALarge;
+  fImageIndex := AImageIndex;
   Parent := fSource.Parent;
   Cursor := crHandPoint;
   Follow;
   fSource.Visible := False;
+  // The welcome screen places its buttons again on every resize; a hidden
+  // button says nothing when it moves (no OnChangeBounds)
+  Application.AddOnIdleHandler(@IdleFollow);
+end;
+
+destructor TWelcomeTile.Destroy;
+begin
+  Application.RemoveOnIdleHandler(@IdleFollow);
+  inherited Destroy;
+end;
+
+procedure TWelcomeTile.IdleFollow(Sender: TObject; var Done: Boolean);
+begin
+  if (Left <> fSource.Left) or (Top <> fSource.Top) or (Width <> fSource.Width) or (Height <> fSource.Height) then
+    Follow;
 end;
 
 procedure TWelcomeTile.Follow;
 begin
-  if (Left <> fSource.Left) or (Top <> fSource.Top) or (Width <> fSource.Width) or (Height <> fSource.Height) then
-    SetBounds(fSource.Left, fSource.Top, fSource.Width, fSource.Height);
+  SetBounds(fSource.Left, fSource.Top, fSource.Width, fSource.Height);
   Invalidate;
 end;
 
@@ -91,7 +111,7 @@ begin
   Canvas.Pen.Color := clBtnShadow;
   Canvas.RoundRect(R.Left, R.Top, R.Right - 1, R.Bottom - 1, 12, 12);
 
-  HasIcon := Assigned(fSource.Images) and (fSource.ImageIndex >= 0);
+  HasIcon := Assigned(fSource.Images) and (fImageIndex >= 0) and (fImageIndex < fSource.Images.Count);
   IconW := 0;
   IconH := 0;
   if HasIcon then begin
@@ -110,14 +130,14 @@ begin
     TextH := DrawText(Canvas.Handle, PChar(Title), Length(Title), T, Flags or DT_CALCRECT);
     Y := (Height - IconH - 10 - TextH) div 2;
     if HasIcon then
-      fSource.Images.Draw(Canvas, (Width - IconW) div 2, Y, fSource.ImageIndex);
+      fSource.Images.Draw(Canvas, (Width - IconW) div 2, Y, fImageIndex);
     T := Rect(Pad, Y + IconH + 10, Width - Pad, Height - Pad);
     DrawText(Canvas.Handle, PChar(Title), Length(Title), T, Flags);
   end else begin
     // Icon on the left, the caption centered in the rest (two lines at most)
     X := Pad;
     if HasIcon then begin
-      fSource.Images.Draw(Canvas, X, (Height - IconH) div 2, fSource.ImageIndex);
+      fSource.Images.Draw(Canvas, X, (Height - IconH) div 2, fImageIndex);
       Inc(X, IconW + 6);
     end;
     T := Rect(X, 0, Width - Pad, Height);

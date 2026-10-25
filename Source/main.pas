@@ -6232,12 +6232,12 @@ begin
 {$IFDEF DARWIN}
   // Cocoa draws buttons with an icon badly: the welcome screen's are tiles
   SetLength(fWelcomeTiles, 6);
-  fWelcomeTiles[0] := ReplaceWelcomeButton(ButtonNewDocument, True);
-  fWelcomeTiles[1] := ReplaceWelcomeButton(ButtonOpenDocument, True);
-  fWelcomeTiles[2] := ReplaceWelcomeButton(ButtonOptions, True);
-  fWelcomeTiles[3] := ReplaceWelcomeButton(ButtonChangeTheme, False);
-  fWelcomeTiles[4] := ReplaceWelcomeButton(ButtonChangeFont, False);
-  fWelcomeTiles[5] := ReplaceWelcomeButton(ButtonChangeLanguage, False);
+  fWelcomeTiles[0] := ReplaceWelcomeButton(ButtonNewDocument, True, 0);
+  fWelcomeTiles[1] := ReplaceWelcomeButton(ButtonOpenDocument, True, 1);
+  fWelcomeTiles[2] := ReplaceWelcomeButton(ButtonOptions, True, 2);
+  fWelcomeTiles[3] := ReplaceWelcomeButton(ButtonChangeTheme, False, 80);
+  fWelcomeTiles[4] := ReplaceWelcomeButton(ButtonChangeFont, False, 81);
+  fWelcomeTiles[5] := ReplaceWelcomeButton(ButtonChangeLanguage, False, 82);
 {$ENDIF}
   // macOS: tabs on the left, as on Linux (Cocoa centers its own)
   AttachTabStrip(EditorPageControlLeft, EditorTabClose);

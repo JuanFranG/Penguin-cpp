@@ -38,7 +38,7 @@ implementation
 
 {$IFDEF UNIX}
 uses
-  BaseUnix, Sockets, crc;
+  BaseUnix, Sockets, crc, devPlatform;
 
 const
   Signature = 'PENGUIN-CPP-OPEN 1';
@@ -57,11 +57,9 @@ var
 begin
   Dir := GetEnvironmentVariable('XDG_RUNTIME_DIR');
   if (Dir = '') or not DirectoryExists(Dir) then begin
-    Dir := GetEnvironmentVariable('XDG_CACHE_HOME');
+    // macOS has no XDG_RUNTIME_DIR: the private cache folder (0700)
+    Dir := GetPrivateTempDir;
     if Dir = '' then
-      Dir := IncludeTrailingPathDelimiter(GetUserDir) + '.cache';
-    Dir := IncludeTrailingPathDelimiter(Dir) + 'penguin-cpp' + PathDelim + 'tmp';
-    if not ForceDirectories(Dir) or (FpChmod(Dir, &700) <> 0) then
       Exit('');
   end;
   Result := IncludeTrailingPathDelimiter(Dir) + 'penguin-cpp-' +

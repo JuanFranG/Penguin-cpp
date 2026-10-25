@@ -181,6 +181,11 @@ var
 begin
   WriteLn('GetConfigDir:');
   Xdg := GetEnvironmentVariable('XDG_CONFIG_HOME');
+{$IFDEF DARWIN}
+  Expected := IncludeTrailingPathDelimiter(GetUserDir) + 'Library/Application Support/penguin-cpp/';
+  Check(GetConfigDir = Expected, 'Application Support (' + GetConfigDir + ')', 'expected ' + Expected);
+  Exit;
+{$ENDIF}
   if Xdg <> '' then
     Expected := IncludeTrailingPathDelimiter(Xdg) + 'penguin-cpp' + PathDelim
   else
@@ -260,10 +265,10 @@ begin
     for I := 0 to Names.Count - 1 do
       if PtrInt(Names.Objects[I]) = GetProcessID then
         Found := True;
-    {$IFDEF LINUX}
+    {$IF DEFINED(LINUX) or DEFINED(DARWIN)}
     Check(Found, 'lists this process (' + IntToStr(Names.Count) + ' processes)');
     {$ELSE}
-    WriteLn('  (skipped: /proc is Linux only)');
+    WriteLn('  (skipped: no process list here)');
     {$ENDIF}
   finally
     Names.Free;

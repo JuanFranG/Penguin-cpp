@@ -259,9 +259,20 @@ begin
   end;
 end;
 
+// macOS keeps an app's settings and own files in ~/Library/Application Support
+{$IFDEF DARWIN}
+function MacSupportDir: String;
+begin
+  Result := IncludeTrailingPathDelimiter(GetUserDir) + 'Library' + PathDelim + 'Application Support' + PathDelim +
+    AppDirName + PathDelim;
+end;
+{$ENDIF}
+
 function GetConfigDir: String;
 begin
-{$IFDEF UNIX}
+{$IF DEFINED(DARWIN)}
+  Result := MacSupportDir;
+{$ELSEIF DEFINED(UNIX)}
   Result := GetEnvironmentVariable('XDG_CONFIG_HOME');
   if Result = '' then
     Result := IncludeTrailingPathDelimiter(GetUserDir) + '.config';
@@ -279,6 +290,12 @@ begin
   Result := IncludeTrailingPathDelimiter(ExeDir);
   if DirectoryExists(Result + 'Lang') then
     Exit;
+{$IFDEF DARWIN}
+  // Penguin cpp.app/Contents/MacOS/penguin-cpp -> Contents/Resources/
+  Shared := ExpandFileName(Result + '..' + PathDelim + 'Resources');
+  if DirectoryExists(Shared + PathDelim + 'Lang') then
+    Exit(IncludeTrailingPathDelimiter(Shared));
+{$ENDIF}
   // <prefix>/lib/penguin-cpp/ -> <prefix>/share/penguin-cpp/
   Shared := ExpandFileName(Result + '..' + PathDelim + '..' + PathDelim + 'share' + PathDelim + AppDirName);
   if DirectoryExists(Shared + PathDelim + 'Lang') then
@@ -287,7 +304,9 @@ end;
 
 function GetUserDataDir: String;
 begin
-{$IFDEF UNIX}
+{$IF DEFINED(DARWIN)}
+  Result := MacSupportDir;
+{$ELSEIF DEFINED(UNIX)}
   Result := GetEnvironmentVariable('XDG_DATA_HOME');
   if Result = '' then
     Result := IncludeTrailingPathDelimiter(GetUserDir) + '.local' + PathDelim + 'share';
@@ -352,9 +371,13 @@ end;
 function GetPrivateTempDir: String;
 begin
 {$IFDEF UNIX}
+{$IFDEF DARWIN}
+  Result := IncludeTrailingPathDelimiter(GetUserDir) + 'Library' + PathDelim + 'Caches';
+{$ELSE}
   Result := GetEnvironmentVariable('XDG_CACHE_HOME');
   if Result = '' then
     Result := IncludeTrailingPathDelimiter(GetUserDir) + '.cache';
+{$ENDIF}
   Result := IncludeTrailingPathDelimiter(Result) + AppDirName + PathDelim + 'tmp' + PathDelim;
   if not ForceDirectories(Result) or (FpChmod(Result, &700) <> 0) then
     Result := '';
@@ -366,7 +389,7 @@ begin
 end;
 
 procedure ListProcesses(Names: TStrings);
-{$IFDEF LINUX}
+{$IF DEFINED(LINUX)}
 var
   Rec: TSearchRec;
   PID: Integer;
@@ -391,6 +414,28 @@ begin
       end;
   finally
     Comm.Free;
+  end;
+end;
+{$ELSEIF DEFINED(DARWIN)}
+// No /proc on macOS: ps lists them, "  PID /path/of/program" a line
+var
+  Output, Line: String;
+  Lines: TStringList;
+  I, Space, PID: Integer;
+begin
+  if not RunCommand('/bin/ps', ['-axo', 'pid=,comm='], Output, [poNoConsole]) then
+    Exit;
+  Lines := TStringList.Create;
+  try
+    Lines.Text := Output;
+    for I := 0 to Lines.Count - 1 do begin
+      Line := Trim(Lines[I]);
+      Space := Pos(' ', Line);
+      if (Space > 1) and TryStrToInt(Copy(Line, 1, Space - 1), PID) then
+        Names.AddObject(ExtractFileName(Trim(Copy(Line, Space + 1, MaxInt))), TObject(PtrInt(PID)));
+    end;
+  finally
+    Lines.Free;
   end;
 end;
 {$ELSE}
@@ -430,13 +475,54 @@ const
     'printf "$fmt\n" "$((ms / 1000)).$(printf %03d $((ms % 1000)))" "$code"; ' +
     'printf ''%s'' "$prompt"; read dummy';
 
+{$IFDEF DARWIN}
+  // macOS: Terminal.app runs a .command file it is given, without asking for
+  // permission to be controlled (AppleScript would). This script (zsh, run
+  // by the IDE) writes one into a private temporary folder: it goes to the
+  // working directory, runs the program, with its arguments quoted one by
+  // one, and pauses like PauseScript, timing with zsh's own clock (macOS'
+  // date has no %N). The IDE waits for it, as for a Linux terminal: the
+  // script leaves a "done" file when it ends, its window is closed too; and
+  // stopping the IDE's wait ends the program.
+  // Arguments: pause (1/0), the exit format, the prompt, the command.
+  MacRunScript =
+    'pause=$1; fmt=$2; prompt=$3; shift 3' + #10 +
+    'dir=$(mktemp -d "${TMPDIR:-/tmp}/penguin-cpp-run.XXXXXX") || exit 1' + #10 +
+    'print -r -- "$fmt" > $dir/fmt' + #10 +
+    'print -rn -- "$prompt" > $dir/prompt' + #10 +
+    '{' + #10 +
+    '  print -r -- ''#!/bin/zsh -f''' + #10 +
+    '  print -r -- "dir=${(qq)dir}"' + #10 +
+    '  print -r -- ''trap "exit 129" HUP INT TERM; trap "touch \$dir/done" EXIT; print $$ > $dir/pid''' + #10 +
+    '  print -r -- "cd ${(qq)PWD}"' + #10 +
+    '  print -r -- ''zmodload zsh/datetime; start=$EPOCHREALTIME''' + #10 +
+    '  print -r -- "${(j: :)${(qq)@}}"' + #10 +
+    '  print -r -- ''code=$?''' + #10 +
+    '  if [[ $pause == 1 ]]; then' + #10 +
+    '    print -r -- ''elapsed=$(( EPOCHREALTIME - start )); print; print -- --------------------------------''' + #10 +
+    '    print -r -- ''printf "$(<$dir/fmt)\n" "$(printf %.3f $elapsed)" $code; printf %s "$(<$dir/prompt)"; read dummy''' + #10 +
+    '  fi' + #10 +
+    '} > $dir/run.command' + #10 +
+    'chmod 700 $dir/run.command' + #10 +
+    'trap ''p=$(<$dir/pid) 2>/dev/null; if [[ -n $p ]]; then pkill -TERM -P $p; kill $p; fi; rm -rf $dir; exit 143'' TERM INT' + #10 +
+    'open -a Terminal $dir/run.command || { rm -rf $dir; exit 1 }' + #10 +
+    'while [[ ! -e $dir/done ]]; do sleep 0.3; done' + #10 +
+    'rm -rf $dir';
+{$ENDIF}
+
 procedure GetTerminalNames(Names: TStrings);
+{$IFDEF DARWIN}
+begin
+  Names.Add('Terminal');
+end;
+{$ELSE}
 var
   I: Integer;
 begin
   for I := Low(Terminals) to High(Terminals) do
     Names.Add(Terminals[I].Exe);
 end;
+{$ENDIF}
 
 // The one the user chose, if installed; else the desktop's own terminal
 // (XDG_CURRENT_DESKTOP: X-Cinnamon, MATE, XFCE, KDE...), then the others in order
@@ -474,6 +560,21 @@ var
   Terminal: TTerminal;
   I: Integer;
 begin
+{$IFDEF DARWIN}
+  Exe := '/bin/zsh';
+  Args.Add('-f');
+  Args.Add('-c');
+  Args.Add(MacRunScript);
+  Args.Add('penguin-cpp'); // $0
+  if Pause then
+    Args.Add('1')
+  else
+    Args.Add('0');
+  Args.Add(ExitFormat);
+  Args.Add(PausePrompt);
+  Args.AddStrings(Command);
+  Exit(True);
+{$ENDIF}
   Exe := '';
   Result := FindTerminal(Terminal, Preferred);
   if not Result then

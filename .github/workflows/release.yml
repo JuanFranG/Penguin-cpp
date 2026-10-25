@@ -53,8 +53,13 @@ jobs:
 
       - name: The repository installs the package
         run: |
-          REPO=$PWD/apt-repo
-          echo "deb [signed-by=$REPO/penguin-cpp.gpg] file:$REPO stable main" | sudo tee /etc/apt/sources.list.d/penguin-cpp.list
+          # A copy where apt's unprivileged user (_apt) can read it, the key
+          # where users put it
+          REPO=/tmp/penguin-cpp-apt
+          cp -r apt-repo "$REPO"
+          chmod -R a+rX "$REPO"
+          sudo install -m 644 "$REPO/penguin-cpp.gpg" /usr/share/keyrings/penguin-cpp.gpg
+          echo "deb [signed-by=/usr/share/keyrings/penguin-cpp.gpg] file:$REPO stable main" | sudo tee /etc/apt/sources.list.d/penguin-cpp.list
           sudo apt-get update
           sudo apt-get install -y penguin-cpp
           test -x /usr/lib/penguin-cpp/penguin-cpp

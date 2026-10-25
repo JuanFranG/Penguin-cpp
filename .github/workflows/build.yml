@@ -98,15 +98,19 @@ jobs:
           sudo apt-get install -y --no-install-recommends apt-utils gnupg
           export GNUPGHOME=$(mktemp -d)
           gpg --batch --pinentry-mode loopback --passphrase '' --quick-gen-key "Penguin cpp test <test@invalid>" ed25519 sign never
-          REPO=$RUNNER_TEMP/apt-repo
+          # Where apt's unprivileged user (_apt) can read it, the key where
+          # users put it
+          REPO=$(mktemp -d /tmp/apt-repo.XXXXXX)
+          chmod 755 "$REPO"
           packaging/update-apt-repo.sh "$REPO" build/deb/*.deb
-          echo "deb [signed-by=$REPO/penguin-cpp.gpg] file:$REPO stable main" | sudo tee /etc/apt/sources.list.d/penguin-cpp-test.list
+          sudo install -m 644 "$REPO/penguin-cpp.gpg" /usr/share/keyrings/penguin-cpp-test.gpg
+          echo "deb [signed-by=/usr/share/keyrings/penguin-cpp-test.gpg] file:$REPO stable main" | sudo tee /etc/apt/sources.list.d/penguin-cpp-test.list
           sudo apt-get update
           apt-cache policy penguin-cpp
           sudo apt-get install -y penguin-cpp
           test -x /usr/lib/penguin-cpp/penguin-cpp
           sudo apt-get remove -y penguin-cpp
-          sudo rm /etc/apt/sources.list.d/penguin-cpp-test.list
+          sudo rm /etc/apt/sources.list.d/penguin-cpp-test.list /usr/share/keyrings/penguin-cpp-test.gpg
 
       - name: Keep the package
         uses: actions/upload-artifact@v4

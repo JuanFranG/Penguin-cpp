@@ -85,6 +85,7 @@ const
   ID_DEBUG_NOTINCONTEXT                 = 1068;
   ID_DEBUG_RUNTOEVALUATE                = 1069;
   ID_MSG_ERRORLOG                       = 1070;
+  ID_ITEM_CODECOMPLETION                = 1071;
 
   ID_ITEM_OPEN                          = 2001;
   ID_SUB_REOPEN                         = 2002;

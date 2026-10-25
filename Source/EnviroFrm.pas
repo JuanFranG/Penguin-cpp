@@ -120,7 +120,7 @@ type
 implementation
 
 uses
-  Filectrl, devCFG, MultiLangSupport, Version, DataFrm, Utils, ImageTheme, main, StrUtils, Math,
+  Filectrl, devCFG, MultiLangSupport, Version, DataFrm, Utils, MacSupport, ImageTheme, main, StrUtils, Math,
   devPlatform;
 
 {$R *.lfm}
@@ -314,6 +314,8 @@ var
   I, sel: integer;
 begin
   LoadText;
+  UseNativeComboBox(cbUIfont); // macOS
+  UseNativeComboBox(cbUIfontsize);
 
   with devData do begin
     // General, left column

@@ -63,7 +63,7 @@ type
 implementation
 
 uses
-  MultiLangSupport, DataFrm, devCFG, Utils, main, Version, ImageTheme, SynEditTypes, SynEditCompat;
+  MultiLangSupport, DataFrm, devCFG, Utils, MacSupport, main, Version, ImageTheme, SynEditTypes, SynEditCompat;
 
 {$R *.lfm}
 
@@ -158,20 +158,12 @@ begin
   devEditor.AssignEditor(synExample, 'main.cpp');
 
   // Font options
+  UseNativeComboBox(cmbFont); // macOS
   GetMonospaceFonts(cmbFont.Items);
-  FontIndex := cmbFont.Items.IndexOf('Source Code Pro');
-  if FontIndex = -1 then
-    FontIndex := cmbFont.Items.IndexOf('DejaVu Sans Mono');
-  if FontIndex = -1 then
-    FontIndex := cmbFont.Items.IndexOf('Courier');
-  // usual monospaced fonts on Linux
-  if FontIndex = -1 then
-    FontIndex := cmbFont.Items.IndexOf('DejaVu Sans Mono');
-  if FontIndex = -1 then
-    FontIndex := cmbFont.Items.IndexOf('Liberation Mono');
-  if FontIndex = -1 then
-    FontIndex := cmbFont.Items.IndexOf('Ubuntu Mono');
+  FontIndex := PreferredMonospaceFont(cmbFont.Items);
   cmbFont.ItemIndex := FontIndex; // set ItemIndex once
+  if FontIndex <> -1 then
+    FontChange(cmbFont); // the example and the option use it from the start
 
   // Populate language list
   UpdateLangList(Lang.GetLangList);

@@ -971,7 +971,7 @@ begin
     fInterfaceFontSize := 10;
     fInterfaceFont := 'Heebo';
   end else begin
-    fInterfaceFontSize := 10;
+    fInterfaceFontSize := {$IFDEF DARWIN}13{$ELSE}10{$ENDIF}; // macOS' usual size
     fInterfaceFont := 'default';
   end;
 
@@ -2374,8 +2374,13 @@ begin
   fTabSize := 4;
 
   // Display
+{$IFDEF DARWIN}
+  fFont.name := 'Menlo'; // macOS' own monospaced font (Terminal, Xcode)
+  fFont.Size := 13; // macOS sizes text larger than Linux
+{$ELSE}
   fFont.name := 'DejaVu Sans Mono'; // on every Linux Mint; Consolas is a Windows font
   fFont.Size := 10;
+{$ENDIF}
   //fFont.name := 'Source Code Pro';
   //fFont.Size := 10;
   fShowLigatures := True;
@@ -2387,8 +2392,13 @@ begin
   fLineNumbers := TRUE;
   fFirstisZero := FALSE;
   fLeadZero := FALSE;
+{$IFDEF DARWIN}
+  fGutterFont.Name := 'Menlo';
+  fGutterFont.Size := 13;
+{$ELSE}
   fGutterFont.Name := 'DejaVu Sans Mono';
   fGutterFont.Size := 10;
+{$ENDIF}
   //fGutterFont.name := 'Source Code Pro';
   //fGutterFont.Size := 10;
   fGutterSize := 1;

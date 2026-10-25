@@ -84,6 +84,10 @@ procedure CloneMenu(FromMenu, ToMenu: TMenuItem);
 // hundreds, and the GTK2 drop-down shows them all at once.
 procedure GetMonospaceFonts(List: TStrings);
 
+// The index in a font list of the editor font to start with: Menlo on macOS
+// (Source Code Pro is drawn wrong by Cocoa), the usual ones on Linux; -1
+function PreferredMonospaceFont(List: TStrings): Integer;
+
 function FindComplement(const s: String; fromtoken, totoken: char; var curpos: integer; increment: integer):
   boolean;
 
@@ -887,6 +891,25 @@ begin
   end;
   if List.Count = 0 then // could not tell: offer everything
     List.Assign(Screen.Fonts);
+end;
+
+function PreferredMonospaceFont(List: TStrings): Integer;
+const
+{$IFDEF DARWIN}
+  Preferred: array[0..2] of String = ('Menlo', 'Monaco', 'Courier New');
+{$ELSE}
+  Preferred: array[0..4] of String = ('Source Code Pro', 'DejaVu Sans Mono', 'Liberation Mono', 'Ubuntu Mono',
+    'Courier');
+{$ENDIF}
+var
+  I: Integer;
+begin
+  for I := Low(Preferred) to High(Preferred) do begin
+    Result := List.IndexOf(Preferred[I]);
+    if Result <> -1 then
+      Exit;
+  end;
+  Result := -1;
 end;
 
 procedure CloneMenu(FromMenu, ToMenu: TMenuItem);

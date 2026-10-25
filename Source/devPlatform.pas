@@ -503,7 +503,10 @@ const
   // one, and pauses like PauseScript, timing with zsh's own clock (macOS'
   // date has no %N). The IDE waits for it, as for a Linux terminal: the
   // script leaves a "done" file when it ends, its window is closed too; and
-  // stopping the IDE's wait ends the program.
+  // stopping the IDE's wait ends the program. At the end the script closes
+  // its own window, found by the title it gave it (Terminal keeps finished
+  // windows open by default); Terminal closing its own window needs no
+  // permission.
   // Arguments: pause (1/0), the exit format, the prompt, the command.
   MacRunScript =
     'pause=$1; fmt=$2; prompt=$3; shift 3' + #10 +
@@ -514,6 +517,7 @@ const
     '  print -r -- ''#!/bin/zsh -f''' + #10 +
     '  print -r -- "dir=${(qq)dir}"' + #10 +
     '  print -r -- ''trap "exit 129" HUP INT TERM; trap "touch \$dir/done" EXIT; print $$ > $dir/pid''' + #10 +
+    '  print -r -- ''name=${dir:t}; print -n "\e]0;$name\a"''' + #10 +
     '  print -r -- "cd ${(qq)PWD}"' + #10 +
     '  print -r -- ''zmodload zsh/datetime; start=$EPOCHREALTIME''' + #10 +
     '  print -r -- "${(j: :)${(qq)@}}"' + #10 +
@@ -522,6 +526,7 @@ const
     '    print -r -- ''elapsed=$(( EPOCHREALTIME - start )); print; print -- --------------------------------''' + #10 +
     '    print -r -- ''printf "$(<$dir/fmt)\n" "$(printf %.3f $elapsed)" $code; printf %s "$(<$dir/prompt)"; read dummy''' + #10 +
     '  fi' + #10 +
+    '  print -r -- ''(sleep 0.3; osascript -e "on run {n}" -e "tell application \"Terminal\" to close (every window whose name contains n)" -e "end run" "$name" >/dev/null 2>&1) &!''' + #10 +
     '} > $dir/run.command' + #10 +
     'chmod 700 $dir/run.command' + #10 +
     'trap ''p=$(<$dir/pid) 2>/dev/null; if [[ -n $p ]]; then pkill -TERM -P $p; kill $p; fi; rm -rf $dir; exit 143'' TERM INT' + #10 +

@@ -98,9 +98,6 @@ var
   StartFiles: TStringList;
   I: Integer;
 begin
-  // A Mac has no package that installs the IDE's fonts
-  RegisterAppFonts(GetDataDir(ExtractFilePath(Application.ExeName)));
-
   devData.IsPortable := EndsText('portable', ChangeFileExt(ExtractFileName(ParamStr(0)), ''))
                         or FindCmdLineSwitch('portable', True)
                         or FindCmdLineSwitch('-portable', True);

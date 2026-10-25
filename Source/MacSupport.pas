@@ -6,8 +6,8 @@
 
     What macOS does differently, in one place; on other systems these do
     nothing (or what they did before):
-      - the IDE's fonts (Heebo, Source Code Pro) are registered for the
-        process from the data folder: a Mac has no package that installs them;
+      - font pickers are the system's own pop-up menus (Cocoa draws the
+        owner-drawn ones badly);
       - light or dark windows, menus and dialogs follow the editor's color
         scheme (NSAppearance; Qt's palette is Linux only);
       - shortcuts use the Command key where Linux uses Ctrl, except those
@@ -23,11 +23,11 @@ unit MacSupport;
 interface
 
 uses
-  Classes, SysUtils, LCLType, Menus, ActnList, SynEditKeyCmds;
+  Classes, SysUtils, LCLType, LCLProc, Menus, ActnList, StdCtrls, SynEditKeyCmds;
 
-// Registers the .ttf files in DataDir/Fonts and its subfolders for this
-// process (macOS); elsewhere the package installs them
-procedure RegisterAppFonts(const DataDir: String);
+// On macOS, an owner-drawn combo box (a font picker that shows each font in
+// itself) becomes a plain one: Cocoa draws those badly
+procedure UseNativeComboBox(Combo: TComboBox);
 
 // Light or dark windows, menus and dialogs (macOS)
 procedure SetDarkAppearance(Dark: Boolean);
@@ -39,35 +39,40 @@ function CommandShift: TShiftState;
 // Command shortcuts (see above for the ones that stay)
 procedure UseCommandKey(Owner: TComponent);
 
+// Adds another shortcut to an action, by its value: the list's Add takes the
+// shortcut's text, and on macOS that text (with symbols such as the Option
+// sign) does not read back
+procedure AddSecondaryShortCut(Action: TCustomAction; Key: Word; Shift: TShiftState);
+
 // On macOS, adds the Mac's cursor and deletion keys to an editor's keys
 procedure AddMacKeystrokes(Keys: TSynEditKeyStrokes);
 
 implementation
 
+procedure AddSecondaryShortCut(Action: TCustomAction; Key: Word; Shift: TShiftState);
+var
+  Value: TShortCut;
+begin
+  Value := KeyToShortCut(Key, Shift);
+  Action.SecondaryShortCuts.AddObject(ShortCutToText(Value), TObject(PtrUInt(Value)));
+end;
+
 {$IFDEF DARWIN}
-uses
-  LCLProc;
 
 // A few C functions of macOS, declared here: FPC's Cocoa headers (CocoaAll)
 // stop it with an internal error when it writes debug information for their
 // Objective-C classes (dbgdwarf, 200609171), and the IDE is built with it.
 const
   kCFStringEncodingUTF8 = $08000100;
-  kCTFontManagerScopeProcess = 1;
 
 function CFStringCreateWithCString(Alloc: Pointer; CStr: PAnsiChar; Encoding: LongWord): Pointer; cdecl;
   external name 'CFStringCreateWithCString';
-function CFURLCreateFromFileSystemRepresentation(Alloc: Pointer; Buffer: PAnsiChar; BufLen: PtrInt;
-  IsDirectory: Boolean): Pointer; cdecl; external name 'CFURLCreateFromFileSystemRepresentation';
 procedure CFRelease(CF: Pointer); cdecl; external name 'CFRelease';
-function CTFontManagerRegisterFontsForURL(FontURL: Pointer; Scope: LongWord; Error: PPointer): Boolean; cdecl;
-  external name 'CTFontManagerRegisterFontsForURL';
 function objc_getClass(Name: PAnsiChar): Pointer; cdecl; external name 'objc_getClass';
 function sel_registerName(Name: PAnsiChar): Pointer; cdecl; external name 'sel_registerName';
 procedure objc_msgSend; cdecl; external name 'objc_msgSend';
 
 {$LINKFRAMEWORK CoreFoundation}
-{$LINKFRAMEWORK CoreText}
 
 type
   // objc_msgSend must be called with the exact types of each message (arm64)
@@ -75,50 +80,11 @@ type
   TMsgSend1 = function(Obj, Sel, Arg: Pointer): Pointer; cdecl;
   TMsgSendBool1 = function(Obj, Sel, Arg: Pointer): Boolean; cdecl;
 
-procedure RegisterAppFonts(const DataDir: String);
-var
-  Files: TStringList;
-  Rec: TSearchRec;
-  Dirs: TStringList;
-  Dir, FontFile: String;
-  URL: Pointer;
-  I: Integer;
+procedure UseNativeComboBox(Combo: TComboBox);
 begin
-  Files := TStringList.Create;
-  Dirs := TStringList.Create;
-  try
-    // Fonts/ and the folders under it (Heebo/static, Source_Code_Pro)
-    Dirs.Add(IncludeTrailingPathDelimiter(DataDir) + 'Fonts');
-    I := 0;
-    while I < Dirs.Count do begin
-      Dir := IncludeTrailingPathDelimiter(Dirs[I]);
-      if FindFirst(Dir + '*', faAnyFile, Rec) = 0 then
-        try
-          repeat
-            if (Rec.Name = '.') or (Rec.Name = '..') then
-              Continue;
-            if (Rec.Attr and faDirectory) <> 0 then
-              Dirs.Add(Dir + Rec.Name)
-            else if SameText(ExtractFileExt(Rec.Name), '.ttf') and (Pos('Variable', Rec.Name) = 0) then
-              Files.Add(Dir + Rec.Name);
-          until FindNext(Rec) <> 0;
-        finally
-          FindClose(Rec);
-        end;
-      Inc(I);
-    end;
-    for FontFile in Files do begin
-      URL := CFURLCreateFromFileSystemRepresentation(nil, PAnsiChar(FontFile), Length(FontFile), False);
-      if Assigned(URL) then begin
-        // False when it is already there (the same font twice): nothing to do
-        CTFontManagerRegisterFontsForURL(URL, kCTFontManagerScopeProcess, nil);
-        CFRelease(URL);
-      end;
-    end;
-  finally
-    Dirs.Free;
-    Files.Free;
-  end;
+  Combo.OnDrawItem := nil;
+  Combo.OnMeasureItem := nil;
+  Combo.Style := csDropDownList;
 end;
 
 procedure SetDarkAppearance(Dark: Boolean);
@@ -179,10 +145,11 @@ begin
         // Read-only one by one: the list is made again
         Texts.Clear;
         for J := 0 to Action.SecondaryShortCuts.Count - 1 do
-          Texts.Add(ShortCutToText(MacShortCut(Action.SecondaryShortCuts.ShortCuts[J])));
+          Texts.AddObject('', TObject(PtrUInt(MacShortCut(Action.SecondaryShortCuts.ShortCuts[J]))));
         Action.SecondaryShortCuts.Clear;
         for J := 0 to Texts.Count - 1 do
-          Action.SecondaryShortCuts.Add(Texts[J]);
+          Action.SecondaryShortCuts.AddObject(ShortCutToText(TShortCut(PtrUInt(Texts.Objects[J]))),
+            Texts.Objects[J]);
       end;
     end else if Owner.Components[I] is TMenuItem then begin
       Item := TMenuItem(Owner.Components[I]);
@@ -231,7 +198,7 @@ end;
 
 {$ELSE}
 
-procedure RegisterAppFonts(const DataDir: String);
+procedure UseNativeComboBox(Combo: TComboBox);
 begin
 end;
 

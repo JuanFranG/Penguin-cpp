@@ -67,6 +67,7 @@ type
     ToggleBookmarksItem: TMenuItem;
     GotoBookmarksItem: TMenuItem;
     SelectallItem: TMenuItem;
+    CodeCompletionItem: TMenuItem;
     SearchMenu: TMenuItem;
     FindItem: TMenuItem;
     ReplaceItem: TMenuItem;
@@ -1227,6 +1228,7 @@ begin
   actCopy.Caption := Lang[ID_ITEM_COPY];
   actPaste.Caption := Lang[ID_ITEM_PASTE];
   actSelectAll.Caption := Lang[ID_ITEM_SELECTALL];
+  actCodeCompletion.Caption := Lang[ID_ITEM_CODECOMPLETION];
 
   // Insert submenu
   actInsert.Caption := Lang[ID_TB_INSERT];
@@ -6194,8 +6196,8 @@ begin
   // may be taken by the input source switch) and Command-Shift-Z redoes
   UseCommandKey(Self);
 {$IFDEF DARWIN}
-  actCodeCompletion.SecondaryShortCuts.Add(ShortCutToText(ShortCut(VK_ESCAPE, [ssAlt])));
-  actRedo.SecondaryShortCuts.Add(ShortCutToText(ShortCut(VK_Z, [ssMeta, ssShift])));
+  AddSecondaryShortCut(actCodeCompletion, VK_ESCAPE, [ssAlt]);
+  AddSecondaryShortCut(actRedo, VK_Z, [ssMeta, ssShift]);
   // Cocoa's tabs are wider: room for Project, Classes and Debug
   LeftPageControl.Constraints.MinWidth := 300;
 {$ENDIF}

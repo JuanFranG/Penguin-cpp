@@ -6375,6 +6375,9 @@ object MainForm: TMainForm
       object SelectallItem: TMenuItem
         Action = actSelectAll
       end
+      object CodeCompletionItem: TMenuItem
+        Action = actCodeCompletion
+      end
       object N23: TMenuItem
         Caption = '-'
       end

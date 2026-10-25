@@ -113,7 +113,7 @@ var
 begin
   Result := FindFirst(FileName, faAnyFile, SearchRec) = 0;
   if Result then begin
-    TimeStamp := FileDateToDateTime(SearchRec.Time);
+    TimeStamp := SearchRec.TimeStamp; // Time is deprecated in FPC 3.2.4
     Size := SearchRec.Size;
     FindClose(SearchRec);
   end;

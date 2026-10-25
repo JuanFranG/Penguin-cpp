@@ -217,7 +217,7 @@ type
 implementation
 
 uses
-  Types, ExtDlgs, MultiLangSupport, devCFG, Version, Utils, math, DateUtils, CodeInsList, DataFrm,
+  Types, ExtDlgs, MultiLangSupport, devCFG, Version, Utils, MacSupport, math, DateUtils, CodeInsList, DataFrm,
   IniFiles, Editor, main, ColorSchemes;
 
 {$R *.lfm}
@@ -290,13 +290,11 @@ begin
     LoadFonts; // fill dropdowns
 
     //cboEditorFont.Items.Assign(Screen.Fonts);
+    UseNativeComboBox(cboEditorFont); // macOS
+    UseNativeComboBox(cboGutterFont);
     FontIndex := cboEditorFont.Items.IndexOf(devEditor.Font.Name);
     if FontIndex = -1 then
-      FontIndex := cboEditorFont.Items.IndexOf('Source Code Pro');
-    if FontIndex = -1 then
-      FontIndex := cboEditorFont.Items.IndexOf('DejaVu Sans Mono');
-    if FontIndex = -1 then
-      FontIndex := cboEditorFont.Items.IndexOf('Courier');
+      FontIndex := PreferredMonospaceFont(cboEditorFont.Items);
     cboEditorFont.ItemIndex := FontIndex;
 
     cbLigatures.Checked := ShowLigatures;
@@ -308,11 +306,7 @@ begin
 
     //cboGutterFont.Items.Assign(Screen.Fonts);
     if FontIndex = -1 then
-      FontIndex := cboGutterFont.Items.IndexOf('Source Code Pro');
-    if FontIndex = -1 then
-      FontIndex := cboGutterFont.Items.IndexOf('DejaVu Sans Mono');
-    if FontIndex = -1 then
-      FontIndex := cboGutterFont.Items.IndexOf('Courier');
+      FontIndex := PreferredMonospaceFont(cboGutterFont.Items);
     cboGutterFont.ItemIndex := FontIndex;
 
     // Colors

@@ -62,7 +62,7 @@ var
 implementation
 
 uses
-  System.UITypes, StrUtils, LCLProc;
+  StrUtils, LCLProc;
 
 {$R *.lfm}
 

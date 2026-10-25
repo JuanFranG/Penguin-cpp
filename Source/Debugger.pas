@@ -139,7 +139,7 @@ type
 implementation
 
 uses
-  System.UITypes, Process, Math, main, devCFG, Utils, CPUFrm, GdbMI, Version;
+  Process, Math, main, devCFG, Utils, CPUFrm, GdbMI, Version;
 
 const
   MaxWatchChildren = 200; // long arrays: the first ones are enough

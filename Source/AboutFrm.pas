@@ -86,7 +86,7 @@ type
 implementation
 
 uses
-  System.UITypes, devCFG, Utils, MultiLangSupport, main, devPlatform;
+  devCFG, Utils, MultiLangSupport, main, devPlatform;
 
 {$R *.lfm}
 

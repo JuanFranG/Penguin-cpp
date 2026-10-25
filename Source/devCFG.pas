@@ -22,8 +22,8 @@ unit devCFG;
 interface
 
 uses
-  Dialogs, LCLIntf, LCLType, Classes, Graphics, SynEdit, Editor, CFGData, IniFiles, ProjectTypes,
-  Math, ComCtrls, System.UITypes, SynEditTextBuffer, SysUtils, Forms;
+  System.UITypes, Dialogs, LCLIntf, LCLType, Classes, Graphics, SynEdit, Editor, CFGData, IniFiles, ProjectTypes,
+  Math, ComCtrls, SynEditTextBuffer, SysUtils, Forms;
 
 const
   BoolValYesNo: array[boolean] of String = ('No', 'Yes');

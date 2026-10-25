@@ -162,7 +162,7 @@ type
 implementation
 
 uses
-  System.UITypes, FileCtrl, devCFG, IconFrm, Utils, MultiLangSupport, Version, Math, devPlatform;
+  FileCtrl, devCFG, IconFrm, Utils, MultiLangSupport, Version, Math, devPlatform;
 
 {$R *.lfm}
 

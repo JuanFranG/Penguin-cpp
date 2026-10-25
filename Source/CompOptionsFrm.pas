@@ -115,7 +115,7 @@ type
 implementation
 
 uses
-  System.UITypes, main, FileCtrl, Version, devCFG, Utils, MultiLangSupport, DataFrm, devPlatform;
+  main, FileCtrl, Version, devCFG, Utils, MultiLangSupport, DataFrm, devPlatform;
 
 {$R *.lfm}
 

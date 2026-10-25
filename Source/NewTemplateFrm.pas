@@ -22,8 +22,8 @@ unit NewTemplateFrm;
 interface
 
 uses
-  LCLIntf, LCLType, LMessages, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, CheckLst, ExtCtrls, Buttons, ComCtrls, Project, ImgList, ExtDlgs, IniFiles, System.UITypes,
+  System.UITypes, LCLIntf, LCLType, LMessages, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
+  StdCtrls, CheckLst, ExtCtrls, Buttons, ComCtrls, Project, ImgList, ExtDlgs, IniFiles,
   DataFrm;
 
 type

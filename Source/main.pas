@@ -22,7 +22,7 @@ unit main;
 interface
 
 uses
-  LCLIntf, LCLType, LMessages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs, System.UITypes,
+  System.UITypes, LCLIntf, LCLType, LMessages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   Menus, StdCtrls, ComCtrls, ExtCtrls, Buttons, Utils, Project, Editor, DateUtils, Compiler,
   ActnList, ToolFrm, Debugger, ClassBrowser, CodeCompletion, CppParser, CppTokenizer, SyncObjs,
   StrUtils, SynEditTypes, devFileMonitor, devMonitorTypes, EditorList, devShortcuts,

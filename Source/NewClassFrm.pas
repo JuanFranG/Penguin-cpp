@@ -69,7 +69,7 @@ type
 implementation
 
 uses
-  System.UITypes, main, CppParser, MultiLangSupport, Version, Editor, devCFG;
+  main, CppParser, MultiLangSupport, Version, Editor, devCFG;
 
 {$R *.lfm}
 

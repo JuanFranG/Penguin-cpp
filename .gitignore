@@ -75,3 +75,4 @@ Source/penguin-cpp.res
 /penguin-cpp-debug
 heaptrc.log
 /build/
+/penguin-cpp.app/

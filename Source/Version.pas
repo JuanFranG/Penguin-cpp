@@ -88,9 +88,15 @@ const
   MAKE_PROGRAM = 'make';
   GCC_PROGRAM = 'gcc';
   GPP_PROGRAM = 'g++';
+{$IFDEF DARWIN}
+  GDB_PROGRAM = 'lldb-dap'; // gdb does not run on Apple Silicon; Xcode's tools bring lldb-dap
+  GDB32_PROGRAM = 'lldb-dap';
+  GPROF_PROGRAM = ''; // macOS has no gprof
+{$ELSE}
   GDB_PROGRAM = 'gdb';
   GDB32_PROGRAM = 'gdb';
   GPROF_PROGRAM = 'gprof';
+{$ENDIF}
 //  CLEAN_PROGRAM = 'rm.exe'; // cannot use del, it doesn't have a quiet mode
 //  CLEAN_PROGRAM = 'del /f /q';
 

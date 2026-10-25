@@ -3497,7 +3497,11 @@ begin
       (GetCompileTarget <> ctNone) and Assigned(devCompilerSets.CompilationSet)
   else
     TCustomAction(Sender).Enabled := (not fCompiler.Compiling) and (GetCompileTarget <> ctNone) and
-      Assigned(devCompilerSets.CompilationSet)
+      Assigned(devCompilerSets.CompilationSet);
+  // No profiler (gprof) on macOS yet
+  if (Sender = actProfile) and Assigned(devCompilerSets.CompilationSet) and
+    (devCompilerSets.CompilationSet.gprofName = '') then
+    TCustomAction(Sender).Enabled := False;
 end;
 
 procedure TMainForm.ToolbarDockClick(Sender: TObject);

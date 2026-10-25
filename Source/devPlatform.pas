@@ -50,6 +50,10 @@ procedure PrepareProcessEnvironment(P: TProcess; EnglishMessages: Boolean = Fals
 // programs it starts (ChildPath); Name itself if it is not found there
 function FindExecutable(const Name: String): String;
 
+// A developer tool: in the PATH or, on macOS, where Xcode or its command line
+// tools keep it (xcrun --find: lldb-dap is not in /usr/bin). '' if missing.
+function FindDeveloperTool(const Name: String): String;
+
 // Runs Cmd (a command line; quoted arguments may contain spaces) in WorkDir
 // with stdout and stderr merged, and returns everything it printed. When
 // ShowReturnValue is set, ' <exit code>' is appended. LineOutputFunc receives
@@ -173,6 +177,22 @@ begin
     if Result = '' then
       Result := Name; // let TProcess report the error
   end;
+end;
+
+function FindDeveloperTool(const Name: String): String;
+{$IFDEF DARWIN}
+var
+  Output: String;
+{$ENDIF}
+begin
+  Result := ExeSearch(Name, SearchPath);
+{$IFDEF DARWIN}
+  if (Result = '') and (Name <> '') and RunCommand('/usr/bin/xcrun', ['--find', Name], Output, [poNoConsole]) then begin
+    Output := Trim(Output);
+    if FileExists(Output) then
+      Result := Output;
+  end;
+{$ENDIF}
 end;
 
 function RunAndGetOutput(const Cmd, WorkDir: String; LineOutputFunc: TLineOutputFunc;

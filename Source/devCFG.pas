@@ -83,6 +83,7 @@ type
 
     // Initialization
     procedure SetProperties(const BinDir, BinFile: String);
+    procedure ReadDefaultIncludes(const Output: String);
     procedure SetExecutables;
     procedure SetDirectories;
     procedure SetUserInput;
@@ -1228,19 +1229,11 @@ begin
   // Obtain compiler target
   fDumpMachine := GetCompilerOutput(BinDir, BinFile, '-dumpmachine');
 
-  // Find default include directories
-  {if FileExists(BinDir + pd + "cpp.exe") then begin
-   output := GetCompilerOutput(BinDir + pd,"cpp.exe","-v");
-   DelimPos1 := Pos("#include <...> search starts here:",output);
-   if DelimPos1 > 0 then begin
-    DelimPos2 := ("End of search list.",output);
-    if DelimPos2 > 0 then begin
-     S := Copy(output,DelimPos1,DelimPos2-DelimPos1);
-     fDefInclude.Clear;
-     ExtractStrings([#10],[],PChar(S),fDefInclude);
-    end;
-   end;
-  end;}
+  // The folders the compiler takes its own headers from (C++ first, as it
+  // searches them), for code completion only: they are never passed to the
+  // compiler (see SetDirectories). On macOS they are inside the SDK, not in
+  // /usr/include; framework folders are left out.
+  ReadDefaultIncludes(GetCompilerOutput(BinDir, BinFile, '-E -x c++ -v /dev/null'));
 
   // Obtain default includes when changing current file?
   // Don't use CommaText:
@@ -1248,6 +1241,38 @@ begin
   output := GetCompilerOutput(BinDir, BinFile, '-dM -E -x c++ -std=gnu++11 /dev/null');
   // TODO: use command of current file
   ExtractStrings([#10], [], PChar(output), fDefines);
+end;
+
+// The "#include <...> search starts here:" list of "gcc -v" (or clang's)
+procedure TdevCompilerSet.ReadDefaultIncludes(const Output: String);
+var
+  Lines: TStringList;
+  I: Integer;
+  Inside: Boolean;
+  Dir: String;
+begin
+  fDefInclude.Clear;
+  Lines := TStringList.Create;
+  try
+    Lines.Text := Output;
+    Inside := False;
+    for I := 0 to Lines.Count - 1 do begin
+      if Pos('#include <...> search starts here:', Lines[I]) = 1 then
+        Inside := True
+      else if Pos('End of search list.', Lines[I]) = 1 then
+        Break
+      else if Inside and (Pos('(framework directory)', Lines[I]) = 0) then begin
+        Dir := Trim(Lines[I]);
+        if (Dir <> '') and DirectoryExists(Dir) then begin
+          Dir := IncludeTrailingPathDelimiter(ExpandFileName(Dir));
+          if fDefInclude.IndexOf(Dir) = -1 then
+            fDefInclude.Add(Dir);
+        end;
+      end;
+    end;
+  finally
+    Lines.Free;
+  end;
 end;
 
 procedure TdevCompilerSet.SetExecutables;
@@ -1725,7 +1750,7 @@ begin
   if not FindFile(fBinDir, fgppName) then begin
     msg := msg + Format(Lang[ID_COMPVALID_BINNOTFOUND], [Lang[ID_COMPVALID_CPPCOMP], fgppName]) + #13#10;
   end;
-  if not FindFile(fBinDir, fgdbName) then begin
+  if not FindFile(fBinDir, fgdbName) and (devPlatform.FindDeveloperTool(fgdbName) = '') then begin
     msg := msg + Format(Lang[ID_COMPVALID_BINNOTFOUND], [Lang[ID_COMPVALID_DEBUGGER], fgdbName]) + #13#10;
   end;
   if not FindFile(fBinDir, fgprofName) then begin
@@ -1872,6 +1897,7 @@ var
   key: String;
   I: Integer;
   Item: TdevCompilerSet;
+  Found: Boolean;
 
   procedure ReadDirList(list: TStringList; const entry: String);
   var
@@ -1920,25 +1946,29 @@ begin
     ReadDirList(fCDir, 'C');
     ReadDirList(fCppDir, 'Cpp');
 
-    // Set properties for current gcc path
+    // Set properties for current gcc path: those of another set with the
+    // same compiler, else asked to the compiler once (with a single set the
+    // loop never ran, and with several it asked once per other set)
     if fBinDir.Count > 0 then begin
-      // Check if this directory has already been used to set properties
+      Found := False;
       for I := 0 to devCompilerSets.Count - 1 do begin
-        if I <> index then begin
-          Item := devCompilerSets[i];
-          if (Item.BinDir.Count > 0) and (Item.BinDir[0] = fBinDir[0]) and (Item.gccName = fgccName) then begin
-            fVersion := Item.fVersion;
-            fFolder := Item.fFolder;
-            fType := Item.fType;
-            if fName = '' then
-              fName := Item.fName;
-            fDumpMachine := Item.fDumpMachine;
-            //fDefInclude.Assign(Item.fDefInclude);
-            fDefines.Assign(Item.fDefines);
-          end else
-            SetProperties(fBinDir[0], fgccName); // read properties from disk
+        Item := devCompilerSets[i];
+        if (I <> index) and (Item.BinDir.Count > 0) and (Item.BinDir[0] = fBinDir[0]) and
+          (Item.gccName = fgccName) and (Item.fVersion <> '') then begin
+          fVersion := Item.fVersion;
+          fFolder := Item.fFolder;
+          fType := Item.fType;
+          if fName = '' then
+            fName := Item.fName;
+          fDumpMachine := Item.fDumpMachine;
+          fDefInclude.Assign(Item.fDefInclude);
+          fDefines.Assign(Item.fDefines);
+          Found := True;
+          Break;
         end;
       end;
+      if not Found then
+        SetProperties(fBinDir[0], fgccName); // read properties from disk
     end;
   end;
 end;

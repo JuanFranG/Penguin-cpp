@@ -950,7 +950,7 @@ var
 implementation
 
 uses
-  ErrorLog, Math, IniFiles, Clipbrd, MultiLangSupport, Version, DataFrm, NewProjectFrm, AboutFrm, PrintFrm,
+  ErrorLog, MacSupport, Math, IniFiles, Clipbrd, MultiLangSupport, Version, DataFrm, NewProjectFrm, AboutFrm, PrintFrm,
   CompOptionsFrm, EditorOptFrm, IncrementalFrm, EnviroFrm, SynEdit, ImageTheme, SynEditKeyCmds, Types, FindFrm, ProjectTypes, devExec, Tests, NewTemplateFrm, FunctionSearchFrm,
   NewFunctionFrm, NewVarFrm, NewClassFrm, ProfileAnalysisFrm, FilePropertiesFrm, AddToDoFrm,
   ViewToDoFrm, ImportCBFrm, CPUFrm, TipOfTheDayFrm, WindowListFrm, RemoveUnitFrm,
@@ -1129,7 +1129,7 @@ begin
     TItem.Caption := format('%s &%d', [Text, idx]);
     TItem.OnClick := ToggleBookmarkClick;
     TItem.Tag := idx;
-    TItem.ShortCut := ShortCut(Shortcutnumber, [ssCtrl]);
+    TItem.ShortCut := ShortCut(Shortcutnumber, CommandShift);
     ToggleBookmarksItem.Add(TItem);
 
     GItem := TMenuItem.Create(GotoBookmarksItem);
@@ -6189,6 +6189,16 @@ begin
   // Create critical section to support a single instance
   fCriticalSection := TCriticalSection.Create;
   fFilesToOpen := TStringList.Create;
+
+  // macOS: Command where Linux has Ctrl; Option-Esc completes too (Ctrl-Space
+  // may be taken by the input source switch) and Command-Shift-Z redoes
+  UseCommandKey(Self);
+{$IFDEF DARWIN}
+  actCodeCompletion.SecondaryShortCuts.Add(ShortCutToText(ShortCut(VK_ESCAPE, [ssAlt])));
+  actRedo.SecondaryShortCuts.Add(ShortCutToText(ShortCut(VK_Z, [ssMeta, ssShift])));
+  // Cocoa's tabs are wider: room for Project, Classes and Debug
+  LeftPageControl.Constraints.MinWidth := 300;
+{$ENDIF}
 
   // Apply shortcuts BEFORE TRANSLATING!!!
   with Shortcuts do begin

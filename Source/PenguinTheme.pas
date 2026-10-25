@@ -118,9 +118,14 @@ end;
 
 {$ELSE}
 
+uses
+  MacSupport;
+
 procedure ApplyApplicationPalette(Dark: Boolean);
 begin
-  // GTK2 and the others: the desktop's theme
+  // macOS: its own light or dark appearance; GTK2 and the others: the
+  // desktop's theme (SetDarkAppearance does nothing there)
+  SetDarkAppearance(Dark);
 end;
 
 {$ENDIF}

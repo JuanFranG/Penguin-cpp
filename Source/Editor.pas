@@ -243,7 +243,7 @@ implementation
 
 uses
   main, Project, MultiLangSupport, devCFG, Utils, DataFrm, GotoLineFrm, Macros, Debugger, GdbMI,
-  IncrementalFrm, CodeCompletionForm, CharUtils, EditorPrint, PdfPrint, CodeExport;
+  IncrementalFrm, CodeCompletionForm, CharUtils, EditorPrint, PdfPrint, CodeExport, MacSupport;
 
 { TCloseTabSheet }
 constructor TCloseTabSheet.Create(AOwner:TComponent);
@@ -1974,6 +1974,9 @@ begin
   DeleteLineIndex := Keystrokes.FindCommand(ecDeleteEOL);
   if DeleteLineIndex <> -1 then
     Keystrokes.Delete(DeleteLineIndex);
+
+  // macOS: Command and Option with the arrows and backspace
+  AddMacKeystrokes(Keystrokes);
 
   // Breakpoints and output line numbers follow every insertion/deletion
   ViewedTextBuffer.AddChangeHandler(senrLineCount, LineCountChanged);

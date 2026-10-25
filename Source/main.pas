@@ -27,7 +27,7 @@ uses
   ActnList, ToolFrm, Debugger, ClassBrowser, CodeCompletion, CppParser, CppTokenizer, SyncObjs,
   StrUtils, SynEditTypes, devFileMonitor, devMonitorTypes, EditorList, devShortcuts,
   devCFG, SynEditTextBuffer, CppPreprocessor, CBUtils, StatementList, AStyleFormatterOptionsFrm,
-  ClangFormatterOptionsFrm, ExtDlgs, PenguinPalette;
+  ClangFormatterOptionsFrm, ExtDlgs, PenguinPalette, WelcomeTiles;
 
 type
   TRunEndAction = (reaNone, reaProfile);
@@ -861,6 +861,7 @@ type
     fDebugger: TDebugger;
     fCompiler: TCompiler;
     fZoomDelta: Integer; // wheel turned towards the next zoom step
+    fWelcomeTiles: array of TWelcomeTile; // macOS: the welcome buttons, drawn by WelcomeTiles
     fEditorList: TEditorList;
     fPanelPalette: TPanelPalette;
     fInstanceTimer: TTimer; // polls devInstance for files from other starts
@@ -6228,6 +6229,16 @@ begin
   AddSecondaryShortCut(actRedo, VK_Z, [ssMeta, ssShift]);
 {$ENDIF}
   EvaluateInput.OnKeyDown := EvaluateInputKeyDown; // Enter, also on macOS
+{$IFDEF DARWIN}
+  // Cocoa draws buttons with an icon badly: the welcome screen's are tiles
+  SetLength(fWelcomeTiles, 6);
+  fWelcomeTiles[0] := ReplaceWelcomeButton(ButtonNewDocument, True);
+  fWelcomeTiles[1] := ReplaceWelcomeButton(ButtonOpenDocument, True);
+  fWelcomeTiles[2] := ReplaceWelcomeButton(ButtonOptions, True);
+  fWelcomeTiles[3] := ReplaceWelcomeButton(ButtonChangeTheme, False);
+  fWelcomeTiles[4] := ReplaceWelcomeButton(ButtonChangeFont, False);
+  fWelcomeTiles[5] := ReplaceWelcomeButton(ButtonChangeLanguage, False);
+{$ENDIF}
   // macOS: tabs on the left, as on Linux (Cocoa centers its own)
   AttachTabStrip(EditorPageControlLeft, EditorTabClose);
   AttachTabStrip(EditorPageControlRight, EditorTabClose);
@@ -7409,28 +7420,15 @@ procedure TMainForm.LayOutWelcomeRight;
 const
   Gap = 24;
 var
-  Row, Top, Block, I, TextH: Integer;
+  Row, Top, Block, I: Integer;
   Memos: array[0..4] of TMemo;
   Buttons: array[0..4] of TSpeedButton;
-  Tiles, Small: array[0..2] of TBitBtn;
 begin
-  // The large buttons: icon and caption centered as one (Cocoa puts the
-  // icon against the top edge). The small ones: the system's font, and room
-  // between their icon and their caption.
-  Tiles[0] := ButtonNewDocument; Tiles[1] := ButtonOpenDocument; Tiles[2] := ButtonOptions;
-  Small[0] := ButtonChangeTheme; Small[1] := ButtonChangeFont; Small[2] := ButtonChangeLanguage;
-  TextH := Abs(Font.Height);
-  if TextH = 0 then
-    TextH := 16;
-  for I := 0 to 2 do begin
-    Tiles[I].Spacing := 12;
-    Tiles[I].Margin := Max(6, (Tiles[I].Height - 37 - 12 - TextH) div 2);
-    Small[I].Font.Name := 'default';
-    Small[I].Font.Size := 12;
-    Small[I].Height := 36;
-    Small[I].Margin := 10;
-    Small[I].Spacing := 8;
-  end;
+  // The small buttons: room for a caption of two lines (other languages
+  // say "Change Language" in longer words)
+  ButtonChangeTheme.Height := 46;
+  ButtonChangeFont.Height := 46;
+  ButtonChangeLanguage.Height := 46;
 
   Memos[0] := RichEdit0; Memos[1] := RichEdit1; Memos[2] := RichEdit2; Memos[3] := RichEdit3; Memos[4] := RichEdit4;
   Buttons[0] := SpeedButton0; Buttons[1] := SpeedButton1; Buttons[2] := SpeedButton2; Buttons[3] := SpeedButton3;
@@ -7452,6 +7450,10 @@ begin
     Memos[I].SetBounds(Buttons[I].Left + 6, Top + 6, Buttons[I].Width - 12, Row - 12);
     Inc(Top, Row + 8);
   end;
+
+  // The tiles drawn over the buttons take their places
+  for I := 0 to High(fWelcomeTiles) do
+    fWelcomeTiles[I].Follow;
 end;
 
 // https://stackoverflow.com/questions/2201850/how-to-implement-a-close-button-for-a-ttabsheet-of-a-tpagecontrol

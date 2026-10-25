@@ -2424,6 +2424,9 @@ end;
 procedure TdevEditor.AssignEditor(editor: TSynEdit; const FileName: String);
 var
   pt: TPoint;
+{$IFDEF DARWIN}
+  I: Integer;
+{$ENDIF}
 begin
   with Editor do begin
     BeginUpdate;
@@ -2436,6 +2439,13 @@ begin
 
       // Select highlighter based on filename (a lot depends on this)
       Highlighter := dmMain.GetHighlighter(FileName);
+{$IFDEF DARWIN}
+      // macOS draws italic monospaced letters wider than the editor's grid:
+      // comments came out with their letters far apart
+      if Assigned(Highlighter) then
+        for I := 0 to Highlighter.AttrCount - 1 do
+          Highlighter.Attribute[I].Style := Highlighter.Attribute[I].Style - [fsItalic];
+{$ENDIF}
       TabWidth := fTabSize;
       Font.Assign(fFont);
 

@@ -122,6 +122,7 @@ type
     fStopAtMain: Boolean;   // a breakpoint on main is set, to remove when hit
     fAttachHandler: TDebugDoneHandler;
     fPausing: Boolean;      // Interrupt was asked: its SIGSTOP is a pause
+    fUserCommands: Integer; // commands typed by the user, not answered yet
     fThreadId: Int64;       // the thread of the last stop
     fFrameId: Int64;        // its top frame, for evaluate (0: not stopped)
     fLastPC: String;
@@ -523,7 +524,7 @@ var
 begin
   Result := fNextSeq;
   Inc(fNextSeq);
-  if Assigned(Handler.Code) or (Kind in [hkStopFrame, hkLaunch, hkChildren, hkBreakpoints]) then begin
+  if Assigned(Handler.Code) or (Kind in [hkStopFrame, hkLaunch, hkChildren, hkBreakpoints, hkUser]) then begin
     New(H);
     H^.Seq := Result;
     H^.Kind := Kind;
@@ -633,6 +634,7 @@ begin
   fConfigured := False;
   fFrameId := 0;
   fThreadId := 0;
+  fUserCommands := 0;
   fReader := TDapReader.Create(Self, fProcess.Output);
 
   Args := TJSONObject.Create(['clientID', 'penguin-cpp', 'clientName', 'Penguin cpp', 'adapterID', 'lldb-dap',
@@ -1017,6 +1019,8 @@ begin
         TDebugFramesHandler(H.Method)(Ok, Frames);
       end;
     hkUser: begin
+        if fUserCommands > 0 then
+          Dec(fUserCommands);
         if GetStr(Body, 'result') <> '' then
           DoOutput(GetStr(Body, 'result'), doConsole);
         if not Ok then
@@ -1092,8 +1096,13 @@ begin
     Text := GetStr(Body, 'output');
     if (Category = 'stdout') or (Category = 'stderr') then
       DoOutput(Text, doProgram)
-    else if Category = 'console' then
-      DoOutput(Text, doConsole)
+    else if Category = 'console' then begin
+      // lldb-dap tells its console what it does (the commands before the
+      // run, "Ran expression as C++14", the errors of a hovered word):
+      // shown only for the commands the user types
+      if fUserCommands > 0 then
+        DoOutput(Text, doConsole);
+    end
     else if Category <> 'telemetry' then
       DoOutput(Text, doLog);
   end else if Name = 'continued' then begin
@@ -1320,6 +1329,7 @@ begin
   Args := TJSONObject.Create(['expression', '`' + Command, 'context', 'repl']);
   if fFrameId <> 0 then
     Args.Add('frameId', fFrameId);
+  Inc(fUserCommands);
   Send('evaluate', Args, hkUser, TMethod(Handler));
 end;
 

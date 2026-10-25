@@ -39,6 +39,14 @@ function CommandShift: TShiftState;
 // Command shortcuts (see above for the ones that stay)
 procedure UseCommandKey(Owner: TComponent);
 
+// A shortcut as the system writes it: Command-O as the Mac's symbols on macOS
+// (the LCL writes "Meta+O"), as ShortCutToText elsewhere
+function KeyText(Value: TShortCut): String;
+
+// The key held to zoom the editors with the wheel: Command on macOS
+function ZoomKeyText: String;
+function IsZoomShift(Shift: TShiftState): Boolean;
+
 // Adds another shortcut to an action, by its value: the list's Add takes the
 // shortcut's text, and on macOS that text (with symbols such as the Option
 // sign) does not read back
@@ -48,6 +56,48 @@ procedure AddSecondaryShortCut(Action: TCustomAction; Key: Word; Shift: TShiftSt
 procedure AddMacKeystrokes(Keys: TSynEditKeyStrokes);
 
 implementation
+
+function KeyText(Value: TShortCut): String;
+{$IFDEF DARWIN}
+var
+  Key: Word;
+begin
+  // ⌃ ⌥ ⇧ ⌘ in the Mac's order, then the key
+  Key := Value and $FF;
+  Result := '';
+  if (Value and scCtrl) <> 0 then
+    Result := Result + #$E2#$8C#$83;
+  if (Value and scAlt) <> 0 then
+    Result := Result + #$E2#$8C#$A5;
+  if (Value and scShift) <> 0 then
+    Result := Result + #$E2#$87#$A7;
+  if (Value and scMeta) <> 0 then
+    Result := Result + #$E2#$8C#$98;
+  Result := Result + ShortCutToText(Key);
+end;
+{$ELSE}
+begin
+  Result := ShortCutToText(Value);
+end;
+{$ENDIF}
+
+function ZoomKeyText: String;
+begin
+{$IFDEF DARWIN}
+  Result := #$E2#$8C#$98; // Command
+{$ELSE}
+  Result := 'Ctrl';
+{$ENDIF}
+end;
+
+function IsZoomShift(Shift: TShiftState): Boolean;
+begin
+{$IFDEF DARWIN}
+  Result := Shift * [ssCtrl, ssMeta, ssAlt, ssShift] = [ssMeta];
+{$ELSE}
+  Result := Shift * [ssCtrl, ssAlt, ssShift] = [ssCtrl];
+{$ENDIF}
+end;
 
 procedure AddSecondaryShortCut(Action: TCustomAction; Key: Word; Shift: TShiftState);
 var

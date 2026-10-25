@@ -667,12 +667,12 @@ begin
   end;
 end;
 
-// Ctrl + wheel zooms every editor (the welcome screen says so); SynEdit
-// would scroll instead
+// Ctrl + wheel (Command on macOS) zooms every editor (the welcome screen says
+// so); SynEdit would scroll instead
 procedure TEditor.EditorMouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint;
   var Handled: Boolean);
 begin
-  if Shift * [ssCtrl, ssAlt, ssShift] = [ssCtrl] then begin
+  if IsZoomShift(Shift) then begin
     MainForm.ZoomEditors(WheelDelta);
     Handled := True;
   end;

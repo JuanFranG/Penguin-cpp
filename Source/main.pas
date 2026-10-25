@@ -917,6 +917,8 @@ type
     procedure ForwardMenuClick(Sender: TObject);
   public
     procedure ZoomEditors(WheelDelta: Integer);
+    procedure LayOutWelcomeRight;
+    procedure EditorTabClose(Sender: TObject; Page: TTabSheet);
     procedure ReleaseTabImages; // before closing without FormClose (Halt)
     procedure CloseTabProc(Sender: TObject);
     procedure ScanActiveProject;
@@ -951,7 +953,7 @@ var
 implementation
 
 uses
-  ErrorLog, MacSupport, Math, IniFiles, Clipbrd, MultiLangSupport, Version, DataFrm, NewProjectFrm, AboutFrm, PrintFrm,
+  ErrorLog, MacSupport, PageTabs, Math, IniFiles, Clipbrd, MultiLangSupport, Version, DataFrm, NewProjectFrm, AboutFrm, PrintFrm,
   CompOptionsFrm, EditorOptFrm, IncrementalFrm, EnviroFrm, SynEdit, ImageTheme, SynEditKeyCmds, Types, FindFrm, ProjectTypes, devExec, Tests, NewTemplateFrm, FunctionSearchFrm,
   NewFunctionFrm, NewVarFrm, NewClassFrm, ProfileAnalysisFrm, FilePropertiesFrm, AddToDoFrm,
   ViewToDoFrm, ImportCBFrm, CPUFrm, TipOfTheDayFrm, WindowListFrm, RemoveUnitFrm,
@@ -1445,12 +1447,12 @@ begin
   LabelClear.Caption := Lang[ID_WELCOME_CLOSE];
 
   // The keys come from the actions, so they always match the menus
-  SetHotkeyCaption(PanelDescOpen, ShortCutToText(actOpen.ShortCut));
-  SetHotkeyCaption(PanelDescSave, ShortCutToText(actSave.ShortCut));
-  SetHotkeyCaption(PanelDescZoom, 'Ctrl + ' + Lang[ID_WELCOME_WHEEL]);
-  SetHotkeyCaption(PanelDescRun, ShortCutToText(actRun.ShortCut));
-  SetHotkeyCaption(PanelDescCompile, ShortCutToText(actCompile.ShortCut));
-  SetHotkeyCaption(PanelDescClear, ShortCutToText(actClose.ShortCut));
+  SetHotkeyCaption(PanelDescOpen, KeyText(actOpen.ShortCut));
+  SetHotkeyCaption(PanelDescSave, KeyText(actSave.ShortCut));
+  SetHotkeyCaption(PanelDescZoom, ZoomKeyText + ' + ' + Lang[ID_WELCOME_WHEEL]);
+  SetHotkeyCaption(PanelDescRun, KeyText(actRun.ShortCut));
+  SetHotkeyCaption(PanelDescCompile, KeyText(actCompile.ShortCut));
+  SetHotkeyCaption(PanelDescClear, KeyText(actClose.ShortCut));
   ResizeWelcomeComponent; // the labels are placed by their width
 
   BuildBookMarkMenus;
@@ -3966,6 +3968,23 @@ begin
     end;
   ToolbarDock.ReAlign;
 
+{$IFDEF DARWIN}
+  // macOS' controls are wider: the class and member lists rarely fit in the
+  // first row. In a row of their own they share what is left of it, instead
+  // of leaving it empty.
+  if tbClasses.Visible and (tbClasses.Top > tbMain.Top) then begin
+    Right := (ToolbarDock.ClientWidth - tbClasses.Left - 12) div 2;
+    Right := Max(180, Min(Right, 600));
+    if cmbClasses.Width <> Right then begin
+      cmbClasses.Width := Right;
+      cmbMembers.Left := Right;
+      cmbMembers.Width := Right;
+      tbClasses.Width := 2 * Right + 2;
+      ToolbarDock.ReAlign;
+    end;
+  end;
+{$ENDIF}
+
   Bottom := 0;
   for I := 0 to ToolbarDock.ControlCount - 1 do
     if ToolbarDock.Controls[I].Visible then
@@ -5991,6 +6010,13 @@ begin
   end;
 end;
 
+// The close box of a file's tab (macOS' tab strips, PageTabs)
+procedure TMainForm.EditorTabClose(Sender: TObject; Page: TTabSheet);
+begin
+  if Page.Tag <> 0 then
+    fEditorList.CloseEditor(TEditor(Page.Tag));
+end;
+
 // Ctrl + mouse wheel, Ctrl + '+' and Ctrl + '-' in an editor
 // (TEditor.EditorMouseWheel, EditorKeyDown): the font of every editor, and
 // the option, a point bigger or smaller for each notch of the wheel (120;
@@ -6198,9 +6224,12 @@ begin
 {$IFDEF DARWIN}
   AddSecondaryShortCut(actCodeCompletion, VK_ESCAPE, [ssAlt]);
   AddSecondaryShortCut(actRedo, VK_Z, [ssMeta, ssShift]);
-  // Cocoa's tabs are wider: room for Project, Classes and Debug
-  LeftPageControl.Constraints.MinWidth := 300;
 {$ENDIF}
+  // macOS: tabs on the left, as on Linux (Cocoa centers its own)
+  AttachTabStrip(EditorPageControlLeft, EditorTabClose);
+  AttachTabStrip(EditorPageControlRight, EditorTabClose);
+  AttachTabStrip(LeftPageControl);
+  AttachTabStrip(MessageControl);
 
   // Apply shortcuts BEFORE TRANSLATING!!!
   with Shortcuts do begin
@@ -7349,7 +7378,44 @@ begin
   SpeedButton3.Left := ButtonNewDocument.Left;
   RichEdit4.Left := ButtonNewDocument.Left;
   SpeedButton4.Left := ButtonNewDocument.Left;
+{$IFDEF DARWIN}
+  LayOutWelcomeRight;
+{$ENDIF}
   GetProjectHistory; // the folders are shortened to the boxes' width
+end;
+
+// macOS: the welcome screen's right column, placed for the font it has
+// (macOS' text is larger than Linux', and the fixed places of the form made
+// the buttons touch the window's edge and cut the recent files): the
+// buttons, then the recent files, each two lines high, all centered
+procedure TMainForm.LayOutWelcomeRight;
+const
+  Gap = 24;
+var
+  Row, Top, Block, I: Integer;
+  Memos: array[0..4] of TMemo;
+  Buttons: array[0..4] of TSpeedButton;
+begin
+  Memos[0] := RichEdit0; Memos[1] := RichEdit1; Memos[2] := RichEdit2; Memos[3] := RichEdit3; Memos[4] := RichEdit4;
+  Buttons[0] := SpeedButton0; Buttons[1] := SpeedButton1; Buttons[2] := SpeedButton2; Buttons[3] := SpeedButton3;
+  Buttons[4] := SpeedButton4;
+  Row := 2 * Abs(RichEdit0.Font.Height) * 3 div 2 + 14; // two lines and their margins
+  Block := ButtonNewDocument.Height + Gap + ButtonChangeTheme.Height + 2 * Gap + 5 * (Row + 8);
+  Top := Max(Gap, (PanelRight.Height - Block) div 2);
+  ButtonNewDocument.Top := Top;
+  ButtonOpenDocument.Top := Top;
+  ButtonOptions.Top := Top;
+  Inc(Top, ButtonNewDocument.Height + Gap);
+  ButtonChangeTheme.Top := Top;
+  ButtonChangeFont.Top := Top;
+  ButtonChangeLanguage.Top := Top;
+  Inc(Top, ButtonChangeTheme.Height + 2 * Gap);
+  for I := 0 to 4 do begin
+    Buttons[I].SetBounds(ButtonNewDocument.Left, Top, ButtonOptions.Left + ButtonOptions.Width - ButtonNewDocument.Left,
+      Row);
+    Memos[I].SetBounds(Buttons[I].Left + 6, Top + 6, Buttons[I].Width - 12, Row - 12);
+    Inc(Top, Row + 8);
+  end;
 end;
 
 // https://stackoverflow.com/questions/2201850/how-to-implement-a-close-button-for-a-ttabsheet-of-a-tpagecontrol

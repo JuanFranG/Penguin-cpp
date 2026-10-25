@@ -175,6 +175,8 @@ type
     procedure EditorReplaceText(Sender: TObject; const aSearch, aReplace: String; Line, Column: integer; var Action:
       TSynReplaceAction);
     procedure EditorMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+    procedure EditorMouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint;
+      var Handled: Boolean);
     procedure EditorExit(Sender: TObject);
     procedure EditorGutterClick(Sender: TObject; X, Y, Line: integer; mark: TSynEditMark);
     procedure EditorSpecialLineColors(Sender: TObject; Line: integer; var Special: boolean; var FG, BG: TColor);
@@ -448,6 +450,7 @@ begin
   fText.OnReplaceText := EditorReplaceText;
   fText.OnMouseUp := EditorMouseUp;
   fText.OnMouseMove := EditorMouseMove;
+  fText.OnMouseWheel := EditorMouseWheel; // SynEdit asks it first, before scrolling
   fText.OnGutterClick := EditorGutterClick;
   fText.OnSpecialLineMarkup := EditorSpecialLineMarkup;
   fText.OnEnter := EditorEnter;
@@ -493,6 +496,7 @@ begin
     fText.OnExit := nil;
     fText.OnStatusChange := nil;
     fText.OnMouseMove := nil;
+    fText.OnMouseWheel := nil;
     fText.OnPaint := nil;
   end;
 
@@ -660,6 +664,17 @@ begin
     mrNo: Action := raSkip;
     mrCancel: Action := raCancel;
     mrAll: Action := raReplaceAll;
+  end;
+end;
+
+// Ctrl + wheel zooms every editor (the welcome screen says so); SynEdit
+// would scroll instead
+procedure TEditor.EditorMouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint;
+  var Handled: Boolean);
+begin
+  if Shift * [ssCtrl, ssAlt, ssShift] = [ssCtrl] then begin
+    MainForm.ZoomEditors(WheelDelta);
+    Handled := True;
   end;
 end;
 
@@ -1331,6 +1346,16 @@ var
     end;
   end;
 begin
+  // Ctrl + '+' and Ctrl + '-' (main keyboard or keypad) zoom, like the wheel
+  if (Shift * [ssCtrl, ssAlt] = [ssCtrl]) and (Key in [VK_ADD, VK_OEM_PLUS, VK_SUBTRACT, VK_OEM_MINUS]) then begin
+    if Key in [VK_ADD, VK_OEM_PLUS] then
+      MainForm.ZoomEditors(120)
+    else
+      MainForm.ZoomEditors(-120);
+    Key := 0;
+    Exit;
+  end;
+
   // Don't offer completion functions for plain text files
   if not Assigned(fText.Highlighter) then
     Exit;

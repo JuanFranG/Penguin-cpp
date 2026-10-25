@@ -757,8 +757,6 @@ type
     procedure actMsgSaveAllExecute(Sender: TObject);
     procedure actDeleteProfileExecute(Sender: TObject);
     procedure actGotoImplDeclEditorExecute(Sender: TObject);
-    procedure FormMouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint; var Handled:
-      Boolean);
     procedure ImportCBCprojectClick(Sender: TObject);
     procedure CompilerOutputAdvancedCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       Stage: TCustomDrawStage; var DefaultDraw: Boolean);
@@ -861,6 +859,7 @@ type
     fProject: TProject;
     fDebugger: TDebugger;
     fCompiler: TCompiler;
+    fZoomDelta: Integer; // wheel turned towards the next zoom step
     fEditorList: TEditorList;
     fPanelPalette: TPanelPalette;
     fInstanceTimer: TTimer; // polls devInstance for files from other starts
@@ -916,6 +915,7 @@ type
     procedure FitToolbarDock(Data: PtrInt);
     procedure ForwardMenuClick(Sender: TObject);
   public
+    procedure ZoomEditors(WheelDelta: Integer);
     procedure ReleaseTabImages; // before closing without FormClose (Halt)
     procedure CloseTabProc(Sender: TObject);
     procedure ScanActiveProject;
@@ -5985,39 +5985,32 @@ begin
   end;
 end;
 
-procedure TMainForm.FormMouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint; var
-  Handled: Boolean);
+// Ctrl + mouse wheel, Ctrl + '+' and Ctrl + '-' in an editor
+// (TEditor.EditorMouseWheel, EditorKeyDown): the font of every editor, and
+// the option, a point bigger or smaller for each notch of the wheel (120;
+// a touchpad sends smaller steps, which add up)
+procedure TMainForm.ZoomEditors(WheelDelta: Integer);
+const
+  Notch = 120;
 var
+  I, Steps, Size: integer;
   e: TEditor;
-  I: integer;
 begin
-  e := fEditorList.GetEditor;
+  Inc(fZoomDelta, WheelDelta);
+  Steps := fZoomDelta div Notch;
+  if Steps = 0 then
+    Exit;
+  Dec(fZoomDelta, Steps * Notch);
 
-  // Check if we're focussing on an editor and holding ctrl
-  if Assigned(e) and (Screen.ActiveControl = e.Text) and (ssCtrl in Shift) then begin
-
-    for I := 0 to pred(EditorList.PageCount) do begin
-      e := fEditorList[I];
-
-      // If so, set the font size of all editors...
-      if WheelDelta > 0 then begin
-        e.Text.Font.Size := Max(1, e.Text.Font.Size + 1);
-      end else begin
-        e.Text.Font.Size := Max(1, e.Text.Font.Size - 1);
-      end;
-    end;
-
-    // And set the corresponding option
-    if WheelDelta > 0 then begin
-      devEditor.Font.Size := Max(1, devEditor.Font.Size + 1);
-      devEditor.Gutterfont.Size := Max(1, devEditor.Gutterfont.Size + 1);
-    end else if WheelDelta < 0 then begin
-      devEditor.Font.Size := Max(1, devEditor.Font.Size - 1);
-      devEditor.Gutterfont.Size := Max(1, devEditor.Gutterfont.Size - 1);
-    end;
-
-    // We don't like to send the actual scrolling message to the editor when zooming
-    Abort;
+  Size := EnsureRange(devEditor.Font.Size + Steps, 6, 72);
+  if Size = devEditor.Font.Size then
+    Exit;
+  devEditor.Font.Size := Size;
+  devEditor.Gutterfont.Size := Size; // Lazarus' gutter draws with the editor font
+  for I := 0 to pred(EditorList.PageCount) do begin
+    e := fEditorList[I];
+    if Assigned(e) then
+      e.Text.Font.Size := Size;
   end;
 end;
 

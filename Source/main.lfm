@@ -19,7 +19,6 @@ object MainForm: TMainForm
   OnContextPopup = FormContextPopup
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  OnMouseWheel = FormMouseWheel
   OnResize = FormResize
   OnShow = FormShow
   PixelsPerInch = 96

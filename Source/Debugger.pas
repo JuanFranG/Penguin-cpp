@@ -31,8 +31,8 @@ unit Debugger;
 interface
 
 uses
-  SysUtils, Classes, Forms, Controls, ComCtrls, Dialogs, Editor, DebugEngine, GdbEngine, DebugTerminal,
-  MultiLangSupport;
+  SysUtils, Classes, Forms, Controls, ComCtrls, Dialogs, Editor, DebugEngine, GdbEngine, DapEngine,
+  DebugTerminal, MultiLangSupport;
 
 type
   PWatchVar = ^TWatchVar;
@@ -51,7 +51,7 @@ type
 
   TDebugger = class(TObject)
   private
-    fEngine: TGdbEngine;
+    fEngine: TDebugEngine; // gdb's (Linux) or lldb-dap's (macOS)
     fTerminal: TDebugTerminal;
     fExecuting: boolean;
     fPaused: boolean;
@@ -133,13 +133,13 @@ type
     property DebugView: TTreeView read fDebugView write fDebugView;
     property BreakPointFile: String read fActiveFile;
     // For the CPU window; nil when no session runs
-    property Engine: TGdbEngine read fEngine;
+    property Engine: TDebugEngine read fEngine;
   end;
 
 implementation
 
 uses
-  Process, Math, main, devCFG, Utils, CPUFrm, GdbMI, Version;
+  Process, Math, main, devCFG, Utils, CPUFrm, GdbMI, Version, devPlatform;
 
 const
   MaxWatchChildren = 200; // long arrays: the first ones are enough
@@ -187,13 +187,19 @@ begin
     MessageDlg(Lang[ID_ERR_GDBNOUTFOUND], mtError, [mbOK], 0);
     Exit;
   end;
-  // The compiler set's gdb, or the one in PATH
+  // The compiler set's debugger, or the one in PATH (or Xcode's, lldb-dap)
   GdbFile := CompilerSet.gdbName;
   if (CompilerSet.BinDir.Count > 0) and FileExists(CompilerSet.BinDir[0] + pd + CompilerSet.gdbName) then
-    GdbFile := CompilerSet.BinDir[0] + pd + CompilerSet.gdbName;
+    GdbFile := CompilerSet.BinDir[0] + pd + CompilerSet.gdbName
+  else if FindDeveloperTool(GdbFile) <> '' then
+    GdbFile := FindDeveloperTool(GdbFile);
 
   FreeAndNil(fEngine);
-  fEngine := TGdbEngine.Create(GdbFile);
+  // gdb does not run on Apple Silicon: lldb-dap's engine there
+  if Pos('lldb-dap', ExtractFileName(GdbFile)) > 0 then
+    fEngine := TDapEngine.Create(GdbFile)
+  else
+    fEngine := TGdbEngine.Create(GdbFile);
   fEngine.OnStopped := EngineStopped;
   fEngine.OnRunning := EngineRunning;
   fEngine.OnExited := EngineExited;

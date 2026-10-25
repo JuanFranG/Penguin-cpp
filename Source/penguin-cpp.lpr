@@ -57,6 +57,7 @@ uses
   GdbMI,
   DebugEngine,
   GdbEngine,
+  DapEngine,
   DebugTerminal,
   ErrorLog,
   Debugger,

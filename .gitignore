@@ -68,6 +68,7 @@ Source/Tests/FoldTest/build/
 Source/Tests/MakefileTest/build/
 Source/Tests/GdbMITest/build/
 Source/Tests/GdbEngineTest/build/
+Source/Tests/DapEngineTest/build/
 Source/lib/
 Source/penguin-cpp.lps
 Source/penguin-cpp.res

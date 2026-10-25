@@ -93,6 +93,21 @@ jobs:
             if [ -e "$P" ]; then echo "left behind: $P"; exit 1; fi
           done
 
+      - name: The APT repository installs the package (signed with a throwaway key)
+        run: |
+          sudo apt-get install -y --no-install-recommends apt-utils gnupg
+          export GNUPGHOME=$(mktemp -d)
+          gpg --batch --pinentry-mode loopback --passphrase '' --quick-gen-key "Penguin cpp test <test@invalid>" ed25519 sign never
+          REPO=$RUNNER_TEMP/apt-repo
+          packaging/update-apt-repo.sh "$REPO" build/deb/*.deb
+          echo "deb [signed-by=$REPO/penguin-cpp.gpg] file:$REPO stable main" | sudo tee /etc/apt/sources.list.d/penguin-cpp-test.list
+          sudo apt-get update
+          apt-cache policy penguin-cpp
+          sudo apt-get install -y penguin-cpp
+          test -x /usr/lib/penguin-cpp/penguin-cpp
+          sudo apt-get remove -y penguin-cpp
+          sudo rm /etc/apt/sources.list.d/penguin-cpp-test.list
+
       - name: Keep the package
         uses: actions/upload-artifact@v4
         with:

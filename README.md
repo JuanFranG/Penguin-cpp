@@ -52,9 +52,28 @@ Qué funciona hoy y qué falta está en [ROADMAP.md](ROADMAP.md).
 
 ## Instalación
 
-Penguin cpp se instala con un paquete `.deb` en Debian, Ubuntu, Linux Mint y
-derivadas (amd64). `apt` instala también todo lo que necesita: gcc, g++, make,
-gdb, astyle y clang-format.
+Penguin cpp se instala con `apt` en Debian, Ubuntu, Linux Mint y derivadas
+(amd64). `apt` instala también todo lo que necesita: gcc, g++, make, gdb,
+astyle y clang-format.
+
+Una sola vez, agrega su repositorio y la clave con la que está firmado:
+
+```bash
+curl -fsSL https://juanfrang.github.io/Penguin-cpp/penguin-cpp.gpg | sudo tee /usr/share/keyrings/penguin-cpp.gpg > /dev/null
+echo "deb [signed-by=/usr/share/keyrings/penguin-cpp.gpg] https://juanfrang.github.io/Penguin-cpp stable main" | sudo tee /etc/apt/sources.list.d/penguin-cpp.list
+sudo apt update
+```
+
+Después se instala como cualquier programa, y las versiones nuevas llegan con
+`sudo apt upgrade`:
+
+```bash
+sudo apt install penguin-cpp
+```
+
+También se puede descargar el `.deb` de
+[Releases](https://github.com/JuanFranG/Penguin-cpp/releases) e instalarlo
+directamente (sin actualizaciones automáticas):
 
 ```bash
 sudo apt install ./penguin-cpp_0.1.0_amd64.deb
@@ -63,12 +82,6 @@ sudo apt install ./penguin-cpp_0.1.0_amd64.deb
 Después aparece en el menú, en *Programación* y *Educación*. También se abre
 desde una terminal con `penguin-cpp`, y `man penguin-cpp` explica sus opciones.
 
-Mientras se publica la primera versión en
-[Releases](https://github.com/JuanFranG/Penguin-cpp/releases), el `.deb` de
-cada cambio se descarga desde
-[Actions](https://github.com/JuanFranG/Penguin-cpp/actions) (artefacto
-`penguin-cpp-deb`, dentro de un `.zip`), o se arma como se explica abajo.
-
 Para desinstalarlo:
 
 ```bash
@@ -76,7 +89,8 @@ sudo apt remove penguin-cpp
 ```
 
 La configuración de cada usuario queda en `~/.config/penguin-cpp` y sus
-plantillas en `~/.local/share/penguin-cpp`; se pueden borrar a mano.
+plantillas en `~/.local/share/penguin-cpp`; se pueden borrar a mano. Si el IDE
+tiene un error, lo anota en `penguin-cpp-errores.txt`, en el Escritorio.
 
 ## Compilar desde el código
 

@@ -1,0 +1,97 @@
+# Publishes a version when its tag is pushed (git tag v0.1.0; git push origin
+# v0.1.0): the GitHub release with the .deb and the program with its symbols
+# (to read the backtraces of error reports), and the package in the APT
+# repository that GitHub Pages serves from the gh-pages branch.
+# The repository is signed with the APT_SIGNING_KEY secret (README).
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: The tag is the version in the code
+        run: |
+          VERSION=$(sed -n "s/^ *DEVCPP_VERSION *= *'\([^']*\)'.*/\1/p" Source/Version.pas | tr -d '\r')
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          test "v$VERSION" = "$GITHUB_REF_NAME"
+
+      - name: Install Lazarus, Free Pascal and the packaging tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            lazarus fpc lcl-qt5-3.0 libqt5pas-dev dpkg-dev lintian apt-utils gnupg
+
+      - name: Build the package
+        run: packaging/build-deb.sh
+
+      - name: Import the signing key
+        env:
+          APT_SIGNING_KEY: ${{ secrets.APT_SIGNING_KEY }}
+        run: |
+          test -n "$APT_SIGNING_KEY" || { echo "The APT_SIGNING_KEY secret is missing"; exit 1; }
+          echo "$APT_SIGNING_KEY" | gpg --batch --import
+          gpg --list-secret-keys
+
+      - name: Add the package to the APT repository
+        run: |
+          git fetch origin gh-pages || true
+          if git rev-parse --verify -q origin/gh-pages > /dev/null; then
+            git worktree add apt-repo origin/gh-pages
+          else
+            git worktree add --orphan -b gh-pages apt-repo
+          fi
+          packaging/update-apt-repo.sh apt-repo build/deb/*.deb
+
+      - name: The repository installs the package
+        run: |
+          REPO=$PWD/apt-repo
+          echo "deb [signed-by=$REPO/penguin-cpp.gpg] file:$REPO stable main" | sudo tee /etc/apt/sources.list.d/penguin-cpp.list
+          sudo apt-get update
+          sudo apt-get install -y penguin-cpp
+          test -x /usr/lib/penguin-cpp/penguin-cpp
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp penguin-cpp "penguin-cpp_${VERSION}_amd64_symbols"
+          {
+            echo "## Instalar"
+            echo
+            echo "Con el repositorio APT (las versiones nuevas llegan con \`sudo apt upgrade\`):"
+            echo "https://juanfrang.github.io/Penguin-cpp/"
+            echo
+            echo "O descarga \`penguin-cpp_${VERSION}_amd64.deb\` e instálalo con:"
+            echo
+            echo '```bash'
+            echo "sudo apt install ./penguin-cpp_${VERSION}_amd64.deb"
+            echo '```'
+            echo
+            echo "\`penguin-cpp_${VERSION}_amd64_symbols\` es el mismo programa con sus símbolos, para leer las trazas del informe de errores."
+            echo
+            echo "## Cambios"
+            echo
+            echo '```'
+            sed -n '3,/^ -- /p' packaging/changelog | sed '$d'
+            echo '```'
+          } > notes.md
+          gh release create "$GITHUB_REF_NAME" --title "Penguin cpp $VERSION" --notes-file notes.md \
+            build/deb/penguin-cpp_${VERSION}_amd64.deb "penguin-cpp_${VERSION}_amd64_symbols"
+
+      - name: Publish the APT repository
+        run: |
+          cd apt-repo
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Penguin cpp $VERSION"
+          git push origin HEAD:gh-pages

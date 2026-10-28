@@ -61,6 +61,7 @@ Ver=1
 1069=ejecute el programa para ver su valor
 1070=Penguin cpp tuvo %d error(es) durante esta sesión. Quedaron registrados en %s; puede enviar ese archivo con su reporte. ¿Abrirlo ahora?
 1071=Completar código
+1072=En macOS el programa cuenta las llamadas a cada una de sus funciones (clang, -fprofile-instr-generate): no hay tiempos ni grafo de llamadas. Los conteos están en %s; ejecute el programa otra vez para actualizarlos.
 
 
 2001=&Abrir Proyecto o Archivo

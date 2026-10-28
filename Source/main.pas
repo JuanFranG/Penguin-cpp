@@ -3505,7 +3505,7 @@ begin
   else
     TCustomAction(Sender).Enabled := (not fCompiler.Compiling) and (GetCompileTarget <> ctNone) and
       Assigned(devCompilerSets.CompilationSet);
-  // No profiler (gprof) on macOS yet
+  // No profiler in this compiler set
   if (Sender = actProfile) and Assigned(devCompilerSets.CompilationSet) and
     (devCompilerSets.CompilationSet.gprofName = '') then
     TCustomAction(Sender).Enabled := False;
@@ -4856,7 +4856,7 @@ begin
   case GetCompileTarget of
     ctProject: begin
         // Check if we enabled proper options
-        ProfilingEnabled := fProject.GetCompilerOption('-pg') <> 0;
+        ProfilingEnabled := fProject.GetCompilerOption(PROFILE_OPTION) <> 0;
         StripEnabled := fProject.GetCompilerOption('-s') <> 0;
 
         // Ask the user if he wants to enable profiling
@@ -4864,7 +4864,7 @@ begin
           0) = mrYes) then begin
 
           // Enable profiling, disable stripping
-          fProject.SetCompilerOption('-pg', 1);
+          fProject.SetCompilerOption(PROFILE_OPTION, 1);
           fProject.SetCompilerOption('-s', 0);
 
           fCompSuccessAction := csaProfile;
@@ -4875,7 +4875,7 @@ begin
     ctFile: begin
         // Check if we enabled proper options
         with devCompilerSets.CompilationSet do begin
-          ProfilingEnabled := GetOption('-pg') <> 0;
+          ProfilingEnabled := GetOption(PROFILE_OPTION) <> 0;
           StripEnabled := GetOption('-s') <> 0;
         end;
 
@@ -4885,7 +4885,7 @@ begin
 
           // Enable profiling, disable stripping
           with devCompilerSets.CompilationSet do begin
-            SetOption('-pg', 1);
+            SetOption(PROFILE_OPTION, 1);
             SetOption('-s', 0);
           end;
 

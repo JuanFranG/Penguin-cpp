@@ -1504,7 +1504,7 @@ begin
   AddOption(ID_COPT_FAILONFIRST, ID_COPT_GRP_WARN, True, True, False, 0, '-Wfatal-errors', nil);
 
   // Profiling
-  AddOption(ID_COPT_PROFILE, ID_COPT_PROFILING, True, True, True, 0, '-pg', nil);
+  AddOption(ID_COPT_PROFILE, ID_COPT_PROFILING, True, True, True, 0, PROFILE_OPTION, nil);
 
   // Linker
   AddOption(ID_COPT_OBJC, ID_COPT_LINKERTAB, False, False, True, 0, '-lobjc', nil);
@@ -1753,7 +1753,7 @@ begin
   if not FindFile(fBinDir, fgdbName) and (devPlatform.FindDeveloperTool(fgdbName) = '') then begin
     msg := msg + Format(Lang[ID_COMPVALID_BINNOTFOUND], [Lang[ID_COMPVALID_DEBUGGER], fgdbName]) + #13#10;
   end;
-  if not FindFile(fBinDir, fgprofName) then begin
+  if not FindFile(fBinDir, fgprofName) and (devPlatform.FindDeveloperTool(fgprofName) = '') then begin
     msg := msg + Format(Lang[ID_COMPVALID_BINNOTFOUND], [Lang[ID_COMPVALID_PROFILER], fgprofName]) + #13#10;
   end;
   if not FindFile(fBinDir, fmakeName) then begin
@@ -2198,7 +2198,7 @@ procedure TdevCompilerSets.FindSets;
     // Profiling profile
     with AddSet(BaseSet) do begin
       Name := BaseName + ' Profiling';
-      if FindOption('-pg', option, index) then
+      if FindOption(PROFILE_OPTION, option, index) then
         SetOption(option, 1);
       if FindOption('-j', option, index) then
         SetOption(option, 0);

@@ -72,6 +72,10 @@ type
     procedure LoadText;
     procedure DoFlat;
     procedure DoGraph;
+{$IFDEF DARWIN}
+    function LLVMCommand: String;
+    procedure DoFlatLLVM;
+{$ENDIF}
   end;
 
 var
@@ -80,13 +84,25 @@ var
 implementation
 
 uses
-  devCFG, Version, Utils, main, StrUtils, MultiLangSupport, CppParser, Editor;
+  devCFG, Version, Utils, main, StrUtils, MultiLangSupport, CppParser, Editor, devPlatform;
 
 {$R *.lfm}
 
 procedure TProfileAnalysisForm.FormShow(Sender: TObject);
+{$IFDEF DARWIN}
+var
+  I: Integer;
+{$ENDIF}
 begin
   LoadText;
+
+{$IFDEF DARWIN}
+  // Calls counted, no times nor call graph (see DoFlatLLVM)
+  tabGraph.TabVisible := False;
+  lvFlat.Columns[1].Caption := '% calls';
+  for I in [2, 3, 5, 6] do
+    lvFlat.Columns[I].Visible := False;
+{$ENDIF}
 
   // Spawn DoFlat
   DoFlat;
@@ -99,6 +115,11 @@ begin
 end;
 
 procedure TProfileAnalysisForm.DoFlat;
+{$IFDEF DARWIN}
+begin
+  DoFlatLLVM;
+end;
+{$ELSE}
 var
   Params: String;
   Dir: String;
@@ -191,6 +212,161 @@ begin
 
   flatloaded := true;
 end;
+{$ENDIF}
+
+{$IFDEF DARWIN}
+// The command that lists the counts: llvm-profdata reads the program's raw
+// profile as it is, with no .profdata merged first
+function TProfileAnalysisForm.LLVMCommand: String;
+begin
+  Result := devPlatform.FindDeveloperTool(devCompilerSets.CompilationSet.gprofName);
+  if Result = '' then
+    Result := devCompilerSets.CompilationSet.gprofName;
+  Result := '"' + Result + '" show --all-functions --counts ' + GPROF_CHECKFILE;
+end;
+
+// macOS has no gprof. A program built with -fprofile-instr-generate counts
+// the calls to each of its functions, and writes them to default.profraw in
+// its working folder when it ends: no times, and no call graph. llvm-profdata
+// lists them as
+//   Counters:
+//     _Z3fibi:
+//       Hash: 0x000000000001835b
+//       Counters: 2
+//       Function count: 21891
+//       Block counts: [10946]
+//     ...
+//   Instrumentation level: Front-end
+//   Total count: 33138
+// with mangled names, a static function's after its file's
+// ("prog.cpp:_ZL5ayudai"); c++filt turns them into C++ ones.
+procedure TProfileAnalysisForm.DoFlatLLVM;
+type
+  TCalls = record
+    Name: String;
+    Count: Int64;
+    IsStatic: Boolean;
+  end;
+var
+  Dir, Cmd, Line, Phrase: String;
+  Buffer, Trailer, Demangled: TStringList;
+  Calls: array of TCalls;
+  Item: TCalls;
+  Total: Int64;
+  I, J, N: Integer;
+  AddedItem: TListItem;
+
+  // The options' hidden functions (not the custom command's: it has none)
+  function Shown(const C: TCalls): Boolean;
+  begin
+    Result := chkCustom.Checked or ((C.Count >= spnMinCount.Value) and
+      not (chkHideNotCalled.Checked and (C.Count = 0)) and not (chkSuppressStatic.Checked and C.IsStatic));
+  end;
+
+begin
+  if Assigned(MainForm.Project) then
+    Dir := ExtractFilePath(MainForm.Project.Executable)
+  else
+    Dir := ExtractFilePath(MainForm.EditorList.GetEditor.FileName);
+  if chkCustom.Checked then
+    Cmd := editCustom.Text
+  else
+    Cmd := LLVMCommand;
+
+  Buffer := TStringList.Create;
+  Trailer := TStringList.Create;
+  Demangled := TStringList.Create;
+  try
+    Buffer.Text := RunAndGetOutput(Cmd, Dir, nil, nil, False);
+
+    // The functions, and the lines after them (or an error)
+    SetLength(Calls, Buffer.Count);
+    N := 0;
+    Total := 0;
+    Item.Name := '';
+    Item.Count := 0;
+    Item.IsStatic := False;
+    for I := 0 to Buffer.Count - 1 do begin
+      Line := Buffer[I];
+      if StartsStr('  ', Line) and not StartsStr('   ', Line) and EndsStr(':', Line) then begin
+        Item.Name := Trim(Copy(Line, 1, Length(Line) - 1));
+        Item.IsStatic := Pos(':', Item.Name) > 0;
+        if Item.IsStatic then
+          Item.Name := Copy(Item.Name, RPos(':', Item.Name) + 1, MaxInt);
+      end else if StartsStr('Function count:', TrimLeft(Line)) then begin
+        Item.Count := StrToInt64Def(Trim(Copy(TrimLeft(Line), Length('Function count:') + 1, MaxInt)), 0);
+        Inc(Total, Item.Count);
+        if Shown(Item) then begin
+          Calls[N] := Item;
+          Inc(N);
+        end;
+      end else if not StartsStr(' ', Line) and (Line <> 'Counters:') then
+        Trailer.Add(Line);
+    end;
+
+    // The most called first
+    for I := 1 to N - 1 do begin
+      Item := Calls[I];
+      J := I;
+      while (J > 0) and (Calls[J - 1].Count < Item.Count) do begin
+        Calls[J] := Calls[J - 1];
+        Dec(J);
+      end;
+      Calls[J] := Item;
+    end;
+
+    // C++ names, all in one run
+    if N > 0 then begin
+      Cmd := 'c++filt';
+      for I := 0 to N - 1 do
+        Cmd := Cmd + ' "' + Calls[I].Name + '"';
+      Demangled.Text := RunAndGetOutput(Cmd, Dir, nil, nil, False);
+      if Demangled.Count = N then
+        for I := 0 to N - 1 do
+          Calls[I].Name := Demangled[I];
+    end;
+
+    lvFlat.Items.BeginUpdate;
+    lvFlat.Items.Clear;
+    for I := 0 to N - 1 do begin
+      AddedItem := lvFlat.Items.Add;
+      AddedItem.Caption := Calls[I].Name;
+
+      // Store info of function in Data pointer
+      if Pos('(', AddedItem.Caption) > 0 then
+        Phrase := Copy(AddedItem.Caption, 1, Pos('(', AddedItem.Caption) - 1)
+      else
+        Phrase := AddedItem.Caption;
+      AddedItem.Data := MainForm.CppParser.FindStatementOf(Phrase, nil);
+
+      // gprof's columns: % of the calls, then the calls (the times hidden)
+      if Total > 0 then
+        AddedItem.SubItems.Add(Format('%.2f', [Calls[I].Count * 100 / Total]))
+      else
+        AddedItem.SubItems.Add('0');
+      AddedItem.SubItems.Add('');
+      AddedItem.SubItems.Add('');
+      AddedItem.SubItems.Add(IntToStr(Calls[I].Count));
+      AddedItem.SubItems.Add('');
+      AddedItem.SubItems.Add('');
+    end;
+    lvFlat.Items.EndUpdate;
+
+    memFlat.Lines.BeginUpdate;
+    memFlat.Lines.Clear;
+    memFlat.Lines.Add(Format(Lang[ID_PROF_LLVMNOTE], [Dir + GPROF_CHECKFILE]));
+    memFlat.Lines.Add('');
+    memFlat.Lines.AddStrings(Trailer);
+    memFlat.Lines.EndUpdate;
+  finally
+    Buffer.Free;
+    Trailer.Free;
+    Demangled.Free;
+  end;
+
+  flatloaded := true;
+end;
+{$ENDIF}
 
 procedure TProfileAnalysisForm.DoGraph;
 var
@@ -425,6 +601,11 @@ procedure TProfileAnalysisForm.CommandUpdate(Sender: TObject);
 var
   assembly: String;
 begin
+{$IFDEF DARWIN}
+  if not chkCustom.Checked then
+    editCustom.Text := LLVMCommand;
+  Exit;
+{$ENDIF}
   if not chkCustom.Checked then begin
     assembly := devCompilerSets.CompilationSet.gprofName;
     if Assigned(MainForm.Project) then

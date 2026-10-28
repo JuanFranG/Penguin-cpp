@@ -91,7 +91,7 @@ const
 {$IFDEF DARWIN}
   GDB_PROGRAM = 'lldb-dap'; // gdb does not run on Apple Silicon; Xcode's tools bring lldb-dap
   GDB32_PROGRAM = 'lldb-dap';
-  GPROF_PROGRAM = ''; // macOS has no gprof
+  GPROF_PROGRAM = 'llvm-profdata'; // no gprof on macOS: clang's own profiles
 {$ELSE}
   GDB_PROGRAM = 'gdb';
   GDB32_PROGRAM = 'gdb';
@@ -119,8 +119,15 @@ const
   cSel = 'Selected text';
   cFld = 'Folding lines';
 
-  // GPROF commands and displays
+  // GPROF commands and displays. On macOS the program counts the calls to
+  // its functions (clang's instrumentation) and llvm-profdata reads them.
+{$IFDEF DARWIN}
+  PROFILE_OPTION = '-fprofile-instr-generate';
+  GPROF_CHECKFILE = 'default.profraw';
+{$ELSE}
+  PROFILE_OPTION = '-pg';
   GPROF_CHECKFILE = 'gmon.out';
+{$ENDIF}
   GPROF_CMD_GENFLAT = '-p';
   GPROF_CMD_GENMAP = '-q';
 

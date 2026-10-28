@@ -8,9 +8,9 @@
 # Cocoa programs with the current linker); LAZBUILD is the lazbuild to run,
 # with its options, e.g.
 #   LAZBUILD="$HOME/lazarus/lazbuild --lazarusdir=$HOME/lazarus --compiler=$HOME/fpc/bin/fpc"
-# The app is not signed by a developer: the program keeps only the ad hoc
-# signature the linker gives every Apple Silicon program ("LEEME - README.txt"
-# in the disk image tells how to open it the first time).
+# The app is not signed by a developer: it is sealed ad hoc, with no
+# identity ("LEEME - README.txt" in the disk image tells how to open it the
+# first time).
 set -euo pipefail
 
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
@@ -67,6 +67,12 @@ rm -rf "$ICONSET"
 sed "s/@VERSION@/$VERSION/g" packaging/Info.plist.in > "$APP/Contents/Info.plist"
 plutil -lint "$APP/Contents/Info.plist"
 printf 'APPLpeng' > "$APP/Contents/PkgInfo"
+
+# Sealed ad hoc (free, no Apple account): the linker's signature covers only
+# the program, and an app whose files are not sealed with it is "damaged"
+# for macOS once downloaded. Sealed, macOS only asks the user to allow it.
+codesign --force --deep --sign - "$APP"
+codesign --verify --deep --strict "$APP"
 echo "Built $APP"
 
 # The disk image: the app, the Applications folder to drag it to, and how

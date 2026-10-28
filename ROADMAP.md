@@ -729,9 +729,11 @@ Lazarus también compila para macOS con la interfaz nativa (Cocoa), así que se
 usa el mismo código: todo lo de macOS va con `{$IFDEF DARWIN}` o en unidades
 propias, y Linux no cambia (el CI lo sigue comprobando). Rama `fase9/macos`.
 
-**Decisiones:** solo Apple Silicon; sin cuenta de Apple Developer ni firma:
-el programa lleva solo la firma ad hoc que el enlazador pone a todo programa
-de Apple Silicon, y la primera vez cada usuario autoriza la app a mano. Las
+**Decisiones:** solo Apple Silicon; sin cuenta de Apple Developer: la app se
+sella ad hoc (`codesign -s -`, sin identidad) y la primera vez cada usuario la
+autoriza en *Privacidad y seguridad*. Sin ese sello, el programa lleva solo la
+firma que le pone el enlazador, que no cubre el resto de la app, y macOS dice
+que una app descargada así "está dañada". Las
 pruebas se hacen en local, en el Mac del autor.
 
 **Herramientas** (en `tools/`, fuera del repositorio, sin instalar nada en el
@@ -765,7 +767,7 @@ de macOS si hay varias fuentes de entrada (se libera en Ajustes > Teclado).
 | Bloque | Qué | Cómo |
 |---|---|---|
 | 6 · CI de macOS | El CI solo prueba Linux | Un trabajo en un runner de GitHub con Apple Silicon: FPC 3.2.4 y Lazarus 3.8 (en caché), el IDE, las pruebas (con `DapEngineTest`) y el `.dmg` como artefacto; `release.yml` lo adjunta al Release y la página de GitHub Pages ofrece las dos descargas |
-| Pruebas pendientes | Abrir el `.dmg` descargado (sin firma), adjuntar el depurador a un proceso (`attach`), el modo oscuro completo, la ventana CPU | En el Mac |
+| Pruebas pendientes | Abrir el `.dmg` descargado (sellado ad hoc), adjuntar el depurador a un proceso (`attach`), el modo oscuro completo, la ventana CPU | En el Mac |
 
 | Parte | Linux | macOS |
 |---|---|---|

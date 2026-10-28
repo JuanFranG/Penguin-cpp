@@ -22,9 +22,9 @@
 <body>
 <main>
   <h1>Penguin cpp</h1>
-  <p class="lead">Un IDE de C y C++ sencillo para aprender, para Debian, Ubuntu, Linux Mint y derivadas (amd64).</p>
+  <p class="lead">Un IDE de C y C++ sencillo para aprender, para Linux (Debian, Ubuntu, Linux Mint y derivadas, amd64) y macOS (Apple Silicon).</p>
 
-  <h2>Instalar</h2>
+  <h2>Instalar en Linux</h2>
   <p>Una sola vez, agrega el repositorio y su clave:</p>
 <pre><code>curl -fsSL https://juanfrang.github.io/Penguin-cpp/penguin-cpp.gpg | sudo tee /usr/share/keyrings/penguin-cpp.gpg &gt; /dev/null
 echo "deb [signed-by=/usr/share/keyrings/penguin-cpp.gpg] https://juanfrang.github.io/Penguin-cpp stable main" | sudo tee /etc/apt/sources.list.d/penguin-cpp.list
@@ -36,6 +36,17 @@ sudo apt update</code></pre>
   <h2>Desinstalar</h2>
 <pre><code>sudo apt remove penguin-cpp
 sudo rm /etc/apt/sources.list.d/penguin-cpp.list /usr/share/keyrings/penguin-cpp.gpg</code></pre>
+
+  <h2>Instalar en macOS (Apple Silicon)</h2>
+  <p>Descarga <code>Penguin-cpp-…-arm64.dmg</code> de la
+  <a href="https://github.com/JuanFranG/Penguin-cpp/releases/latest">última versión</a>,
+  ábrelo y arrastra <em>Penguin cpp</em> a Aplicaciones. Para compilar y depurar hacen
+  falta las Command Line Tools de Apple (Penguin cpp ofrece instalarlas):</p>
+<pre><code>xcode-select --install</code></pre>
+  <p>La app no está firmada por un desarrollador de Apple: la primera vez, ábrela, cierra
+  el aviso y en <em>Configuración del Sistema &gt; Privacidad y seguridad</em> pulsa
+  <em>Abrir igualmente</em>. Si macOS dice que está dañada:</p>
+<pre><code>xattr -cr "/Applications/Penguin cpp.app"</code></pre>
 
   <h2>Más</h2>
   <p>El código, las versiones y cómo reportar errores están en

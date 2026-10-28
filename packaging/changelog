@@ -1,3 +1,11 @@
+penguin-cpp (0.2.0) unstable; urgency=medium
+
+  * Penguin cpp also runs on macOS (Apple Silicon), from the same code.
+  * The debug panel's end-of-program line no longer repeats the terminal's
+    "press Enter to close this window".
+
+ -- Juan Francisco Gonzalez Pacheco <jfgonzalez@unimagdalena.edu.co>  Wed, 28 Oct 2026 18:00:00 -0500
+
 penguin-cpp (0.1.0) unstable; urgency=medium
 
   * First release of Penguin cpp, the Linux port of Dev-C++:

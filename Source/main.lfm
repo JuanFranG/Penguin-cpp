@@ -3194,7 +3194,7 @@ object MainForm: TMainForm
           Top = 309
           Width = 17
           Height = 19
-          Caption = '0.1.0'
+          Caption = '0.2.0'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clRed
           Font.Height = -13

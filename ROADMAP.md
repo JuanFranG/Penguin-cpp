@@ -8,7 +8,7 @@ funciona en Windows.
 Este documento explica de dónde viene, qué se ha hecho hasta ahora y qué
 falta.
 
-*Última actualización: 17 de octubre de 2026. Versión 0.1.0.*
+*Última actualización: 28 de octubre de 2026. Versión 0.2.0.*
 
 ---
 
@@ -691,8 +691,9 @@ El producto final del proyecto es un `.deb` que se instala con
 - Responsable del paquete: Juan Francisco Gonzalez Pacheco
   <jfgonzalez@unimagdalena.edu.co>.
 
-**Falta:** la prueba en un Linux Mint 22 limpio (abajo) y publicar la versión
-0.1.0 en Releases.
+**Publicada:** probada en Linux Mint 22; la versión 0.1.0 está en Releases y
+en el repositorio APT (<https://juanfrang.github.io/Penguin-cpp/>), firmado
+con una clave que solo está en los secretos de GitHub.
 
 Lo que se planeó:
 

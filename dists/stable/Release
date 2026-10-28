@@ -1,0 +1,24 @@
+Architectures: amd64
+Codename: stable
+Components: main
+Date: Wed, 28 Oct 2026 22:07:02 +0000
+Description: Penguin cpp, a C and C++ IDE for learning
+Label: Penguin cpp
+Origin: Penguin cpp
+Suite: stable
+MD5Sum:
+ 501d373b13466fbf115828f21b89d35b              201 Release
+ e5d2a2d4d212058bdaee1f7feb7c0408             1390 main/binary-amd64/Packages
+ 75b9868eb682fc787917c45e31e534b8              898 main/binary-amd64/Packages.gz
+SHA1:
+ f28c409de4588171df0db3c90175c6d002d12566              201 Release
+ aa5f22a4e2d66d0ec6adda48311fd99f7242df9c             1390 main/binary-amd64/Packages
+ 887930b70b26c698df403e11a71deb3a9c17dd16              898 main/binary-amd64/Packages.gz
+SHA256:
+ 49e7d63f19755ff5df5b20a36ddbcc79ad457e855307230d16cdf60985e2e70d              201 Release
+ 22fd2cf8f4ba90b68808d79c2b8ecdec7d7ec2536381650dda45a1476088843d             1390 main/binary-amd64/Packages
+ 881eb83b3fca9b2c8ddd99aa88fb9fe3cd9b0a3f16cce4124c4f68ec89d28104              898 main/binary-amd64/Packages.gz
+SHA512:
+ e2f4da1c8055b1cd4bbcba5b54f33fc0a329c02abad94e544e38bd20e19c29ccbd2b5dd21a01e3e35d807ffbdde53db94259f6147e8ce196727a109cce1a29ca              201 Release
+ 3e5a4cf1fe855dc72bac77a9a26a1112c0771753821a435ffaf9c9a04af3b24ae489f0edd806ad0c1f8bbfab14d8691a0b80397cfa3e4861b36c314f0d28a45d             1390 main/binary-amd64/Packages
+ 9a26b9163b2183335ec581c67a421428d7bd81036df892ad090549063bebe65ea0f685e32d5973a744319aa294fbe2d0d121437c197aba5c61277aa51c6de6c9              898 main/binary-amd64/Packages.gz

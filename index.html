@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Penguin cpp · repositorio APT</title>
+<style>
+  :root { --bg: #ffffff; --fg: #1d2330; --muted: #5b6475; --code: #f2f4f8; --line: #dde1e8; --accent: #1f6feb; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #14171d; --fg: #e6e8ec; --muted: #9aa3b2; --code: #1e232c; --line: #2c3340; --accent: #6ea8fe; }
+  }
+  body { background: var(--bg); color: var(--fg); font: 16px/1.55 system-ui, sans-serif; margin: 0; }
+  main { max-width: 760px; margin: 0 auto; padding: 32px 16px 48px; }
+  h1 { font-size: 1.9rem; margin: 0 0 4px; }
+  h2 { font-size: 1.2rem; margin-top: 2rem; }
+  p.lead { color: var(--muted); margin-top: 0; }
+  pre { background: var(--code); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; overflow-x: auto; }
+  code { font-family: ui-monospace, "Source Code Pro", monospace; font-size: 0.92rem; }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Penguin cpp</h1>
+  <p class="lead">Un IDE de C y C++ sencillo para aprender, para Debian, Ubuntu, Linux Mint y derivadas (amd64).</p>
+
+  <h2>Instalar</h2>
+  <p>Una sola vez, agrega el repositorio y su clave:</p>
+<pre><code>curl -fsSL https://juanfrang.github.io/Penguin-cpp/penguin-cpp.gpg | sudo tee /usr/share/keyrings/penguin-cpp.gpg &gt; /dev/null
+echo "deb [signed-by=/usr/share/keyrings/penguin-cpp.gpg] https://juanfrang.github.io/Penguin-cpp stable main" | sudo tee /etc/apt/sources.list.d/penguin-cpp.list
+sudo apt update</code></pre>
+  <p>Después se instala como cualquier programa:</p>
+<pre><code>sudo apt install penguin-cpp</code></pre>
+  <p>Las versiones nuevas llegan con <code>sudo apt upgrade</code>.</p>
+
+  <h2>Desinstalar</h2>
+<pre><code>sudo apt remove penguin-cpp
+sudo rm /etc/apt/sources.list.d/penguin-cpp.list /usr/share/keyrings/penguin-cpp.gpg</code></pre>
+
+  <h2>Más</h2>
+  <p>El código, las versiones y cómo reportar errores están en
+  <a href="https://github.com/JuanFranG/Penguin-cpp">github.com/JuanFranG/Penguin-cpp</a>.</p>
+</main>
+</body>
+</html>

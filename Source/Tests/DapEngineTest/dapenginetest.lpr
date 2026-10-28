@@ -280,6 +280,8 @@ begin
     E.Evaluate('no_existe', R.OnValue);
     Check(Wait(R.Answered) and not R.Ok and (Pos('no_existe', R.Text) > 0), 'an unknown name is an error',
       R.Text);
+    Check((Pos('error', R.Text) = 0) and (Pos('expression', R.Text) = 0) and (Pos(LineEnding, R.Text) = 0),
+      'the error says only what is wrong, in one line', R.Text);
 
     R.Reset;
     R.Output := '';

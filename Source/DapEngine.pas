@@ -191,6 +191,14 @@ type
 // "int[3] @ 0x...", "size=3"): the engine asks for them
 function IsAggregateSummary(const Value: String): Boolean;
 
+// What is wrong with an expression, as gdb says it. lldb tells its work too:
+//   Ran expression as 'C++14'.
+//   error: <user expression 2>:1:1: use of undeclared identifier 'string'
+//       1 | string
+//         | ^~~~~~
+// which leaves "use of undeclared identifier 'string'"
+function ShortExpressionError(const Error: String): String;
+
 implementation
 
 uses
@@ -203,6 +211,39 @@ const
 function IsAggregateSummary(const Value: String): Boolean;
 begin
   Result := (Pos(' @ 0x', Value) > 0) or (Copy(Value, 1, 5) = 'size=') or (Value = '');
+end;
+
+function ShortExpressionError(const Error: String): String;
+var
+  Lines: TStringList;
+  I, P: Integer;
+  Line: String;
+begin
+  Result := '';
+  Lines := TStringList.Create;
+  try
+    Lines.Text := Error;
+    for I := 0 to Lines.Count - 1 do begin
+      Line := Trim(Lines[I]);
+      if Copy(Line, 1, 6) <> 'error:' then
+        Continue;
+      Line := Trim(Copy(Line, 7, MaxInt));
+      // Its place: "<user expression 2>:1:1: "
+      if (Copy(Line, 1, 1) = '<') and (Pos('>', Line) > 0) then begin
+        P := Pos('>', Line) + 1;
+        while (P <= Length(Line)) and (Line[P] in [':', '0'..'9']) do
+          Inc(P);
+        Line := Trim(Copy(Line, P, MaxInt));
+      end;
+      if Result <> '' then
+        Result := Result + '; ';
+      Result := Result + Line;
+    end;
+  finally
+    Lines.Free;
+  end;
+  if Result = '' then
+    Result := Trim(Error);
 end;
 
 function GetStr(Obj: TJSONObject; const Name: String; const Default: String = ''): String;
@@ -986,7 +1027,7 @@ begin
     hkValue: begin
         Value := GetStr(Body, 'result');
         if not Ok then
-          TDebugValueHandler(H.Method)(False, Trim(Error))
+          TDebugValueHandler(H.Method)(False, ShortExpressionError(Error))
         else if (GetInt(Body, 'variablesReference', 0) > 0) and IsAggregateSummary(Value) then begin
           // Members to ask for first
           V := TDapValue.Create(TDebugValueHandler(H.Method));
@@ -1000,7 +1041,7 @@ begin
       if Ok then
         TDebugValueHandler(H.Method)(True, GetStr(Body, 'result'))
       else
-        TDebugValueHandler(H.Method)(False, Trim(Error));
+        TDebugValueHandler(H.Method)(False, ShortExpressionError(Error));
     hkBreakpoints:
       AnswerBreakpoints(H, Ok, Body);
     hkStopFrame:

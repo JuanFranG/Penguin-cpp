@@ -14,7 +14,8 @@
         macOS keeps for itself (Command-Space: Spotlight, Command-Tab: switch
         apps, Command-H: hide, Command-M: minimize, Command-Q: quit);
       - the editor gets the Mac's cursor keys (Command and Option with the
-        arrows and backspace): a Mac keyboard has no Home or End.
+        arrows and backspace): a Mac keyboard has no Home or End;
+      - a pinch on the trackpad reaches the IDE.
 }
 unit MacSupport;
 
@@ -23,7 +24,7 @@ unit MacSupport;
 interface
 
 uses
-  Classes, SysUtils, LCLType, LCLProc, Menus, ActnList, StdCtrls, SynEditKeyCmds;
+  Classes, SysUtils, LCLType, LCLProc, Menus, ActnList, StdCtrls, Forms, SynEditKeyCmds;
 
 // On macOS, an owner-drawn combo box (a font picker that shows each font in
 // itself) becomes a plain one: Cocoa draws those badly
@@ -54,6 +55,15 @@ procedure AddSecondaryShortCut(Action: TCustomAction; Key: Word; Shift: TShiftSt
 
 // On macOS, adds the Mac's cursor and deletion keys to an editor's keys
 procedure AddMacKeystrokes(Keys: TSynEditKeyStrokes);
+
+type
+  // Magnification: how much the fingers opened (closed, below 0) since the
+  // last call
+  TPinchEvent = procedure(Magnification: Double) of object;
+
+// On macOS, Handler hears the trackpad's pinches over Form (the LCL has no
+// gestures); elsewhere nothing
+procedure SetPinchHandler(Form: TCustomForm; Handler: TPinchEvent);
 
 implementation
 
@@ -121,6 +131,8 @@ procedure CFRelease(CF: Pointer); cdecl; external name 'CFRelease';
 function objc_getClass(Name: PAnsiChar): Pointer; cdecl; external name 'objc_getClass';
 function sel_registerName(Name: PAnsiChar): Pointer; cdecl; external name 'sel_registerName';
 procedure objc_msgSend; cdecl; external name 'objc_msgSend';
+function object_getClass(Obj: Pointer): Pointer; cdecl; external name 'object_getClass';
+function class_addMethod(Cls, Sel, Imp: Pointer; Types: PAnsiChar): Boolean; cdecl; external name 'class_addMethod';
 
 {$LINKFRAMEWORK CoreFoundation}
 
@@ -129,6 +141,39 @@ type
   TMsgSend0 = function(Obj, Sel: Pointer): Pointer; cdecl;
   TMsgSend1 = function(Obj, Sel, Arg: Pointer): Pointer; cdecl;
   TMsgSendBool1 = function(Obj, Sel, Arg: Pointer): Boolean; cdecl;
+  TMsgSendDouble0 = function(Obj, Sel: Pointer): Double; cdecl;
+
+var
+  PinchForm: TCustomForm = nil;
+  PinchHandler: TPinchEvent = nil;
+
+// [NSWindow magnifyWithEvent:], added to the class of the LCL's windows: a
+// pinch goes to the view under the fingers, and up from view to view to the
+// window when none of them takes it (the LCL's views do not). Only the
+// form's own window answers; nothing may raise back into Cocoa.
+procedure WindowMagnify(Obj, Cmd, Event: Pointer); cdecl;
+begin
+  try
+    if Assigned(PinchForm) and Assigned(PinchHandler) and PinchForm.HandleAllocated and
+      (TMsgSend0(@objc_msgSend)(Event, sel_registerName('window')) =
+       TMsgSend0(@objc_msgSend)(Pointer(PinchForm.Handle), sel_registerName('window'))) then
+      PinchHandler(TMsgSendDouble0(@objc_msgSend)(Event, sel_registerName('magnification')));
+  except
+  end;
+end;
+
+procedure SetPinchHandler(Form: TCustomForm; Handler: TPinchEvent);
+var
+  Window: Pointer;
+begin
+  // The form's handle is its window's content view
+  Window := TMsgSend0(@objc_msgSend)(Pointer(Form.Handle), sel_registerName('window'));
+  if not Assigned(Window) then
+    Exit;
+  PinchForm := Form;
+  PinchHandler := Handler;
+  class_addMethod(object_getClass(Window), sel_registerName('magnifyWithEvent:'), @WindowMagnify, 'v@:@');
+end;
 
 procedure UseNativeComboBox(Combo: TComboBox);
 begin
@@ -266,6 +311,10 @@ begin
 end;
 
 procedure AddMacKeystrokes(Keys: TSynEditKeyStrokes);
+begin
+end;
+
+procedure SetPinchHandler(Form: TCustomForm; Handler: TPinchEvent);
 begin
 end;
 

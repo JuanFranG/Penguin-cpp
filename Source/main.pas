@@ -918,6 +918,7 @@ type
     procedure ForwardMenuClick(Sender: TObject);
   public
     procedure ZoomEditors(WheelDelta: Integer);
+    procedure PinchEditors(Magnification: Double);
     procedure EvaluateInputKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     function EvaluateTyped: Boolean;
     procedure LayOutWelcomeRight;
@@ -6049,6 +6050,13 @@ begin
   end;
 end;
 
+// A pinch on the trackpad (macOS): opening the fingers by the width of the
+// pad (a magnification of about 1) is some five points
+procedure TMainForm.PinchEditors(Magnification: Double);
+begin
+  ZoomEditors(Round(Magnification * 600));
+end;
+
 procedure TMainForm.FormResize(Sender: TObject);
 begin
   ResizeWelcomeComponent;
@@ -6238,6 +6246,12 @@ begin
   fWelcomeTiles[3] := ReplaceWelcomeButton(ButtonChangeTheme, False, 80);
   fWelcomeTiles[4] := ReplaceWelcomeButton(ButtonChangeFont, False, 81);
   fWelcomeTiles[5] := ReplaceWelcomeButton(ButtonChangeLanguage, False, 82);
+  // LayOutWelcomeRight places the column; an auto-sized panel moves its
+  // shown children to its top left corner, so a recent file that appears
+  // later went up over the tiles
+  PanelRight.AutoSize := False;
+  // A pinch on the trackpad zooms, like Command and the wheel
+  SetPinchHandler(Self, PinchEditors);
 {$ENDIF}
   // macOS: tabs on the left, as on Linux (Cocoa centers its own)
   AttachTabStrip(EditorPageControlLeft, EditorTabClose);

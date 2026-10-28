@@ -2694,10 +2694,11 @@ begin
   if not FileExists(Result) then
     Result := ExeSearch(SystemName, GetEnvironmentVariable('PATH'));
 {$IFDEF DARWIN}
-  // Homebrew's (brew install astyle): an app opened from the Finder gets a
+  // The one inside the app, next to the program (packaging/build-macos.sh
+  // builds astyle), else Homebrew's: an app opened from the Finder gets a
   // PATH without it
   if Result = '' then
-    Result := ExeSearch(SystemName, '/opt/homebrew/bin:/usr/local/bin');
+    Result := ExeSearch(SystemName, ExtractFileDir(Application.ExeName) + ':/opt/homebrew/bin:/usr/local/bin');
 {$ENDIF}
 end;
 

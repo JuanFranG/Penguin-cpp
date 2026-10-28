@@ -38,15 +38,15 @@ sudo apt update</code></pre>
 sudo rm /etc/apt/sources.list.d/penguin-cpp.list /usr/share/keyrings/penguin-cpp.gpg</code></pre>
 
   <h2>Instalar en macOS (Apple Silicon)</h2>
-  <p>Descarga <code>Penguin-cpp-…-arm64.dmg</code> de la
-  <a href="https://github.com/JuanFranG/Penguin-cpp/releases/latest">última versión</a>,
-  ábrelo y arrastra <em>Penguin cpp</em> a Aplicaciones. Para compilar y depurar hacen
-  falta las Command Line Tools de Apple (Penguin cpp ofrece instalarlas):</p>
-<pre><code>xcode-select --install</code></pre>
-  <p>La app no está firmada por un desarrollador de Apple: la primera vez, ábrela, cierra
-  el aviso y en <em>Configuración del Sistema &gt; Privacidad y seguridad</em> pulsa
-  <em>Abrir igualmente</em>. Si macOS dice que está dañada:</p>
-<pre><code>xattr -cr "/Applications/Penguin cpp.app"</code></pre>
+  <p>En Terminal, una línea instala la última versión en Aplicaciones (y la actualiza
+  cuando la vuelves a ejecutar); si faltan las Command Line Tools de Apple (clang, make,
+  lldb), macOS pide instalarlas:</p>
+<pre><code>curl -fsSL https://juanfrang.github.io/Penguin-cpp/install-macos.sh | bash</code></pre>
+  <p>O descarga <code>Penguin-cpp-…-arm64.dmg</code> de la
+  <a href="https://github.com/JuanFranG/Penguin-cpp/releases/latest">última versión</a> y
+  arrastra <em>Penguin cpp</em> a Aplicaciones. Así, como la app no está firmada por un
+  desarrollador de Apple, la primera vez hay que abrirla, cerrar el aviso y pulsar
+  <em>Abrir igualmente</em> en <em>Configuración del Sistema &gt; Privacidad y seguridad</em>.</p>
 
   <h2>Más</h2>
   <p>El código, las versiones y cómo reportar errores están en

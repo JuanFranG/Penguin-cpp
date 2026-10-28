@@ -48,6 +48,25 @@ for DIR in Lang Templates Help Icons AStyle/doc ClangFormat/doc; do
 done
 install -m 644 COPYING.txt LICENSE "$RES/"
 
+# Artistic Style, the code formatter (MIT, its license is in AStyle/doc):
+# macOS has none, so it goes next to the program, built from its source,
+# downloaded once and checked against the checksum Homebrew uses
+ASTYLE_VERSION=3.6.20
+ASTYLE_SHA256=b058f3e176334dba65477fd126105d3df4eab9e954eab1c76b568cd5370cfbe9
+ASTYLE_TAR=$OUT/astyle-$ASTYLE_VERSION.tar.bz2
+if [ ! -f "$ASTYLE_TAR" ]; then
+  curl -fsSL -o "$ASTYLE_TAR.part" \
+    "https://downloads.sourceforge.net/project/astyle/astyle/astyle%20${ASTYLE_VERSION%.*}/astyle-$ASTYLE_VERSION.tar.bz2"
+  mv "$ASTYLE_TAR.part" "$ASTYLE_TAR"
+fi
+echo "$ASTYLE_SHA256  $ASTYLE_TAR" | shasum -a 256 -c -
+ASTYLE_SRC=$OUT/astyle-$ASTYLE_VERSION
+rm -rf "$ASTYLE_SRC"
+tar -xjf "$ASTYLE_TAR" -C "$OUT"
+clang++ -O2 -std=c++17 -mmacosx-version-min=11.0 -o "$APP/Contents/MacOS/astyle" "$ASTYLE_SRC"/src/*.cpp
+rm -rf "$ASTYLE_SRC"
+"$APP/Contents/MacOS/astyle" --version
+
 # The icon, from the Linux one's sizes
 ICONSET=$OUT/penguin-cpp.iconset
 rm -rf "$ICONSET"

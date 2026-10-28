@@ -49,7 +49,9 @@ gpg --batch --yes --armor --detach-sign -o dists/stable/Release.gpg dists/stable
 gpg --batch --yes --export > penguin-cpp.gpg
 gpg --batch --yes --armor --export > penguin-cpp.asc
 
-# The page people see, and no Jekyll (it would hide some files)
+# The page people see, the macOS installer it offers, and no Jekyll (it
+# would hide some files)
 cp "$HERE/apt-repo-index.html" index.html
+cp "$HERE/install-macos.sh" install-macos.sh
 touch .nojekyll
 echo "APT repository updated in $(pwd)"

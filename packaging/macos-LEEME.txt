@@ -13,16 +13,14 @@ Penguin cpp para macOS (Apple Silicon)
 
        xattr -cr "/Applications/Penguin cpp.app"
 
-   Después se abre normalmente.
+   Después se abre normalmente. (Instalada con el instalador de una línea,
+   https://juanfrang.github.io/Penguin-cpp/, se abre directamente.)
 
 3. Para compilar y depurar hacen falta las Command Line Tools de Apple
    (clang, make, lldb). Si no están, Penguin cpp ofrece instalarlas; o en
    Terminal:
 
        xcode-select --install
-
-4. Opcional, para el formateador de código: con Homebrew,
-   brew install astyle
 
 
 Penguin cpp for macOS (Apple Silicon)
@@ -39,5 +37,3 @@ Penguin cpp for macOS (Apple Silicon)
 3. Compiling and debugging need Apple's Command Line Tools (clang, make,
    lldb). Penguin cpp offers to install them, or run:
    xcode-select --install
-
-4. Optional, for the code formatter, with Homebrew: brew install astyle

@@ -94,26 +94,22 @@ tiene un error, lo anota en `penguin-cpp-errores.txt`, en el Escritorio.
 
 ### macOS (Apple Silicon)
 
-La versión para Mac está en pruebas. Viene en un `.dmg`, en
-[Releases](https://github.com/JuanFranG/Penguin-cpp/releases/latest): se abre
-y se arrastra *Penguin cpp* a Aplicaciones. Necesita las Command Line
-Tools de Apple (clang, make y lldb); si faltan, Penguin cpp ofrece
-instalarlas, o en Terminal:
+La versión para Mac está en pruebas. Se instala (y se actualiza) con una
+línea en Terminal, que descarga la última versión, la pone en Aplicaciones y,
+si faltan, pide las Command Line Tools de Apple (clang, make y lldb):
 
 ```bash
-xcode-select --install
+curl -fsSL https://juanfrang.github.io/Penguin-cpp/install-macos.sh | bash
 ```
 
-La app no está firmada por un desarrollador de Apple, así que la primera vez
-macOS no la deja abrir: se abre una vez, se cierra el aviso y en
-*Configuración del Sistema > Privacidad y seguridad* se pulsa *Abrir
-igualmente*. Si macOS dice que la app está dañada:
+Así macOS la abre directamente. También se puede descargar el `.dmg` de
+[Releases](https://github.com/JuanFranG/Penguin-cpp/releases/latest) y
+arrastrar *Penguin cpp* a Aplicaciones; como la app no está firmada por un
+desarrollador de Apple, la primera vez hay que abrirla, cerrar el aviso y
+pulsar *Abrir igualmente* en *Configuración del Sistema > Privacidad y
+seguridad*.
 
-```bash
-xattr -cr "/Applications/Penguin cpp.app"
-```
-
-El formateador de código es opcional: `brew install astyle`. La configuración
+El formateador de código (astyle) viene dentro de la app. La configuración
 queda en `~/Library/Application Support/penguin-cpp`.
 
 ## Compilar desde el código

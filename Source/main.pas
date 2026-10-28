@@ -719,6 +719,8 @@ type
     procedure ProjectViewDragDrop(Sender, Source: TObject; X, Y: Integer);
     procedure ViewCPUItemClick(Sender: TObject);
     procedure edGdbCommandKeyPress(Sender: TObject; var Key: Char);
+    procedure edGdbCommandKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    function GdbCommandTyped: Boolean;
     procedure actExecParamsExecute(Sender: TObject);
     procedure actShowTipsExecute(Sender: TObject);
     procedure CppParserStartParsing(Sender: TObject);
@@ -1408,6 +1410,10 @@ begin
 
   // Debug Tab
   lblSendCommandGdb.Caption := Lang[ID_DEB_SENDGDBCOMMAND];
+{$IFDEF DARWIN}
+  // The commands go to lldb
+  lblSendCommandGdb.Caption := StringReplace(lblSendCommandGdb.Caption, 'GDB', 'LLDB', []);
+{$ENDIF}
   lblEvaluate.Caption := Lang[ID_DEB_EVALUATE];
 
   // Adapt UI spacing to translation text length
@@ -5145,24 +5151,38 @@ end;
 procedure TMainForm.edGdbCommandKeyPress(Sender: TObject; var Key: Char);
 begin
   if fDebugger.Executing then begin
-    if Key = Chr(VK_RETURN) then begin
-      if Length(edGDBCommand.Text) > 0 then begin
-
-        // Disable key, but make sure not to remove selected text
-        EvaluateInput.SelStart := 0;
-        EvaluateInput.SelLength := 0;
+    if Key = Chr(VK_RETURN) then
+      if GdbCommandTyped then
         Key := #0;
-
-        fDebugger.UserCommand(edGDBCommand.Text);
-
-        if edGDBCommand.Items.IndexOf(edGDBCommand.Text) = -1 then
-          edGDBCommand.AddItem(edGDBCommand.Text, nil);
-      end;
-    end;
 
     // View command examples only when edit is empty or when the UI itself added the current command
     fDebugger.CommandChanged := true;
   end;
+end;
+
+// macOS: Cocoa's combo box takes Enter before KeyPress, only KeyDown sees it
+procedure TMainForm.edGdbCommandKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+  if Key = VK_RETURN then
+    if GdbCommandTyped then
+      Key := 0;
+end;
+
+// The command typed for the debugger, sent; False if there is none
+function TMainForm.GdbCommandTyped: Boolean;
+begin
+  Result := fDebugger.Executing and (Length(edGdbCommand.Text) > 0);
+  if not Result then
+    Exit;
+
+  // Make sure not to remove selected text
+  edGdbCommand.SelStart := 0;
+  edGdbCommand.SelLength := 0;
+
+  fDebugger.UserCommand(edGdbCommand.Text);
+
+  if edGdbCommand.Items.IndexOf(edGdbCommand.Text) = -1 then
+    edGdbCommand.AddItem(edGdbCommand.Text, nil);
 end;
 
 procedure TMainForm.actExecParamsExecute(Sender: TObject);
@@ -6237,6 +6257,7 @@ begin
   AddSecondaryShortCut(actRedo, VK_Z, [ssMeta, ssShift]);
 {$ENDIF}
   EvaluateInput.OnKeyDown := EvaluateInputKeyDown; // Enter, also on macOS
+  edGdbCommand.OnKeyDown := edGdbCommandKeyDown;
 {$IFDEF DARWIN}
   // Cocoa draws buttons with an icon badly: the welcome screen's are tiles
   SetLength(fWelcomeTiles, 6);

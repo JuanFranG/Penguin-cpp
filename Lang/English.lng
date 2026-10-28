@@ -61,6 +61,7 @@ Ver=1
 1070=Penguin cpp had %d error(s) during this session. They are recorded in %s; you can send that file with your report. Open it now?
 1071=Code completion
 1072=On macOS the program counts the calls to each of its functions (clang, -fprofile-instr-generate): there are no times and no call graph. The counts are in %s; run the program again to update them.
+1073=The program ended with exit code %d.
 
 
 2001=&Open...

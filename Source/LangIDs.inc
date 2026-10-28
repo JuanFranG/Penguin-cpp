@@ -87,6 +87,7 @@ const
   ID_MSG_ERRORLOG                       = 1070;
   ID_ITEM_CODECOMPLETION                = 1071;
   ID_PROF_LLVMNOTE                      = 1072;
+  ID_DEBUG_EXITCODE                     = 1073;
 
   ID_ITEM_OPEN                          = 2001;
   ID_SUB_REOPEN                         = 2002;

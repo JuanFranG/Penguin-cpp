@@ -750,6 +750,13 @@ begin
     if tmp.count = 5 then
       with attr do begin
         Foreground := StringtoColor(tmp[0]);
+{$IFDEF DARWIN}
+        // macOS' highlight is the light blue behind selected text: as a
+        // text's color (Classic's comments) it can hardly be read. Windows'
+        // is a darker blue, the one Dev-C++ showed.
+        if Foreground = clHighlight then
+          Foreground := $00B16300;
+{$ENDIF}
         Background := StringtoColor(tmp[1]);
         style := [];
         if tmp[2] = '1' then

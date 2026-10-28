@@ -397,7 +397,7 @@ procedure TDebugger.EngineExited(Sender: TObject; ExitCode: Integer);
 begin
   // The terminal stays until the user reads it and presses Enter
   fTerminal.ProgramEnded(Format(Lang[ID_DEBUG_PROGRAMENDED], [ExitCode]));
-  AddOutput(Format(Lang[ID_DEBUG_PROGRAMENDED], [ExitCode]) + LineEnding);
+  AddOutput(Format(Lang[ID_DEBUG_EXITCODE], [ExitCode]) + LineEnding); // no window to close here
   Stop;
 end;
 
@@ -504,7 +504,11 @@ end;
 procedure TDebugger.UserCommand(const Command: String);
 begin
   if fExecuting then begin
-    AddOutput('(gdb) ' + Command + LineEnding);
+    // The command, after the prompt of the debugger that runs it
+    if fEngine is TDapEngine then
+      AddOutput('(lldb) ' + Command + LineEnding)
+    else
+      AddOutput('(gdb) ' + Command + LineEnding);
     fEngine.UserCommand(Command);
   end;
 end;

@@ -69,6 +69,7 @@ Ver=1
 1071=Completar código
 1072=En macOS el programa cuenta las llamadas a cada una de sus funciones (clang, -fprofile-instr-generate): no hay tiempos ni grafo de llamadas. Los conteos están en %s; ejecute el programa otra vez para actualizarlos.
 1073=El programa terminó con el código de salida %d.
+1074=Para compilar y depurar hacen falta las Command Line Tools de Apple (clang, make y lldb), y no están instaladas. ¿Instalarlas ahora? macOS pregunta primero y luego las descarga; cuando terminen, abra Penguin cpp otra vez.
 
 2001=&Abrir proyecto o archivo...
 2002=A&brir archivo reciente

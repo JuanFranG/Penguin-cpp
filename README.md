@@ -92,6 +92,29 @@ La configuración de cada usuario queda en `~/.config/penguin-cpp` y sus
 plantillas en `~/.local/share/penguin-cpp`; se pueden borrar a mano. Si el IDE
 tiene un error, lo anota en `penguin-cpp-errores.txt`, en el Escritorio.
 
+### macOS (Apple Silicon)
+
+La versión para Mac está en pruebas (rama `fase9/macos`). Viene en un `.dmg`:
+se abre y se arrastra *Penguin cpp* a Aplicaciones. Necesita las Command Line
+Tools de Apple (clang, make y lldb); si faltan, Penguin cpp ofrece
+instalarlas, o en Terminal:
+
+```bash
+xcode-select --install
+```
+
+La app no está firmada por un desarrollador de Apple, así que la primera vez
+macOS no la deja abrir: se abre una vez, se cierra el aviso y en
+*Configuración del Sistema > Privacidad y seguridad* se pulsa *Abrir
+igualmente*. Si macOS dice que la app está dañada:
+
+```bash
+xattr -cr "/Applications/Penguin cpp.app"
+```
+
+El formateador de código es opcional: `brew install astyle`. La configuración
+queda en `~/Library/Application Support/penguin-cpp`.
+
 ## Compilar desde el código
 
 Necesitas Lazarus 3.0 o superior y Free Pascal 3.2.2 (Linux Mint 22 /
@@ -110,6 +133,14 @@ Para armar el paquete `.deb` (queda en `build/deb/`):
 ```bash
 sudo apt install dpkg-dev lintian
 packaging/build-deb.sh
+```
+
+En macOS hacen falta Free Pascal 3.2.4 y Lazarus 3.8 (Free Pascal 3.2.2 no
+puede enlazar programas Cocoa con el enlazador actual de Apple). La app y el
+`.dmg` quedan en `build/macos/`:
+
+```bash
+LAZBUILD="ruta/a/lazbuild --lazarusdir=ruta/a/lazarus --compiler=ruta/a/fpc" packaging/build-macos.sh
 ```
 
 Las pruebas y más detalles están en [ROADMAP.md](ROADMAP.md#cómo-compilar-y-probar-linux).

@@ -120,7 +120,7 @@ al publicarla. Hoy `main` incluye las fases 1 a 6 (`fase6/compilador`).
 | 6 · Compilación con el gcc de Linux | `fase6/compilador` | ✅ Hecha, probada en Mint: gcc, archivos sueltos, proyectos, terminal, errores, instancia única y formateadores |
 | 7 · Depurador (GDB/MI) | `fase7/depurador` | ✅ Hecha, probada en Mint, con la revisión general de errores de rango y de memoria |
 | 8 · Paquete `.deb` y pulido | `fase8/paquete` | 🔄 El paquete se arma, se revisa con lintian, se instala y se desinstala en el CI; falta probarlo en un Linux Mint limpio |
-| 9 · macOS (Apple Silicon) | `fase9/macos` | 🔄 Bloques 0-4 hechos y probados en un Mac: compila, ejecuta y depura con `lldb-dap`. Faltan el perfilador, la `.app` con su `.dmg` y el CI de macOS |
+| 9 · macOS (Apple Silicon) | `fase9/macos` | 🔄 Bloques 0-5 hechos: compila, ejecuta, depura con `lldb-dap`, perfila con LLVM y se empaqueta en un `.dmg`. Faltan el CI de macOS y algunas pruebas en el Mac |
 
 ### Siguiente ciclo de trabajo
 
@@ -728,8 +728,9 @@ Lazarus también compila para macOS con la interfaz nativa (Cocoa), así que se
 usa el mismo código: todo lo de macOS va con `{$IFDEF DARWIN}` o en unidades
 propias, y Linux no cambia (el CI lo sigue comprobando). Rama `fase9/macos`.
 
-**Decisiones:** solo Apple Silicon; sin cuenta de Apple Developer por ahora
-(la app se firma ad hoc: la primera vez cada usuario la autoriza a mano). Las
+**Decisiones:** solo Apple Silicon; sin cuenta de Apple Developer ni firma:
+el programa lleva solo la firma ad hoc que el enlazador pone a todo programa
+de Apple Silicon, y la primera vez cada usuario autoriza la app a mano. Las
 pruebas se hacen en local, en el Mac del autor.
 
 **Herramientas** (en `tools/`, fuera del repositorio, sin instalar nada en el
@@ -748,7 +749,9 @@ sistema):
 | 1 · Sistema | Configuración y plantillas del usuario en `~/Library/Application Support/penguin-cpp`, temporales en `~/Library/Caches`; los datos dentro de la `.app` (`Contents/Resources`); los programas corren en Terminal.app (un archivo `.command` con la pausa y el tiempo, que se cierra solo; no pide permisos); la lista de procesos sale de `ps` | `devPlatform.pas`, `devInstance.pas` |
 | 2 · Compilador de C/C++ | El clang de Apple; el autocompletado lee las cabeceras del SDK (las carpetas que da el propio compilador, también en Linux); el depurador es `lldb-dap` (con `xcrun`) | `devCFG.pas`, `Version.pas` |
 | 3 · Interfaz | Modo claro u oscuro de macOS según el tema; atajos con ⌘ (salvo los que macOS se reserva: ⌘Espacio, ⌘Tab, ⌘H, ⌘M, ⌘Q); teclas del Mac en el editor (⌘ y ⌥ con flechas y borrar); Menlo como fuente (Cocoa dibuja mal Heebo y Source Code Pro) y sin cursivas; zoom con ⌘ + rueda; selectores de fuente nativos; pestañas a la izquierda (Cocoa centra las suyas); la bienvenida con botones propios | `MacSupport.pas`, `PageTabs.pas`, `WelcomeTiles.pas`, `main.pas` |
-| 4 · Depurador | Motor nuevo sobre `lldb-dap` (Debug Adapter Protocol): puntos de parada, parar en `main`, paso a paso, pila, pausa, evaluar y asignar, estructuras y arreglos escritos como gdb (para las vigilancias), desensamblado y registros, comandos de lldb, la terminal del programa | `DapEngine.pas`, `Tests/DapEngineTest` |
+| 4 · Depurador | Motor nuevo sobre `lldb-dap` (Debug Adapter Protocol): puntos de parada, parar en `main`, paso a paso, pila, pausa, evaluar y asignar, estructuras y arreglos escritos como gdb (para las vigilancias), desensamblado y registros, comandos de lldb desde el panel, errores cortos como los de gdb, la terminal del programa | `DapEngine.pas`, `Tests/DapEngineTest` |
+| 2b · Perfilador | Sin gprof en macOS: se compila con `-fprofile-instr-generate` y `llvm-profdata` lee cuántas veces se llamó cada función (sin tiempos ni grafo), en la misma ventana | `ProfileAnalysisFrm.pas`, `Version.pas` |
+| 5 · `.app` y `.dmg` | `packaging/build-macos.sh` arma `Penguin cpp.app` (`Info.plist` con "Abrir con" para C/C++ y proyectos `.dev`, icono `.icns`, idiomas, plantillas, ayuda) y `Penguin-cpp-<versión>-arm64.dmg` con un LEEME para abrirla la primera vez; si faltan las Command Line Tools el IDE ofrece instalarlas; el formateador se busca también en Homebrew; zoom con el pellizco del trackpad | `packaging/`, `devPlatform.pas`, `MacSupport.pas` |
 
 Lecciones de Cocoa: las cabeceras Cocoa de FPC detienen al compilador al
 generar información de depuración (error interno 200609171), así que las
@@ -760,10 +763,8 @@ de macOS si hay varias fuentes de entrada (se libera en Ajustes > Teclado).
 
 | Bloque | Qué | Cómo |
 |---|---|---|
-| 2b · Perfilador | macOS no tiene gprof; hoy *Perfilar* está desactivado | LLVM con las herramientas de Xcode: compilar con `-fprofile-instr-generate`, ejecutar y leer `llvm-profdata`: cuántas veces se llamó cada función (sin tiempos), en la misma ventana |
-| 5 · `.app` y `.dmg` | Hoy la app es la que arma Lazarus, un enlace al programa del repositorio | `packaging/build-macos.sh`: `Penguin cpp.app` completa (`Info.plist`, icono `.icns` de los PNG, idiomas, plantillas, ayuda), firma ad hoc y `Penguin-cpp-<versión>-arm64.dmg`; el README explica cómo abrirla la primera vez |
-| 6 · CI de macOS | El CI solo prueba Linux | Un trabajo en un runner de GitHub con Apple Silicon: FPC 3.2.4 y Lazarus 3.8 (en caché), el IDE, las pruebas (con `DapEngineTest`) y el `.dmg` como artefacto; `release.yml` lo adjunta al Release |
-| Pruebas pendientes | Adjuntar el depurador a un proceso (`attach`), el modo oscuro completo, la ventana CPU | En el Mac, después del bloque 5 |
+| 6 · CI de macOS | El CI solo prueba Linux | Un trabajo en un runner de GitHub con Apple Silicon: FPC 3.2.4 y Lazarus 3.8 (en caché), el IDE, las pruebas (con `DapEngineTest`) y el `.dmg` como artefacto; `release.yml` lo adjunta al Release y la página de GitHub Pages ofrece las dos descargas |
+| Pruebas pendientes | Abrir el `.dmg` descargado (sin firma), adjuntar el depurador a un proceso (`attach`), el modo oscuro completo, la ventana CPU | En el Mac |
 
 | Parte | Linux | macOS |
 |---|---|---|
@@ -773,7 +774,7 @@ de macOS si hay varias fuentes de entrada (se libera en Ajustes > Teclado).
 | Depurador | gdb (GDB/MI) | lldb-dap (DAP) |
 | Terminal | la del escritorio | Terminal.app |
 | Configuración | `~/.config/penguin-cpp` | `~/Library/Application Support/penguin-cpp` |
-| Distribución | `.deb` y repositorio APT | `.app` en un `.dmg` (bloque 5) |
+| Distribución | `.deb` y repositorio APT | `.app` en un `.dmg` |
 
 - **Hecho cuando:** en un Mac con Apple Silicon, el `.dmg` instala la app y
   se compila, ejecuta y depura un "Hola mundo" (lo último ya funciona desde

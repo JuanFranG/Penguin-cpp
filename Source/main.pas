@@ -6530,6 +6530,11 @@ begin
     actShowTips.Execute;
 
   ResizeWelcomeComponent;
+
+  // macOS: compiling and debugging need Apple's command line tools
+  if not DeveloperToolsInstalled and
+    (MessageDlg(Lang[ID_MSG_NODEVTOOLS], mtConfirmation, [mbYes, mbNo], 0) = mrYes) then
+    InstallDeveloperTools;
 end;
 
 procedure TMainForm.actSkipFunctionExecute(Sender: TObject);

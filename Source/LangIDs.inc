@@ -88,6 +88,7 @@ const
   ID_ITEM_CODECOMPLETION                = 1071;
   ID_PROF_LLVMNOTE                      = 1072;
   ID_DEBUG_EXITCODE                     = 1073;
+  ID_MSG_NODEVTOOLS                     = 1074;
 
   ID_ITEM_OPEN                          = 2001;
   ID_SUB_REOPEN                         = 2002;

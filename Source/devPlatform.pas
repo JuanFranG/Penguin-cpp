@@ -54,6 +54,14 @@ function FindExecutable(const Name: String): String;
 // tools keep it (xcrun --find: lldb-dap is not in /usr/bin). '' if missing.
 function FindDeveloperTool(const Name: String): String;
 
+// macOS: whether Apple's command line tools (clang, make, lldb) are there.
+// Without them /usr/bin/gcc and the others still exist, but only ask for
+// the tools to be installed. Elsewhere always True.
+function DeveloperToolsInstalled: Boolean;
+
+// macOS: asks the system to install them (its own dialog, then a download)
+procedure InstallDeveloperTools;
+
 // Runs Cmd (a command line; quoted arguments may contain spaces) in WorkDir
 // with stdout and stderr merged, and returns everything it printed. When
 // ShowReturnValue is set, ' <exit code>' is appended. LineOutputFunc receives
@@ -194,6 +202,32 @@ begin
   end;
 {$ENDIF}
 end;
+
+function DeveloperToolsInstalled: Boolean;
+{$IFDEF DARWIN}
+var
+  Output: String;
+begin
+  Result := RunCommand('/usr/bin/xcode-select', ['-p'], Output, [poNoConsole]) and
+    DirectoryExists(Trim(Output));
+end;
+{$ELSE}
+begin
+  Result := True;
+end;
+{$ENDIF}
+
+procedure InstallDeveloperTools;
+{$IFDEF DARWIN}
+var
+  Output: String;
+begin
+  RunCommand('/usr/bin/xcode-select', ['--install'], Output, [poNoConsole]);
+end;
+{$ELSE}
+begin
+end;
+{$ENDIF}
 
 function RunAndGetOutput(const Cmd, WorkDir: String; LineOutputFunc: TLineOutputFunc;
   CheckAbortFunc: TCheckAbortFunc; ShowReturnValue: Boolean; EnglishMessages: Boolean): String;

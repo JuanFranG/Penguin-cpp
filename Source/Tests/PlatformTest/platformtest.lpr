@@ -144,6 +144,8 @@ begin
   Check(SameFileName(ExtractFileName(ExcludeTrailingPathDelimiter(S)),
     ExtractFileName(ExcludeTrailingPathDelimiter(GetTempDir))), 'working directory', S);
   Check(StartsStr('CreateProcess error', Run('/nonexistent/program')), 'missing program reports an error');
+  // Here (Linux, or a Mac with Apple's command line tools) they are there
+  Check(DeveloperToolsInstalled, 'the developer tools are installed (macOS: xcode-select -p)');
 
   R := TRecorder.Create;
   try

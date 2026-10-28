@@ -2094,8 +2094,10 @@ begin
         SetToActivate := StrToIntDef(sl.Values[sl.Names[I]], -1);
 
     // None yet (first run, or settings from before Linux was supported):
-    // look for the system's compilers
-    if fList.Count = 0 then begin
+    // look for the system's compilers. On macOS without Apple's command line
+    // tools gcc is only a stand-in that asks for them: the next start looks
+    // again (the main window offers to install them).
+    if (fList.Count = 0) and devPlatform.DeveloperToolsInstalled then begin
       FindSets;
       if fList.Count > 0 then
         SetToActivate := 0; // Release
@@ -2691,6 +2693,12 @@ begin
     FileName;
   if not FileExists(Result) then
     Result := ExeSearch(SystemName, GetEnvironmentVariable('PATH'));
+{$IFDEF DARWIN}
+  // Homebrew's (brew install astyle): an app opened from the Finder gets a
+  // PATH without it
+  if Result = '' then
+    Result := ExeSearch(SystemName, '/opt/homebrew/bin:/usr/local/bin');
+{$ENDIF}
 end;
 
 function TdevFormatterAStyle.ProgramFile: String;

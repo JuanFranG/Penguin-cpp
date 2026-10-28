@@ -1,0 +1,43 @@
+Penguin cpp para macOS (Apple Silicon)
+======================================
+
+1. Arrastra "Penguin cpp" a la carpeta Aplicaciones.
+
+2. Penguin cpp no está firmado por un desarrollador de Apple, así que la
+   primera vez macOS no lo deja abrir:
+   - Ábrelo una vez (doble clic) y cierra el aviso.
+   - Ve a Configuración del Sistema > Privacidad y seguridad, baja hasta
+     "Seguridad" y pulsa "Abrir igualmente" junto a Penguin cpp.
+   Si en cambio macOS dice que la app "está dañada", abre Terminal y
+   escribe:
+
+       xattr -cr "/Applications/Penguin cpp.app"
+
+   Después se abre normalmente.
+
+3. Para compilar y depurar hacen falta las Command Line Tools de Apple
+   (clang, make, lldb). Si no están, Penguin cpp ofrece instalarlas; o en
+   Terminal:
+
+       xcode-select --install
+
+4. Opcional, para el formateador de código: con Homebrew,
+   brew install astyle
+
+
+Penguin cpp for macOS (Apple Silicon)
+=====================================
+
+1. Drag "Penguin cpp" to the Applications folder.
+
+2. Penguin cpp is not signed by an Apple developer, so the first time
+   macOS will not open it: open it once (double click) and close the
+   warning, then in System Settings > Privacy & Security press "Open
+   Anyway" next to Penguin cpp. If macOS says the app "is damaged",
+   run in Terminal:  xattr -cr "/Applications/Penguin cpp.app"
+
+3. Compiling and debugging need Apple's Command Line Tools (clang, make,
+   lldb). Penguin cpp offers to install them, or run:
+   xcode-select --install
+
+4. Optional, for the code formatter, with Homebrew: brew install astyle

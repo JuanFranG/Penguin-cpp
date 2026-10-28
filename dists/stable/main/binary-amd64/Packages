@@ -24,3 +24,29 @@ Description: simple C and C++ IDE for learning, a Linux port of Dev-C++
  it) to Lazarus and Free Pascal. The interface is available in English,
  Spanish and other languages.
 
+Package: penguin-cpp
+Architecture: amd64
+Version: 0.2.0
+Priority: optional
+Section: devel
+Maintainer: Juan Francisco Gonzalez Pacheco <jfgonzalez@unimagdalena.edu.co>
+Installed-Size: 16567
+Depends: libc6 (>= 2.34), libqt5pas1 (>= 2.6~beta-1), libx11-6, gcc, g++, make, gdb, astyle, clang-format, cups-client, fonts-dejavu-core, gnome-terminal | mate-terminal | xfce4-terminal | konsole | xterm | x-terminal-emulator
+Filename: pool/main/p/penguin-cpp/penguin-cpp_0.2.0_amd64.deb
+Size: 4166988
+MD5sum: 090dfbbb05b8d1ed5a8d4c155c9b1b61
+SHA1: 029d2e2fffd7c43ece9ce8e836782ee2994cdd5e
+SHA256: 8bb47c2e236df853627183aefa6fc844066f71a0195659ad2dbcca2476d6a09a
+SHA512: 27af7e807a2f6031e1928dd713772c8b95264a32d1572ee1d37a03d2e5c0c73fa4966365a0607d7d199fcf55d5cac5a8a15fe199f714ebba816ed8eec08a5720
+Homepage: https://github.com/JuanFranG/Penguin-cpp
+Description: simple C and C++ IDE for learning, a Linux port of Dev-C++
+ Penguin cpp is an integrated development environment for C and C++ meant
+ for teaching: a code editor with completion and folding, single files and
+ projects built with gcc and make, programs run in a terminal, and a
+ debugger on top of gdb with breakpoints, watches and step by step
+ execution.
+ .
+ It is a port of Embarcadero Dev-C++ (Orwell and Bloodshed Dev-C++ before
+ it) to Lazarus and Free Pascal. The interface is available in English,
+ Spanish and other languages.
+

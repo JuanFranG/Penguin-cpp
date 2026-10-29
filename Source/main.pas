@@ -6249,10 +6249,14 @@ begin
   fCriticalSection := TCriticalSection.Create;
   fFilesToOpen := TStringList.Create;
 
-  // macOS: Command where Linux has Ctrl; Option-Esc completes too (Ctrl-Space
-  // may be taken by the input source switch) and Command-Shift-Z redoes
+  // macOS: Command where Linux has Ctrl; Option-Space completes (Ctrl-Space
+  // may be taken by the input source switch, and Option-Space alone types a
+  // no-break space, which C++ compilers reject), and so do Ctrl-Space and
+  // Option-Esc; Command-Shift-Z redoes
   UseCommandKey(Self);
 {$IFDEF DARWIN}
+  actCodeCompletion.ShortCut := KeyToShortCut(VK_SPACE, [ssAlt]);
+  AddSecondaryShortCut(actCodeCompletion, VK_SPACE, [ssCtrl]);
   AddSecondaryShortCut(actCodeCompletion, VK_ESCAPE, [ssAlt]);
   AddSecondaryShortCut(actRedo, VK_Z, [ssMeta, ssShift]);
 {$ENDIF}

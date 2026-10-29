@@ -1,14 +1,15 @@
 # Penguin cpp: estado y hoja de ruta
 
-Penguin cpp es un IDE de C/C++ **nativo para Linux**: editor con resaltado,
-navegador de clases, autocompletado, proyectos, plantillas, compilación con
-gcc/g++ y depuración con gdb. Expande a Linux Embarcadero Dev-C++, que solo
+Penguin cpp es un IDE de C/C++ **nativo para Linux y macOS (Apple Silicon)**:
+editor con resaltado, navegador de clases, autocompletado, proyectos,
+plantillas, compilación con gcc/g++ (clang en macOS) y depuración con gdb
+(lldb en macOS). Lleva a Linux y a macOS Embarcadero Dev-C++, que solo
 funciona en Windows.
 
 Este documento explica de dónde viene, qué se ha hecho hasta ahora y qué
 falta.
 
-*Última actualización: 28 de octubre de 2026. Versión 0.2.0.*
+*Última actualización: 29 de octubre de 2026. Versión 0.2.0.*
 
 ---
 
@@ -21,8 +22,9 @@ falta.
 - **Producto final: un paquete `.deb`** para Debian, Ubuntu, Linux Mint y
   derivadas. Se instala con `apt` y deja el IDE listo para compilar y
   depurar. Todas las fases apuntan a eso; la fase 8 arma el paquete.
-- **Después: macOS** (fase 9, en curso), con el mismo código, para Macs con
-  Apple Silicon.
+- **macOS con Apple Silicon** (fase 9), con el mismo código: una app en un
+  `.dmg`, que también se instala con una línea en Terminal. Está en pruebas
+  desde la versión 0.2.0.
 
 ---
 
@@ -53,15 +55,15 @@ la GPL (ver [Licencia y créditos](#licencia-y-créditos)).
 
 | Tema | Decisión |
 |---|---|
-| Lenguaje | Free Pascal 3.2.2 en `{$MODE DELPHI}`, para cambiar lo mínimo la sintaxis del código original |
-| Entorno | Lazarus 3.0, la versión que trae Linux Mint 22 / Ubuntu 24.04 |
+| Lenguaje | Free Pascal 3.2.2 en `{$MODE DELPHI}`, para cambiar lo mínimo la sintaxis del código original (3.2.4 en macOS, ver la fase 9) |
+| Entorno | Lazarus 3.0, la versión que trae Linux Mint 22 / Ubuntu 24.04 (3.8 en macOS) |
 | Delphi | **Solo Lazarus.** El proyecto ya no compila con Delphi. Algunas unidades todavía tienen ramas `{$IFDEF FPC} … {$ELSE}` que se pueden limpiar |
-| Interfaz | LCL con **Qt5** (`--ws=qt5`). La primera ejecución fue con GTK2; Qt6 no está en Linux Mint 22 / Ubuntu 24.04, así que se pasa a Qt6 con Mint 23 (ver fase 4) |
+| Interfaz | LCL con **Qt5** (`--ws=qt5`); en macOS, **Cocoa** (`--ws=cocoa`). La primera ejecución fue con GTK2; Qt6 no está en Linux Mint 22 / Ubuntu 24.04, así que se pasa a Qt6 con Mint 23 (ver fase 4) |
 | Editor | SynEdit de Lazarus en lugar del SynEdit de Delphi, con una capa de compatibilidad (`SynEditCompat.pas`, `TSynEditEx` en `Editor.pas`) |
 | Iconos | Las listas SVG se renderizaron una sola vez a tiras PNG (`Source/Images/IconLists`), que se incrustan como recursos |
 | Configuración | `~/.config/penguin-cpp/` (respeta `$XDG_CONFIG_HOME`), o `config/` junto al programa en modo portable |
 | Procesos | `TProcess`; abrir archivos y URLs con `xdg-open` (todo en `devPlatform.pas`) |
-| Distribución | Paquete **`.deb`** (Debian, Ubuntu, Linux Mint y derivadas, amd64) |
+| Distribución | Paquete **`.deb`** y repositorio APT (Debian, Ubuntu, Linux Mint y derivadas, amd64); en macOS, **`.app` en un `.dmg`** y un instalador de una línea, en [Releases](https://github.com/JuanFranG/Penguin-cpp/releases) y en <https://juanfrang.github.io/Penguin-cpp/> |
 | Licencia | GPL v2 o posterior. Los archivos nuevos llevan cabecera `SPDX-License-Identifier: GPL-2.0-or-later` |
 
 ---
@@ -106,7 +108,9 @@ cinco pruebas en Ubuntu 24.04 (`.github/workflows/build.yml`).
 ## Estado por fase
 
 Cada fase se trabaja en su rama, que parte de la anterior, y se pasa a `main`
-al publicarla. Hoy `main` incluye las fases 1 a 6 (`fase6/compilador`).
+al publicarla. Hoy `main` incluye todas las fases (hasta `fase9/macos`), en la
+versión 0.2.0, y está protegida: no admite force-push ni borrarla, y su
+historial es lineal.
 
 | Fase | Rama | Estado |
 |---|---|---|
@@ -119,8 +123,8 @@ al publicarla. Hoy `main` incluye las fases 1 a 6 (`fase6/compilador`).
 | 5 · Editor (SynEdit de Lazarus) | `fase5/editor` | ✅ Hecha, probada en Mint: impresión, exportación a RTF/TeX y plegado |
 | 6 · Compilación con el gcc de Linux | `fase6/compilador` | ✅ Hecha, probada en Mint: gcc, archivos sueltos, proyectos, terminal, errores, instancia única y formateadores |
 | 7 · Depurador (GDB/MI) | `fase7/depurador` | ✅ Hecha, probada en Mint, con la revisión general de errores de rango y de memoria |
-| 8 · Paquete `.deb` y pulido | `fase8/paquete` | 🔄 El paquete se arma, se revisa con lintian, se instala y se desinstala en el CI; falta probarlo en un Linux Mint limpio |
-| 9 · macOS (Apple Silicon) | `fase9/macos` | 🔄 Bloques 0-5 hechos: compila, ejecuta, depura con `lldb-dap`, perfila con LLVM y se empaqueta en un `.dmg`. Faltan el CI de macOS y algunas pruebas en el Mac |
+| 8 · Paquete `.deb` y pulido | `fase8/paquete` | ✅ Probado en Mint; las versiones 0.1.0 y 0.2.0 están en Releases y en el repositorio APT |
+| 9 · macOS (Apple Silicon) | `fase9/macos` | 🔄 Bloques 0-5 hechos y publicados en la 0.2.0: compila, ejecuta, depura con `lldb-dap` y perfila con LLVM; `.dmg` en Releases e instalador de una línea. Faltan el CI de macOS (bloque 6) y algunas pruebas en el Mac |
 
 ### Siguiente ciclo de trabajo
 
@@ -665,7 +669,7 @@ esta fase.
 - **Hecho cuando:** funcionan los breakpoints, el paso a paso, las variables
   vigiladas, la pila de llamadas y ver valores al pasar el ratón.
 
-### Fase 8 · Paquete `.deb` y pulido 🔄
+### Fase 8 · Paquete `.deb` y pulido ✅
 El producto final del proyecto es un `.deb` que se instala con
 `sudo apt install ./penguin-cpp_<versión>_amd64.deb`.
 
@@ -691,9 +695,15 @@ El producto final del proyecto es un `.deb` que se instala con
 - Responsable del paquete: Juan Francisco Gonzalez Pacheco
   <jfgonzalez@unimagdalena.edu.co>.
 
-**Publicada:** probada en Linux Mint 22; la versión 0.1.0 está en Releases y
-en el repositorio APT (<https://juanfrang.github.io/Penguin-cpp/>), firmado
-con una clave que solo está en los secretos de GitHub.
+**Publicada:** probada en Linux Mint 22; las versiones 0.1.0 y 0.2.0 están en
+Releases y en el repositorio APT (<https://juanfrang.github.io/Penguin-cpp/>),
+firmado con una clave que solo está en los secretos de GitHub (se creó en
+una ejecución desechable de GitHub Actions y nunca estuvo en un equipo).
+Publicar una versión es crear su tag (`git tag v0.2.0`): `release.yml` arma
+el `.deb`, lo agrega al repositorio APT y crea el Release. La página también
+explica cómo reportar un problema por correo (jfgonzalez@unimagdalena.edu.co):
+un enlace abre el correo con un asunto y un cuerpo para completar, y dice qué
+adjuntar (capturas, `penguin-cpp-errores.txt`, el archivo que falla).
 
 Lo que se planeó:
 
@@ -751,23 +761,45 @@ sistema):
 | 0 · Compilador | El IDE compila con FPC 3.2.4 y Lazarus 3.8. FPC 3.2.4 añadió a `System.UITypes` tipos con nombres de la LCL (`TCloseAction`, `TFontStyles`…): `System.UITypes` va antes de la LCL o se quitó | Todas las unidades de Delphi |
 | 1 · Sistema | Configuración y plantillas del usuario en `~/Library/Application Support/penguin-cpp`, temporales en `~/Library/Caches`; los datos dentro de la `.app` (`Contents/Resources`); los programas corren en Terminal.app (un archivo `.command` con la pausa y el tiempo, que se cierra solo; no pide permisos); la lista de procesos sale de `ps` | `devPlatform.pas`, `devInstance.pas` |
 | 2 · Compilador de C/C++ | El clang de Apple; el autocompletado lee las cabeceras del SDK (las carpetas que da el propio compilador, también en Linux); el depurador es `lldb-dap` (con `xcrun`) | `devCFG.pas`, `Version.pas` |
-| 3 · Interfaz | Modo claro u oscuro de macOS según el tema; atajos con ⌘ (salvo los que macOS se reserva: ⌘Espacio, ⌘Tab, ⌘H, ⌘M, ⌘Q); teclas del Mac en el editor (⌘ y ⌥ con flechas y borrar); Menlo como fuente (Cocoa dibuja mal Heebo y Source Code Pro) y sin cursivas; zoom con ⌘ + rueda; selectores de fuente nativos; pestañas a la izquierda (Cocoa centra las suyas); la bienvenida con botones propios | `MacSupport.pas`, `PageTabs.pas`, `WelcomeTiles.pas`, `main.pas` |
+| 3 · Interfaz | Modo claro u oscuro de macOS según el tema; atajos con ⌘ (salvo los que macOS se reserva: ⌘Espacio, ⌘Tab, ⌘H, ⌘M, ⌘Q); autocompletado con ⌥Espacio (⌃Espacio y ⌥Esc también); teclas del Mac en el editor (⌘ y ⌥ con flechas y borrar); Menlo como fuente (Cocoa dibuja mal Heebo y Source Code Pro) y sin cursivas; los comentarios del esquema Classic en un azul legible (el `clHighlight` de macOS es el celeste de la selección); zoom con ⌘ + rueda o pellizcando el trackpad; selectores de fuente nativos; pestañas a la izquierda (Cocoa centra las suyas); la bienvenida con botones propios | `MacSupport.pas`, `PageTabs.pas`, `WelcomeTiles.pas`, `main.pas` |
 | 4 · Depurador | Motor nuevo sobre `lldb-dap` (Debug Adapter Protocol): puntos de parada, parar en `main`, paso a paso, pila, pausa, evaluar y asignar, estructuras y arreglos escritos como gdb (para las vigilancias), desensamblado y registros, comandos de lldb desde el panel, errores cortos como los de gdb, la terminal del programa | `DapEngine.pas`, `Tests/DapEngineTest` |
 | 2b · Perfilador | Sin gprof en macOS: se compila con `-fprofile-instr-generate` y `llvm-profdata` lee cuántas veces se llamó cada función (sin tiempos ni grafo), en la misma ventana | `ProfileAnalysisFrm.pas`, `Version.pas` |
-| 5 · `.app` y `.dmg` | `packaging/build-macos.sh` arma `Penguin cpp.app` (`Info.plist` con "Abrir con" para C/C++ y proyectos `.dev`, icono `.icns`, idiomas, plantillas, ayuda) y `Penguin-cpp-<versión>-arm64.dmg` con un LEEME para abrirla la primera vez, sellada ad hoc; astyle compilado desde su código va dentro de la app; `packaging/install-macos.sh` la instala con una línea (`curl … | bash`, sin el aviso de Gatekeeper); si faltan las Command Line Tools el IDE ofrece instalarlas; zoom con el pellizco del trackpad | `packaging/`, `devPlatform.pas`, `MacSupport.pas` |
+| 5 · `.app` y `.dmg` | `packaging/build-macos.sh` arma `Penguin cpp.app` (`Info.plist` con "Abrir con" para C/C++ y proyectos `.dev`, icono `.icns`, idiomas, plantillas, ayuda, astyle 3.6.20 compilado desde su código), la sella ad hoc y arma `Penguin-cpp-<versión>-arm64.dmg` con un LEEME para abrirla la primera vez; `packaging/install-macos.sh` la instala o actualiza con una línea (`curl … \| bash`), sin el aviso de Gatekeeper; si faltan las Command Line Tools el IDE ofrece instalarlas | `packaging/`, `devPlatform.pas`, `MacSupport.pas` |
+
+**Publicada** en la versión 0.2.0: `Penguin-cpp-0.2.0-arm64.dmg` en
+[Releases](https://github.com/JuanFranG/Penguin-cpp/releases/latest) y el
+instalador de una línea en <https://juanfrang.github.io/Penguin-cpp/>:
+
+```bash
+curl -fsSL https://juanfrang.github.io/Penguin-cpp/install-macos.sh | bash
+```
+
+Hasta el bloque 6 el `.dmg` se arma en el Mac del autor y se sube al Release
+a mano (`gh release upload`).
 
 Lecciones de Cocoa: las cabeceras Cocoa de FPC detienen al compilador al
 generar información de depuración (error interno 200609171), así que las
 pocas funciones del sistema se declaran a mano; `TProcess` descarta los
-argumentos vacíos; un control oculto no avisa cuando se mueve; ⌃Espacio es
-de macOS si hay varias fuentes de entrada (se libera en Ajustes > Teclado).
+argumentos vacíos; un control oculto no avisa cuando se mueve, y un panel
+con `AutoSize` sube a sus hijos visibles; el combo de Cocoa se come el Enter
+antes de `KeyPress`; la LCL no recibe gestos del trackpad (se agrega
+`magnifyWithEvent:` a sus ventanas); ⌃Espacio es de macOS si hay varias
+fuentes de entrada (se libera en Ajustes > Teclado).
+
+Lecciones de la distribución: en Apple Silicon todo programa lleva al menos
+la firma ad hoc que pone el enlazador, pero no cubre el resto de la app, y
+macOS da por "dañada" una app descargada así: hay que sellarla
+(`codesign -s -`). Lo descargado con el navegador queda en cuarentena y
+Gatekeeper pide autorizarlo; lo descargado con `curl` no, por eso el
+instalador de una línea abre la app sin avisos. Quitar el aviso del `.dmg`
+requiere una cuenta de Apple Developer (99 USD al año) y notarizar la app.
 
 **Falta:**
 
 | Bloque | Qué | Cómo |
 |---|---|---|
 | 6 · CI de macOS | El CI solo prueba Linux | Un trabajo en un runner de GitHub con Apple Silicon: FPC 3.2.4 y Lazarus 3.8 (en caché), el IDE, las pruebas (con `DapEngineTest`) y el `.dmg` como artefacto; `release.yml` lo adjunta al Release y la página de GitHub Pages ofrece las dos descargas |
-| Pruebas pendientes | Abrir el `.dmg` descargado (sellado ad hoc), adjuntar el depurador a un proceso (`attach`), el modo oscuro completo, la ventana CPU | En el Mac |
+| Pruebas pendientes | Abrir con el navegador el `.dmg` sellado (debe pedir solo *Abrir igualmente*), adjuntar el depurador a un proceso (`attach`), el modo oscuro completo, la ventana CPU | En el Mac |
 
 | Parte | Linux | macOS |
 |---|---|---|
@@ -777,11 +809,13 @@ de macOS si hay varias fuentes de entrada (se libera en Ajustes > Teclado).
 | Depurador | gdb (GDB/MI) | lldb-dap (DAP) |
 | Terminal | la del escritorio | Terminal.app |
 | Configuración | `~/.config/penguin-cpp` | `~/Library/Application Support/penguin-cpp` |
-| Distribución | `.deb` y repositorio APT | `.app` en un `.dmg` |
+| Distribución | `.deb` y repositorio APT | `.app` en un `.dmg` e instalador de una línea |
+| Formateador | astyle y clang-format del sistema (dependencias del `.deb`) | astyle dentro de la app |
 
 - **Hecho cuando:** en un Mac con Apple Silicon, el `.dmg` instala la app y
-  se compila, ejecuta y depura un "Hola mundo" (lo último ya funciona desde
-  el repositorio).
+  se compila, ejecuta y depura un "Hola mundo": ✅ con la app instalada en el
+  Mac del autor; falta el CI de macOS para que cada versión arme su `.dmg`
+  sola.
 
 ---
 

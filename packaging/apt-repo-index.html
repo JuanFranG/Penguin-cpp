@@ -17,6 +17,7 @@
   pre { background: var(--code); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; overflow-x: auto; }
   code { font-family: ui-monospace, "Source Code Pro", monospace; font-size: 0.92rem; }
   a { color: var(--accent); }
+  kbd { font-family: inherit; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 4px; font-size: 0.9em; }
 </style>
 </head>
 <body>
@@ -47,6 +48,39 @@ sudo rm /etc/apt/sources.list.d/penguin-cpp.list /usr/share/keyrings/penguin-cpp
   arrastra <em>Penguin cpp</em> a Aplicaciones. Así, como la app no está firmada por un
   desarrollador de Apple, la primera vez hay que abrirla, cerrar el aviso y pulsar
   <em>Abrir igualmente</em> en <em>Configuración del Sistema &gt; Privacidad y seguridad</em>.</p>
+
+  <h2>Reportar un problema</h2>
+  <p>Escribe a <a href="mailto:jfgonzalez@unimagdalena.edu.co?subject=%5BPenguin%20cpp%5D%20%28resumen%20del%20problema%20en%20una%20l%C3%ADnea%29&amp;body=Hola%2C%0D%0A%0D%0AVersi%C3%B3n%20de%20Penguin%20cpp%3A%20%28Ayuda%20%3E%20Acerca%20de%29%0D%0ASistema%3A%20%28por%20ejemplo%20macOS%2015%20en%20un%20Mac%20M1%2C%20o%20Linux%20Mint%2022%29%0D%0AC%C3%B3mo%20lo%20instal%C3%A9%3A%20%28instalador%20de%20una%20l%C3%ADnea%2C%20.dmg%20o%20apt%29%0D%0A%0D%0AQu%C3%A9%20hice%3A%0D%0A1.%0D%0A2.%0D%0A3.%0D%0A%0D%0AQu%C3%A9%20esperaba%3A%0D%0A%0D%0AQu%C3%A9%20pas%C3%B3%3A%0D%0A%0D%0AAdjunto%3A%20%28captura%20de%20pantalla%2C%20penguin-cpp-errores.txt%20del%20Escritorio%2C%20el%20archivo%20.cpp%29%0D%0A%0D%0AGracias.">jfgonzalez@unimagdalena.edu.co</a>: el enlace abre tu correo con el asunto y el cuerpo listos
+  para completar. Adjunta lo que ayude a ver el problema (desde esta página no se pueden
+  agregar adjuntos; agrégalos en tu correo antes de enviarlo):</p>
+  <ul>
+    <li>una captura de pantalla (en macOS <kbd>⇧⌘4</kbd> o <kbd>⇧⌘5</kbd>; en Linux, la tecla
+    <kbd>Impr Pant</kbd>);</li>
+    <li><code>penguin-cpp-errores.txt</code>, el registro que Penguin cpp deja en tu Escritorio
+    cuando tiene un error (si es corto, también puedes pegarlo al final del cuerpo);</li>
+    <li>el archivo <code>.cpp</code> o el proyecto con el que pasa, si puedes compartirlo.</li>
+  </ul>
+  <p>Un ejemplo. Asunto:</p>
+<pre><code>[Penguin cpp 0.2.0] El depurador no se detiene en el punto de parada (macOS)</code></pre>
+  <p>Cuerpo:</p>
+<pre><code>Hola,
+
+Versión de Penguin cpp: 0.2.0
+Sistema: macOS 15 en un Mac M1
+Cómo lo instalé: instalador de una línea
+
+Qué hice:
+1. Abrí prueba_depurador.cpp
+2. Puse un punto de parada en la línea 20
+3. Ejecutar &gt; Depurar
+
+Qué esperaba: que se detuviera en la línea 20.
+Qué pasó: el programa terminó sin detenerse y el panel de depuración mostró
+&quot;The program ended with exit code 0.&quot;
+
+Adjunto la captura de pantalla, penguin-cpp-errores.txt y prueba_depurador.cpp.
+
+Gracias.</code></pre>
 
   <h2>Más</h2>
   <p>El código, las versiones y cómo reportar errores están en

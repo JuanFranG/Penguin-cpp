@@ -971,7 +971,9 @@ begin
     fInterfaceFontSize := 10;
     fInterfaceFont := 'Heebo';
   end else begin
-    fInterfaceFontSize := {$IFDEF DARWIN}13{$ELSE}10{$ENDIF}; // macOS' usual size
+    // On macOS too: the LCL draws a font's size at 96 dots an inch and Cocoa
+    // reads it at 72, so 10 shows as macOS' own 13 points
+    fInterfaceFontSize := 10;
     fInterfaceFont := 'default';
   end;
 
@@ -2378,7 +2380,7 @@ begin
   // Display
 {$IFDEF DARWIN}
   fFont.name := 'Menlo'; // macOS' own monospaced font (Terminal, Xcode)
-  fFont.Size := 13; // macOS sizes text larger than Linux
+  fFont.Size := 11; // shows as 14.7 points (see fInterfaceFontSize)
 {$ELSE}
   fFont.name := 'DejaVu Sans Mono'; // on every Linux Mint; Consolas is a Windows font
   fFont.Size := 10;
@@ -2396,7 +2398,7 @@ begin
   fLeadZero := FALSE;
 {$IFDEF DARWIN}
   fGutterFont.Name := 'Menlo';
-  fGutterFont.Size := 13;
+  fGutterFont.Size := 11;
 {$ELSE}
   fGutterFont.Name := 'DejaVu Sans Mono';
   fGutterFont.Size := 10;

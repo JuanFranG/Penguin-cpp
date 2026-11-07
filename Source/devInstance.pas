@@ -68,7 +68,9 @@ end;
 
 function MakeAddress(const Path: String; out Addr: TUnixSockAddr; out Len: TSockLen): Boolean;
 begin
-  Result := (Path <> '') and (Length(Path) < SizeOf(Addr.path)); // sun_path holds 108 bytes
+  // sun_path holds 108 bytes on Linux, but only 104 on macOS (the record
+  // of Free Pascal has 108 for both)
+  Result := (Path <> '') and (Length(Path) < {$IFDEF DARWIN}104{$ELSE}SizeOf(Addr.path){$ENDIF});
   if not Result then
     Exit;
   FillChar(Addr, SizeOf(Addr), 0);

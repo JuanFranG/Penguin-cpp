@@ -234,7 +234,8 @@ var
 begin
   inherited MouseDown(Button, Shift, X, Y);
   Index := TabAt(X, Y, OnClose);
-  if Index = -1 then
+  // The tabs are those of the last paint: a page closed since then is gone
+  if (Index = -1) or (Index >= fPages.PageCount) then
     Exit;
   if Assigned(fOnClose) and ((Button = mbMiddle) or ((Button = mbLeft) and OnClose)) then begin
     fOnClose(Self, fPages.Pages[Index]);

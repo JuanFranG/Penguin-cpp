@@ -150,11 +150,13 @@ var
 // [NSWindow magnifyWithEvent:], added to the class of the LCL's windows: a
 // pinch goes to the view under the fingers, and up from view to view to the
 // window when none of them takes it (the LCL's views do not). Only the
-// form's own window answers; nothing may raise back into Cocoa.
+// form's own window answers; nothing may raise back into Cocoa. The form is
+// the application's main one: once it is gone (MainForm nil), so is it.
 procedure WindowMagnify(Obj, Cmd, Event: Pointer); cdecl;
 begin
   try
-    if Assigned(PinchForm) and Assigned(PinchHandler) and PinchForm.HandleAllocated and
+    if Assigned(PinchForm) and (PinchForm = Application.MainForm) and Assigned(PinchHandler) and
+      PinchForm.HandleAllocated and
       (TMsgSend0(@objc_msgSend)(Event, sel_registerName('window')) =
        TMsgSend0(@objc_msgSend)(Pointer(PinchForm.Handle), sel_registerName('window'))) then
       PinchHandler(TMsgSendDouble0(@objc_msgSend)(Event, sel_registerName('magnification')));

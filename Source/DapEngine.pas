@@ -207,6 +207,7 @@ uses
 const
   MaxDepth = 3;      // members of members of members
   MaxChildren = 100; // like gdb's print elements, smaller
+  MaxMessage = 64 * 1024 * 1024; // a DAP message's largest Content-Length
 
 function IsAggregateSummary(const Value: String): Boolean;
 begin
@@ -390,45 +391,51 @@ var
   Data: TJSONData;
 begin
   Pending := '';
-  while not Terminated do begin
-    N := fPipe.Read(Buffer[0], SizeOf(Buffer));
-    if N <= 0 then
-      Break; // lldb-dap closed its output: it has ended
-    SetString(Chunk, PChar(@Buffer[0]), N);
-    Pending := Pending + Chunk;
-    // Each message: headers, an empty line, then Content-Length bytes
-    repeat
-      P := Pos(#13#10#13#10, Pending);
-      if P = 0 then
-        Break;
-      Header := LowerCase(Copy(Pending, 1, P - 1));
-      Len := -1;
-      if Pos('content-length:', Header) > 0 then begin
-        Header := Copy(Header, Pos('content-length:', Header) + 15, MaxInt);
-        if Pos(#13, Header) > 0 then
-          Header := Copy(Header, 1, Pos(#13, Header) - 1);
-        Len := StrToIntDef(Trim(Header), -1);
-      end;
-      if Len < 0 then begin
-        Delete(Pending, 1, P + 3); // not a header: skip it
-        Continue;
-      end;
-      if Length(Pending) < P + 3 + Len then
-        Break; // the rest has not arrived yet
-      Chunk := Copy(Pending, P + 4, Len);
-      Delete(Pending, 1, P + 3 + Len);
-      try
-        Data := GetJSON(Chunk);
-      except
-        Data := nil;
-      end;
-      if Assigned(Data) and (Data.JSONType = jtObject) then
-        fEngine.Enqueue(TJSONObject(Data))
-      else
-        Data.Free;
-    until False;
+  // Whatever stops the reading, the engine learns that lldb-dap is gone
+  try
+    while not Terminated do begin
+      N := fPipe.Read(Buffer[0], SizeOf(Buffer));
+      if N <= 0 then
+        Break; // lldb-dap closed its output: it has ended
+      SetString(Chunk, PChar(@Buffer[0]), N);
+      Pending := Pending + Chunk;
+      // Each message: headers, an empty line, then Content-Length bytes
+      repeat
+        P := Pos(#13#10#13#10, Pending);
+        if P = 0 then
+          Break;
+        Header := LowerCase(Copy(Pending, 1, P - 1));
+        Len := -1;
+        if Pos('content-length:', Header) > 0 then begin
+          Header := Copy(Header, Pos('content-length:', Header) + 15, MaxInt);
+          if Pos(#13, Header) > 0 then
+            Header := Copy(Header, 1, Pos(#13, Header) - 1);
+          Len := StrToIntDef(Trim(Header), -1);
+        end;
+        // Not a header, or a length no message has (and P + 3 + Len would
+        // overflow): skip it
+        if (Len < 0) or (Len > MaxMessage) then begin
+          Delete(Pending, 1, P + 3);
+          Continue;
+        end;
+        if Length(Pending) < P + 3 + Len then
+          Break; // the rest has not arrived yet
+        Chunk := Copy(Pending, P + 4, Len);
+        Delete(Pending, 1, P + 3 + Len);
+        try
+          Data := GetJSON(Chunk);
+        except
+          Data := nil;
+        end;
+        if Assigned(Data) and (Data.JSONType = jtObject) then
+          fEngine.Enqueue(TJSONObject(Data))
+        else
+          Data.Free;
+      until False;
+    end;
+  finally
+    fEngine.ReaderEnded;
   end;
-  fEngine.ReaderEnded;
 end;
 
 { TDapEngine }
@@ -838,18 +845,29 @@ begin
     end;
 end;
 
-// lldb-dap answers a file's list in the order it was given
+// lldb-dap answers a file's list in the order it was given. The IDE is told
+// after the list is read: its answer may delete a breakpoint (one the user
+// removed meanwhile), which changes the list.
 procedure TDapEngine.AnswerBreakpoints(const H: TDapHandler; Ok: Boolean; Body: TJSONObject);
+type
+  TToTell = record
+    Handler: TDebugBreakpointHandler;
+    Ok: Boolean;
+    Id, Line: Integer;
+    FileName, Error: String;
+  end;
 var
   Answers: TJSONArray;
-  I, N: Integer;
+  I, N, Count: Integer;
   B: PDapBreakpoint;
   A: TJSONObject;
-  Handler: TDebugBreakpointHandler;
   Error: String;
+  Tell: array of TToTell;
 begin
   Answers := GetArr(Body, 'breakpoints');
   N := 0;
+  Count := 0;
+  SetLength(Tell, fBreakpoints.Count);
   for I := 0 to fBreakpoints.Count - 1 do begin
     B := PDapBreakpoint(fBreakpoints[I]);
     if B^.FileName <> H.Text then
@@ -866,12 +884,20 @@ begin
     end else if not Ok then
       Error := 'breakpoint not set';
     if Assigned(B^.Handler) then begin
-      Handler := B^.Handler;
-      B^.Handler := nil;
       // Not verified yet is fine: the program's code may not be loaded
-      Handler(Ok and Assigned(A), B^.Id, B^.FileName, B^.Line, Error);
+      Tell[Count].Handler := B^.Handler;
+      Tell[Count].Ok := Ok and Assigned(A);
+      Tell[Count].Id := B^.Id;
+      Tell[Count].FileName := B^.FileName;
+      Tell[Count].Line := B^.Line;
+      Tell[Count].Error := Error;
+      Inc(Count);
+      B^.Handler := nil;
     end;
   end;
+  for I := 0 to Count - 1 do
+    with Tell[I] do
+      Handler(Ok, Id, FileName, Line, Error);
 end;
 
 { Running }
@@ -1183,7 +1209,7 @@ begin
     if Assigned(Hits) then
       for I := 0 to Hits.Count - 1 do
         for J := 0 to fBreakpoints.Count - 1 do
-          if PDapBreakpoint(fBreakpoints[J])^.DapId = Hits[I].AsInt64 then
+          if (Hits[I].JSONType = jtNumber) and (PDapBreakpoint(fBreakpoints[J])^.DapId = Hits[I].AsInt64) then
             Stop^.BreakpointId := PDapBreakpoint(fBreakpoints[J])^.Id;
     Send('stackTrace', TJSONObject.Create(['threadId', fThreadId, 'startFrame', 0, 'levels', 1]), hkStopFrame,
       NoHandler, '', Stop);

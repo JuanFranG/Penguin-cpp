@@ -39,9 +39,16 @@ cleanup() {
 trap cleanup EXIT
 
 say "Buscando la última versión..."
-URL=$(curl -fsSL "https://api.github.com/repos/$REPO/releases/latest" |
-  sed -n 's/.*"browser_download_url": *"\([^"]*-arm64\.dmg\)".*/\1/p' | head -n 1)
-[ -n "$URL" ] || fail "la última versión de https://github.com/$REPO no tiene imagen de disco para macOS"
+# The latest release's page leads to its tag (.../releases/tag/v0.2.0).
+# GitHub's API would answer only 60 times an hour to one address, and a
+# classroom goes out through one.
+TAG=$(curl -fsSLI -o /dev/null -w '%{url_effective}' "https://github.com/$REPO/releases/latest")
+TAG=${TAG##*/}
+case "$TAG" in
+  v[0-9]*) ;;
+  *) fail "no se encontró la última versión en https://github.com/$REPO/releases" ;;
+esac
+URL="https://github.com/$REPO/releases/download/$TAG/Penguin-cpp-${TAG#v}-arm64.dmg"
 
 say "Descargando ${URL##*/}..."
 curl -fL --progress-bar -o "$WORK/penguin-cpp.dmg" "$URL"

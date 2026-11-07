@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Penguin cpp manual</title>
+<link rel="stylesheet" href="../manual.css">
+</head>
+<body>
+<main>
+  <p class="lang"><a href="../index.html">Español</a></p>
+  <h1>Penguin cpp manual</h1>
+  <p class="lead">A simple C and C++ IDE for learning, for Linux and macOS (Apple Silicon). This
+  manual is for version 0.2.0.</p>
+
+  <nav class="toc">
+    <strong>Contents</strong>
+    <ol>
+      <li><a href="#install">Install</a></li>
+      <li><a href="#first-program">Your first program</a></li>
+      <li><a href="#window">The window</a></li>
+      <li><a href="#editor">The editor</a></li>
+      <li><a href="#projects">Projects</a></li>
+      <li><a href="#compile">Compile and run</a></li>
+      <li><a href="#debug">Debug</a></li>
+      <li><a href="#profile">Profile</a></li>
+      <li><a href="#options">Options</a></li>
+      <li><a href="#shortcuts">Keyboard shortcuts</a></li>
+      <li><a href="#problems">Common problems</a></li>
+      <li><a href="#report">Report a problem</a></li>
+    </ol>
+  </nav>
+
+  <h2 id="install">1. Install</h2>
+  <p>See the <a href="https://juanfrang.github.io/Penguin-cpp/">download page</a>. In short:</p>
+  <ul>
+    <li><strong>Linux</strong> (Debian, Ubuntu, Linux Mint and derivatives): with the APT repository,
+    <code>sudo apt install penguin-cpp</code>. It also installs gcc, g++, make, gdb and the
+    formatters.</li>
+    <li><strong>macOS</strong> (Macs with Apple Silicon): in Terminal,
+    <code>curl -fsSL https://juanfrang.github.io/Penguin-cpp/install-macos.sh | bash</code>.
+    Compiling needs Apple's Command Line Tools; when they are missing, Penguin cpp offers to install
+    them.</li>
+  </ul>
+  <p>The first time, Penguin cpp looks for the system's compilers (gcc on Linux, clang on macOS) and
+  makes three compiler sets: <em>Release</em> (to use), <em>Debug</em> (to debug) and
+  <em>Profiling</em> (to profile). Pick one in the toolbar's list.</p>
+
+  <h2 id="first-program">2. Your first program</h2>
+  <ol>
+    <li>Press <em>New Document</em> on the welcome screen, or <strong>File &gt; New &gt; Source
+    File</strong> (<kbd>Ctrl</kbd>+<kbd>N</kbd>; on a Mac <kbd>⌘N</kbd>).</li>
+    <li>Type:
+<pre><code>#include &lt;iostream&gt;
+using namespace std;
+
+int main() {
+    string name;
+    cout &lt;&lt; "What is your name? ";
+    cin &gt;&gt; name;
+    cout &lt;&lt; "Hello, " &lt;&lt; name &lt;&lt; endl;
+    return 0;
+}</code></pre></li>
+    <li>Save it as <code>hello.cpp</code> (<kbd>Ctrl</kbd>+<kbd>S</kbd>; on a Mac <kbd>⌘S</kbd>).</li>
+    <li>Press <kbd>F11</kbd> (<strong>Execute &gt; Compile &amp; Run</strong>). A terminal opens with your
+    program; when it ends it shows how long it took and its exit code, and waits for Enter.</li>
+  </ol>
+  <p class="note">There is no need for <code>system("pause")</code> at the end: Penguin cpp already waits.
+  Nor for <code>system("cls")</code> or <code>#include &lt;windows.h&gt;</code>, which exist only on
+  Windows (see <a href="#problems">Common problems</a>).</p>
+
+  <h2 id="window">3. The window</h2>
+  <ul>
+    <li><strong>Welcome screen:</strong> new or open documents, the recent files, and the theme, font and
+    language.</li>
+    <li><strong>Left panel:</strong> <em>Project</em> (the project's files), <em>Classes</em> (the
+    functions, classes and variables of the code; a click goes to their definition) and <em>Debug</em>
+    (the watched variables).</li>
+    <li><strong>Bottom panel:</strong> <em>Compiler</em> (errors and warnings; a double click goes to the
+    line), <em>Compile Log</em>, <em>Debug</em> and <em>Find Results</em>.</li>
+    <li><strong>Toolbar:</strong> the compile and run buttons, and the list of compiler sets.</li>
+  </ul>
+
+  <h2 id="editor">4. The editor</h2>
+  <ul>
+    <li><strong>Code completion:</strong> shows up after <code>.</code>, <code>-&gt;</code> or
+    <code>::</code>, or with <kbd>Ctrl</kbd>+<kbd>Space</kbd> (on a Mac <kbd>⌥</kbd>+<kbd>Space</kbd>).
+    It lists the functions, variables and members of your code and of the libraries you include.</li>
+    <li><strong>Parameter hints:</strong> typing <code>(</code> after a function shows its
+    parameters.</li>
+    <li><strong>Folding:</strong> blocks in braces fold with the triangle in the margin.</li>
+    <li><strong>Find and replace:</strong> <kbd>Ctrl</kbd>+<kbd>F</kbd> and <kbd>Ctrl</kbd>+<kbd>R</kbd>
+    (on a Mac <kbd>⌘F</kbd>, <kbd>⌘R</kbd>); <kbd>F3</kbd> finds again.</li>
+    <li><strong>Comments:</strong> <kbd>Ctrl</kbd>+<kbd>/</kbd> (on a Mac <kbd>⌘/</kbd>) comments or
+    uncomments the selected lines.</li>
+    <li><strong>Formatting:</strong> <strong>Formatting &gt; Format Current File</strong> tidies the
+    indentation and braces with astyle; pick the style in <strong>Formatting &gt; Formatting
+    Options</strong>.</li>
+    <li><strong>Zoom:</strong> <kbd>Ctrl</kbd> + mouse wheel, or <kbd>Ctrl</kbd>+<kbd>+</kbd> and
+    <kbd>Ctrl</kbd>+<kbd>-</kbd>. On a Mac, <kbd>⌘</kbd> + wheel or a pinch on the trackpad.</li>
+    <li><strong>Export and print:</strong> <strong>File &gt; Export</strong> saves the code with its
+    colors as HTML, RTF or TeX; <strong>File &gt; Print</strong> prints it or saves it as PDF.</li>
+  </ul>
+
+  <h2 id="projects">5. Projects</h2>
+  <p>A single file is enough for one-file exercises. Programs with several files use a project
+  (<code>.dev</code>):</p>
+  <ol>
+    <li><strong>File &gt; New &gt; Project...</strong>, pick a template (a console application, for
+    example), the language (C or C++) and a name.</li>
+    <li>Add files with the <strong>Project</strong> menu or with a right click in the <em>Project</em>
+    panel.</li>
+    <li><strong>Project &gt; Options</strong> (<kbd>Ctrl</kbd>+<kbd>H</kbd>; on a Mac <kbd>⌃H</kbd>):
+    the executable's name, compiler and linker options, header and library folders, and the program's
+    arguments.</li>
+  </ol>
+  <p>Penguin cpp writes a <code>Makefile</code> for each project and builds it with <code>make</code>.
+  Dev-C++ projects from Windows open too; if they use Windows libraries or headers, those have to
+  change.</p>
+
+  <h2 id="compile">6. Compile and run</h2>
+  <table>
+    <tr><th>Action</th><th>Key</th><th>What it does</th></tr>
+    <tr><td>Compile</td><td><kbd>F9</kbd></td><td>Compiles what changed</td></tr>
+    <tr><td>Run</td><td><kbd>F10</kbd></td><td>Runs the last compiled program</td></tr>
+    <tr><td>Compile &amp; Run</td><td><kbd>F11</kbd></td><td>Both</td></tr>
+    <tr><td>Rebuild All</td><td><kbd>F12</kbd></td><td>Compiles everything from scratch</td></tr>
+    <tr><td>Syntax Check</td><td><kbd>Ctrl</kbd>+<kbd>F9</kbd></td><td>Looks for errors without making the program</td></tr>
+    <tr><td>Stop</td><td><kbd>F6</kbd></td><td>Ends the running program</td></tr>
+  </table>
+  <p>On a Mac, the F keys are pressed with <kbd>fn</kbd> (<kbd>fn</kbd>+<kbd>F9</kbd>…), unless
+  <em>System Settings &gt; Keyboard</em> uses them as standard function keys.</p>
+  <p>Errors show in the <em>Compiler</em> tab of the bottom panel; a double click goes to the line,
+  marked in red. Programs run in a terminal: on Linux, the desktop's (chosen in <strong>Tools &gt;
+  Environment Options</strong>); on a Mac, Terminal. The program's arguments go in <strong>Execute &gt;
+  Parameters</strong>.</p>
+
+  <h2 id="debug">7. Debug</h2>
+  <p>The debugger stops the program where you say, to see what it does line by line. It uses gdb on
+  Linux and lldb on macOS; both work the same way.</p>
+  <ol>
+    <li>Pick the <em>Debug</em> compiler set (it adds what the debugger needs) and rebuild
+    (<kbd>F12</kbd>).</li>
+    <li>Set a <strong>breakpoint</strong>: click the margin, next to the line number, or press
+    <kbd>F4</kbd>.</li>
+    <li>Start with <strong>Execute &gt; Debug</strong> (<kbd>F5</kbd>). The program stops at the
+    breakpoint; the current line is highlighted.</li>
+    <li>Go on:
+      <table>
+        <tr><th>Action</th><th>Key</th></tr>
+        <tr><td>Next line (without entering functions)</td><td><kbd>F7</kbd></td></tr>
+        <tr><td>Into the function</td><td><kbd>F8</kbd></td></tr>
+        <tr><td>Continue to the next breakpoint</td><td><em>Continue</em> button</td></tr>
+        <tr><td>Run to the cursor</td><td><em>Run to Cursor</em> button</td></tr>
+        <tr><td>Out of the function</td><td><em>Skip function</em> button</td></tr>
+        <tr><td>Stop</td><td><kbd>F6</kbd></td></tr>
+      </table>
+    </li>
+    <li>Look at the variables:
+      <ul>
+        <li><strong>Watches:</strong> <em>Add watch</em> (or a right click on a variable). They show in
+        the left panel, <em>Debug</em> tab, and update at each step; structures and arrays unfold.</li>
+        <li><strong>Hovering</strong> a variable in the code shows its value.</li>
+        <li><strong>Evaluate:</strong> in the <em>Debug</em> tab of the bottom panel, type an expression
+        (<code>p.x + 1</code>, <code>marks[2]</code>) and press Enter.</li>
+      </ul>
+    </li>
+  </ol>
+  <p>The program's input and output (<code>cin</code>, <code>cout</code>) go to its own terminal. In
+  <em>Send command</em> (<em>Debug</em> tab of the bottom panel) you can type the debugger's commands
+  (<code>bt</code> shows the stack, for example); the answer shows below. The <em>View CPU window</em>
+  button of the debug panel shows the machine code and the registers.</p>
+
+  <h2 id="profile">8. Profile</h2>
+  <p><strong>Execute &gt; Profile Analysis</strong> shows where your program spends its time. Penguin cpp
+  offers to turn profiling on, rebuilds, runs the program and opens the results.</p>
+  <ul>
+    <li><strong>Linux</strong> (gprof): the time and calls of each function, and the graph of who calls
+    whom.</li>
+    <li><strong>macOS</strong> (LLVM): how many times each function was called, most called first (macOS
+    measures no times and has no call graph).</li>
+  </ul>
+
+  <h2 id="options">9. Options</h2>
+  <ul>
+    <li><strong>Tools &gt; Compiler Options:</strong> the compiler sets (Release, Debug, Profiling),
+    their options (C++ standard, optimization, warnings) and their programs.</li>
+    <li><strong>Tools &gt; Environment Options:</strong> language, theme, terminal (Linux) and
+    folders.</li>
+    <li><strong>Tools &gt; Editor Options:</strong> the font, the code's colors (light and dark schemes),
+    tabs and code completion.</li>
+    <li><strong>Tools &gt; Configure Shortcuts:</strong> change any shortcut.</li>
+  </ul>
+  <p>Settings are kept in <code>~/.config/penguin-cpp</code> (Linux) or
+  <code>~/Library/Application Support/penguin-cpp</code> (macOS). To start over, close Penguin cpp and
+  delete that folder.</p>
+
+  <h2 id="shortcuts">10. Keyboard shortcuts</h2>
+  <p>On a Mac, <kbd>⌘</kbd> (Command) takes the place of <kbd>Ctrl</kbd>, except in the shortcuts macOS
+  keeps for itself (<kbd>⌘Space</kbd>, <kbd>⌘Tab</kbd>, <kbd>⌘H</kbd>, <kbd>⌘M</kbd>,
+  <kbd>⌘Q</kbd>), which stay with <kbd>⌃</kbd> (Control).</p>
+  <table>
+    <tr><th>Action</th><th>Linux</th><th>macOS</th></tr>
+    <tr><td>New file</td><td><kbd>Ctrl</kbd>+<kbd>N</kbd></td><td><kbd>⌘N</kbd></td></tr>
+    <tr><td>Open</td><td><kbd>Ctrl</kbd>+<kbd>O</kbd></td><td><kbd>⌘O</kbd></td></tr>
+    <tr><td>Save / Save all</td><td><kbd>Ctrl</kbd>+<kbd>S</kbd> / <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd></td><td><kbd>⌘S</kbd> / <kbd>⇧⌘S</kbd></td></tr>
+    <tr><td>Close</td><td><kbd>Ctrl</kbd>+<kbd>W</kbd></td><td><kbd>⌘W</kbd></td></tr>
+    <tr><td>Undo / Redo</td><td><kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Ctrl</kbd>+<kbd>Y</kbd></td><td><kbd>⌘Z</kbd> / <kbd>⇧⌘Z</kbd> or <kbd>⌘Y</kbd></td></tr>
+    <tr><td>Code completion</td><td><kbd>Ctrl</kbd>+<kbd>Space</kbd></td><td><kbd>⌥Space</kbd> (or <kbd>⌃Space</kbd>, <kbd>⌥Esc</kbd>)</td></tr>
+    <tr><td>Find / Replace</td><td><kbd>Ctrl</kbd>+<kbd>F</kbd> / <kbd>Ctrl</kbd>+<kbd>R</kbd></td><td><kbd>⌘F</kbd> / <kbd>⌘R</kbd></td></tr>
+    <tr><td>Go to line</td><td><kbd>Ctrl</kbd>+<kbd>G</kbd></td><td><kbd>⌘G</kbd></td></tr>
+    <tr><td>Comment / uncomment</td><td><kbd>Ctrl</kbd>+<kbd>/</kbd></td><td><kbd>⌘/</kbd></td></tr>
+    <tr><td>Duplicate / delete line</td><td><kbd>Ctrl</kbd>+<kbd>E</kbd> / <kbd>Ctrl</kbd>+<kbd>D</kbd></td><td><kbd>⌘E</kbd> / <kbd>⌘D</kbd></td></tr>
+    <tr><td>Switch between .h and .cpp</td><td><kbd>Ctrl</kbd>+<kbd>Q</kbd></td><td><kbd>⌃Q</kbd></td></tr>
+    <tr><td>Next tab</td><td><kbd>Ctrl</kbd>+<kbd>Tab</kbd></td><td><kbd>⌃Tab</kbd></td></tr>
+    <tr><td>Compile / Run / Both / Rebuild</td><td><kbd>F9</kbd> / <kbd>F10</kbd> / <kbd>F11</kbd> / <kbd>F12</kbd></td><td>the same (with <kbd>fn</kbd>)</td></tr>
+    <tr><td>Debug / Breakpoint / Stop</td><td><kbd>F5</kbd> / <kbd>F4</kbd> / <kbd>F6</kbd></td><td>the same (with <kbd>fn</kbd>)</td></tr>
+    <tr><td>Next line / Into</td><td><kbd>F7</kbd> / <kbd>F8</kbd></td><td>the same (with <kbd>fn</kbd>)</td></tr>
+    <tr><td>Full screen</td><td><kbd>Ctrl</kbd>+<kbd>F11</kbd></td><td><kbd>⌘F11</kbd></td></tr>
+    <tr><td>This manual</td><td><kbd>F1</kbd></td><td><kbd>fn</kbd>+<kbd>F1</kbd></td></tr>
+  </table>
+  <p>On a Mac, the editor also knows the Mac's keys: <kbd>⌘</kbd> + arrows (start and end of the line
+  or the file), <kbd>⌥</kbd> + arrows (word by word) and <kbd>⌥</kbd>/<kbd>⌘</kbd> + delete.</p>
+
+  <h2 id="problems">11. Common problems</h2>
+  <h3>"windows.h: No such file or directory" (or conio.h)</h3>
+  <p><code>windows.h</code> and <code>conio.h</code> belong to Windows and do not exist on Linux or
+  macOS. They are mostly used for console things that have portable equivalents:</p>
+  <table>
+    <tr><th>On Windows</th><th>Standard or portable C++</th></tr>
+    <tr><td><code>Sleep(500)</code></td><td><code>std::this_thread::sleep_for(std::chrono::milliseconds(500))</code> (<code>&lt;thread&gt;</code>, <code>&lt;chrono&gt;</code>)</td></tr>
+    <tr><td><code>system("cls")</code></td><td><code>cout &lt;&lt; "\033[2J\033[H";</code></td></tr>
+    <tr><td><code>system("pause")</code></td><td>Not needed in Penguin cpp</td></tr>
+    <tr><td>Colors (<code>SetConsoleTextAttribute</code>)</td><td><code>cout &lt;&lt; "\033[32m";</code> (green) … <code>"\033[0m"</code> (normal)</td></tr>
+    <tr><td>Moving the cursor (<code>gotoxy</code>)</td><td><code>cout &lt;&lt; "\033[" &lt;&lt; row &lt;&lt; ";" &lt;&lt; column &lt;&lt; "H";</code></td></tr>
+  </table>
+  <h3>Code completion does not show (Mac)</h3>
+  <p>Use <kbd>⌥Space</kbd>. macOS takes <kbd>⌃Space</kbd> to switch keyboards when there is more than
+  one; it can be freed in <em>System Settings &gt; Keyboard &gt; Keyboard Shortcuts &gt; Input
+  Sources</em>.</p>
+  <h3>The F keys do nothing (Mac)</h3>
+  <p>Press them with <kbd>fn</kbd>, or turn on <em>Use F1, F2, etc. keys as standard function keys</em>
+  in <em>System Settings &gt; Keyboard</em>.</p>
+  <h3>macOS says the app "is damaged" or cannot be verified</h3>
+  <p>Install it with the one-line installer of the
+  <a href="https://juanfrang.github.io/Penguin-cpp/">download page</a>, or in Terminal:
+  <code>xattr -cr "/Applications/Penguin cpp.app"</code>.</p>
+  <h3>The compiler was not found</h3>
+  <p>On Linux: <code>sudo apt install g++ gdb make</code>. On a Mac: <code>xcode-select --install</code>.
+  Then close and open Penguin cpp.</p>
+  <h3>No terminal opens when running (Linux)</h3>
+  <p>Install one (for example <code>sudo apt install xterm</code>) or pick yours in <strong>Tools &gt;
+  Environment Options</strong>.</p>
+
+  <h2 id="report">12. Report a problem</h2>
+  <p>When Penguin cpp has an error, it writes it to <code>penguin-cpp-errores.txt</code> on your Desktop
+  and offers to open it when you close. Write to
+  <a href="mailto:jfgonzalez@unimagdalena.edu.co">jfgonzalez@unimagdalena.edu.co</a> with the version,
+  your system, what you did, what you expected and what happened, and attach that file, a screenshot and
+  the code it happens with. The <a href="https://juanfrang.github.io/Penguin-cpp/#reportar">download
+  page</a> has an example.</p>
+
+  <p class="muted">Penguin cpp is free software (GPL v2 or later), based on Embarcadero Dev-C++. Code:
+  <a href="https://github.com/JuanFranG/Penguin-cpp">github.com/JuanFranG/Penguin-cpp</a>.</p>
+</main>
+</body>
+</html>

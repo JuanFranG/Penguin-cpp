@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manual de Penguin cpp</title>
+<link rel="stylesheet" href="manual.css">
+</head>
+<body>
+<main>
+  <p class="lang"><a href="en/index.html">English</a></p>
+  <h1>Manual de Penguin cpp</h1>
+  <p class="lead">Un IDE de C y C++ sencillo para aprender, para Linux y macOS (Apple Silicon).
+  Este manual corresponde a la versión 0.2.0.</p>
+
+  <nav class="toc">
+    <strong>Contenido</strong>
+    <ol>
+      <li><a href="#instalar">Instalar</a></li>
+      <li><a href="#primer-programa">Tu primer programa</a></li>
+      <li><a href="#ventana">La ventana</a></li>
+      <li><a href="#editor">El editor</a></li>
+      <li><a href="#proyectos">Proyectos</a></li>
+      <li><a href="#compilar">Compilar y ejecutar</a></li>
+      <li><a href="#depurar">Depurar</a></li>
+      <li><a href="#perfilar">Perfilar</a></li>
+      <li><a href="#opciones">Opciones</a></li>
+      <li><a href="#atajos">Atajos de teclado</a></li>
+      <li><a href="#problemas">Problemas frecuentes</a></li>
+      <li><a href="#reportar">Reportar un problema</a></li>
+    </ol>
+  </nav>
+
+  <h2 id="instalar">1. Instalar</h2>
+  <p>Las instrucciones están en la <a href="https://juanfrang.github.io/Penguin-cpp/">página de
+  descargas</a>. En resumen:</p>
+  <ul>
+    <li><strong>Linux</strong> (Debian, Ubuntu, Linux Mint y derivadas): con el repositorio APT,
+    <code>sudo apt install penguin-cpp</code>. Instala también gcc, g++, make, gdb y los
+    formateadores.</li>
+    <li><strong>macOS</strong> (Mac con Apple Silicon): en Terminal,
+    <code>curl -fsSL https://juanfrang.github.io/Penguin-cpp/install-macos.sh | bash</code>.
+    Para compilar hacen falta las Command Line Tools de Apple; si faltan, Penguin cpp ofrece
+    instalarlas.</li>
+  </ul>
+  <p>La primera vez, Penguin cpp busca los compiladores del sistema (gcc en Linux, clang en macOS) y
+  crea tres configuraciones: <em>Release</em> (para usar), <em>Debug</em> (para depurar) y
+  <em>Profiling</em> (para perfilar). Se elige una en la lista de la barra de herramientas.</p>
+
+  <h2 id="primer-programa">2. Tu primer programa</h2>
+  <ol>
+    <li>Pulsa <em>Nuevo Documento</em> en la bienvenida, o <strong>Archivo &gt; Nuevo &gt; Archivo
+    Fuente</strong> (<kbd>Ctrl</kbd>+<kbd>N</kbd>; en Mac <kbd>⌘N</kbd>).</li>
+    <li>Escribe:
+<pre><code>#include &lt;iostream&gt;
+using namespace std;
+
+int main() {
+    string nombre;
+    cout &lt;&lt; "¿Cómo te llamas? ";
+    cin &gt;&gt; nombre;
+    cout &lt;&lt; "Hola, " &lt;&lt; nombre &lt;&lt; endl;
+    return 0;
+}</code></pre></li>
+    <li>Guárdalo como <code>hola.cpp</code> (<kbd>Ctrl</kbd>+<kbd>S</kbd>; en Mac <kbd>⌘S</kbd>).</li>
+    <li>Pulsa <kbd>F11</kbd> (<strong>Ejecutar &gt; Compilar y Ejecutar</strong>). Se abre una terminal
+    con tu programa; al terminar muestra cuánto tardó y su código de salida, y espera a que pulses
+    Enter.</li>
+  </ol>
+  <p class="note">No hace falta <code>system("pause")</code> al final: Penguin cpp ya espera. Tampoco
+  <code>system("cls")</code> ni <code>#include &lt;windows.h&gt;</code>, que solo existen en Windows (ver
+  <a href="#problemas">Problemas frecuentes</a>).</p>
+
+  <h2 id="ventana">3. La ventana</h2>
+  <ul>
+    <li><strong>Bienvenida:</strong> crear o abrir documentos, los archivos recientes, y cambiar el tema,
+    la fuente o el idioma.</li>
+    <li><strong>Panel izquierdo:</strong> <em>Proyecto</em> (los archivos del proyecto), <em>Clases</em>
+    (las funciones, clases y variables del código; un clic lleva a su definición) y <em>Depurar</em>
+    (las variables vigiladas).</li>
+    <li><strong>Panel inferior:</strong> <em>Compilador</em> (errores y advertencias; un doble clic lleva
+    a la línea), <em>Registro de Compilación</em>, <em>Depuración</em> y <em>Resultados</em> (de la
+    búsqueda).</li>
+    <li><strong>Barra de herramientas:</strong> los botones de compilar y ejecutar, y la lista de
+    configuraciones del compilador.</li>
+  </ul>
+
+  <h2 id="editor">4. El editor</h2>
+  <ul>
+    <li><strong>Autocompletado:</strong> aparece solo al escribir <code>.</code>, <code>-&gt;</code> o
+    <code>::</code>, o se pide con <kbd>Ctrl</kbd>+<kbd>Espacio</kbd> (en Mac
+    <kbd>⌥</kbd>+<kbd>Espacio</kbd>). Muestra las funciones, variables y miembros de tu código y de las
+    bibliotecas que incluyes.</li>
+    <li><strong>Ayuda de parámetros:</strong> al escribir <code>(</code> después de una función se ven sus
+    parámetros.</li>
+    <li><strong>Plegado:</strong> los bloques entre llaves se pliegan con el triángulo del margen.</li>
+    <li><strong>Buscar y reemplazar:</strong> <kbd>Ctrl</kbd>+<kbd>F</kbd> y <kbd>Ctrl</kbd>+<kbd>R</kbd>
+    (en Mac <kbd>⌘F</kbd>, <kbd>⌘R</kbd>); <kbd>F3</kbd> busca otra vez.</li>
+    <li><strong>Comentar:</strong> <kbd>Ctrl</kbd>+<kbd>/</kbd> (en Mac <kbd>⌘/</kbd>) comenta o
+    descomenta las líneas seleccionadas.</li>
+    <li><strong>Formatear:</strong> <strong>Formato &gt; Formatear el archivo actual</strong> ordena la
+    sangría y las llaves con astyle; el estilo se elige en <strong>Formato &gt; Opciones de
+    formato</strong>.</li>
+    <li><strong>Zoom:</strong> <kbd>Ctrl</kbd> + rueda del ratón, o <kbd>Ctrl</kbd>+<kbd>+</kbd> y
+    <kbd>Ctrl</kbd>+<kbd>-</kbd>. En Mac, <kbd>⌘</kbd> + rueda o pellizcando el trackpad.</li>
+    <li><strong>Exportar e imprimir:</strong> <strong>Archivo &gt; Exportar</strong> guarda el código con
+    colores en HTML, RTF o TeX; <strong>Archivo &gt; Imprimir</strong> lo imprime o lo guarda en
+    PDF.</li>
+  </ul>
+
+  <h2 id="proyectos">5. Proyectos</h2>
+  <p>Un archivo suelto basta para ejercicios de un solo archivo. Para programas con varios archivos se
+  usa un proyecto (<code>.dev</code>):</p>
+  <ol>
+    <li><strong>Archivo &gt; Nuevo &gt; Proyecto...</strong>, elige una plantilla (por ejemplo una
+    aplicación de consola), el lenguaje (C o C++) y un nombre.</li>
+    <li>Agrega archivos con el menú <strong>Proyecto</strong> o con clic derecho en el panel
+    <em>Proyecto</em>.</li>
+    <li><strong>Proyecto &gt; Opciones</strong> (<kbd>Ctrl</kbd>+<kbd>H</kbd>; en Mac
+    <kbd>⌃H</kbd>): el nombre del ejecutable, las opciones del compilador y del enlazador, las
+    carpetas de cabeceras y bibliotecas, y los argumentos del programa.</li>
+  </ol>
+  <p>Penguin cpp escribe un <code>Makefile</code> para cada proyecto y lo compila con
+  <code>make</code>. Los proyectos de Dev-C++ para Windows se abren igual; si usan bibliotecas o
+  cabeceras de Windows, hay que cambiarlas.</p>
+
+  <h2 id="compilar">6. Compilar y ejecutar</h2>
+  <table>
+    <tr><th>Acción</th><th>Tecla</th><th>Qué hace</th></tr>
+    <tr><td>Compilar</td><td><kbd>F9</kbd></td><td>Compila lo que cambió</td></tr>
+    <tr><td>Ejecutar</td><td><kbd>F10</kbd></td><td>Ejecuta el último programa compilado</td></tr>
+    <tr><td>Compilar y ejecutar</td><td><kbd>F11</kbd></td><td>Las dos cosas</td></tr>
+    <tr><td>Reconstruir todo</td><td><kbd>F12</kbd></td><td>Compila todo desde cero</td></tr>
+    <tr><td>Revisar sintaxis</td><td><kbd>Ctrl</kbd>+<kbd>F9</kbd></td><td>Busca errores sin generar el programa</td></tr>
+    <tr><td>Detener</td><td><kbd>F6</kbd></td><td>Termina el programa que se está ejecutando</td></tr>
+  </table>
+  <p>En Mac, las teclas F se pulsan con <kbd>fn</kbd> (<kbd>fn</kbd>+<kbd>F9</kbd>…), salvo que en
+  <em>Configuración del Sistema &gt; Teclado</em> se usen como teclas de función normales.</p>
+  <p>Los errores aparecen en la pestaña <em>Compilador</em> del panel inferior; un doble clic lleva a la
+  línea, marcada en rojo. Los programas corren en una terminal: en Linux, la del escritorio (se elige en
+  <strong>Herramientas &gt; Opciones de Entorno</strong>); en Mac, Terminal. Los argumentos del programa
+  se ponen en <strong>Ejecutar &gt; Parámetros</strong>.</p>
+
+  <h2 id="depurar">7. Depurar</h2>
+  <p>El depurador detiene el programa donde le digas para ver qué hace, línea a línea. Usa gdb en Linux
+  y lldb en macOS; en los dos se maneja igual.</p>
+  <ol>
+    <li>Elige la configuración <em>Debug</em> en la lista de compiladores (incluye la información que
+    necesita el depurador) y reconstruye (<kbd>F12</kbd>).</li>
+    <li>Pon un <strong>punto de parada</strong>: clic en el margen, junto al número de línea, o
+    <kbd>F4</kbd>.</li>
+    <li>Empieza con <strong>Ejecutar &gt; Depurar</strong> (<kbd>F5</kbd>). El programa se detiene en el
+    punto de parada; la línea actual queda resaltada.</li>
+    <li>Avanza:
+      <table>
+        <tr><th>Acción</th><th>Tecla</th></tr>
+        <tr><td>Siguiente línea (sin entrar en funciones)</td><td><kbd>F7</kbd></td></tr>
+        <tr><td>Entrar en la función</td><td><kbd>F8</kbd></td></tr>
+        <tr><td>Continuar hasta el siguiente punto de parada</td><td>botón <em>Continuar</em></td></tr>
+        <tr><td>Ejecutar hasta el cursor</td><td>botón <em>Ejecutar hasta el cursor</em></td></tr>
+        <tr><td>Salir de la función</td><td>botón <em>Saltar función</em></td></tr>
+        <tr><td>Terminar</td><td><kbd>F6</kbd></td></tr>
+      </table>
+    </li>
+    <li>Mira las variables:
+      <ul>
+        <li><strong>Vigilancias:</strong> <em>Añadir variable vigilada</em> (o clic derecho sobre una
+        variable). Aparecen en el panel izquierdo, pestaña <em>Depurar</em>, y se actualizan en cada
+        paso; las estructuras y arreglos se despliegan.</li>
+        <li><strong>Pasar el ratón</strong> sobre una variable del código muestra su valor.</li>
+        <li><strong>Evaluar:</strong> en la pestaña <em>Depuración</em> del panel inferior escribe una expresión
+        (<code>p.x + 1</code>, <code>notas[2]</code>) y pulsa Enter.</li>
+      </ul>
+    </li>
+  </ol>
+  <p>La entrada y salida del programa (<code>cin</code>, <code>cout</code>) van a su propia terminal.
+  En <em>Enviar comando</em> (pestaña <em>Depuración</em> del panel inferior) se pueden escribir comandos del depurador (por ejemplo <code>bt</code> para
+  ver la pila); la respuesta aparece debajo. El botón <em>Ver ventana del CPU</em> del panel de depuración
+  muestra el código máquina y los registros.</p>
+
+  <h2 id="perfilar">8. Perfilar</h2>
+  <p><strong>Ejecutar &gt; Análisis Perfil de Ejecución</strong> muestra en qué funciones pasa el tiempo
+  tu programa. Penguin cpp ofrece activar la opción de perfilado, recompila, ejecuta el programa y abre
+  los resultados.</p>
+  <ul>
+    <li><strong>Linux</strong> (gprof): tiempo y número de llamadas de cada función, y el grafo de quién
+    llama a quién.</li>
+    <li><strong>macOS</strong> (LLVM): cuántas veces se llamó cada función, de la más llamada a la que
+    menos (macOS no mide tiempos ni tiene grafo de llamadas).</li>
+  </ul>
+
+  <h2 id="opciones">9. Opciones</h2>
+  <ul>
+    <li><strong>Herramientas &gt; Opciones del Compilador:</strong> las configuraciones de compilador
+    (Release, Debug, Profiling), sus opciones (estándar de C++, optimización, advertencias) y sus
+    programas.</li>
+    <li><strong>Herramientas &gt; Opciones de Entorno:</strong> el idioma, el tema, la terminal (Linux) y
+    las carpetas.</li>
+    <li><strong>Herramientas &gt; Opciones del Editor:</strong> la fuente, los colores del código
+    (esquemas claro y oscuro), las tabulaciones y el autocompletado.</li>
+    <li><strong>Herramientas &gt; Configurar Teclas Rápidas:</strong> cambiar cualquier atajo.</li>
+  </ul>
+  <p>La configuración se guarda en <code>~/.config/penguin-cpp</code> (Linux) o en
+  <code>~/Library/Application Support/penguin-cpp</code> (macOS). Para volver a la configuración
+  inicial, cierra Penguin cpp y borra esa carpeta.</p>
+
+  <h2 id="atajos">10. Atajos de teclado</h2>
+  <p>En Mac, <kbd>⌘</kbd> (Command) reemplaza a <kbd>Ctrl</kbd>, salvo en los atajos que macOS se reserva
+  (<kbd>⌘Espacio</kbd>, <kbd>⌘Tab</kbd>, <kbd>⌘H</kbd>, <kbd>⌘M</kbd>, <kbd>⌘Q</kbd>), que siguen con
+  <kbd>⌃</kbd> (Control).</p>
+  <table>
+    <tr><th>Acción</th><th>Linux</th><th>macOS</th></tr>
+    <tr><td>Nuevo archivo</td><td><kbd>Ctrl</kbd>+<kbd>N</kbd></td><td><kbd>⌘N</kbd></td></tr>
+    <tr><td>Abrir</td><td><kbd>Ctrl</kbd>+<kbd>O</kbd></td><td><kbd>⌘O</kbd></td></tr>
+    <tr><td>Guardar / Guardar todo</td><td><kbd>Ctrl</kbd>+<kbd>S</kbd> / <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd></td><td><kbd>⌘S</kbd> / <kbd>⇧⌘S</kbd></td></tr>
+    <tr><td>Cerrar</td><td><kbd>Ctrl</kbd>+<kbd>W</kbd></td><td><kbd>⌘W</kbd></td></tr>
+    <tr><td>Deshacer / Rehacer</td><td><kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Ctrl</kbd>+<kbd>Y</kbd></td><td><kbd>⌘Z</kbd> / <kbd>⇧⌘Z</kbd> o <kbd>⌘Y</kbd></td></tr>
+    <tr><td>Autocompletar</td><td><kbd>Ctrl</kbd>+<kbd>Espacio</kbd></td><td><kbd>⌥Espacio</kbd> (o <kbd>⌃Espacio</kbd>, <kbd>⌥Esc</kbd>)</td></tr>
+    <tr><td>Buscar / Reemplazar</td><td><kbd>Ctrl</kbd>+<kbd>F</kbd> / <kbd>Ctrl</kbd>+<kbd>R</kbd></td><td><kbd>⌘F</kbd> / <kbd>⌘R</kbd></td></tr>
+    <tr><td>Ir a la línea</td><td><kbd>Ctrl</kbd>+<kbd>G</kbd></td><td><kbd>⌘G</kbd></td></tr>
+    <tr><td>Comentar / descomentar</td><td><kbd>Ctrl</kbd>+<kbd>/</kbd></td><td><kbd>⌘/</kbd></td></tr>
+    <tr><td>Duplicar / borrar línea</td><td><kbd>Ctrl</kbd>+<kbd>E</kbd> / <kbd>Ctrl</kbd>+<kbd>D</kbd></td><td><kbd>⌘E</kbd> / <kbd>⌘D</kbd></td></tr>
+    <tr><td>Cambiar entre .h y .cpp</td><td><kbd>Ctrl</kbd>+<kbd>Q</kbd></td><td><kbd>⌃Q</kbd></td></tr>
+    <tr><td>Pestaña siguiente</td><td><kbd>Ctrl</kbd>+<kbd>Tab</kbd></td><td><kbd>⌃Tab</kbd></td></tr>
+    <tr><td>Compilar / Ejecutar / Los dos / Reconstruir</td><td><kbd>F9</kbd> / <kbd>F10</kbd> / <kbd>F11</kbd> / <kbd>F12</kbd></td><td>igual (con <kbd>fn</kbd>)</td></tr>
+    <tr><td>Depurar / Punto de parada / Detener</td><td><kbd>F5</kbd> / <kbd>F4</kbd> / <kbd>F6</kbd></td><td>igual (con <kbd>fn</kbd>)</td></tr>
+    <tr><td>Siguiente línea / Entrar</td><td><kbd>F7</kbd> / <kbd>F8</kbd></td><td>igual (con <kbd>fn</kbd>)</td></tr>
+    <tr><td>Pantalla completa</td><td><kbd>Ctrl</kbd>+<kbd>F11</kbd></td><td><kbd>⌘F11</kbd></td></tr>
+    <tr><td>Este manual</td><td><kbd>F1</kbd></td><td><kbd>fn</kbd>+<kbd>F1</kbd></td></tr>
+  </table>
+  <p>En Mac, el editor también entiende las teclas del Mac: <kbd>⌘</kbd> + flechas (inicio y fin de línea
+  o del archivo), <kbd>⌥</kbd> + flechas (de palabra en palabra) y <kbd>⌥</kbd>/<kbd>⌘</kbd> + borrar.</p>
+
+  <h2 id="problemas">11. Problemas frecuentes</h2>
+  <h3>«windows.h: No such file or directory» (o conio.h)</h3>
+  <p><code>windows.h</code> y <code>conio.h</code> son de Windows y no existen en Linux ni en macOS. Casi
+  siempre se usan para cosas de la consola que tienen equivalente portable:</p>
+  <table>
+    <tr><th>En Windows</th><th>En C++ estándar o portable</th></tr>
+    <tr><td><code>Sleep(500)</code></td><td><code>std::this_thread::sleep_for(std::chrono::milliseconds(500))</code> (<code>&lt;thread&gt;</code>, <code>&lt;chrono&gt;</code>)</td></tr>
+    <tr><td><code>system("cls")</code></td><td><code>cout &lt;&lt; "\033[2J\033[H";</code></td></tr>
+    <tr><td><code>system("pause")</code></td><td>No hace falta en Penguin cpp</td></tr>
+    <tr><td>Colores (<code>SetConsoleTextAttribute</code>)</td><td><code>cout &lt;&lt; "\033[32m";</code> (verde) … <code>"\033[0m"</code> (normal)</td></tr>
+    <tr><td>Mover el cursor (<code>gotoxy</code>)</td><td><code>cout &lt;&lt; "\033[" &lt;&lt; fila &lt;&lt; ";" &lt;&lt; columna &lt;&lt; "H";</code></td></tr>
+  </table>
+  <h3>No aparece el autocompletado (Mac)</h3>
+  <p>Usa <kbd>⌥Espacio</kbd>. <kbd>⌃Espacio</kbd> lo usa macOS para cambiar de teclado cuando hay más de
+  uno; se puede liberar en <em>Configuración del Sistema &gt; Teclado &gt; Funciones rápidas de teclado
+  &gt; Fuentes de entrada</em>.</p>
+  <h3>Las teclas F no hacen nada (Mac)</h3>
+  <p>Púlsalas con <kbd>fn</kbd>, o activa <em>Usar F1, F2, etc. como teclas de función estándar</em> en
+  <em>Configuración del Sistema &gt; Teclado</em>.</p>
+  <h3>macOS dice que la app «está dañada» o que no puede verificarla</h3>
+  <p>Instálala con el instalador de una línea de la
+  <a href="https://juanfrang.github.io/Penguin-cpp/">página de descargas</a>, o en Terminal:
+  <code>xattr -cr "/Applications/Penguin cpp.app"</code>.</p>
+  <h3>No se encontró el compilador</h3>
+  <p>En Linux: <code>sudo apt install g++ gdb make</code>. En Mac: <code>xcode-select --install</code>.
+  Después, cierra y abre Penguin cpp.</p>
+  <h3>No se abre la terminal al ejecutar (Linux)</h3>
+  <p>Instala una terminal (por ejemplo <code>sudo apt install xterm</code>) o elige la tuya en
+  <strong>Herramientas &gt; Opciones de Entorno</strong>.</p>
+
+  <h2 id="reportar">12. Reportar un problema</h2>
+  <p>Si Penguin cpp tiene un error, lo anota en <code>penguin-cpp-errores.txt</code>, en tu Escritorio, y
+  al cerrar te ofrece abrirlo. Escribe a
+  <a href="mailto:jfgonzalez@unimagdalena.edu.co">jfgonzalez@unimagdalena.edu.co</a> con la versión, tu
+  sistema, qué hiciste, qué esperabas y qué pasó, y adjunta ese archivo, una captura de pantalla y el
+  código con el que pasa. La <a href="https://juanfrang.github.io/Penguin-cpp/#reportar">página de
+  descargas</a> tiene un ejemplo.</p>
+
+  <p class="muted">Penguin cpp es software libre (GPL v2 o posterior), basado en Embarcadero Dev-C++.
+  Código: <a href="https://github.com/JuanFranG/Penguin-cpp">github.com/JuanFranG/Penguin-cpp</a>.</p>
+</main>
+</body>
+</html>

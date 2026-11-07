@@ -75,7 +75,7 @@ function RunAndGetOutput(const Cmd, WorkDir: String; LineOutputFunc: TLineOutput
 // ~/.config/penguin-cpp/ ($XDG_CONFIG_HOME is honored). Not created here.
 function GetConfigDir: String;
 
-// Directory of the IDE's own files (Lang/, Templates/, Help/...), with trailing
+// Directory of the IDE's own files (Lang/, Templates/, Manual/...), with trailing
 // delimiter. A build run where it was compiled has them next to it (ExeDir);
 // the installed one, /usr/lib/penguin-cpp/penguin-cpp, in /usr/share/penguin-cpp/
 function GetDataDir(const ExeDir: String): String;

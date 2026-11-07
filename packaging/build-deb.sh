@@ -32,7 +32,7 @@ ln -s ../lib/penguin-cpp/penguin-cpp "$STAGE/usr/bin/penguin-cpp"
 
 # Its files: only what git tracks, nothing left over from a build
 SHARE=$STAGE/usr/share/penguin-cpp
-for DIR in Lang Templates Help Icons AStyle/doc ClangFormat/doc; do
+for DIR in Lang Templates Manual Icons AStyle/doc ClangFormat/doc; do
   git ls-files -z -- "$DIR" | while IFS= read -r -d '' FILE; do
     install -D -m 644 "$FILE" "$SHARE/$FILE"
   done

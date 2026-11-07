@@ -37,10 +37,10 @@ install -m 755 penguin-cpp "$APP/Contents/MacOS/penguin-cpp"
 strip -x "$APP/Contents/MacOS/penguin-cpp"
 codesign --verify "$APP/Contents/MacOS/penguin-cpp"
 
-# Its files, in Contents/Resources (where the program looks for them): only
-# what git tracks, nothing left over from a build
+# Its files (the manual too), in Contents/Resources (where the program looks
+# for them): only what git tracks, nothing left over from a build
 RES=$APP/Contents/Resources
-for DIR in Lang Templates Help Icons AStyle/doc ClangFormat/doc; do
+for DIR in Lang Templates Manual Icons AStyle/doc ClangFormat/doc; do
   git ls-files -z -- "$DIR" | while IFS= read -r -d '' FILE; do
     install -d "$RES/$(dirname "$FILE")"
     install -m 644 "$FILE" "$RES/$FILE"

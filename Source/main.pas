@@ -6905,7 +6905,7 @@ end;
 
 procedure TMainForm.actHelpExecute(Sender: TObject);
 begin
-  OpenHelpFile('index.htm');
+  OpenManual;
 end;
 
 procedure TMainForm.actShortenCompPathsExecute(Sender: TObject);
@@ -6943,7 +6943,7 @@ end;
 
 procedure TMainForm.LabelDocumentationClick(Sender: TObject);
 begin
-  OpenHelpFile('index.htm');
+  OpenManual;
 end;
 
 procedure TMainForm.LeftPageControlChange(Sender: TObject);

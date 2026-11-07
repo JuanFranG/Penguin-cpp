@@ -52,6 +52,9 @@ Qué funciona hoy y qué falta está en [ROADMAP.md](ROADMAP.md).
 
 ## Instalación
 
+El [manual](https://juanfrang.github.io/Penguin-cpp/manual/) explica cómo
+usarlo, en español y en inglés; también se abre desde el IDE con F1.
+
 Penguin cpp se instala con `apt` en Debian, Ubuntu, Linux Mint y derivadas
 (amd64). `apt` instala también todo lo que necesita: gcc, g++, make, gdb,
 astyle y clang-format.

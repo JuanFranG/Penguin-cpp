@@ -53,6 +53,10 @@ const
   LANGUAGE_DIR = 'Lang' + pd;
   ICON_DIR = 'Icons' + pd;
   HELP_DIR = 'Help' + pd;
+  // Penguin cpp's manual: installed with the IDE (MANUAL_DIR, its English
+  // version in en/), and the same online
+  MANUAL_DIR = 'Manual' + pd;
+  MANUAL_URL = 'https://juanfrang.github.io/Penguin-cpp/manual/';
   TEMPLATE_DIR = 'Templates' + pd;
   THEME_DIR = 'Themes' + pd;
   PACKAGES_DIR = 'Packages' + pd;

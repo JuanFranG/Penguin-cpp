@@ -53,5 +53,8 @@ gpg --batch --yes --armor --export > penguin-cpp.asc
 # would hide some files)
 cp "$HERE/apt-repo-index.html" index.html
 cp "$HERE/install-macos.sh" install-macos.sh
+# The manual (Manual/ of the repository), at /manual/
+rm -rf manual
+cp -R "$HERE/../Manual" manual
 touch .nojekyll
 echo "APT repository updated in $(pwd)"

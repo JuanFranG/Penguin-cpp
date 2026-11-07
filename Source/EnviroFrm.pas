@@ -306,7 +306,7 @@ end;
 
 procedure TEnviroForm.btnHelpClick(Sender: TObject);
 begin
-  OpenHelpFile('index.htm');
+  OpenManual;
 end;
 
 procedure TEnviroForm.FormCreate(Sender: TObject);

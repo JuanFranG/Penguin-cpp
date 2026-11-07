@@ -110,7 +110,9 @@ function IsNumeric(const s: String): boolean;
 
 function CountChar(const s: String; c: Char): integer;
 
-procedure OpenHelpFile(const HelpFileName: String);
+// Penguin cpp's manual, in Spanish when the IDE speaks it, else in English:
+// the copy installed with the IDE, or the online one
+procedure OpenManual;
 
 function ProgramHasConsole(const Path: String): boolean;
 
@@ -401,12 +403,18 @@ begin
   DateTimeToString(Result, 'mmmm d yyyy - hh:nn', datedouble);
 end;
 
-procedure OpenHelpFile(const HelpFileName: String);
+procedure OpenManual;
 var
-  abshelp: String;
-begin // TODO: fix iframe opening problem
-  abshelp := ReplaceFirstStr(devDirs.Help, '%path%' + PathDelim, devDirs.Exec) + HelpFileName;
-  OpenDocument(abshelp);
+  Sub: String;
+begin
+  if StartsText('Spanish', devData.Language) then
+    Sub := ''
+  else
+    Sub := 'en/';
+  if FileExists(devDirs.Exec + MANUAL_DIR + Sub + 'index.html') then
+    OpenDocument(devDirs.Exec + MANUAL_DIR + Sub + 'index.html')
+  else
+    OpenDocument(MANUAL_URL + Sub);
 end;
 
 procedure FilesFromWildcard(Directory: String; const Mask: String; Files: TStringList; Subdirs, ShowDirs,

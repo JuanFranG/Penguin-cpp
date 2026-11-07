@@ -247,7 +247,7 @@ end;
 
 procedure TNewProjectForm.btnHelpClick(Sender: TObject);
 begin
-  OpenHelpFile('index.htm');
+  OpenManual;
 end;
 
 procedure TNewProjectForm.edProjectNameChange(Sender: TObject);

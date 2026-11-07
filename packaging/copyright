@@ -23,10 +23,6 @@ Copyright: 2010, 2012 Adobe Systems Incorporated (http://www.adobe.com/),
  with Reserved Font Name 'Source'.
 License: OFL-1.1
 
-Files: usr/share/penguin-cpp/Help/jquery191.min.js
-Copyright: 2005, 2012 jQuery Foundation, Inc.
-License: Expat
-
 Files: usr/share/penguin-cpp/AStyle/doc/*
 Copyright: 2018 Jim Pattee <jimp03@email.com>
 License: Expat

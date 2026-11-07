@@ -679,7 +679,7 @@ end;
 
 procedure TProjectOptionsFrm.btnHelpClick(Sender: TObject);
 begin
-  OpenHelpFile('index.htm');
+  OpenManual;
 end;
 
 procedure TProjectOptionsFrm.chkOverrideOutputClick(Sender: TObject);

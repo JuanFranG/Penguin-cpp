@@ -191,8 +191,11 @@ y también saber si pasa sin abrir ningún archivo.
   del Makefile pasaron a `MakeNames.pas`, sin LCL. El CI de GitHub Actions
   compila el IDE y pasa las cinco pruebas en cada push; falta ver su
   primera ejecución.
-- **F. Ayuda para Linux:** sus páginas hablan de Windows, de `devcpp.exe` y
-  de MinGW, y enlazan a Embarcadero. Puede ir con la fase 8.
+- ✅ **F. Manual propio:** el manual de Dev-C++ (`Help/`) hablaba de Windows,
+  de `devcpp.exe` y de MinGW, y enlazaba a Embarcadero. Lo reemplaza un manual
+  de Penguin cpp en español e inglés (`Manual/`), para Linux y macOS: viene
+  con el IDE (F1, *Ver documentación* y los botones de ayuda lo abren, en el
+  idioma del IDE) y se publica en <https://juanfrang.github.io/Penguin-cpp/manual/>.
 
 **4. Fase 7:** el depurador sobre GDB/MI.
 

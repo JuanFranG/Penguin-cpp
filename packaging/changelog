@@ -1,3 +1,15 @@
+penguin-cpp (0.2.1) unstable; urgency=medium
+
+  * Penguin cpp's own manual, in Spanish and English: F1, the Help menu
+    and the dialogs' help buttons open it (it replaces Dev-C++'s, which
+    spoke of Windows). It is also at
+    https://juanfrang.github.io/Penguin-cpp/manual/
+  * The Help menu says Penguin cpp, not Dev-C++.
+  * macOS: one-line installer, astyle inside the app, Option-Space for
+    code completion, and fixes in the lldb debugger.
+
+ -- Juan Francisco Gonzalez Pacheco <jfgonzalez@unimagdalena.edu.co>  Fri, 06 Nov 2026 18:00:00 -0500
+
 penguin-cpp (0.2.0) unstable; urgency=medium
 
   * Penguin cpp also runs on macOS (Apple Silicon), from the same code.

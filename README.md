@@ -10,7 +10,7 @@ Penguin cpp expande Embarcadero Dev-C++ a Linux. Es el mismo entorno ligero
 con el que mucha gente aprende C y C++, ahora como programa nativo de Linux,
 sin Wine.
 
-> **Estado: versión 0.2.0.** El IDE funciona en Linux Mint (paquete `.deb` y
+> **Estado: versión 0.2.1.** El IDE funciona en Linux Mint (paquete `.deb` y
 > repositorio APT) y en macOS con Apple Silicon (`.dmg`, en pruebas). Ver
 > [ROADMAP.md](ROADMAP.md).
 
@@ -79,7 +79,7 @@ También se puede descargar el `.deb` de
 directamente (sin actualizaciones automáticas):
 
 ```bash
-sudo apt install ./penguin-cpp_0.2.0_amd64.deb
+sudo apt install ./penguin-cpp_0.2.1_amd64.deb
 ```
 
 Después aparece en el menú, en *Programación* y *Educación*. También se abre

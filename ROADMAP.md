@@ -9,7 +9,7 @@ funciona en Windows.
 Este documento explica de dónde viene, qué se ha hecho hasta ahora y qué
 falta.
 
-*Última actualización: 6 de noviembre de 2026. Versión 0.2.1.*
+*Última actualización: 7 de noviembre de 2026. Versión 0.2.2.*
 
 ---
 
@@ -109,7 +109,7 @@ cinco pruebas en Ubuntu 24.04 (`.github/workflows/build.yml`).
 
 Cada fase se trabaja en su rama, que parte de la anterior, y se pasa a `main`
 al publicarla. Hoy `main` incluye todas las fases (hasta `fase9/macos`), en la
-versión 0.2.1, y está protegida: no admite force-push ni borrarla, y su
+versión 0.2.2, y está protegida: no admite force-push ni borrarla, y su
 historial es lineal.
 
 | Fase | Rama | Estado |
@@ -123,7 +123,7 @@ historial es lineal.
 | 5 · Editor (SynEdit de Lazarus) | `fase5/editor` | ✅ Hecha, probada en Mint: impresión, exportación a RTF/TeX y plegado |
 | 6 · Compilación con el gcc de Linux | `fase6/compilador` | ✅ Hecha, probada en Mint: gcc, archivos sueltos, proyectos, terminal, errores, instancia única y formateadores |
 | 7 · Depurador (GDB/MI) | `fase7/depurador` | ✅ Hecha, probada en Mint, con la revisión general de errores de rango y de memoria |
-| 8 · Paquete `.deb` y pulido | `fase8/paquete` | ✅ Probado en Mint; las versiones 0.1.0, 0.2.0 y 0.2.1 están en Releases y en el repositorio APT |
+| 8 · Paquete `.deb` y pulido | `fase8/paquete` | ✅ Probado en Mint; las versiones 0.1.0 a 0.2.2 están en Releases y en el repositorio APT |
 | 9 · macOS (Apple Silicon) | `fase9/macos` | 🔄 Bloques 0-5 hechos y publicados en la 0.2.0: compila, ejecuta, depura con `lldb-dap` y perfila con LLVM; `.dmg` en Releases e instalador de una línea. Faltan el CI de macOS (bloque 6) y algunas pruebas en el Mac |
 
 ### Siguiente ciclo de trabajo
@@ -698,7 +698,7 @@ El producto final del proyecto es un `.deb` que se instala con
 - Responsable del paquete: Juan Francisco Gonzalez Pacheco
   <jfgonzalez@unimagdalena.edu.co>.
 
-**Publicada:** probada en Linux Mint 22; las versiones 0.1.0, 0.2.0 y 0.2.1 están en
+**Publicada:** probada en Linux Mint 22; las versiones 0.1.0 a 0.2.2 están en
 Releases y en el repositorio APT (<https://juanfrang.github.io/Penguin-cpp/>),
 firmado con una clave que solo está en los secretos de GitHub (se creó en
 una ejecución desechable de GitHub Actions y nunca estuvo en un equipo).
@@ -769,8 +769,9 @@ sistema):
 | 2b · Perfilador | Sin gprof en macOS: se compila con `-fprofile-instr-generate` y `llvm-profdata` lee cuántas veces se llamó cada función (sin tiempos ni grafo), en la misma ventana | `ProfileAnalysisFrm.pas`, `Version.pas` |
 | 5 · `.app` y `.dmg` | `packaging/build-macos.sh` arma `Penguin cpp.app` (`Info.plist` con "Abrir con" para C/C++ y proyectos `.dev`, icono `.icns`, idiomas, plantillas, ayuda, astyle 3.6.20 compilado desde su código), la sella ad hoc y arma `Penguin-cpp-<versión>-arm64.dmg` con un LEEME para abrirla la primera vez; `packaging/install-macos.sh` la instala o actualiza con una línea (`curl … \| bash`), sin el aviso de Gatekeeper; si faltan las Command Line Tools el IDE ofrece instalarlas | `packaging/`, `devPlatform.pas`, `MacSupport.pas` |
 
-**Publicada** desde la versión 0.2.0 (la última es la 0.2.1, con el manual
-propio y la revisión de memoria y robustez): `Penguin-cpp-0.2.1-arm64.dmg` en
+**Publicada** desde la versión 0.2.0 (la 0.2.1 trajo el manual propio y la
+revisión de memoria y robustez; la 0.2.2, tamaños de texto como los de
+macOS): `Penguin-cpp-0.2.2-arm64.dmg` en
 [Releases](https://github.com/JuanFranG/Penguin-cpp/releases/latest) y el
 instalador de una línea en <https://juanfrang.github.io/Penguin-cpp/>:
 

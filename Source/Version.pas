@@ -28,7 +28,7 @@ const
   // exe properties
   DEVCPP = 'Penguin cpp';
   // Penguin cpp's own version (semantic versioning); it continues Dev-C++ 6.3
-  DEVCPP_VERSION = '0.2.1';
+  DEVCPP_VERSION = '0.2.2';
 
   // delimiters
   DEV_INTERNAL_OPEN = '$__DEV_INTERNAL_OPEN';

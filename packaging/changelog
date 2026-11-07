@@ -1,3 +1,10 @@
+penguin-cpp (0.2.2) unstable; urgency=medium
+
+  * macOS: a new installation shows text at macOS' own sizes; the
+    interface was a third larger.
+
+ -- Juan Francisco Gonzalez Pacheco <jfgonzalez@unimagdalena.edu.co>  Sat, 07 Nov 2026 12:00:00 -0500
+
 penguin-cpp (0.2.1) unstable; urgency=medium
 
   * Penguin cpp's own manual, in Spanish and English: F1, the Help menu

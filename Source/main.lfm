@@ -375,6 +375,31 @@ object MainForm: TMainForm
     BevelOuter = bvNone
     FlowStyle = fsLeftRightTopBottom
     AutoWrap = True
+    ControlList = <
+      item
+        Control = tbMain
+      end
+      item
+        Control = tbEdit
+      end
+      item
+        Control = tbSearch
+      end
+      item
+        Control = tbProject
+      end
+      item
+        Control = tbSpecials
+      end
+      item
+        Control = tbCompile
+      end
+      item
+        Control = tbCompilers
+      end
+      item
+        Control = tbClasses
+      end>
     TabOrder = 0
     OnClick = ToolbarDockClick
     OnContextPopup = ToolbarDockContextPopup
@@ -6681,6 +6706,9 @@ object MainForm: TMainForm
       object N12: TMenuItem
         Caption = '-'
       end
+      object AttachProcessItem: TMenuItem
+        Action = actAttachProcess
+      end
       object Programreset1: TMenuItem
         Action = actStopExecute
       end
@@ -6776,6 +6804,9 @@ object MainForm: TMainForm
       end
       object ShowTipsItem: TMenuItem
         Action = actShowTips
+      end
+      object CheckUpdatesItem: TMenuItem
+        Action = actPackageCheck
       end
       object AboutDevCppItem: TMenuItem
         Tag = 18
@@ -7880,9 +7911,10 @@ object MainForm: TMainForm
       OnUpdate = actCodeCompletionUpdate
     end
     object actPackageCheck: TAction
-      Category = 'Tools'
-      Caption = '&Check for Packages'
+      Category = 'Help'
+      Caption = 'Check for updates...'
       ImageIndex = 41
+      OnExecute = actPackageCheckExecute
     end
     object actHelp: TAction
       Category = 'Help'

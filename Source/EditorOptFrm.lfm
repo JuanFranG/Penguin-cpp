@@ -14,6 +14,7 @@ object EditorOptForm: TEditorOptForm
   Position = poMainFormCenter
   OnClose = FormClose
   OnCreate = FormCreate
+  OnShow = FitMacLayout
   PixelsPerInch = 96
   object PagesMain: TPageControl
     Left = 0
@@ -381,7 +382,7 @@ object EditorOptForm: TEditorOptForm
           Top = 79
           Width = 27
           Height = 15
-          Anchors = [akLeft, akRight, akBottom]
+          Anchors = [akLeft, akTop, akRight]
           Caption = 'Font:'
         end
         object lblGutterWidth: TLabel
@@ -389,7 +390,7 @@ object EditorOptForm: TEditorOptForm
           Top = 22
           Width = 89
           Height = 14
-          Anchors = [akLeft, akRight, akBottom]
+          Anchors = [akLeft, akTop, akRight]
           AutoSize = False
           Caption = 'Gutter Width'
           WordWrap = True
@@ -399,7 +400,7 @@ object EditorOptForm: TEditorOptForm
           Top = 77
           Width = 20
           Height = 15
-          Anchors = [akLeft, akRight, akBottom]
+          Anchors = [akLeft, akTop, akRight]
           Caption = 'Size'
         end
         object cbLeadZero: TCheckBox

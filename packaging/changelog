@@ -1,3 +1,19 @@
+penguin-cpp (0.3.0) unstable; urgency=medium
+
+  * Check for updates and Update now for macOS and APT-based Linux installs,
+    with save/cancel handling and asynchronous release lookup.
+  * macOS: improve toolbar wrapping, welcome screen, settings, search,
+    CPU and process picker layouts; fix editor options loading.
+  * Expose Attach to process in Execute; detach without ending the attached
+    process and recognize the initial LLDB stop as an expected pause.
+  * Avoid object name collisions in shared output directories.
+  * Stage and verify macOS updates before replacing the previous app;
+    restore the old app if replacement fails.
+  * Add update/rollback tests, a macOS CI workflow and macOS-specific
+    first-run library instructions.
+
+ -- Juan Francisco Gonzalez Pacheco <jfgonzalez@unimagdalena.edu.co>  Thu, 12 Nov 2026 23:00:00 -0500
+
 penguin-cpp (0.2.2) unstable; urgency=medium
 
   * macOS: a new installation shows text at macOS' own sizes; the

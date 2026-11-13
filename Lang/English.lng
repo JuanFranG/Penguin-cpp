@@ -177,7 +177,7 @@ Ver=1
 
 
 9001=&About Penguin cpp...
-9002=&Check For Packages...
+9002=&Check for updates...
 9003=C&ustomize Help Menu...
 9004=Penguin cpp &Manual
 9005=Package Manager...
@@ -1319,3 +1319,22 @@ Ver=1
 79027=Indent width:
 79028=Braced List Style
 79029=Column Limit:
+
+80000=Check for updates
+80001=Checking published releases...
+80002=Penguin cpp %s is available (installed: %s).
+80003=Penguin cpp %s is up to date.
+80004=Installs from your configured APT repository in Terminal and requests your password. For a standalone .deb, use Open Downloads.
+80005=Downloads the latest macOS release, replaces this app and opens it again. Installation progress appears in Terminal.
+80006=Check again
+80007=Open Downloads
+80008=Close
+80009=Could not check for updates.
+80010=Version: %s
+80011=Your version (%s) is newer than the published release (%s).
+80012=The update check needs curl. Install curl with your package manager and try again.
+80013=Check your internet connection and try again. No files or settings were changed.
+80014=Libraries for your programs must be available for macOS. Use Apple's Command Line Tools to compile and debug; Linux apt commands do not apply here.
+80015=Update now
+80016=The IDE will ask you to save your work, then close and install the update.
+80017=Could not start the updater. On macOS, use the installed .app; on Linux, install a terminal and use APT or open Downloads.

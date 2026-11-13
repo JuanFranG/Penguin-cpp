@@ -46,12 +46,16 @@ begin
     MakeSourceName(P, '/home/u/curso/src/util.c'));
   Check(MakeObjectName(P, '/home/u/curso/src/util.c', '', '.o') = 'src/util.o', 'object next to its source',
     MakeObjectName(P, '/home/u/curso/src/util.c', '', '.o'));
-  Check(MakeObjectName(P, '/home/u/curso/main.c', 'obj', '.o') = 'obj/main.o', 'relative object folder',
+  Check(MakeObjectName(P, '/home/u/curso/main.c', 'obj', '.o') = MakeObjectName(P, '/home/u/curso/main.c', '/home/u/curso/obj', '.o'), 'relative object folder',
     MakeObjectName(P, '/home/u/curso/main.c', 'obj', '.o'));
-  Check(MakeObjectName(P, '/home/u/curso/main.c', '../build', '.o') = '../build/main.o', 'object folder above',
+  Check(MakeObjectName(P, '/home/u/curso/main.c', '../build', '.o') = '../build/' + ExtractFileName(MakeObjectName(P, '/home/u/curso/main.c', 'obj', '.o')), 'object folder above',
     MakeObjectName(P, '/home/u/curso/main.c', '../build', '.o'));
-  Check(MakeObjectName(P, '/home/u/curso/main.c', '/home/u/curso/obj', '.o') = 'obj/main.o',
+  Check(MakeObjectName(P, '/home/u/curso/main.c', '/home/u/curso/obj', '.o') = MakeObjectName(P, '/home/u/curso/main.c', 'obj', '.o'),
     'absolute object folder', MakeObjectName(P, '/home/u/curso/main.c', '/home/u/curso/obj', '.o'));
+  Check(MakeObjectName(P, '/home/u/curso/a/util.c', 'obj', '.o') <>
+    MakeObjectName(P, '/home/u/curso/b/util.c', 'obj', '.o'), 'same basename in different folders');
+  Check(MakeObjectName(P, '/home/u/curso/main.c', 'obj', '.o') <>
+    MakeObjectName(P, '/home/u/curso/main.cpp', 'obj', '.o'), 'same basename with different extensions');
 end;
 
 function Run(const Dir, Exe: String; const Args: array of String; out Output: String): Boolean;
@@ -81,8 +85,8 @@ procedure TestProject(const Dir: String);
 const
   ObjFolder = 'obj';
   // file name, function it defines, value it returns
-  Sources: array[0..4] of String = ('main file.c', 'it''s.c', '$(touch pwned).c', '`touch pwned2`.c',
-    'src' + PathDelim + 'util.c');
+  Sources: array[0..5] of String = ('main file.c', 'it''s.c', '$(touch pwned).c', '`touch pwned2`.c',
+    'src' + PathDelim + 'util.c', 'other' + PathDelim + 'util.c');
 var
   ProjectFile, Program_, Make, Output, Objects, LinkObjects, Rules, Obj, Src: String;
   I: Integer;
@@ -95,16 +99,18 @@ begin
   ProjectFile := Dir + 'proyecto de prueba.dev';
   Program_ := Dir + 'mi programa';
   ForceDirectories(Dir + 'src');
+  ForceDirectories(Dir + 'other');
   ForceDirectories(Dir + ObjFolder); // Compiler.NewMakeFile creates it too
 
   WriteText(Dir + Sources[0],
     '#include <stdio.h>' + LineEnding +
-    'int f1(void); int f2(void); int f3(void); int f4(void);' + LineEnding +
-    'int main(void) { printf("%d\n", f1() + f2() + f3() + f4()); return 0; }');
+    'int f1(void); int f2(void); int f3(void); int f4(void); int f5(void);' + LineEnding +
+    'int main(void) { printf("%d\n", f1() + f2() + f3() + f4() + f5()); return 0; }');
   WriteText(Dir + Sources[1], 'int f1(void) { return 1; }');
   WriteText(Dir + Sources[2], 'int f2(void) { return 20; }');
   WriteText(Dir + Sources[3], 'int f3(void) { return 300; }');
   WriteText(Dir + Sources[4], 'int f4(void) { return 4000; }');
+  WriteText(Dir + Sources[5], 'int f5(void) { return 50000; }');
 
   Objects := '';
   LinkObjects := '';
@@ -142,13 +148,13 @@ begin
 
   Check(Run(Dir, 'make', ['-f', 'Makefile.test', 'all'], Output), 'make all', Output);
   for I := 0 to High(Sources) do
-    Check(FileExists(Dir + ObjFolder + PathDelim + ChangeFileExt(ExtractFileName(Sources[I]), '.o')),
+    Check(FileExists(Dir + MakeObjectName(ProjectFile, Dir + Sources[I], ObjFolder, '.o')),
       'object of ' + Sources[I] + ' in obj/');
   Check(FileExists(Program_), 'the program was linked');
-  Check(Run(Dir, Program_, [], Output) and (Trim(Output) = '4321'), 'the program runs', QuotedStr(Output));
+  Check(Run(Dir, Program_, [], Output) and (Trim(Output) = '54321'), 'the program runs', QuotedStr(Output));
   Check(not FileExists(Dir + 'pwned') and not FileExists(Dir + 'pwned2'), 'nothing in the names ran');
   Check(Run(Dir, 'make', ['-f', 'Makefile.test', 'clean'], Output), 'make clean', Output);
-  Check(not FileExists(Program_) and not FileExists(Dir + ObjFolder + PathDelim + 'main file.o'),
+  Check(not FileExists(Program_) and not FileExists(Dir + MakeObjectName(ProjectFile, Dir + Sources[0], ObjFolder, '.o')),
     'clean removes the program and the objects');
   Check(FileExists(Dir + Sources[2]) and FileExists(Dir + Sources[4]), 'clean keeps the sources');
 end;

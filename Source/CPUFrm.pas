@@ -320,11 +320,31 @@ begin
 end;
 
 procedure TCPUForm.FormShow(Sender: TObject);
+{$IFDEF DARWIN}
+var
+  RegisterWidth: Integer;
+{$ENDIF}
 begin
   // Get column widths of registerbox
   RegisterListbox.Column[0].Width := devData.CPURegisterCol1;
   RegisterListbox.Column[1].Width := devData.CPURegisterCol2;
   RegisterListbox.Column[2].Width := devData.CPURegisterCol3;
+{$IFDEF DARWIN}
+  Canvas.Font.Assign(Font);
+  RegisterListbox.Column[0].Width := Max(RegisterListbox.Column[0].Width, Canvas.TextWidth('Register') + 20);
+  RegisterListbox.Column[1].Width := Max(RegisterListbox.Column[1].Width, Canvas.TextWidth('0xFFFFFFFFFFFFFFFF') + 20);
+  RegisterListbox.Column[2].Width := Max(RegisterListbox.Column[2].Width, Canvas.TextWidth('-9223372036854775808') + 20);
+  RegisterWidth := RegisterListbox.Column[0].Width + RegisterListbox.Column[1].Width +
+    RegisterListbox.Column[2].Width + 30;
+  RegPanel.Constraints.MinWidth := RegisterWidth;
+  RegPanel.Width := RegisterWidth;
+  Constraints.MinWidth := RegisterWidth + 480;
+  Width := Max(Width, Constraints.MinWidth);
+  // Keep the translated label separate from the entry field.
+  lblFunc.AutoSize := True;
+  edFunc.Left := lblFunc.Left + lblFunc.Width + 12;
+  edFunc.Width := Max(120, RadioATT.Left - edFunc.Left - 12);
+{$ENDIF}
 end;
 
 end.

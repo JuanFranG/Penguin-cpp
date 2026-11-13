@@ -3,14 +3,17 @@
 #   curl -fsSL https://juanfrang.github.io/Penguin-cpp/install-macos.sh | bash
 # It downloads the disk image of the latest release, puts the app in
 # /Applications (in ~/Applications when the user cannot write there) and
-# asks for Apple's Command Line Tools if they are missing. Downloaded with
-# curl, the app is not marked as coming from the internet, so macOS opens
-# it without asking (it is not signed by an Apple developer).
+# asks for Apple's Command Line Tools if they are missing.
 # INSTALL_DIR, if set, is the folder to install in.
 set -euo pipefail
 
 REPO=JuanFranG/Penguin-cpp
 APP_NAME="Penguin cpp.app"
+TARGET_APP_NAME=${INSTALL_APP_NAME:-$APP_NAME}
+case "$TARGET_APP_NAME" in
+  */*|.|..|'') echo "Invalid app name" >&2; exit 1 ;;
+esac
+case "$TARGET_APP_NAME" in *.app) ;; *) echo "Invalid app name" >&2; exit 1 ;; esac
 
 say() { printf '%s\n' "$*"; }
 fail() { printf 'Penguin cpp: %s\n' "$*" >&2; exit 1; }
@@ -32,26 +35,37 @@ mkdir -p "$DEST"
 
 WORK=$(mktemp -d "${TMPDIR:-/tmp}/penguin-cpp-install.XXXXXX")
 MOUNT=$WORK/mount
+STAGE=
+KEEP_STAGE=false
 cleanup() {
   if [ -d "$MOUNT" ]; then hdiutil detach -quiet "$MOUNT" 2>/dev/null || true; fi
+  if [ -n "$STAGE" ]; then
+    # A signal or failed rename must not remove the only surviving copy.
+    if [ -d "$STAGE/previous.app" ] && [ ! -e "$DEST/$TARGET_APP_NAME" ]; then
+      mv "$STAGE/previous.app" "$DEST/$TARGET_APP_NAME" || KEEP_STAGE=true
+    fi
+    if [ "$KEEP_STAGE" = false ]; then rm -rf "$STAGE";
+    else say "La copia anterior se conserva en $STAGE/previous.app" >&2; fi
+  fi
   rm -rf "$WORK"
 }
 trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
 say "Buscando la última versión..."
 # The latest release's page leads to its tag (.../releases/tag/v0.2.0).
 # GitHub's API would answer only 60 times an hour to one address, and a
 # classroom goes out through one.
-TAG=$(curl -fsSLI -o /dev/null -w '%{url_effective}' "https://github.com/$REPO/releases/latest")
+TAG=$(curl --proto '=https' --proto-redir '=https' --max-redirs 5 --connect-timeout 15 --max-time 30 -fsSLI -o /dev/null -w '%{url_effective}' "https://github.com/$REPO/releases/latest")
 TAG=${TAG##*/}
-case "$TAG" in
-  v[0-9]*) ;;
-  *) fail "no se encontró la última versión en https://github.com/$REPO/releases" ;;
-esac
+[[ "$TAG" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]] ||
+  fail "no se encontró una versión estable en https://github.com/$REPO/releases"
+
 URL="https://github.com/$REPO/releases/download/$TAG/Penguin-cpp-${TAG#v}-arm64.dmg"
 
 say "Descargando ${URL##*/}..."
-curl -fL --progress-bar -o "$WORK/penguin-cpp.dmg" "$URL"
+curl --proto '=https' --proto-redir '=https' --max-redirs 5 --connect-timeout 15 --max-time 600 -fL --progress-bar -o "$WORK/penguin-cpp.dmg" "$URL"
 
 mkdir "$MOUNT"
 hdiutil attach -quiet -nobrowse -readonly -mountpoint "$MOUNT" "$WORK/penguin-cpp.dmg"
@@ -59,9 +73,14 @@ hdiutil attach -quiet -nobrowse -readonly -mountpoint "$MOUNT" "$WORK/penguin-cp
 codesign --verify --deep --strict "$MOUNT/$APP_NAME" || fail "la app de la imagen de disco no está íntegra"
 
 say "Instalando en $DEST..."
-rm -rf "${DEST:?}/$APP_NAME"
-ditto "$MOUNT/$APP_NAME" "$DEST/$APP_NAME"
-xattr -dr com.apple.quarantine "$DEST/$APP_NAME" 2>/dev/null || true
+# Copy and verify on the destination filesystem before touching the old app.
+STAGE=$(mktemp -d "$DEST/.penguin-cpp-update.XXXXXX")
+ditto "$MOUNT/$APP_NAME" "$STAGE/$APP_NAME"
+codesign --verify --deep --strict "$STAGE/$APP_NAME" || fail "no se pudo verificar la copia nueva"
+if [ -e "$DEST/$TARGET_APP_NAME" ]; then mv "$DEST/$TARGET_APP_NAME" "$STAGE/previous.app"; fi
+if ! mv "$STAGE/$APP_NAME" "$DEST/$TARGET_APP_NAME"; then
+  fail "no se pudo reemplazar la app; se restaurará la versión anterior"
+fi
 
 if xcode-select -p > /dev/null 2>&1; then
   say "Penguin cpp está instalado: ábrelo desde $DEST o el Launchpad."

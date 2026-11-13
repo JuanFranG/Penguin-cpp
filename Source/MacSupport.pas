@@ -24,10 +24,13 @@ unit MacSupport;
 interface
 
 uses
-  Classes, SysUtils, LCLType, LCLProc, Menus, ActnList, StdCtrls, Forms, SynEditKeyCmds;
+  Classes, SysUtils, Controls, LCLType, LCLProc, Menus, ActnList, StdCtrls, Forms, SynEditKeyCmds;
 
-// On macOS, an owner-drawn combo box (a font picker that shows each font in
-// itself) becomes a plain one: Cocoa draws those badly
+// Enlarge legacy fixed-coordinate dialogs without enlarging their text.
+// Native Cocoa controls need more room than the original Delphi metrics.
+procedure ExpandMacDialog(Form: TCustomForm; WidthPercent, HeightPercent: Integer);
+
+// On macOS, owner-drawn font pickers become plain native dropdowns.
 procedure UseNativeComboBox(Combo: TComboBox);
 
 // Light or dark windows, menus and dialogs (macOS)
@@ -66,6 +69,55 @@ type
 procedure SetPinchHandler(Form: TCustomForm; Handler: TPinchEvent);
 
 implementation
+
+procedure ExpandMacDialog(Form: TCustomForm; WidthPercent, HeightPercent: Integer);
+{$IFDEF DARWIN}
+type
+  TControlBounds = record
+    Control: TControl;
+    Bounds: TRect;
+  end;
+var
+  Items: array of TControlBounds;
+  I, W, H: Integer;
+  procedure Collect(Parent: TWinControl);
+  var
+    J, N: Integer;
+  begin
+    Parent.DisableAlign;
+    for J := 0 to Parent.ControlCount - 1 do begin
+      N := Length(Items);
+      SetLength(Items, N + 1);
+      Items[N].Control := Parent.Controls[J];
+      Items[N].Bounds := Parent.Controls[J].BoundsRect;
+      if Parent.Controls[J] is TWinControl then
+        Collect(TWinControl(Parent.Controls[J]));
+    end;
+  end;
+begin
+  W := Form.ClientWidth;
+  H := Form.ClientHeight;
+  Collect(Form);
+  try
+    Form.ClientWidth := W * WidthPercent div 100;
+    Form.ClientHeight := H * HeightPercent div 100;
+    for I := 0 to High(Items) do
+      with Items[I] do
+        Control.SetBounds(Bounds.Left * WidthPercent div 100,
+          Bounds.Top * HeightPercent div 100,
+          (Bounds.Right - Bounds.Left) * WidthPercent div 100,
+          (Bounds.Bottom - Bounds.Top) * HeightPercent div 100);
+  finally
+    for I := High(Items) downto 0 do
+      if Items[I].Control is TWinControl then
+        TWinControl(Items[I].Control).EnableAlign;
+    Form.EnableAlign;
+  end;
+end;
+{$ELSE}
+begin
+end;
+{$ENDIF}
 
 function KeyText(Value: TShortCut): String;
 {$IFDEF DARWIN}

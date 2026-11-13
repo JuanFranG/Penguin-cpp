@@ -1,6 +1,7 @@
 object ProcessListForm: TProcessListForm
   Left = 511
   Top = 339
+  BorderStyle = bsDialog
   BorderIcons = []
   Caption = 'Attach to process'
   ClientHeight = 98
@@ -13,6 +14,7 @@ object ProcessListForm: TProcessListForm
   Font.Style = []
   Position = poMainFormCenter
   OnCreate = FormCreate
+  OnShow = FormShow
   OnDestroy = FormDestroy
   PixelsPerInch = 96
   object MainLabel: TLabel
@@ -28,6 +30,7 @@ object ProcessListForm: TProcessListForm
     Width = 75
     Height = 25
     Caption = 'OK'
+    Default = True
     ModalResult = 1
     NumGlyphs = 2
     TabOrder = 0
@@ -38,6 +41,7 @@ object ProcessListForm: TProcessListForm
     Width = 75
     Height = 25
     Caption = 'Cancel'
+    Cancel = True
     ModalResult = 2
     NumGlyphs = 2
     TabOrder = 1

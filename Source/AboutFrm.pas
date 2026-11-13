@@ -86,7 +86,7 @@ type
 implementation
 
 uses
-  devCFG, Utils, MultiLangSupport, main, devPlatform;
+  devCFG, Utils, MultiLangSupport, main, devPlatform, UpdateCheckFrm;
 
 {$R *.lfm}
 
@@ -181,7 +181,10 @@ end;
 
 procedure TAboutForm.btnUpdateCheckClick(Sender: TObject);
 begin
-  OpenDocument('https://github.com/JuanFranG/Penguin-cpp/releases');
+  if ShowUpdateCheck then begin
+    ModalResult := mrOK;
+    Application.QueueAsyncCall(MainForm.RequestUpdate, 0);
+  end;
 end;
 
 procedure TAboutForm.btnAuthorsDragDrop(Sender, Source: TObject; X,

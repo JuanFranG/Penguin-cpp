@@ -77,3 +77,5 @@ Source/penguin-cpp.res
 heaptrc.log
 /build/
 /penguin-cpp.app/
+
+Source/Tests/UpdateTest/build/

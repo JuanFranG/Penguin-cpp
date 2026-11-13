@@ -27,7 +27,7 @@ uses
   ActnList, ToolFrm, Debugger, ClassBrowser, CodeCompletion, CppParser, CppTokenizer, SyncObjs,
   StrUtils, SynEditTypes, devFileMonitor, devMonitorTypes, EditorList, devShortcuts,
   devCFG, SynEditTextBuffer, CppPreprocessor, CBUtils, StatementList, AStyleFormatterOptionsFrm,
-  ClangFormatterOptionsFrm, ExtDlgs, PenguinPalette, WelcomeTiles;
+  ClangFormatterOptionsFrm, ExtDlgs, PenguinPalette, WelcomeTiles, UpdateCheckFrm, UpdateInstall;
 
 type
   TRunEndAction = (reaNone, reaProfile);
@@ -480,6 +480,8 @@ type
     actMoveSelDown1: TMenuItem;
     actCodeCompletion: TAction;
     actPackageCheck: TAction;
+    CheckUpdatesItem: TMenuItem;
+    AttachProcessItem: TMenuItem;
     actHelp: TAction;
     FolderPopup: TPopupMenu;
     Addfolder2: TMenuItem;
@@ -807,6 +809,7 @@ type
     procedure actMoveSelDownExecute(Sender: TObject);
     procedure actCodeCompletionUpdate(Sender: TObject);
     procedure actCodeCompletionExecute(Sender: TObject);
+    procedure actPackageCheckExecute(Sender: TObject);
     procedure actHelpExecute(Sender: TObject);
     procedure actShortenCompPathsExecute(Sender: TObject);
     procedure actSyntaxCheckFileExecute(Sender: TObject);
@@ -862,7 +865,10 @@ type
     fProject: TProject;
     fDebugger: TDebugger;
     fCompiler: TCompiler;
+    fUpdatePending: Boolean;
     fZoomDelta: Integer; // wheel turned towards the next zoom step
+    fWelcomeScroll: TScrollBox;
+    fWelcomeContent: TPanel;
     fWelcomeTiles: array of TWelcomeTile; // macOS: the welcome buttons, drawn by WelcomeTiles
     fEditorList: TEditorList;
     fPanelPalette: TPanelPalette;
@@ -919,6 +925,7 @@ type
     procedure FitToolbarDock(Data: PtrInt);
     procedure ForwardMenuClick(Sender: TObject);
   public
+    procedure RequestUpdate(Data: PtrInt);
     procedure ZoomEditors(WheelDelta: Integer);
     procedure PinchEditors(Magnification: Double);
     procedure EvaluateInputKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -1031,6 +1038,7 @@ begin
     actCloseProjectExecute(Self);
   if Assigned(fProject) then begin
     Action := caNone;
+    fUpdatePending := False;
     Exit;
   end;
 
@@ -1038,6 +1046,7 @@ begin
   actCloseAllExecute(Self);
   if fEditorList.PageCount > 0 then begin
     Action := caNone;
+    fUpdatePending := False;
     Exit;
   end;
 
@@ -1086,6 +1095,12 @@ begin
 
   SaveOptions;
 
+  if fUpdatePending and not LaunchUpdateInstaller then begin
+    fUpdatePending := False;
+    Action := caNone;
+    MessageDlg(Lang[80017], mtError, [mbOK], 0);
+    Exit;
+  end;
   ReleaseTabImages;
   Action := caFree;
 end;
@@ -1356,6 +1371,9 @@ begin
   actWatchItem.Caption := Lang[ID_ITEM_WATCHITEMS];
   actStopExecute.Caption := Lang[ID_ITEM_STOPEXECUTION];
   actViewCPU.Caption := Lang[ID_ITEM_CPUWINDOW];
+{$IFDEF DARWIN}
+  ViewCPUBtn.Caption := 'CPU…'; // the native button has room for a short label
+{$ENDIF}
   ClearallWatchPop.Caption := Lang[ID_ITEM_CLEARALL];
   actNextIns.Caption := Lang[ID_ITEM_NEXTINS];
   actStepIns.Caption := Lang[ID_ITEM_STEPINS];
@@ -1436,6 +1454,12 @@ begin
   LeftProjectSheet.Caption := Lang[ID_LP_PROJECT];
   LeftClassSheet.Caption := Lang[ID_LP_CLASSES];
   LeftDebugSheet.Caption := Lang[ID_SHEET_DEBUG];
+{$IFDEF DARWIN}
+  Canvas.Font.Assign(LeftPageControl.Font);
+  Canvas.Font.Style := [fsBold];
+  LeftPageControl.Constraints.MinWidth := Canvas.TextWidth(LeftProjectSheet.Caption) +
+    Canvas.TextWidth(LeftClassSheet.Caption) + Canvas.TextWidth(LeftDebugSheet.Caption) + 84;
+{$ENDIF}
 
   //Welcome Screen
   ButtonNewDocument.Caption := Lang[ID_ITEM_NEWDOCUMENT];
@@ -2771,6 +2795,17 @@ begin
     if Assigned(e) then
       fEditorList.CloseEditor(e);
   end;
+end;
+
+procedure TMainForm.actPackageCheckExecute(Sender: TObject);
+begin
+  if ShowUpdateCheck then RequestUpdate(0);
+end;
+
+procedure TMainForm.RequestUpdate(Data: PtrInt);
+begin
+  fUpdatePending := True;
+  Close;
 end;
 
 procedure TMainForm.actAboutExecute(Sender: TObject);
@@ -5852,31 +5887,34 @@ end;
 
 procedure TMainForm.actAttachProcessUpdate(Sender: TObject);
 begin
-  if assigned(fProject) and (fProject.Options.typ = dptDyn) then begin
-    TCustomAction(Sender).Visible := true;
-    TCustomAction(Sender).Enabled := not devExecutor.Running;
-  end else
-    TCustomAction(Sender).Visible := false;
+  TCustomAction(Sender).Visible := True;
+  TCustomAction(Sender).Enabled := (GetCompileTarget <> ctNone) and
+    not fCompiler.Compiling and not devExecutor.Running and not fDebugger.Executing;
 end;
 
 procedure TMainForm.actAttachProcessExecute(Sender: TObject);
+var
+  Exe: String;
+  E: TEditor;
 begin
+  Exe := '';
+  if Assigned(fProject) then
+    Exe := fProject.Executable
+  else begin
+    E := EditorList.GetEditor;
+    if Assigned(E) then Exe := ChangeFileExt(E.FileName, EXE_EXT);
+  end;
+  if not FileExists(Exe) then begin
+    MessageDlg(Lang[ID_ERR_PROJECTNOTCOMPILED], mtWarning, [mbOK], 0);
+    Exit;
+  end;
   PrepareDebugger;
-  if assigned(fProject) then begin
-    if not FileExists(fProject.Executable) then begin
-      MessageDlg(Lang[ID_ERR_PROJECTNOTCOMPILED], mtWarning, [mbOK], 0);
-      exit;
-    end;
-
-    try
-      ProcessListForm := TProcessListForm.Create(self);
-      if (ProcessListForm.ShowModal = mrOK) and (ProcessListForm.ProcessCombo.ItemIndex > -1) then begin
-        fDebugger.Attach(fProject.Executable,
-          PtrInt(ProcessListForm.ProcessList[ProcessListForm.ProcessCombo.ItemIndex]));
-      end
-    finally
-      ProcessListForm.Free;
-    end;
+  ProcessListForm := TProcessListForm.Create(Self);
+  try
+    if (ProcessListForm.ShowModal = mrOK) and (ProcessListForm.ProcessCombo.ItemIndex >= 0) then
+      fDebugger.Attach(Exe, PtrInt(ProcessListForm.ProcessList[ProcessListForm.ProcessCombo.ItemIndex]));
+  finally
+    FreeAndNil(ProcessListForm);
   end;
 end;
 
@@ -6275,6 +6313,18 @@ begin
   // shown children to its top left corner, so a recent file that appears
   // later went up over the tiles
   PanelRight.AutoSize := False;
+  // Keep the welcome content reachable when the report pane or a smaller
+  // window leaves too little room. MainPanel still owns its visibility.
+  fWelcomeScroll := TScrollBox.Create(Self);
+  fWelcomeScroll.Parent := MainPanel;
+  fWelcomeScroll.Align := alClient;
+  fWelcomeScroll.BorderStyle := bsNone;
+  fWelcomeContent := TPanel.Create(Self);
+  fWelcomeContent.Parent := fWelcomeScroll;
+  fWelcomeContent.BevelOuter := bvNone;
+  fWelcomeContent.ParentColor := True;
+  PanelLeft.Parent := fWelcomeContent;
+  PanelRight.Parent := fWelcomeContent;
   // A pinch on the trackpad zooms, like Command and the wheel
   SetPinchHandler(Self, PinchEditors);
 {$ENDIF}
@@ -6982,6 +7032,8 @@ end;
 
 procedure TMainForm.PageControlPanelResize(Sender: TObject);
 begin
+  if Assigned(fWelcomeContent) then
+    ResizeWelcomeComponent;
   if MainForm.Visible then
     fEditorList.OnPanelResize(Sender);
 end;
@@ -7399,40 +7451,71 @@ end;
 
 procedure TMainForm.ResizeWelcomeComponent;
 var
-  adj: Integer;
+  adj, WelcomeWidth: Integer;
+{$IFDEF DARWIN}
+  I, RowTop, RowStep: Integer;
+  Labels: array of TLabel;
+  Chips: array of TPanel;
+{$ENDIF}
 begin
   MainPanel.Height := PageControlPanel.Height;
   MainPanel.Width := PageControlPanel.Width;
+  WelcomeWidth := PageControlPanel.Width;
+{$IFDEF DARWIN}
+  if Assigned(fWelcomeContent) then begin
+    // Keep the left column compact enough for a laptop window. The scroll
+    // container remains available when even this block cannot fit.
+    ImageLogo.Top := Max(24, (PageControlPanel.ClientHeight - 500) div 2);
+    LabelWelcome.Top := ImageLogo.Top + ImageLogo.Height + 16;
+    LabelVersion.Top := LabelWelcome.Top + LabelWelcome.Height + 24;
+    LabelNumVersion.Top := LabelVersion.Top;
+    LabelView.Top := LabelVersion.Top + LabelVersion.Height + 6;
+    LabelDocumentation.Top := LabelView.Top;
+    LabelHotkeys.Top := LabelView.Top + LabelView.Height + 20;
+    Labels := [LabelOpen, LabelSave, LabelZoom, LabelRun, LabelCompile, LabelClear];
+    Chips := [PanelDescOpen, PanelDescSave, PanelDescZoom, PanelDescRun, PanelDescCompile, PanelDescClear];
+    RowTop := LabelHotkeys.Top + LabelHotkeys.Height + 16;
+    RowStep := Max(28, PanelDescOpen.Height + 8);
+    for I := 0 to High(Labels) do begin
+      Labels[I].Top := RowTop + I * RowStep;
+      Chips[I].Top := Labels[I].Top;
+    end;
+    fWelcomeContent.SetBounds(0, 0,
+      Max(fWelcomeScroll.ClientWidth, 720),
+      Max(fWelcomeScroll.ClientHeight, LabelClear.Top + LabelClear.Height + 40));
+    WelcomeWidth := fWelcomeContent.Width;
+  end;
+{$ENDIF}
   PanelLeft.Height := PageControlPanel.Height div 2;
-  PanelLeft.Width := PageControlPanel.Width div 2;
+  PanelLeft.Width := WelcomeWidth div 2;
   ImageBackGround.Height := PageControlPanel.Height div 2;
-  ImageBackGround.Width := PageControlPanel.Width div 2;
-  ImageLogo.Left := (PageControlPanel.Width div 4) - (ImageLogo.Width div 2);
-  LabelWelcome.Left := (PageControlPanel.Width div 4) - (LabelWelcome.Width div 2);
+  ImageBackGround.Width := WelcomeWidth div 2;
+  ImageLogo.Left := (WelcomeWidth div 4) - (ImageLogo.Width div 2);
+  LabelWelcome.Left := (WelcomeWidth div 4) - (LabelWelcome.Width div 2);
   LabelSponsor.Top := Max(LabelClear.Top+LabelClear.Height+25,(PageControlPanel.Height - 60) - ImageEmbarcadero.Height - LabelSponsor.Height);
   LabelSponsor.Left := 50;
   ImageEmbarcadero.Top := Max(LabelClear.Top+LabelClear.Height+LabelSponsor.Height+25,(PageControlPanel.Height - 60) - ImageEmbarcadero.Height);
   ImageEmbarcadero.Left := 60;
-  LabelVersion.Left := (PageControlPanel.Width div 4) - (LabelVersion.Width) + 10;
-  LabelNumVersion.Left := (PageControlPanel.Width div 4) + 13;
-  LabelView.Left := (PageControlPanel.Width div 4) - (LabelView.Width + 30);
-  LabelDocumentation.Left := (PageControlPanel.Width div 4) - 23;
-  LabelHotkeys.Left := (PageControlPanel.Width div 4) - (LabelHotkeys.Width div 2);
+  LabelVersion.Left := (WelcomeWidth div 4) - (LabelVersion.Width) + 10;
+  LabelNumVersion.Left := (WelcomeWidth div 4) + 13;
+  LabelView.Left := (WelcomeWidth div 4) - (LabelView.Width + 30);
+  LabelDocumentation.Left := (WelcomeWidth div 4) - 23;
+  LabelHotkeys.Left := (WelcomeWidth div 4) - (LabelHotkeys.Width div 2);
 
   adj := 45;
-  LabelOpen   .Left     := (PageControlPanel.Width div 4) - adj - LabelOpen   .width;
-  LabelSave   .Left     := (PageControlPanel.Width div 4) - adj - LabelSave   .width;
-  LabelZoom   .Left     := (PageControlPanel.Width div 4) - adj - LabelZoom   .width;
-  LabelRun    .Left     := (PageControlPanel.Width div 4) - adj - LabelRun    .width;
-  LabelCompile.Left     := (PageControlPanel.Width div 4) - adj - LabelCompile.width;
-  LabelClear  .left     := (PageControlPanel.Width div 4) - adj - LabelClear  .width;
+  LabelOpen   .Left     := (WelcomeWidth div 4) - adj - LabelOpen   .width;
+  LabelSave   .Left     := (WelcomeWidth div 4) - adj - LabelSave   .width;
+  LabelZoom   .Left     := (WelcomeWidth div 4) - adj - LabelZoom   .width;
+  LabelRun    .Left     := (WelcomeWidth div 4) - adj - LabelRun    .width;
+  LabelCompile.Left     := (WelcomeWidth div 4) - adj - LabelCompile.width;
+  LabelClear  .left     := (WelcomeWidth div 4) - adj - LabelClear  .width;
 
-  PanelDescOpen   .Left := (PageControlPanel.Width div 4) + adj;
-  PanelDescSave   .Left := (PageControlPanel.Width div 4) + adj;
-  PanelDescZoom   .Left := (PageControlPanel.Width div 4) + adj;
-  PanelDescRun    .Left := (PageControlPanel.Width div 4) + adj;
-  PanelDescCompile.Left := (PageControlPanel.Width div 4) + adj;
-  PanelDescClear  .Left := (PageControlPanel.Width div 4) + adj;
+  PanelDescOpen   .Left := (WelcomeWidth div 4) + adj;
+  PanelDescSave   .Left := (WelcomeWidth div 4) + adj;
+  PanelDescZoom   .Left := (WelcomeWidth div 4) + adj;
+  PanelDescRun    .Left := (WelcomeWidth div 4) + adj;
+  PanelDescCompile.Left := (WelcomeWidth div 4) + adj;
+  PanelDescClear  .Left := (WelcomeWidth div 4) + adj;
 
   ButtonNewDocument.Left := Max(50, (PanelRight.Width div 2) - ButtonNewDocument.Width - (ButtonOpenDocument.Width div 2) - 65);
   ButtonOpenDocument.Left := ButtonNewDocument.Left + ButtonNewDocument.Width + 25;
@@ -7464,10 +7547,21 @@ procedure TMainForm.LayOutWelcomeRight;
 const
   Gap = 24;
 var
-  Row, Top, Block, I: Integer;
+  Row, Top, Block, I, TileWidth: Integer;
   Memos: array[0..4] of TMemo;
   Buttons: array[0..4] of TSpeedButton;
 begin
+  // Fit the three tiles to the available column instead of pushing the
+  // last one outside a narrower window.
+  TileWidth := Max(96, (PanelRight.ClientWidth - 72) div 3);
+  TileWidth := Min(137, TileWidth);
+  ButtonNewDocument.SetBounds(24, ButtonNewDocument.Top, TileWidth, ButtonNewDocument.Height);
+  ButtonOpenDocument.SetBounds(36 + TileWidth, ButtonOpenDocument.Top, TileWidth, ButtonOpenDocument.Height);
+  ButtonOptions.SetBounds(48 + 2 * TileWidth, ButtonOptions.Top, TileWidth, ButtonOptions.Height);
+  ButtonChangeTheme.SetBounds(ButtonNewDocument.Left, ButtonChangeTheme.Top, TileWidth, 46);
+  ButtonChangeFont.SetBounds(ButtonOpenDocument.Left, ButtonChangeFont.Top, TileWidth, 46);
+  ButtonChangeLanguage.SetBounds(ButtonOptions.Left, ButtonChangeLanguage.Top, TileWidth, 46);
+
   // The small buttons: room for a caption of two lines (other languages
   // say "Change Language" in longer words)
   ButtonChangeTheme.Height := 46;

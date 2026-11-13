@@ -46,7 +46,7 @@ function MakeObjectName(const ProjectFile, SourceFile, ObjectFolder, ObjExt: Str
 implementation
 
 uses
-  SysUtils;
+  SysUtils, SHA1;
 
 function MakeUnsafe(const S: String): Boolean;
 var
@@ -85,7 +85,7 @@ begin
   if Folder[1] <> PathDelim then // relative to the project's folder
     Folder := ExtractFilePath(ProjectFile) + Folder;
   Folder := IncludeTrailingPathDelimiter(ExpandFileName(Folder));
-  Result := ExtractRelativePath(ProjectFile, Folder + ChangeFileExt(ExtractFileName(SourceFile), ObjExt));
+  Result := ExtractRelativePath(ProjectFile, Folder + 'unit-' + SHA1Print(SHA1String(MakeSourceName(ProjectFile, ExpandFileName(SourceFile)))) + ObjExt);
 end;
 
 end.

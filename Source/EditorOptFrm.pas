@@ -157,6 +157,7 @@ type
     lbNewDocEncoding: TLabel;
     cbNewDocEncoding: TComboBox;
     procedure FormCreate(Sender: TObject);
+    procedure FitMacLayout(Sender: TObject);
     procedure SetGutter;
     procedure UpdatePreviews;
     procedure ElementListClick(Sender: TObject);
@@ -194,6 +195,8 @@ type
     procedure PagesMainChange(Sender: TObject);
     procedure NameOptionsClick(Sender: TObject);
   private
+    fMacLayoutDone: Boolean;
+    fLoadingCodeIns: Boolean;
     ffgColor: TColor;
     fbgColor: TColor;
     fGutColor: TPoint;
@@ -226,6 +229,23 @@ const
   cABreakLine = 9;
   cErrorLine = 11;
   cSelection = 15;
+
+procedure TEditorOptForm.FitMacLayout(Sender: TObject);
+begin
+  if not fMacLayoutDone then begin
+    fMacLayoutDone := True;
+    ExpandMacDialog(Self, 150, 130);
+{$IFDEF DARWIN}
+    lblGutterFont.AutoSize := False;
+    lblGutterFont.Width := 140;
+    lblGutterFontSize.AutoSize := False;
+    lblGutterFontSize.Width := 100;
+    lvCodeIns.ColWidths[0] := (lvCodeIns.ClientWidth - 100) div 2;
+    lvCodeIns.ColWidths[1] := 80;
+    lvCodeIns.ColWidths[2] := lvCodeIns.ClientWidth - lvCodeIns.ColWidths[0] - 100;
+{$ENDIF}
+  end;
+end;
 
 procedure TEditorOptForm.FormCreate(Sender: TObject);
 var
@@ -572,7 +592,7 @@ begin
   cbScrollHint.Caption := Lang[ID_EOPT_SCROLLHINT];
   cbParserHints.Caption := Lang[ID_EOPT_PARSERHINTS];
   cbFunctionHint.Caption := Lang[ID_EOPT_CLOSEBRACE];
-  ScrollHint.Caption := Lang[ID_EOPT_CTRLSCROLLHINT];
+  ScrollHint.Caption := StringReplace(Lang[ID_EOPT_CTRLSCROLLHINT], 'Ctrl', ZoomKeyText, [rfReplaceAll]);
   cbSyntaxHighlight.Caption := Lang[ID_EOPT_USESYNTAX];
   lbNewDocEncoding.Caption := Lang[ID_EOPT_NEWDOCENCODING];
 
@@ -1214,21 +1234,35 @@ begin
 end;
 
 procedure TEditorOptForm.lvCodeInsSelectCell(Sender: TObject; ACol, ARow: Integer; var CanSelect: Boolean);
+var
+  Snippet: TStringList;
 begin
-  CodeIns.ClearAll;
-  if (lvCodeIns.Row >= lvCodeIns.FixedRows) then begin
-    CodeIns.Text := StrToCodeIns(TStringList(lvCodeIns.Objects[0, ARow]).Text); // store code in first column object
+  // Changing FixedRows/RowCount also selects cells while the grid is being
+  // populated. Header and not-yet-populated rows have no snippet object.
+  fLoadingCodeIns := True;
+  try
+    CodeIns.ClearAll;
+    if (ARow >= lvCodeIns.FixedRows) and (ARow < lvCodeIns.RowCount) then begin
+      Snippet := TStringList(lvCodeIns.Objects[0, ARow]);
+      if Assigned(Snippet) then
+        CodeIns.Text := StrToCodeIns(Snippet.Text);
+    end;
     UpdateCIButtons;
+  finally
+    fLoadingCodeIns := False;
   end;
 end;
 
 procedure TEditorOptForm.CodeInsStatusChange(Sender: TObject; Changes: TSynStatusChanges);
+var
+  Snippet: TStringList;
 begin
-  if (lvCodeIns.Row >= lvCodeIns.FixedRows) then begin
-    if (scModified in Changes) then begin
-      TStringList(lvCodeIns.Objects[0, lvCodeIns.Row]).Text := CodeInstoStr(CodeIns.Text); // store text in hidden field
-      CodeIns.Modified := false;
-    end;
+  if not fLoadingCodeIns and (lvCodeIns.Row >= lvCodeIns.FixedRows) and
+    (lvCodeIns.Row < lvCodeIns.RowCount) and (scModified in Changes) then begin
+    Snippet := TStringList(lvCodeIns.Objects[0, lvCodeIns.Row]);
+    if Assigned(Snippet) then
+      Snippet.Text := CodeInstoStr(CodeIns.Text);
+    CodeIns.Modified := False;
   end;
 end;
 

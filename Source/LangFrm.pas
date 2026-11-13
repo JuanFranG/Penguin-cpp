@@ -76,7 +76,11 @@ begin
   lblEditInfo.Caption := Lang[ID_LANGFORM_THEMCHANGEHINT];
   Finish1.Caption := Lang[ID_LANGFORM_FINISH1];
   Finish2.Caption := Lang[ID_LANGFORM_FINISH2];
+{$IFDEF DARWIN}
+  Finish3.Caption := Lang[80014];
+{$ELSE}
   Finish3.Caption := Lang[ID_LANGFORM_FINISH3];
+{$ENDIF}
   OkBtn.Caption := Lang[ID_LANGFORM_NEXT];
 end;
 

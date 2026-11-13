@@ -31,7 +31,7 @@ type
     btnExecute: TButton;
     btnCancel: TButton;
     FindTabs: TTabControl;
-    lblFind: TLabel;
+    lblFind: TStaticText;
     cboFindText: TComboBox;
     grpOptions: TGroupBox;
     cbMatchCase: TCheckBox;
@@ -50,7 +50,7 @@ type
     rbOpenFiles: TRadioButton;
     cbPrompt: TCheckBox;
     cboReplaceText: TComboBox;
-    lblReplace: TLabel;
+    lblReplace: TStaticText;
     FindPopup: TPopupMenu;
     FindCopy: TMenuItem;
     FindPaste: TMenuItem;
@@ -79,6 +79,7 @@ type
     fTabIndex: integer;
     fTempSynEdit: TSynEditEx;
     procedure LoadText;
+    procedure LayoutForMac;
     procedure FindAllAction(Sender: TObject; const aSearch, aReplace: String; Line, Column: integer; var Action:
       TSynReplaceAction);
     function Execute(editor: TSynEditEx; action: TFindAction): integer;
@@ -437,8 +438,8 @@ begin
   FindTabs.Tabs.Add(Lang[ID_FIND_REPLACEFILES]);
 
   //controls
-  lblFind.Caption := Lang[ID_FIND_TEXT];
-  lblReplace.Caption := Lang[ID_FIND_REPLACEWITH];
+  lblFind.Caption := StringReplace(Lang[ID_FIND_TEXT], '&', '', [rfReplaceAll]);
+  lblReplace.Caption := StringReplace(Lang[ID_FIND_REPLACEWITH], '&', '', [rfReplaceAll]);
   grpOptions.Caption := Lang[ID_FIND_GRP_OPTIONS];
   cbMatchCase.Caption := Lang[ID_FIND_CASE];
   cbWholeWord.Caption := Lang[ID_FIND_WWORD];
@@ -470,6 +471,56 @@ begin
   FindPaste.Caption := Lang[ID_ITEM_PASTE];
   FindSelAll.Caption := Lang[ID_ITEM_SELECTALL];
 end;
+
+procedure TFindForm.LayoutForMac;
+{$IFDEF DARWIN}
+const
+  Gap = 12;
+var
+  Row, W, Col, Y, I: Integer;
+  procedure PlaceGroup(Group: TGroupBox; X, Top: Integer; const Items: array of TControl);
+  var
+    J: Integer;
+  begin
+    Group.SetBounds(X, Top, Col, 4 * Row + Gap);
+    for J := 0 to High(Items) do
+      Items[J].SetBounds(Gap, Gap + J * Row, Col - 2 * Gap, Row);
+  end;
+begin
+  Canvas.Font.Assign(Font);
+  Row := Canvas.TextHeight('Ágj') + 10;
+  if Row < 26 then Row := 26;
+  // All four tabs must fit, including the translated "Replace in files".
+  W := 4 * Gap;
+  for I := 0 to FindTabs.Tabs.Count - 1 do
+    Inc(W, Canvas.TextWidth(FindTabs.Tabs[I]) + 36);
+  if W < 620 then W := 620;
+  ClientWidth := W;
+  Col := (W - 3 * Gap) div 2;
+  Y := 2 * Row;
+  lblFind.SetBounds(Gap, Y, W - 2 * Gap, Row);
+  cboFindText.SetBounds(Gap, Y + Row, W - 2 * Gap, Row);
+  lblReplace.SetBounds(Gap, Y + 2 * Row + Gap, W - 2 * Gap, Row);
+  cboReplaceText.SetBounds(Gap, Y + 3 * Row + Gap, W - 2 * Gap, Row);
+  Inc(Y, 4 * Row + 2 * Gap);
+  PlaceGroup(grpOptions, Gap, Y, [cbMatchCase, cbWholeWord, cbPrompt]);
+  PlaceGroup(grpDirection, Col + 2 * Gap, Y, [rbForward, rbBackward]);
+  PlaceGroup(grpWhere, Col + 2 * Gap, Y, [rbProjectFiles, rbOpenFiles, rbCurFile]);
+  Inc(Y, grpOptions.Height + Gap);
+  PlaceGroup(grpScope, Gap, Y, [rbGlobal, rbSelectedOnly]);
+  PlaceGroup(grpOrigin, Col + 2 * Gap, Y, [rbFromCursor, rbEntireScope]);
+  // Two-option groups need less vertical room.
+  grpScope.Height := 3 * Row + Gap;
+  grpOrigin.Height := grpScope.Height;
+  FindTabs.Height := Y + grpScope.Height + Gap;
+  ClientHeight := FindTabs.Height + Row + 2 * Gap;
+  btnExecute.SetBounds(Gap, FindTabs.Height + Gap, 140, Row);
+  btnCancel.SetBounds(W - 140 - Gap, btnExecute.Top, 140, Row);
+end;
+{$ELSE}
+begin
+end;
+{$ENDIF}
 
 procedure TFindForm.FormCreate(Sender: TObject);
 begin
@@ -505,6 +556,7 @@ begin
   ActiveControl := cboFindText;
 
   FindTabsChange(nil);
+  LayoutForMac;
 end;
 
 procedure TFindForm.FindCutClick(Sender: TObject);

@@ -101,6 +101,7 @@ type
     procedure btnOkClick(Sender: TObject);
     procedure btnHelpClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure FitMacLayout(Sender: TObject);
     procedure vleExternalEditButtonClick(Sender: TObject);
     procedure vleExternalValidate(Sender: TObject; ACol, ARow: Integer; const KeyName, KeyValue: string);
     procedure btnExtAddClick(Sender: TObject);
@@ -114,6 +115,7 @@ type
     procedure SpeedButton2Click(Sender: TObject);
     procedure btnCancelClick(Sender: TObject);
   private
+    fMacLayoutDone: Boolean;
     procedure LoadText;
   end;
 
@@ -309,6 +311,23 @@ begin
   OpenManual;
 end;
 
+procedure TEnviroForm.FitMacLayout(Sender: TObject);
+begin
+  if not fMacLayoutDone then begin
+    fMacLayoutDone := True;
+    ExpandMacDialog(Self, 150, 130);
+{$IFDEF DARWIN}
+    // VCL styles do not exist on Cocoa. Only show working appearance controls.
+    ListBoxStyle.Visible := False;
+    LblStyle.Visible := False;
+    UIfontlabel.SetBounds(24, 24, 200, UIfontlabel.Height);
+    cbUIfont.SetBounds(24, 60, ClientWidth - 250, cbUIfont.Height);
+    lblSize.SetBounds(ClientWidth - 220, 24, 180, lblSize.Height);
+    cbUIfontsize.SetBounds(ClientWidth - 220, 60, 196, cbUIfontsize.Height);
+{$ENDIF}
+  end;
+end;
+
 procedure TEnviroForm.FormCreate(Sender: TObject);
 var
   I, sel: integer;
@@ -367,6 +386,9 @@ begin
         cbUIfont.ItemIndex := I;
         break;
       end;
+
+    if cbUIfont.ItemIndex < 0 then
+      cbUIfont.ItemIndex := cbUIfont.Items.Add(InterfaceFont);
 
     // Do the same for the size selection
     for I := 0 to cbUIfontsize.Items.Count - 1 do

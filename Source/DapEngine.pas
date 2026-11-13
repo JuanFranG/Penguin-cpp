@@ -117,6 +117,8 @@ type
     fWorkDir: String;
     fTty: String;
     // The session
+    fAttached: Boolean;      // detach instead of terminating an existing process
+    fAttaching: Boolean;     // only the initial stop is expected
     fLaunched: Boolean;     // launch or attach sent
     fConfigured: Boolean;   // configurationDone sent: breakpoints go at once
     fStopAtMain: Boolean;   // a breakpoint on main is set, to remove when hit
@@ -678,6 +680,8 @@ begin
   fQuitting := False;
   fTerminatedSent := False;
   fEnded := False;
+  fAttached := False;
+  fAttaching := False;
   fLaunched := False;
   fConfigured := False;
   fFrameId := 0;
@@ -715,7 +719,7 @@ begin
   fQuitting := True; // no events or answers from here on
   ClearHandlers;
   if fProcess.Running then begin
-    Send('disconnect', TJSONObject.Create(['terminateDebuggee', True]));
+    Send('disconnect', TJSONObject.Create(['terminateDebuggee', not fAttached]));
     try
       fProcess.CloseInput; // lldb-dap ends when its input ends
     except
@@ -908,6 +912,8 @@ var
   ArgList, Pre: TJSONArray;
   I: Integer;
 begin
+  fAttached := False;
+  fAttaching := False;
   fStopAtMain := StopAtMain;
   ArgList := TJSONArray.Create;
   for I := 0 to High(fArgs) do
@@ -928,6 +934,8 @@ end;
 
 procedure TDapEngine.Attach(Pid: Integer; Handler: TDebugDoneHandler);
 begin
+  fAttached := True;
+  fAttaching := True;
   fAttachHandler := Handler;
   fStopAtMain := False;
   fLaunched := True;
@@ -1201,10 +1209,11 @@ begin
       Stop^.SignalMeaning := Text;
     end else
       Stop^.Reason := dsOther;
-    // lldb-dap reports the pause it was asked for as SIGSTOP
-    if fPausing and ((Stop^.Reason = dsSignal) and (Stop^.SignalName = 'SIGSTOP') or (Stop^.Reason = dsOther)) then
+    // A pause and the initial attach stop are expected SIGSTOP events.
+    if (fPausing or fAttaching) and ((Stop^.Reason = dsSignal) and (Stop^.SignalName = 'SIGSTOP') or (Stop^.Reason = dsOther)) then
       Stop^.Reason := dsInterrupted;
     fPausing := False;
+    fAttaching := False;
     Hits := GetArr(Body, 'hitBreakpointIds');
     if Assigned(Hits) then
       for I := 0 to Hits.Count - 1 do

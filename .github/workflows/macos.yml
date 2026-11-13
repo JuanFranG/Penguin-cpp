@@ -1,0 +1,47 @@
+name: macOS Cocoa
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  cocoa:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v5
+      - name: Bootstrap compiler
+        run: brew install fpc
+      - uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/penguin-toolchain
+          key: cocoa-fpc324rc2-laz38-${{ runner.arch }}-${{ hashFiles('packaging/bootstrap-macos-ci.sh') }}
+      - name: Prepare pinned Cocoa toolchain
+        run: |
+          bash packaging/bootstrap-macos-ci.sh "$RUNNER_TEMP/penguin-toolchain"
+          echo "$RUNNER_TEMP/penguin-toolchain/fpc/bin" >> "$GITHUB_PATH"
+          echo "LAZBUILD=$RUNNER_TEMP/penguin-toolchain/lazarus/lazbuild --lazarusdir=$RUNNER_TEMP/penguin-toolchain/lazarus --compiler=$RUNNER_TEMP/penguin-toolchain/fpc/bin/fpc --pcp=$RUNNER_TEMP/lazarus-config" >> "$GITHUB_ENV"
+      - name: Release and Debug
+        run: |
+          $LAZBUILD -B --ws=cocoa Source/penguin-cpp.lpi
+          $LAZBUILD -B --ws=cocoa --bm=Debug Source/penguin-cpp.lpi
+      - name: Console tests
+        run: |
+          export FPCFLAGS="-B -Cr -Co -Ct -CR -Sa -gh -gl"
+          for SUITE in ParserTest PlatformTest GdbMITest GdbEngineTest DapEngineTest MakefileTest UpdateTest; do
+            Source/Tests/$SUITE/build.sh --run
+          done
+          python3 Source/Tests/UpdateTest/install_test.py
+      - name: Forms and folding
+        run: |
+          WS=cocoa Source/Tests/LfmCheck/check.sh
+          WS=cocoa Source/Tests/FoldTest/build.sh --run
+      - name: Package and verify
+        run: |
+          packaging/build-macos.sh --no-build
+          codesign --verify --deep --strict "build/macos/Penguin cpp.app"
+          hdiutil verify build/macos/*.dmg
+      - uses: actions/upload-artifact@v4
+        with:
+          name: penguin-cpp-macos-arm64
+          path: build/macos/*.dmg

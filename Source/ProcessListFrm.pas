@@ -33,7 +33,9 @@ type
     MainLabel: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure FormShow(Sender: TObject);
   private
+    fLayoutReady: Boolean;
     procedure LoadText;
     { Private declarations }
   public
@@ -47,7 +49,7 @@ var
 implementation
 
 uses
-  devCFG;
+  devCFG, MacSupport;
 
 {$R *.lfm}
 
@@ -68,6 +70,16 @@ begin
   finally
     Names.Free;
   end;
+end;
+
+procedure TProcessListForm.FormShow(Sender: TObject);
+begin
+  if fLayoutReady then Exit;
+  fLayoutReady := True;
+  ExpandMacDialog(Self, 140, 140);
+  ProcessCombo.Width := ClientWidth - ProcessCombo.Left * 2;
+  CancelBtn.Left := ClientWidth - ProcessCombo.Left - CancelBtn.Width;
+  OKBtn.Left := CancelBtn.Left - OKBtn.Width - 8;
 end;
 
 procedure TProcessListForm.FormDestroy(Sender: TObject);

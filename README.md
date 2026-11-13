@@ -10,7 +10,7 @@ Penguin cpp expande Embarcadero Dev-C++ a Linux. Es el mismo entorno ligero
 con el que mucha gente aprende C y C++, ahora como programa nativo de Linux,
 sin Wine.
 
-> **Estado: versión 0.2.2.** El IDE funciona en Linux Mint (paquete `.deb` y
+> **Estado: versión 0.3.0.** El IDE funciona en Linux Mint (paquete `.deb` y
 > repositorio APT) y en macOS con Apple Silicon (`.dmg`, en pruebas). Ver
 > [ROADMAP.md](ROADMAP.md).
 
@@ -79,7 +79,7 @@ También se puede descargar el `.deb` de
 directamente (sin actualizaciones automáticas):
 
 ```bash
-sudo apt install ./penguin-cpp_0.2.2_amd64.deb
+sudo apt install ./penguin-cpp_0.3.0_amd64.deb
 ```
 
 Después aparece en el menú, en *Programación* y *Educación*. También se abre
@@ -105,7 +105,7 @@ si faltan, pide las Command Line Tools de Apple (clang, make y lldb):
 curl -fsSL https://juanfrang.github.io/Penguin-cpp/install-macos.sh | bash
 ```
 
-Así macOS la abre directamente. También se puede descargar el `.dmg` de
+También se puede descargar el `.dmg` de
 [Releases](https://github.com/JuanFranG/Penguin-cpp/releases/latest) y
 arrastrar *Penguin cpp* a Aplicaciones; como la app no está firmada por un
 desarrollador de Apple, la primera vez hay que abrirla, cerrar el aviso y
@@ -114,6 +114,27 @@ seguridad*.
 
 El formateador de código (astyle) viene dentro de la app. La configuración
 queda en `~/Library/Application Support/penguin-cpp`.
+
+### Buscar e instalar actualizaciones
+
+En **Ayuda → Buscar actualizaciones…**, el IDE consulta la última versión
+estable publicada en GitHub. Si es más reciente, aparece **Actualizar ahora**.
+Antes de cerrar, pide guardar los documentos; **Cancelar** conserva el editor
+abierto y cancela la actualización.
+
+En macOS descarga el `.dmg`, verifica la integridad de la app, prepara la copia
+nueva antes de reemplazar la anterior y vuelve a abrirla. El progreso aparece
+en Terminal. La carpeta de instalación debe permitir escritura; la app sigue
+sin firma Developer ID ni notarización.
+
+En Linux el botón ejecuta `sudo apt-get update` y
+`sudo apt-get install --only-upgrade -y penguin-cpp` en una terminal y pide
+la contraseña de administración. Necesita APT y el repositorio de Penguin cpp
+configurado. Para otras instalaciones está **Abrir descargas**.
+
+Esta función está disponible desde la versión 0.3.0; una versión anterior
+que todavía no tenga el menú necesita instalar esa primera actualización
+mediante el instalador habitual.
 
 ## Compilar desde el código
 

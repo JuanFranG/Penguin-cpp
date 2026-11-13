@@ -15,7 +15,7 @@ object CompOptForm: TCompOptForm
   ShowHint = True
   OnClose = FormClose
   OnCreate = FormCreate
-  OnShow = InterfaceSave
+  OnShow = FitMacLayout
   PixelsPerInch = 96
   object btnOk: TBitBtn
     Left = 210
@@ -78,7 +78,7 @@ object CompOptForm: TCompOptForm
         Top = 32
         Width = 443
         Height = 150
-        Anchors = []
+        Anchors = [akLeft, akTop, akRight]
         ScrollBars = ssVertical
         TabOrder = 1
         WantReturns = False
@@ -99,7 +99,7 @@ object CompOptForm: TCompOptForm
         Top = 212
         Width = 443
         Height = 150
-        Anchors = []
+        Anchors = [akLeft, akTop, akRight]
         ScrollBars = ssVertical
         TabOrder = 3
         WantReturns = False

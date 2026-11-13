@@ -47,6 +47,8 @@ for DIR in Lang Templates Manual Icons AStyle/doc ClangFormat/doc; do
   done
 done
 install -m 644 COPYING.txt LICENSE "$RES/"
+install -d "$RES/packaging"
+install -m 644 packaging/install-macos.sh "$RES/packaging/"
 
 # Artistic Style, the code formatter (MIT, its license is in AStyle/doc):
 # macOS has none, so it goes next to the program, built from its source,

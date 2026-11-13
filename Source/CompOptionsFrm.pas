@@ -86,6 +86,7 @@ type
     procedure UpDownClick(Sender: TObject);
     procedure edEntryKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure FormCreate(Sender: TObject);
+    procedure FitMacLayout(Sender: TObject);
     procedure btnBrws1Click(Sender: TObject);
     procedure cmbCompilerSetCompChange(Sender: TObject);
     procedure btnAddBlankCompilerSetClick(Sender: TObject);
@@ -101,6 +102,7 @@ type
     procedure InterfaceSave(Sender: TObject);
     procedure btnAddFilledCompilerSetClick(Sender: TObject);
   private
+    fMacLayoutDone: Boolean;
     fOldIndex: integer;
     fBinDirCopy: TStringList;
     fLibDirCopy: TStringList;
@@ -115,7 +117,7 @@ type
 implementation
 
 uses
-  main, FileCtrl, Version, devCFG, Utils, MultiLangSupport, DataFrm, devPlatform;
+  main, FileCtrl, Version, devCFG, Utils, MultiLangSupport, DataFrm, devPlatform, MacSupport;
 
 {$R *.lfm}
 
@@ -338,6 +340,15 @@ procedure TCompOptForm.edEntryKeyUp(Sender: TObject; var Key: Word; Shift: TShif
 begin
   if key = VK_RETURN then
     ButtonClick(btnAdd);
+end;
+
+procedure TCompOptForm.FitMacLayout(Sender: TObject);
+begin
+  if not fMacLayoutDone then begin
+    fMacLayoutDone := True;
+    ExpandMacDialog(Self, 140, 125);
+  end;
+  InterfaceSave(Sender);
 end;
 
 procedure TCompOptForm.FormCreate(Sender: TObject);

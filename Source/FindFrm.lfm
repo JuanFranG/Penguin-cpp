@@ -58,21 +58,19 @@ object FindForm: TFindForm
       'Replace in files')
     TabIndex = 0
     OnChange = FindTabsChange
-    object lblFind: TLabel
+    object lblFind: TStaticText
       Left = 8
       Top = 29
       Width = 56
       Height = 13
       Caption = '&Text to find:'
-      FocusControl = cboFindText
     end
-    object lblReplace: TLabel
+    object lblReplace: TStaticText
       Left = 8
       Top = 71
       Width = 65
       Height = 13
       Caption = 'Replace with:'
-      FocusControl = cboFindText
     end
     object cboFindText: TComboBox
       Left = 8

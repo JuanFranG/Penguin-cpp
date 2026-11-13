@@ -332,6 +332,43 @@ begin
   end;
 end;
 
+procedure TestAttach(const Dir: String);
+var E: TDapEngine; P: TProcess; L: TStringList; Error, Output: String;
+begin
+  WriteLn('Attaching to an existing process:');
+{$IFDEF DARWIN}
+  L := TStringList.Create;
+  try
+    L.Text := '<?xml version="1.0"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict><key>com.apple.security.get-task-allow</key><true/></dict></plist>';
+    L.SaveToFile(Dir + 'debug-entitlements.plist');
+  finally L.Free end;
+  Check(RunCommandInDir(Dir, '/usr/bin/codesign', ['--force', '--sign', '-', '--entitlements',
+    Dir + 'debug-entitlements.plist', Dir + 'hola mundo'], Output, [poStderrToOutPut]),
+    'own fixture permits debugger attachment', Output);
+{$ENDIF}
+  P := TProcess.Create(nil); E := NewEngine;
+  try
+    P.Executable := Dir + 'hola mundo';
+    P.Parameters.Add('1'); P.Parameters.Add('2'); P.Parameters.Add('3');
+    P.Execute;
+    Check(P.Running, 'fixture process starts independently');
+    Check(E.Start(Error), 'lldb-dap starts for attach', Error);
+    R.Reset; E.LoadProgram(P.Executable, R.OnDone); Wait(R.Answered);
+    R.Reset; E.Attach(P.ProcessID, R.OnDone);
+    Check(Wait(R.Answered) and R.Ok, 'attach succeeds', R.Text + R.History);
+    Check(Wait(R.Stopped), 'attached process stops', R.History);
+    Check(R.Info.Reason = dsInterrupted, 'initial attach stop is not a crash');
+    E.Quit;
+    Sleep(100);
+    Check(P.Running, 'detaching preserves the attached process');
+  finally
+    E.Free;
+    if P.Running then begin P.Terminate(0); P.WaitOnExit end;
+    P.Free;
+    DeleteFile(Dir + 'debug-entitlements.plist');
+  end;
+end;
+
 var
   Dir: String;
 begin
@@ -346,6 +383,7 @@ begin
     try
       TestDebugSession(Dir);
       TestInterrupt(Dir);
+      TestAttach(Dir);
     finally
       DeleteFile(Dir + 'hola mundo.cpp');
       DeleteFile(Dir + 'hola mundo');

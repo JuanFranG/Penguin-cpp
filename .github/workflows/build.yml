@@ -34,6 +34,11 @@ jobs:
             exit 1
           fi
 
+      - name: Update lookup and installer rollback
+        run: |
+          FPCFLAGS="-B -Cr -Co -Ct -CR -Sa -gh -gl" Source/Tests/UpdateTest/build.sh --run
+          python3 Source/Tests/UpdateTest/install_test.py
+
       - name: C++ parser
         run: FPCFLAGS="-Cr -Co -Ct -CR -Sa -gh -gl" Source/Tests/ParserTest/build.sh --run
 

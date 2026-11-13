@@ -806,7 +806,7 @@ implementation
 
 uses
   MultiLangSupport, DataFrm, StrUtils, main, Compiler, Controls, Version, Utils,
-  SynEditMiscClasses, TypInfo, DateUtils, Types, ExtDlgs, devPlatform, FileUtil, SynEditCompat, SynEditTypes;
+  SynEditMiscClasses, TypInfo, DateUtils, Types, ExtDlgs, devPlatform, FileUtil, SynEditCompat, SynEditTypes, PenguinPalette;
 
 function StandardEncodingFromName(const Name: String): TEncoding;
 begin
@@ -2479,9 +2479,13 @@ begin
       RightEdgeColor := fMarginColor;
       InsertCaret := TSynEditCaretType(fInsertCaret);
       OverwriteCaret := TSynEditCaretType(fOverwriteCaret);
-      if HighCurrLine and Assigned(Highlighter) then
-        LineHighlightColor.Background := HighColor
-      else
+      if HighCurrLine and Assigned(Highlighter) then begin
+        LineHighlightColor.Background := HighColor;
+        // Adapt the original pale default to dark syntax themes. Custom
+        // highlight colors remain the user's choice.
+        if (HighColor = $FFFFCC) and SpaceIsDark(Syntax.Values['Space']) then
+          LineHighlightColor.Background := PenguinNavy;
+      end else
         LineHighlightColor.Background := clNone;
 
       // Set gutter properties (Lazarus' gutter draws line numbers with the editor font)

@@ -69,26 +69,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           cp penguin-cpp "penguin-cpp_${VERSION}_amd64_symbols"
-          {
-            echo "## Instalar"
-            echo
-            echo "Con el repositorio APT (las versiones nuevas llegan con \`sudo apt upgrade\`):"
-            echo "https://juanfrang.github.io/Penguin-cpp/"
-            echo
-            echo "O descarga \`penguin-cpp_${VERSION}_amd64.deb\` e instálalo con:"
-            echo
-            echo '```bash'
-            echo "sudo apt install ./penguin-cpp_${VERSION}_amd64.deb"
-            echo '```'
-            echo
-            echo "\`penguin-cpp_${VERSION}_amd64_symbols\` es el mismo programa con sus símbolos, para leer las trazas del informe de errores."
-            echo
-            echo "## Cambios"
-            echo
-            echo '```'
-            sed -n '3,/^ -- /p' packaging/changelog | sed '$d'
-            echo '```'
-          } > notes.md
+          cp "RELEASE_NOTES_${VERSION}.md" notes.md
           gh release create "$GITHUB_REF_NAME" --title "Penguin cpp $VERSION" --notes-file notes.md \
             build/deb/penguin-cpp_${VERSION}_amd64.deb "penguin-cpp_${VERSION}_amd64_symbols"
 

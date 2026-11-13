@@ -1,7 +1,8 @@
 # Verificación de Penguin cpp en macOS
 
 Entorno local: Apple Silicon, macOS 27.2. El destino mínimo del binario
-es macOS 11.0; eso no demuestra ejecución en esa versión.
+se ha elevado a macOS 26.0 por decisión del proyecto; la prueba local en
+27.2 no demuestra ejecución real en 26.0.
 
 ## Actualizaciones
 
@@ -56,7 +57,7 @@ es macOS 11.0; eso no demuestra ejecución en esa versión.
 
 ## Cobertura pendiente
 
-No se dispone de un Mac limpio ni un sistema macOS 11.0 para ejecutar estas
+No se dispone de un Mac limpio ni un sistema macOS 26.0 para ejecutar estas
 pruebas. Tampoco se ha completado la inspección visual individual de los 37
 formularios, todas las traducciones, fuentes y resoluciones, impresión/PDF,
 exportaciones, perfilador y todas las plantillas. Estos puntos no se dan por

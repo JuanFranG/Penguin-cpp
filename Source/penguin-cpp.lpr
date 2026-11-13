@@ -152,6 +152,7 @@ begin
   RequireDerivedFormResource := True;
   Application.Scaled := True;
   Application.Initialize;
+  InstallMacViewCompatibility;
   Application.Title := 'Penguin cpp';
 
   // The icon's colors for menus and dialogs (Qt5), light or dark like the

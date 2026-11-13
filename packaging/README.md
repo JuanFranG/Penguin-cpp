@@ -76,3 +76,16 @@ El `.deb` lleva el programa sin símbolos, así que las trazas de
 ```bash
 addr2line -f -C -e penguin-cpp_0.1.0_amd64_symbols 0x9BA4B9 0x52EE0D
 ```
+
+## Validación del paquete macOS
+
+`build-macos-pkg.py` construye un `.pkg` **local de validación**, sin instalarlo
+ni publicarlo. Requiere una app enlazada y declarada para macOS 26.0/ARM64.
+Acepta `--app`, `--toolchain` (LLVM-MinGW existente) y `--output`. Conserva las
+licencias del compilador y rechaza una app que ya contenga un runtime Windows
+sin auditar. No acepta acuerdos ni descarga componentes.
+
+La app se prepara con `build-macos.sh --app-only`; `--no-build` reutiliza un
+binario ya compilado y comprueba su destino mínimo. La opción habitual sigue
+produciendo el DMG. Véanse las pruebas, límites y requisitos de redistribución
+en [QA-pkg-macos.md](QA-pkg-macos.md).

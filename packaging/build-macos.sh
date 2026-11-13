@@ -2,7 +2,7 @@
 # Builds Penguin cpp for macOS (Apple Silicon):
 #   build/macos/Penguin cpp.app
 #   build/macos/Penguin-cpp-<version>-arm64.dmg
-# usage: packaging/build-macos.sh [--no-build]
+# usage: packaging/build-macos.sh [--no-build] [--app-only]
 #   --no-build  package the ./penguin-cpp already built (Release, Cocoa)
 # The build needs Lazarus 3.8 and Free Pascal 3.2.4 (3.2.2 cannot link
 # Cocoa programs with the current linker); LAZBUILD is the lazbuild to run,
@@ -19,11 +19,22 @@ cd "$ROOT"
 VERSION=$(sed -n "s/^ *DEVCPP_VERSION *= *'\([^']*\)'.*/\1/p" Source/Version.pas | tr -d '\r')
 [ -n "$VERSION" ] || { echo "No version in Source/Version.pas" >&2; exit 1; }
 
-if [ "${1:-}" != "--no-build" ]; then
+BUILD=true
+APP_ONLY=false
+for ARG in "$@"; do
+  case "$ARG" in
+    --no-build) BUILD=false ;;
+    --app-only) APP_ONLY=true ;;
+    *) echo "Unknown option: $ARG" >&2; exit 1 ;;
+  esac
+done
+if [ "$BUILD" = true ]; then
   ${LAZBUILD:-lazbuild} -B --ws=cocoa Source/penguin-cpp.lpi
 fi
 [ -x penguin-cpp ] || { echo "Build penguin-cpp first" >&2; exit 1; }
 [ "$(lipo -archs penguin-cpp)" = arm64 ] || { echo "penguin-cpp is not an arm64 program" >&2; exit 1; }
+MINOS=$(otool -arch arm64 -l penguin-cpp | awk '/minos / {print $2; exit}')
+[ "$MINOS" = 26.0 ] || { echo "Rebuild Penguin with its macOS 26 deployment target" >&2; exit 1; }
 
 OUT=$ROOT/build/macos
 APP=$OUT/Penguin\ cpp.app
@@ -40,7 +51,7 @@ codesign --verify "$APP/Contents/MacOS/penguin-cpp"
 # Its files (the manual too), in Contents/Resources (where the program looks
 # for them): only what git tracks, nothing left over from a build
 RES=$APP/Contents/Resources
-for DIR in Lang Templates Manual Icons AStyle/doc ClangFormat/doc; do
+for DIR in Lang Templates Manual Icons AStyle/doc ClangFormat/doc Compat/common Compat/windows; do
   git ls-files -z -- "$DIR" | while IFS= read -r -d '' FILE; do
     install -d "$RES/$(dirname "$FILE")"
     install -m 644 "$FILE" "$RES/$FILE"
@@ -65,7 +76,7 @@ echo "$ASTYLE_SHA256  $ASTYLE_TAR" | shasum -a 256 -c -
 ASTYLE_SRC=$OUT/astyle-$ASTYLE_VERSION
 rm -rf "$ASTYLE_SRC"
 tar -xjf "$ASTYLE_TAR" -C "$OUT"
-clang++ -O2 -std=c++17 -mmacosx-version-min=11.0 -o "$APP/Contents/MacOS/astyle" "$ASTYLE_SRC"/src/*.cpp
+clang++ -O2 -std=c++17 -mmacosx-version-min=26.0 -o "$APP/Contents/MacOS/astyle" "$ASTYLE_SRC"/src/*.cpp
 rm -rf "$ASTYLE_SRC"
 "$APP/Contents/MacOS/astyle" --version
 
@@ -95,6 +106,7 @@ printf 'APPLpeng' > "$APP/Contents/PkgInfo"
 codesign --force --deep --sign - "$APP"
 codesign --verify --deep --strict "$APP"
 echo "Built $APP"
+[ "$APP_ONLY" = false ] || exit 0
 
 # The disk image: the app, the Applications folder to drag it to, and how
 # to open it the first time

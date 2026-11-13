@@ -32,7 +32,7 @@ ln -s ../lib/penguin-cpp/penguin-cpp "$STAGE/usr/bin/penguin-cpp"
 
 # Its files: only what git tracks, nothing left over from a build
 SHARE=$STAGE/usr/share/penguin-cpp
-for DIR in Lang Templates Manual Icons AStyle/doc ClangFormat/doc; do
+for DIR in Lang Templates Manual Icons AStyle/doc ClangFormat/doc Compat/common Compat/windows; do
   git ls-files -z -- "$DIR" | while IFS= read -r -d '' FILE; do
     install -D -m 644 "$FILE" "$SHARE/$FILE"
   done
@@ -78,9 +78,15 @@ if command -v dpkg-shlibdeps > /dev/null; then
 fi
 [ -n "$SHLIBS" ] || SHLIBS="libc6, libqt5pas1"
 
+# APT installs the Windows compiler and runtime together with Penguin on amd64.
+# ARM Linux needs a separately validated x64 translation engine.
+COMPATDEPS=
+if [ "$ARCH" = amd64 ]; then
+  COMPATDEPS=", g++-mingw-w64-x86-64-posix, wine64, wine"
+fi
 SIZE=$(du -sk --apparent-size "$STAGE/usr" | cut -f1)
 sed -e "s/@VERSION@/$VERSION/" -e "s/@ARCH@/$ARCH/" -e "s/@SIZE@/$SIZE/" -e "s/@SHLIBS@/$SHLIBS/" \
-  packaging/control.in > "$STAGE/DEBIAN/control"
+  -e "s/@COMPATDEPS@/$COMPATDEPS/" packaging/control.in > "$STAGE/DEBIAN/control"
 (cd "$STAGE" && find usr -type f -print0 | sort -z | xargs -0 md5sum) > "$STAGE/DEBIAN/md5sums"
 chmod 644 "$STAGE/DEBIAN/control" "$STAGE/DEBIAN/md5sums"
 

@@ -1,3 +1,19 @@
+penguin-cpp (0.4.0) unstable; urgency=medium
+
+  * Add Automatic / Native / Windows compilation modes, isolated Windows
+    objects, LLVM-MinGW discovery and Wine runtime integration.
+  * Prepare and verify private compatibility environments with progress,
+    retry and a Win32/conio/math/stdlib/STL/GDI self-test.
+  * Fix AppKit custom-view clipping and resize toolbar selectors to the
+    available width, including maximized and narrower windows.
+  * Add a common bits/stdc++.h fallback and portable thread templates.
+  * Require macOS 26 or newer on Apple Silicon; add validation pkg tooling,
+    pinned GNU Make build and runtime curation scripts.
+  * Document experimental coverage and redistribution blockers: the complete
+    Wine/FEX bundle remains local and is not part of public macOS downloads.
+
+ -- Juan Francisco Gonzalez Pacheco <jfgonzalez@unimagdalena.edu.co>  Fri, 13 Nov 2026 13:00:00 -0500
+
 penguin-cpp (0.3.0) unstable; urgency=medium
 
   * Check for updates and Update now for macOS and APT-based Linux installs,

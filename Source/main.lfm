@@ -6727,6 +6727,10 @@ object MainForm: TMainForm
       object EditorOptionsItem: TMenuItem
         Action = actEditorOptions
       end
+      object WindowsGameItem: TMenuItem
+        Caption = 'Windows compatibility...'
+        OnClick = WindowsGameClick
+      end
       object N20: TMenuItem
         Caption = '-'
       end

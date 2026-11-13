@@ -20,6 +20,7 @@ class InstallTest(unittest.TestCase):
             (previous / 'version').write_text('old')
             scripts = {
                 'uname': 'if [ "$1" = -s ]; then echo Darwin; else echo arm64; fi',
+                'sw_vers': 'if [ "$FAILURE" = oldmac ]; then echo 15.7; else echo 26.0; fi',
                 'pgrep': 'exit 1',
                 'curl': 'case "$*" in *url_effective*) printf %s https://github.com/JuanFranG/Penguin-cpp/releases/tag/v0.2.3;; esac',
                 'hdiutil': 'if [ "$1" = attach ]; then while [ "$1" != -mountpoint ]; do shift; done; shift; mkdir -p "$1/Penguin cpp.app"; echo new > "$1/Penguin cpp.app/version"; fi',
@@ -45,6 +46,7 @@ class InstallTest(unittest.TestCase):
     def test_partial_copy_keeps_old_app(self): self.run_case('copy')
     def test_failed_verification_keeps_old_app(self): self.run_case('verify')
     def test_failed_rename_restores_old_app(self): self.run_case('rename')
+    def test_old_macos_is_rejected_without_changing_app(self): self.run_case('oldmac')
 
 
 if __name__ == '__main__': unittest.main()

@@ -7,7 +7,7 @@ permissions:
   contents: read
 jobs:
   cocoa:
-    runs-on: macos-15
+    runs-on: macos-26
     steps:
       - uses: actions/checkout@v5
       - name: Bootstrap compiler
@@ -28,7 +28,7 @@ jobs:
       - name: Console tests
         run: |
           export FPCFLAGS="-B -Cr -Co -Ct -CR -Sa -gh -gl"
-          for SUITE in ParserTest PlatformTest GdbMITest GdbEngineTest DapEngineTest MakefileTest UpdateTest; do
+          for SUITE in ParserTest PlatformTest GdbMITest GdbEngineTest DapEngineTest MakefileTest UpdateTest WindowsGameTest; do
             Source/Tests/$SUITE/build.sh --run
           done
           python3 Source/Tests/UpdateTest/install_test.py
@@ -41,6 +41,11 @@ jobs:
           packaging/build-macos.sh --no-build
           codesign --verify --deep --strict "build/macos/Penguin cpp.app"
           hdiutil verify build/macos/*.dmg
+      - name: Validate unsigned Installer structure
+        run: |
+          python3 packaging/build-macos-pkg.py
+          pkgutil --expand-full build/macos/Penguin-cpp-arm64-UNSIGNED-VALIDATION.pkg "$RUNNER_TEMP/pkg-validation"
+          codesign --verify --deep --strict "$RUNNER_TEMP/pkg-validation/penguin.pkg/Payload/Penguin cpp.app"
       - uses: actions/upload-artifact@v4
         with:
           name: penguin-cpp-macos-arm64

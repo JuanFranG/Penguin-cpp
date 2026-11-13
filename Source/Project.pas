@@ -22,7 +22,7 @@ unit Project;
 interface
 
 uses
-  IniFiles, SysUtils, System.UITypes, Dialogs, ComCtrls, Editor, Contnrs, SynExportHTML, Classes, Controls,
+  WindowsGameCore, devPlatform, IniFiles, SysUtils, System.UITypes, Dialogs, ComCtrls, Editor, Contnrs, SynExportHTML, Classes, Controls,
   Version, Forms, Templates, ProjectTypes, LCLIntf, LCLType;
 
 type
@@ -132,6 +132,7 @@ type
     // What the project runs besides gcc, one line each for the user, and the
     // same as raw text (to remember that the user trusted exactly that)
     procedure ListOwnCommands(Lines: TStrings; out Raw: String);
+    procedure ResolveCompatibility;
     procedure LoadOptions;
     procedure SaveOptions;
     function SaveUnits: Boolean;
@@ -880,10 +881,12 @@ begin
       fOptions.HostApplication := ReadString('Project', 'HostApplication', '');
     end;
   end;
+  ReadWindowsGameConfig(finiFile, fOptions.WindowsGame);
 end;
 
 procedure TProject.SaveOptions;
 begin
+  WriteWindowsGameConfig(finiFile, fOptions.WindowsGame);
   with finiFile do begin
     WriteString('Project', 'FileName', ExtractRelativePath(Directory, fFileName));
     WriteString('Project', 'Name', fName);
@@ -1424,10 +1427,34 @@ begin
   result := fUnits.Indexof(ExpandFileto(s, Directory));
 end;
 
+procedure TProject.ResolveCompatibility;
+var I: Integer; Dirs: TStringList;
+begin
+  case fOptions.WindowsGame.Mode of
+    cmNative: fOptions.WindowsGame.Enabled := False;
+    cmWindows: fOptions.WindowsGame.Enabled := True;
+    cmAutomatic: begin
+      fOptions.WindowsGame.Enabled := False;
+      Dirs := TStringList.Create;
+      try
+        for I := 0 to fOptions.Includes.Count-1 do
+          Dirs.Add(ExpandFileto(fOptions.Includes[I], Directory));
+        for I := 0 to fUnits.Count-1 do
+          if fUnits[I].Compile and FileNeedsWindows(fUnits[I].FileName, Dirs) then begin
+            fOptions.WindowsGame.Enabled := True; Break;
+          end;
+        if not DeveloperToolsInstalled and (fOptions.WindowsGame.Toolchain <> '') then
+          fOptions.WindowsGame.Enabled := True;
+      finally Dirs.Free end;
+    end;
+  end;
+end;
+
 function TProject.GetExecutableName: String;
 var
   ExeFileName, ExePath: String;
 begin
+  ResolveCompatibility;
   // Determine filename ('hello.exe')
   if fOptions.OverrideOutput and (fOptions.OverridenOutput <> '') then begin
     ExeFileName := fOptions.OverridenOutput;
@@ -1436,6 +1463,8 @@ begin
       ExeFileName := ChangeFileExt(ExtractFileName(Filename), LIB_EXT)
     else if fOptions.typ = dptDyn then
       ExeFileName := ChangeFileExt(ExtractFileName(Filename), DLL_EXT)
+    else if fOptions.WindowsGame.Enabled then
+      ExeFileName := ChangeFileExt(ExtractFileName(Filename), '.exe')
     else
       ExeFileName := ChangeFileExt(ExtractFileName(Filename), EXE_EXT);
   end;

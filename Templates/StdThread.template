@@ -1,9 +1,9 @@
 [Template]
 ver=1
-Name=std::thread
+Name=Threads (C++ / POSIX C)
 Icon=Software.ico
 svg=Software.svg
-Description=A C++ multithreading example
+Description=Portable threads: std::thread in C++, pthreads in C (macOS/Linux)
 Category=Console
 
 [Unit0]
@@ -15,6 +15,6 @@ Cpp=StdThread_cpp.txt
 [Project]
 UnitCount=1
 Type=1
-Compiler=
-CppCompiler=-std=gnu++11
-Linker=
+Compiler=-std=c11 -pthread
+CppCompiler=-std=c++11 -pthread
+Linker=-pthread

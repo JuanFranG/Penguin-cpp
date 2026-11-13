@@ -26,6 +26,9 @@ interface
 uses
   Classes, SysUtils, Controls, LCLType, LCLProc, Menus, ActnList, StdCtrls, Forms, SynEditKeyCmds;
 
+// Restore the clipping expected by Lazarus Cocoa views when linked with modern SDKs.
+procedure InstallMacViewCompatibility;
+
 // Enlarge legacy fixed-coordinate dialogs without enlarging their text.
 // Native Cocoa controls need more room than the original Delphi metrics.
 procedure ExpandMacDialog(Form: TCustomForm; WidthPercent, HeightPercent: Integer);
@@ -185,6 +188,7 @@ function sel_registerName(Name: PAnsiChar): Pointer; cdecl; external name 'sel_r
 procedure objc_msgSend; cdecl; external name 'objc_msgSend';
 function object_getClass(Obj: Pointer): Pointer; cdecl; external name 'object_getClass';
 function class_addMethod(Cls, Sel, Imp: Pointer; Types: PAnsiChar): Boolean; cdecl; external name 'class_addMethod';
+function class_getMethodImplementation(Cls, Sel: Pointer): Pointer; cdecl; external name 'class_getMethodImplementation';
 
 {$LINKFRAMEWORK CoreFoundation}
 
@@ -193,11 +197,36 @@ type
   TMsgSend0 = function(Obj, Sel: Pointer): Pointer; cdecl;
   TMsgSend1 = function(Obj, Sel, Arg: Pointer): Pointer; cdecl;
   TMsgSendBool1 = function(Obj, Sel, Arg: Pointer): Boolean; cdecl;
+  TMsgSendVoid0 = procedure(Obj, Sel: Pointer); cdecl;
+  TMsgSendSetBool = procedure(Obj, Sel: Pointer; Value: Boolean); cdecl;
   TMsgSendDouble0 = function(Obj, Sel: Pointer): Double; cdecl;
 
 var
+  OriginalViewDidMove: Pointer = nil;
+  ViewCompatibilityInstalled: Boolean = False;
   PinchForm: TCustomForm = nil;
   PinchHandler: TPinchEvent = nil;
+
+// LCL 3.8 paints custom controls assuming that AppKit clips to their bounds.
+// Since SDK 14 the default is false; a panel/editor can paint over sibling
+// toolbars and native controls. Apply the public property to LCL's own views
+// as they join a window, including editors/dialogs created later. Native
+// AppKit controls retain their own clipping/shadow behavior.
+procedure LCLViewDidMoveToWindow(Obj, Cmd: Pointer); cdecl;
+begin
+  if Assigned(OriginalViewDidMove) then TMsgSendVoid0(OriginalViewDidMove)(Obj,Cmd);
+  TMsgSendSetBool(@objc_msgSend)(Obj,sel_registerName('setClipsToBounds:'),True);
+end;
+procedure InstallMacViewCompatibility;
+var ViewClass, Selector: Pointer;
+begin
+  if ViewCompatibilityInstalled then Exit;
+  ViewClass := objc_getClass('TCocoaCustomControl');
+  if not Assigned(ViewClass) then Exit;
+  Selector := sel_registerName('viewDidMoveToWindow');
+  OriginalViewDidMove := class_getMethodImplementation(ViewClass,Selector);
+  ViewCompatibilityInstalled := class_addMethod(ViewClass,Selector,@LCLViewDidMoveToWindow,'v@:');
+end;
 
 // [NSWindow magnifyWithEvent:], added to the class of the LCL's windows: a
 // pinch goes to the view under the fingers, and up from view to view to the
@@ -372,6 +401,12 @@ procedure SetPinchHandler(Form: TCustomForm; Handler: TPinchEvent);
 begin
 end;
 
+{$ENDIF}
+
+{$IFNDEF DARWIN}
+procedure InstallMacViewCompatibility;
+begin
+end;
 {$ENDIF}
 
 end.

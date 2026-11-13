@@ -38,6 +38,7 @@ jobs:
         run: |
           FPCFLAGS="-B -Cr -Co -Ct -CR -Sa -gh -gl" Source/Tests/UpdateTest/build.sh --run
           python3 Source/Tests/UpdateTest/install_test.py
+          FPCFLAGS="-B -Cr -Co -Ct -CR -Sa -gh -gl" sh Source/Tests/WindowsGameTest/build.sh --run
 
       - name: C++ parser
         run: FPCFLAGS="-Cr -Co -Ct -CR -Sa -gh -gl" Source/Tests/ParserTest/build.sh --run

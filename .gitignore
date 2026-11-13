@@ -79,3 +79,5 @@ heaptrc.log
 /penguin-cpp.app/
 
 Source/Tests/UpdateTest/build/
+
+Source/Tests/WindowsGameTest/build/

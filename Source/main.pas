@@ -27,7 +27,7 @@ uses
   ActnList, ToolFrm, Debugger, ClassBrowser, CodeCompletion, CppParser, CppTokenizer, SyncObjs,
   StrUtils, SynEditTypes, devFileMonitor, devMonitorTypes, EditorList, devShortcuts,
   devCFG, SynEditTextBuffer, CppPreprocessor, CBUtils, StatementList, AStyleFormatterOptionsFrm,
-  ClangFormatterOptionsFrm, ExtDlgs, PenguinPalette, WelcomeTiles, UpdateCheckFrm, UpdateInstall;
+  ClangFormatterOptionsFrm, ExtDlgs, PenguinPalette, WelcomeTiles, UpdateCheckFrm, UpdateInstall, WindowsGameFrm, WindowsGameCore, WindowsSetupFrm;
 
 type
   TRunEndAction = (reaNone, reaProfile);
@@ -481,6 +481,7 @@ type
     actCodeCompletion: TAction;
     actPackageCheck: TAction;
     CheckUpdatesItem: TMenuItem;
+    WindowsGameItem: TMenuItem;
     AttachProcessItem: TMenuItem;
     actHelp: TAction;
     FolderPopup: TPopupMenu;
@@ -668,6 +669,8 @@ type
     procedure actSaveAsUpdate(Sender: TObject);
     procedure actFileMenuExecute(Sender: TObject);
     procedure actToolsMenuExecute(Sender: TObject);
+    procedure WindowsGameClick(Sender: TObject);
+    procedure PrepareCompatibility(Data: PtrInt);
     procedure actDeleteExecute(Sender: TObject);
     procedure ClassBrowserSelect(Sender: TObject; Filename: TFileName; Line: Integer);
     procedure CppParserTotalProgress(Sender: TObject; const FileName: string; Total, Current: Integer);
@@ -1197,6 +1200,7 @@ begin
   ProjectMenu.Caption := Lang[ID_MNU_PROJECT];
   ExecuteMenu.Caption := Lang[ID_MNU_EXECUTE];
   ToolsMenu.Caption := Lang[ID_MNU_TOOLS];
+  WindowsGameItem.Caption := Lang[80100];
   FormatMenu.Caption := Lang[ID_MNU_FORMATTING];
   WindowMenu.Caption := Lang[ID_MNU_WINDOW];
   HelpMenu.Caption := Lang[ID_MNU_HELP];
@@ -3319,6 +3323,10 @@ var
   filepath: String;
   DebugEnabled, StripEnabled: boolean;
 begin
+  if not PrepareForRun or not fCompiler.SelectCompatibility then Exit;
+  if fCompiler.WindowsActive then begin
+    MessageDlg(Lang[80111], mtInformation, [mbOK], 0); Exit;
+  end;
   case GetCompileTarget of
     ctProject: begin
         // Check if we enabled proper options
@@ -4016,19 +4024,29 @@ begin
   ToolbarDock.ReAlign;
 
 {$IFDEF DARWIN}
-  // macOS' controls are wider: the class and member lists rarely fit in the
-  // first row. In a row of their own they share what is left of it, instead
-  // of leaving it empty.
-  if tbClasses.Visible and (tbClasses.Top > tbMain.Top) then begin
-    Right := (ToolbarDock.ClientWidth - tbClasses.Left - 12) div 2;
-    Right := Max(180, Min(Right, 600));
-    if cmbClasses.Width <> Right then begin
-      cmbClasses.Width := Right;
-      cmbMembers.Left := Right;
-      cmbMembers.Width := Right;
-      tbClasses.Width := 2 * Right + 2;
-      ToolbarDock.ReAlign;
-    end;
+  // Start from a compact compiler selector on every resize, so a previously
+  // maximized width cannot force extra rows when the window gets smaller.
+  // Navigation occupies its own full-width row; the compiler fills the rest
+  // of the preceding row without stretching the icon buttons.
+  Right := Max(1, ToolbarDock.ClientWidth - 4);
+  tbCompilers.AutoSize := False;
+  tbClasses.AutoSize := False;
+  if tbCompilers.Visible then begin
+    cmbCompilers.Width := Min(250, Max(1, Right - 2));
+    tbCompilers.Width := cmbCompilers.Width + 2;
+  end;
+  if tbClasses.Visible then begin
+    cmbClasses.Width := Max(1, (Right - 2) div 2);
+    cmbMembers.Left := cmbClasses.Width;
+    cmbMembers.Width := Max(1, Right - 2 - cmbClasses.Width);
+    tbClasses.Width := Right;
+  end;
+  ToolbarDock.ReAlign;
+  if tbCompilers.Visible then begin
+    Right := Max(1, ToolbarDock.ClientWidth - tbCompilers.Left - 4);
+    cmbCompilers.Width := Max(1, Right - 2);
+    tbCompilers.Width := Right;
+    ToolbarDock.ReAlign;
   end;
 {$ENDIF}
 
@@ -4250,10 +4268,38 @@ begin
   //	dummy event to keep menu active
 end;
 
+procedure TMainForm.PrepareCompatibility(Data: PtrInt);
+begin
+  // Let Cocoa finish showing the main window before opening a modal setup form.
+  // Keep environment preparation out of the initial visibility event.
+  EnsureWindowsEnvironment(fCompiler.StandaloneConfig,GetUserDataDir);
+  Application.QueueAsyncCall(FitToolbarDock,0);
+end;
+
+procedure TMainForm.WindowsGameClick(Sender: TObject);
+var Config: TWindowsGameConfig; Ini: TMemIniFile;
+begin
+  if fCompiler.Compiling or fDebugger.Executing or devExecutor.Running then Exit;
+  if Assigned(fProject) then Config := fProject.Options.WindowsGame
+  else Config := fCompiler.StandaloneConfig;
+  if ConfigureWindowsGame(Config) then begin
+    if Assigned(fProject) then begin
+      fProject.Options.WindowsGame := Config; fProject.ResolveCompatibility;
+      fProject.SaveOptions; fProject.Modified := True;
+    end else begin
+      fCompiler.StandaloneConfig := Config;
+      Ini := TMemIniFile.Create(devData.INIFileName);
+      try WriteWindowsGameConfig(Ini,Config); Ini.UpdateFile finally Ini.Free end;
+    end;
+  end;
+end;
+
 procedure TMainForm.actToolsMenuExecute(Sender: TObject);
 var
   I, J: integer;
 begin
+  WindowsGameItem.Enabled := not fCompiler.Compiling and
+    not fDebugger.Executing and not devExecutor.Running;
   for I := (ToolsMenu.IndexOf(N24) + 1) to ToolsMenu.Count - 1 do begin
     J := ToolsMenu.Items[I].tag;
     ToolsMenu.Items[I].Enabled := FileExists(ParseToolParams(fTools.ToolList[J]^.Exec));
@@ -4897,6 +4943,10 @@ var
   path: String;
   e: TEditor;
 begin
+  if not PrepareForRun or not fCompiler.SelectCompatibility then Exit;
+  if fCompiler.WindowsActive then begin
+    MessageDlg(Lang[80111], mtInformation, [mbOK], 0); Exit;
+  end;
   case GetCompileTarget of
     ctProject: begin
         // Check if we enabled proper options
@@ -5899,6 +5949,10 @@ var
   Exe: String;
   E: TEditor;
 begin
+  if not PrepareForRun or not fCompiler.SelectCompatibility then Exit;
+  if fCompiler.WindowsActive then begin
+    MessageDlg(Lang[80111], mtInformation, [mbOK], 0); Exit;
+  end;
   Exe := '';
   if Assigned(fProject) then
     Exe := fProject.Executable
@@ -6411,7 +6465,10 @@ begin
   end;
 
   // Set languages and other first time stuff
-  if devData.First or (devData.Language = '') then
+  if FileExists(devDirs.Exec + 'Compat/windows/environment.json') then begin
+    if devData.Language = '' then devData.Language := 'English.lng';
+    Lang.Open(devData.Language);
+  end else if devData.First or (devData.Language = '') then
     Lang.SelectLanguage
   else
     Lang.Open(devData.Language);
@@ -6587,8 +6644,11 @@ begin
 
   ResizeWelcomeComponent;
 
-  // macOS: compiling and debugging need Apple's command line tools
-  if not DeveloperToolsInstalled and
+  if FileExists(devDirs.Exec + 'Compat/windows/environment.json') then
+    Application.QueueAsyncCall(PrepareCompatibility,0);
+
+  // Native builds/debugging require Apple's SDK; Windows builds use bundled tools.
+  if not DeveloperToolsInstalled and (devCompilerSets.Count = 0) and
     (MessageDlg(Lang[ID_MSG_NODEVTOOLS], mtConfirmation, [mbYes, mbNo], 0) = mrYes) then
     InstallDeveloperTools;
 end;

@@ -173,6 +173,7 @@ type
     procedure LoadSets; // load everything from disk
     procedure SaveSets; // save everything to disk
     procedure SaveSetList; // only save the CompilerSets section
+    procedure AddBundledSet;
     procedure FindSets;
     procedure ClearSets;
 
@@ -804,7 +805,7 @@ function FormatterTempFile(const EditorFileName: String): String;
 
 implementation
 
-uses
+uses WindowsGameCore,
   MultiLangSupport, DataFrm, StrUtils, main, Compiler, Controls, Version, Utils,
   SynEditMiscClasses, TypInfo, DateUtils, Types, ExtDlgs, devPlatform, FileUtil, SynEditCompat, SynEditTypes, PenguinPalette;
 
@@ -2099,7 +2100,7 @@ begin
     // look for the system's compilers. On macOS without Apple's command line
     // tools gcc is only a stand-in that asks for them: the next start looks
     // again (the main window offers to install them).
-    if (fList.Count = 0) and devPlatform.DeveloperToolsInstalled then begin
+    if fList.Count = 0 then begin
       FindSets;
       if fList.Count > 0 then
         SetToActivate := 0; // Release
@@ -2107,6 +2108,8 @@ begin
       SaveSets;
     end;
 
+    AddBundledSet;
+    if (SetToActivate < 0) and (fList.Count > 0) then SetToActivate := 0;
     // Activate the current set after everything has been loaded
     DefaultSetIndex := SetToActivate;
 
@@ -2162,6 +2165,23 @@ end;
 // from the build-essential package) and clang if it is installed, each as a
 // Release, a Debug and a Profiling set. gcc comes first: it is the default.
 // Dev-C++ looked for the TDM-GCC folder it installed next to the program.
+procedure TdevCompilerSets.AddBundledSet;
+var Config: TWindowsGameConfig; C, Cpp, MakePath: String; S: TdevCompilerSet; I: Integer;
+begin
+  DiscoverWindowsGameConfig(devDirs.Exec, Config);
+  if ResolveWindowsCompilers(Config, C, Cpp) <> wgOK then Exit;
+  MakePath := WindowsMakeProgram(Config);
+  if MakePath = '' then Exit;
+  S := nil;
+  for I := 0 to fList.Count-1 do
+    if TdevCompilerSet(fList[I]).Name = 'Windows x64 (bundled)' then S := TdevCompilerSet(fList[I]);
+  if not Assigned(S) then S := AddSet;
+  S.Name := 'Windows x64 (bundled)';
+  S.BinDir.Clear; S.BinDir.Add(ExtractFileDir(C)); S.BinDir.Add(ExtractFileDir(MakePath));
+  S.gccName := ExtractFileName(C); S.gppName := ExtractFileName(Cpp);
+  S.makeName := 'make'; S.gdbName := ''; S.gprofName := '';
+end;
+
 procedure TdevCompilerSets.FindSets;
 
   procedure AddSets(const CCompiler, CppCompiler: String);
@@ -2210,8 +2230,11 @@ procedure TdevCompilerSets.FindSets;
   end;
 
 begin
-  AddSets(GCC_PROGRAM, GPP_PROGRAM);
-  AddSets('clang', 'clang++');
+  if devPlatform.DeveloperToolsInstalled then begin
+    AddSets(GCC_PROGRAM, GPP_PROGRAM);
+    AddSets('clang', 'clang++');
+  end;
+  AddBundledSet;
 end;
 
 procedure TdevCompilerSets.ClearSets;

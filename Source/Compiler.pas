@@ -23,7 +23,7 @@ interface
 
 uses
   LCLIntf, LCLType, SysUtils, Dialogs, StdCtrls, Controls, ComCtrls, Forms, devRun, Version,
-  Project, Utils, ProjectTypes, Classes, Graphics, devCFG, MakeNames;
+  Project, Utils, ProjectTypes, Classes, Graphics, devCFG, MakeNames, WindowsGameCore;
 
 type
   TLogEntryEvent = procedure(const Msg: String) of object;
@@ -56,6 +56,13 @@ type
     fStartTime: QWord; // GetTickCount64: a cardinal overflows after 49.7 days of uptime
     fShowOutputInfo: boolean;
     fCompilerSet: TdevCompilerSet;
+    fGameCompilerSet: TdevCompilerSet;
+    fStandaloneConfig, fActiveConfig: TWindowsGameConfig;
+    fWindowsActive: Boolean;
+    function SourceExecutable: String;
+    procedure SetCompilerSet(Value: TdevCompilerSet);
+    function ConfigureWindowsGameCompiler: Boolean;
+    procedure RunWindowsGame;
     procedure DoLogEntry(const msg: String);
     procedure DoOutput(const s1, s2, s3, s4: String);
     function GetMakeFile: String;
@@ -66,6 +73,11 @@ type
     procedure ProcessProgressForm(const Line: String);
     procedure EndProgressForm;
   public
+    constructor Create;
+    function SelectCompatibility: Boolean;
+    property WindowsActive: Boolean read fWindowsActive;
+    property StandaloneConfig: TWindowsGameConfig read fStandaloneConfig write fStandaloneConfig;
+    destructor Destroy; override;
     procedure BuildMakeFile;
     procedure CheckSyntax;
     procedure Compile;
@@ -80,7 +92,7 @@ type
     property OnCompSuccess: TCompSuccessEvent read fOnCompSuccess write fOnCompSuccess;
     property OnRunEnd: TRunEndEvent read fOnRunEnd write fOnRunEnd;
     property SourceFile: String read fSourceFile write fSourceFile;
-    property CompilerSet: TdevCompilerSet read fCompilerSet write fCompilerSet;
+    property CompilerSet: TdevCompilerSet read fCompilerSet write SetCompilerSet;
     property RunParams: String read fRunParams write fRunParams; // only for nonproject compilations
     property MakeFile: String read GetMakeFile;
     property Target: TTarget read fTarget write fTarget;
@@ -122,7 +134,132 @@ type
 implementation
 
 uses
-  MultiLangSupport, Macros, devExec, main, StrUtils, Process, devPlatform;
+  MultiLangSupport, Macros, devExec, main, StrUtils, Process, devPlatform, SHA1, IniFiles, WindowsSetupFrm;
+
+constructor TCompiler.Create;
+var Ini: TMemIniFile;
+begin
+  inherited Create;
+  DiscoverWindowsGameConfig(devDirs.Exec, fStandaloneConfig);
+  Ini := TMemIniFile.Create(devData.INIFileName);
+  try ReadWindowsGameConfig(Ini, fStandaloneConfig) finally Ini.Free end;
+end;
+
+function TCompiler.SourceExecutable: String;
+begin
+  if fWindowsActive then Result := ChangeFileExt(fSourceFile, '.exe')
+  else Result := ChangeFileExt(fSourceFile, EXE_EXT);
+end;
+
+function TCompiler.SelectCompatibility: Boolean;
+begin
+  Result := False;
+  fWindowsActive := False;
+  if (fTarget = ctProject) and Assigned(fProject) then begin
+    fProject.ResolveCompatibility;
+    fActiveConfig := fProject.Options.WindowsGame;
+    fWindowsActive := fActiveConfig.Enabled;
+  end else if fTarget = ctFile then begin
+    fActiveConfig := fStandaloneConfig;
+    case fActiveConfig.Mode of
+      cmWindows: fWindowsActive := True;
+      cmAutomatic: fWindowsActive := FileNeedsWindows(fSourceFile) or
+        (Assigned(fCompilerSet) and (Pos('w64-mingw32', fCompilerSet.gccName) > 0));
+    end;
+    fActiveConfig.Enabled := fWindowsActive;
+  end;
+  if not fWindowsActive and Assigned(fCompilerSet) and
+    (Pos('w64-mingw32', fCompilerSet.gccName) > 0) then begin
+    MessageDlg('Native compilation requires the Apple developer tools or a native compiler. Select Automatic or Windows to use the included environment.', mtInformation, [mbOK], 0);
+    Exit;
+  end;
+  Result := True;
+end;
+
+destructor TCompiler.Destroy;
+begin
+  StopAndWait;
+  fGameCompilerSet.Free;
+  inherited Destroy;
+end;
+
+procedure TCompiler.SetCompilerSet(Value: TdevCompilerSet);
+begin
+  if Value = fGameCompilerSet then Exit;
+  FreeAndNil(fGameCompilerSet);
+  fCompilerSet := Value;
+  fWindowsActive := False;
+end;
+
+function TCompiler.ConfigureWindowsGameCompiler: Boolean;
+var C, Cpp, MakeProgram: String; Error: TWindowsGameError;
+begin
+  Result := True;
+  if not fWindowsActive then Exit;
+  Result := False;
+  if Assigned(fProject) and (not (fProject.Options.typ in [dptCon, dptGUI]) or fProject.Options.UseCustomMakefile) then begin
+    MessageDlg('Windows game mode requires an executable project with a generated Makefile.', mtError, [mbOK], 0);
+    Exit;
+  end;
+  if not EnsureWindowsEnvironment(fActiveConfig, GetUserDataDir) then Exit;
+  Error := ResolveWindowsCompilers(fActiveConfig, C, Cpp);
+  if Error <> wgOK then begin
+    MessageDlg(WindowsGameErrorText(Error), mtError, [mbOK], 0); Exit;
+  end;
+  if not Assigned(fGameCompilerSet) then begin
+    MakeProgram := WindowsMakeProgram(fActiveConfig);
+    if MakeProgram = '' then MakeProgram := fCompilerSet.makeName;
+    if not FileExists(MakeProgram) and (fCompilerSet.BinDir.Count > 0) and
+      FileExists(IncludeTrailingPathDelimiter(fCompilerSet.BinDir[0]) + MakeProgram) then
+      MakeProgram := IncludeTrailingPathDelimiter(fCompilerSet.BinDir[0]) + MakeProgram;
+    fGameCompilerSet := TdevCompilerSet.Create;
+    fGameCompilerSet.Assign(fCompilerSet);
+    fGameCompilerSet.makeName := MakeProgram;
+    fGameCompilerSet.BinDir.Clear;
+    fGameCompilerSet.BinDir.Add(ExtractFileDir(C));
+    fGameCompilerSet.CDir.Clear; fGameCompilerSet.CppDir.Clear; fGameCompilerSet.LibDir.Clear;
+    fGameCompilerSet.CppDir.Add(GetDataDir(ExtractFilePath(Application.ExeName)) + 'Compat/common/include');
+    fGameCompilerSet.gccName := ExtractFileName(C);
+    fGameCompilerSet.gppName := ExtractFileName(Cpp);
+    // Native SDK flags must not leak into the Windows target.
+    fGameCompilerSet.AddtoComp := False;
+    fGameCompilerSet.AddtoLink := True;
+    fGameCompilerSet.LinkOpts := '-static';
+    if Assigned(fProject) and (fProject.Options.typ = dptGUI) then
+      fGameCompilerSet.LinkOpts := fGameCompilerSet.LinkOpts + ' -mwindows';
+    fGameCompilerSet.Name := 'Windows x64 (MinGW-w64)';
+    fCompilerSet := fGameCompilerSet;
+  end;
+  SetPath(ExtractFileDir(C) + PathSeparator + ExtractFileDir(fCompilerSet.makeName));
+  Result := True;
+end;
+
+procedure TCompiler.RunWindowsGame;
+var Command, Args: TStringList; Error: TWindowsGameError; ProgramName, Terminal, Prefix, FileName, Params: String; GUI: Boolean;
+begin
+  Command := TStringList.Create; Args := TStringList.Create;
+  try
+    Prefix := WindowsDefaultPrefix(GetUserDataDir);
+    GUI := Assigned(fProject) and (fProject.Options.typ = dptGUI);
+    if Assigned(fProject) then begin FileName := fProject.Executable; Params := fProject.Options.CmdLineArgs end
+    else begin FileName := SourceExecutable; Params := fRunParams end;
+    Error := WindowsGameCommand(fActiveConfig, FileName, Params, Prefix, Command);
+    if Error <> wgOK then begin
+      MessageDlg(WindowsGameErrorText(Error), mtError, [mbOK], 0); Exit;
+    end;
+    if not GUI then begin
+      if not BuildTerminalCommand(Command, devData.ConsolePause, Lang[ID_RUN_EXITED],
+        Lang[ID_RUN_PRESSENTER], Terminal, Args, devData.TerminalProgram) then begin
+        MessageDlg(Lang[ID_RUN_NOTERMINAL], mtError, [mbOK], 0); Exit;
+      end;
+      devExecutor.ExecuteAndWatch(Terminal, Args, ExtractFileDir(FileName), RunTerminate);
+    end else begin
+      ProgramName := Command[0]; Command.Delete(0);
+      devExecutor.ExecuteAndWatch(ProgramName, Command, ExtractFileDir(FileName), RunTerminate);
+    end;
+    MainForm.UpdateAppTitle;
+  finally Args.Free; Command.Free end;
+end;
 
 procedure TCompiler.DoLogEntry(const msg: String);
 begin
@@ -145,12 +282,17 @@ end;
 
 procedure TCompiler.BuildMakeFile;
 begin
+  if not SelectCompatibility then begin fMakeFile := ''; Exit end;
   if not Assigned(fProject) then begin
     fMakeFile := '';
     Exit;
-  end else if fProject.Options.UseCustomMakefile then begin
+  end else if fProject.Options.UseCustomMakefile and not fProject.Options.WindowsGame.Enabled then begin
     fMakefile := fProject.Options.CustomMakefile;
     Exit;
+  end;
+
+  if not ConfigureWindowsGameCompiler then begin
+    fMakeFile := ''; Exit;
   end;
 
   // Names make cannot hold: no Makefile, and Compile stops (fMakefile = '')
@@ -188,7 +330,10 @@ end;
 // Its object file: next to it, or in the project's object folder
 function UnitObject(Project: TProject; I: integer): String;
 begin
-  Result := MakeObjectName(Project.FileName, Project.Units[I].FileName, Project.Options.ObjectOutput, OBJ_EXT);
+  if Project.Options.WindowsGame.Enabled then
+    Result := MakeObjectName(Project.FileName, Project.Units[I].FileName, Project.Options.ObjectOutput, '.win.o')
+  else
+    Result := MakeObjectName(Project.FileName, Project.Units[I].FileName, Project.Options.ObjectOutput, OBJ_EXT);
 end;
 
 // Units that are compiled into objects: C and C++ sources (headers are not,
@@ -578,6 +723,7 @@ var
   cmdline: String;
   s: String;
 begin
+  if not SelectCompatibility or not ConfigureWindowsGameCompiler then Exit;
   case Target of
     ctFile: begin
         // The commands are split into arguments at spaces outside quotes
@@ -612,7 +758,7 @@ begin
               if fCheckSyntax then
                 cmdline := Format(cSyntaxCmdLine, [s, fSourceFile, fCompileParams, fIncludesParams, fLibrariesParams])
               else
-                cmdline := Format(cSourceCmdLine, [s, fSourceFile, ChangeFileExt(fSourceFile, EXE_EXT), fCompileParams,
+                cmdline := Format(cSourceCmdLine, [s, fSourceFile, SourceExecutable, fCompileParams,
                   fIncludesParams, fLibrariesParams]);
 
               DoLogEntry(Lang[ID_LOG_PROCESSINGCSRC]);
@@ -627,7 +773,7 @@ begin
                 cmdline := Format(cSyntaxCmdLine, [s, fSourceFile, fCppCompileParams, fCppIncludesParams,
                   fLibrariesParams])
               else
-                cmdline := Format(cSourceCmdLine, [s, fSourceFile, ChangeFileExt(fSourceFile, EXE_EXT),
+                cmdline := Format(cSourceCmdLine, [s, fSourceFile, SourceExecutable,
                   fCppCompileParams, fCppIncludesParams, fLibrariesParams]);
 
               DoLogEntry(Lang[ID_LOG_PROCESSINGCPPSRC]);
@@ -671,6 +817,7 @@ begin
         LaunchThread(cmdline, ExtractFilePath(fSourceFile));
       end;
     ctProject: begin
+        if not ConfigureWindowsGameCompiler then Exit;
         InitProgressForm;
 
         DoLogEntry(Lang[ID_LOG_PROJECTCOMPILE]);
@@ -690,12 +837,11 @@ begin
           EndProgressForm;
           Exit;
         end;
-        cmdline := Format(cMakeLine, [fCompilerSet.makeName, fMakeParams, fMakeFile]);
+        cmdline := Format(cMakeLine, [CommandArg(fCompilerSet.makeName), fMakeParams, fMakeFile]);
 
         DoLogEntry(Lang[ID_LOG_PROCESSINGMAKE]);
         DoLogEntry('--------');
-        DoLogEntry(Format(Lang[ID_LOG_MAKEFILEPROC], [IncludeTrailingPathDelimiter(fCompilerSet.BinDir[0]) +
-          fCompilerSet.MakeName]));
+        DoLogEntry(Format(Lang[ID_LOG_MAKEFILEPROC], [fCompilerSet.MakeName]));
         DoLogEntry(Format(Lang[ID_LOG_COMMAND], [cmdLine]));
         DoLogEntry('');
 
@@ -745,6 +891,7 @@ procedure TCompiler.Run;
 var
   FileToRun: String;
 begin
+  if not SelectCompatibility then Exit;
   case fTarget of
     ctNone:
       Exit;
@@ -752,7 +899,7 @@ begin
         // Determine file to execute
         case GetFileTyp(fSourceFile) of
           utcSrc, utcppSrc: begin
-              FileToRun := ChangeFileExt(fSourceFile, EXE_EXT);
+              FileToRun := SourceExecutable;
             end;
           //else begin
           //    Exit; // nothing to run...
@@ -771,7 +918,8 @@ begin
 
           if devData.MinOnRun then
             Application.Minimize;
-          RunConsoleProgram(FileToRun, fRunParams, ExtractFilePath(fSourceFile));
+          if fWindowsActive then RunWindowsGame
+          else RunConsoleProgram(FileToRun, fRunParams, ExtractFilePath(fSourceFile));
           MainForm.UpdateAppTitle;
         end;
       end;
@@ -797,7 +945,9 @@ begin
               ExtractFileDir(fProject.Options.HostApplication), True, INFINITE, RunTerminate);
             MainForm.UpdateAppTitle;
           end;
-        end else begin // execute normally
+        end else if fProject.Options.WindowsGame.Enabled then
+          RunWindowsGame
+        else begin // execute normally
           if devData.MinOnRun then
             Application.Minimize;
           if fProject.Options.typ = dptGUI then // has its own windows
@@ -838,6 +988,7 @@ var
   cmdLine: String;
   FileName: String;
 begin
+  if not SelectCompatibility then Exit;
   case fTarget of
     ctFile: begin
         InitProgressForm;
@@ -854,10 +1005,10 @@ begin
               FileName := ChangeFileExt(fSourceFile, OBJ_EXT);
             end;
           utcSrc: begin
-              FileName := ChangeFileExt(fSourceFile, EXE_EXT);
+              FileName := SourceExecutable;
             end;
           utcppSrc: begin
-              FileName := ChangeFileExt(fSourceFile, EXE_EXT);
+              FileName := SourceExecutable;
             end;
         else begin
             FileName := fSourceFile + GCH_EXT;
@@ -865,7 +1016,7 @@ begin
         end;
         // Programs have no extension on Linux: main.cpp builds main. Only
         // delete a program (ELF) by that name, not another file of the user's.
-        if FileExists(FileName) and (not (GetFileTyp(fSourceFile) in [utcSrc, utcppSrc]) or IsProgramFile(FileName))
+        if FileExists(FileName) and (not (GetFileTyp(fSourceFile) in [utcSrc, utcppSrc]) or IsProgramFile(FileName) or (WindowsPEMachine(FileName) <> 0))
         then begin
           DoLogEntry(Format(Lang[ID_LOG_CLEANEDFILE], [FileName]));
           DeleteFile(FileName);
@@ -891,7 +1042,7 @@ begin
           Exit;
         end;
 
-        cmdLine := Format(cCleanLine, [fCompilerSet.makeName, fMakeFile]);
+        cmdLine := Format(cCleanLine, [CommandArg(fCompilerSet.makeName), fMakeFile]);
 
         DoLogEntry(Lang[ID_LOG_PROCESSINGMAKE]);
         DoLogEntry('--------');
@@ -935,7 +1086,7 @@ begin
           Exit;
         end;
 
-        cmdLine := Format(cCleanLine, [fCompilerSet.makeName, fMakeFile]);
+        cmdLine := Format(cCleanLine, [CommandArg(fCompilerSet.makeName), fMakeFile]);
 
         DoLogEntry(Lang[ID_LOG_PROCESSINGMAKE]);
         DoLogEntry('--------');
@@ -1215,6 +1366,8 @@ begin
   for i := 0 to fCompilerSet.CDir.Count - 1 do
     fIncludesParams := fIncludesParams + ' ' + Quote('-I' + fCompilerSet.CDir[i]);
   fCppIncludesParams := '';
+  if not Assigned(fGameCompilerSet) and FileExists(devDirs.Exec + 'Compat/common/include/bits/stdc++.h') then
+    fCppIncludesParams := ' ' + Quote('-I' + devDirs.Exec + 'Compat/common/include');
   for i := 0 to fCompilerSet.CppDir.Count - 1 do
     fCppIncludesParams := fCppIncludesParams + ' ' + Quote('-I' + fCompilerSet.CppDir[i]);
 
@@ -1324,10 +1477,10 @@ begin
           FileName := ChangeFileExt(fSourceFile, OBJ_EXT);
         end;
       utcSrc: begin
-          FileName := ChangeFileExt(fSourceFile, EXE_EXT);
+          FileName := SourceExecutable;
         end;
       utcppSrc: begin
-          FileName := ChangeFileExt(fSourceFile, EXE_EXT);
+          FileName := SourceExecutable;
         end;
       utcHead, utcppHead: begin
           FileName := fSourceFile + GCH_EXT;

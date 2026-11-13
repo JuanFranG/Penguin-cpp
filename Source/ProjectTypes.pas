@@ -22,7 +22,7 @@ unit ProjectTypes;
 interface
 
 uses
-  Classes, Editor, ComCtrls, LCLIntf, LCLType;
+  Classes, Editor, ComCtrls, LCLIntf, LCLType, WindowsGameCore;
 
 const
   dptGUI = 0;
@@ -88,6 +88,7 @@ type
     OverrideOutput: boolean;
     OverridenOutput: String;
     HostApplication: String;
+    WindowsGame: TWindowsGameConfig;
     IncludeVersionInfo: boolean;
     SupportXPThemes: boolean;
     CompilerSet: integer;
@@ -180,6 +181,7 @@ begin
   ExeOutput := '';
   ObjectOutput := '';
   HostApplication := '';
+  DiscoverWindowsGameConfig(devDirs.Exec, WindowsGame);
   SupportXPThemes := False;
   CompilerSet := devCompilerSets.DefaultSetIndex;
   if (CompilerSet < devCompilerSets.Count) and (CompilerSet >= 0) then
@@ -230,6 +232,7 @@ begin
   OverrideOutput := input.OverrideOutput;
   OverridenOutput := input.OverridenOutput;
   HostApplication := input.HostApplication;
+  WindowsGame := input.WindowsGame;
   IncludeVersionInfo := input.IncludeVersionInfo;
   SupportXPThemes := input.SupportXPThemes;
   CompilerSet := input.CompilerSet;

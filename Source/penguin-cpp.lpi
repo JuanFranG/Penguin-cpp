@@ -62,7 +62,7 @@
             <Verbosity>
               <ShowHints Value="False"/>
             </Verbosity>
-            <CustomOptions Value="-vm6058"/>
+            <CustomOptions Value="-vm6058 @&quot;$(ProjPath)platform.cfg&quot;"/>
           </Other>
         </CompilerOptions>
       </Item>
@@ -111,7 +111,7 @@
       <Verbosity>
         <ShowHints Value="False"/>
       </Verbosity>
-      <CustomOptions Value="-vm6058"/>
+      <CustomOptions Value="-vm6058 @&quot;$(ProjPath)platform.cfg&quot;"/>
     </Other>
   </CompilerOptions>
 </CONFIG>

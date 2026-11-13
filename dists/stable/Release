@@ -1,24 +1,24 @@
 Architectures: amd64
 Codename: stable
 Components: main
-Date: Fri, 13 Nov 2026 03:56:59 +0000
+Date: Fri, 13 Nov 2026 23:30:33 +0000
 Description: Penguin cpp, a C and C++ IDE for learning
 Label: Penguin cpp
 Origin: Penguin cpp
 Suite: stable
 MD5Sum:
- 497c06e3d060dd977fdc5d2910eaa2d4              201 Release
- 6fd5f92ef32a29e1c5d1eea6a2bc575f             6956 main/binary-amd64/Packages
- 92654b4282c35e95637c51f175a62c51             1727 main/binary-amd64/Packages.gz
+ b05ba317974ff29a320e567112051cad              201 Release
+ 99714ba2a646d2048cb6065923f84031             8394 main/binary-amd64/Packages
+ d4509a254742ed8b86002637e35d47d4             1950 main/binary-amd64/Packages.gz
 SHA1:
- 7654bf09b27b48d2acb1932b88ddd77d33b1e63a              201 Release
- 86e0cbb35a9569a336c2c00f114d2c4466e4183a             6956 main/binary-amd64/Packages
- dc92a1faffc05a4472a7f915f64f001500349c66             1727 main/binary-amd64/Packages.gz
+ 3b70f581b84f1d4884da58274fac16dd8273bf5a              201 Release
+ 0537ac4343b1f6ca6d40e72d9064b4c157df1e3e             8394 main/binary-amd64/Packages
+ c0572726ed12f9d32476c0442940f9a6f8383c0d             1950 main/binary-amd64/Packages.gz
 SHA256:
- 7252823aad0d1ff7a027d64cfc79538d4fe0d24226796af72b761d542ea4d8f9              201 Release
- 0a417fafba464602e811d5b57f54119a6dd91628113ea76b936e4b651661e17e             6956 main/binary-amd64/Packages
- 351b5faac3eb1a880d36c6def03e7b30b9fc7e7f9f58cb394b1c43fce1a81f3d             1727 main/binary-amd64/Packages.gz
+ e3a89880bd2ad1e69cc8fbb7f9f7bc611eeff245cf610c170ce20d057b7e59e2              201 Release
+ 12bcbadcfab0bc274e6271bf3d5ba3713e1c18ea53d9fae10a81179e189cbc41             8394 main/binary-amd64/Packages
+ 13ddf1614fb7e4bd03eae2ee69676190988af91f989c1fec340bab728c729d56             1950 main/binary-amd64/Packages.gz
 SHA512:
- 804ce2eec3593425b772a6f6c4ee7f44339033e6381727bc640459ac747bfa41a7a508624c1f17bdab1b392b9c0dece043b074cebb2bfcc5fcc27e70b5209c5c              201 Release
- d9cbabbbadd44929512425e6a3a50846718dad1490ce902befbce26ace8d7fc1af0228ec13dd87c2efa78f96295627da9dbb2b3c75448b825436a3671e3756e9             6956 main/binary-amd64/Packages
- ddd1f52e038fda7e6a93b2b8e5a7bc3fb157a4b0017f9af66b56c70161b0afddda082944b2cd7f72281ffefa79818c8affbad94f2c8be78d112e1140ad2c0009             1727 main/binary-amd64/Packages.gz
+ 3be05b8f81fd4df405bd459c22013ddb2782ee989db3e55a7a5937d2110bed8f91408cd6fcbad510637ea76f9e474f40cf92afd3f599b6acc99f52876cfeec42              201 Release
+ 9ede163c383db156f9376203deaadf7735f9ad626d4295097bb6dc0489a126a4edbb99694a01ba2bcd73215177f1c2f32e8f9af1b92597f56c5db697538ddbe4             8394 main/binary-amd64/Packages
+ 83fd4020a5312705b8340fa3347e3bfb7d694a1a68976b7301873da88b91d2e0333929d5977523fb6c10f0a0b0f8fa01faa1c59cd6a50bd8d940554cb21f4214             1950 main/binary-amd64/Packages.gz

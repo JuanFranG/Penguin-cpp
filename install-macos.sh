@@ -20,6 +20,10 @@ fail() { printf 'Penguin cpp: %s\n' "$*" >&2; exit 1; }
 
 [ "$(uname -s)" = Darwin ] || fail "este instalador es para macOS (para Linux, ver https://juanfrang.github.io/Penguin-cpp/)"
 [ "$(uname -m)" = arm64 ] || fail "Penguin cpp para macOS necesita un Mac con Apple Silicon (M1 o posterior)"
+MACOS_VERSION=$(sw_vers -productVersion)
+MACOS_MAJOR=${MACOS_VERSION%%.*}
+[[ "$MACOS_MAJOR" =~ ^[0-9]+$ ]] && [ "$MACOS_MAJOR" -ge 26 ] ||
+  fail "Penguin cpp necesita macOS 26 o posterior (detectado: $MACOS_VERSION)"
 if pgrep -qf "$APP_NAME/Contents/MacOS/penguin-cpp"; then
   fail "cierra Penguin cpp y vuelve a ejecutar el instalador"
 fi

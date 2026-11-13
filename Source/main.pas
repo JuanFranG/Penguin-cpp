@@ -867,7 +867,9 @@ type
     fCompiler: TCompiler;
     fUpdatePending: Boolean;
     fZoomDelta: Integer; // wheel turned towards the next zoom step
+{$IFDEF DARWIN}
     fWelcomeScroll: TScrollBox;
+{$ENDIF}
     fWelcomeContent: TPanel;
     fWelcomeTiles: array of TWelcomeTile; // macOS: the welcome buttons, drawn by WelcomeTiles
     fEditorList: TEditorList;

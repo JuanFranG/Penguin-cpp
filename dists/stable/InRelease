@@ -4,31 +4,31 @@ Hash: SHA512
 Architectures: amd64
 Codename: stable
 Components: main
-Date: Sat, 07 Nov 2026 05:13:49 +0000
+Date: Fri, 13 Nov 2026 03:56:59 +0000
 Description: Penguin cpp, a C and C++ IDE for learning
 Label: Penguin cpp
 Origin: Penguin cpp
 Suite: stable
 MD5Sum:
- 6be53993c1a10e818f5b95911dfc6f31              201 Release
- ef0da81e41ce8dbf0331930335da4c91             5560 main/binary-amd64/Packages
- dd1c51878ed10828a17f02e3b8cfb854             1523 main/binary-amd64/Packages.gz
+ 497c06e3d060dd977fdc5d2910eaa2d4              201 Release
+ 6fd5f92ef32a29e1c5d1eea6a2bc575f             6956 main/binary-amd64/Packages
+ 92654b4282c35e95637c51f175a62c51             1727 main/binary-amd64/Packages.gz
 SHA1:
- 553c66fd751081dc612e94d69afbd0b312552cc1              201 Release
- d8597e1e1d41927eb86d6268f4e91805aef374e1             5560 main/binary-amd64/Packages
- f06aec811efc4bd6569904e5c58100ee746e3db4             1523 main/binary-amd64/Packages.gz
+ 7654bf09b27b48d2acb1932b88ddd77d33b1e63a              201 Release
+ 86e0cbb35a9569a336c2c00f114d2c4466e4183a             6956 main/binary-amd64/Packages
+ dc92a1faffc05a4472a7f915f64f001500349c66             1727 main/binary-amd64/Packages.gz
 SHA256:
- 1bf519066fae04d004eb7176ef208f19fa5cfd365710b2dba607f1438913022a              201 Release
- 1bf77b32927e09c66c35b3ac7df5331acf385a154c407caa550bb276a30220c5             5560 main/binary-amd64/Packages
- 258ab87d2dee8f63448b0b95fc37bdb16d5ef05741efc2198555298544f08bd7             1523 main/binary-amd64/Packages.gz
+ 7252823aad0d1ff7a027d64cfc79538d4fe0d24226796af72b761d542ea4d8f9              201 Release
+ 0a417fafba464602e811d5b57f54119a6dd91628113ea76b936e4b651661e17e             6956 main/binary-amd64/Packages
+ 351b5faac3eb1a880d36c6def03e7b30b9fc7e7f9f58cb394b1c43fce1a81f3d             1727 main/binary-amd64/Packages.gz
 SHA512:
- c6c2e890c0edbdfcb558fc72c1095f8cffc71e494055273ccfa47aed2679e60bf871501dec3ee5ee9dfc73b8beb79a20d2862153406d3b1eca4e87f13fb6a5c9              201 Release
- d21b3dbdf454e9354bfbb5b846d9792cfa2252561682c3fcd72506e54bf9209c831a2058e7c03bd6733a65c92d23dd603c88bdc541e4b0f882fa2a89668fe059             5560 main/binary-amd64/Packages
- 896827e0b8108272ffbd2f5c61533e9584019e739f10f6bfdbaf640afe5703481dfab191377179422749acd0faaf4b9ebc089b7ed0cdbed8f905e260b68bef38             1523 main/binary-amd64/Packages.gz
+ 804ce2eec3593425b772a6f6c4ee7f44339033e6381727bc640459ac747bfa41a7a508624c1f17bdab1b392b9c0dece043b074cebb2bfcc5fcc27e70b5209c5c              201 Release
+ d9cbabbbadd44929512425e6a3a50846718dad1490ce902befbce26ace8d7fc1af0228ec13dd87c2efa78f96295627da9dbb2b3c75448b825436a3671e3756e9             6956 main/binary-amd64/Packages
+ ddd1f52e038fda7e6a93b2b8e5a7bc3fb157a4b0017f9af66b56c70161b0afddda082944b2cd7f72281ffefa79818c8affbad94f2c8be78d112e1140ad2c0009             1727 main/binary-amd64/Packages.gz
 -----BEGIN PGP SIGNATURE-----
 
-iHUEARYKAB0WIQSwWx48kpg/9nSfnA0Y2SB+qTK1oQUCau6zjQAKCRAY2SB+qTK1
-oZz3AP9su9BV9uBQBwZTaXlk5N4FZiA+u2SxKdirTb5/8vKeygD/YuqN2lTbPBEf
-9zmUVp2Dc41xo3wUdMNf46zpbfGzHww=
-=wxW5
+iHUEARYKAB0WIQSwWx48kpg/9nSfnA0Y2SB+qTK1oQUCavaKiwAKCRAY2SB+qTK1
+ocoLAPwKXgLo4/NuQpvkH+hGhN7U5ZorR1U9+PXJ78UN5jgcgQD/Tza40d+m5Z/F
+sgLB/mWd1op3Ie3IFfh6QiQaZ7u5Jg8=
+=11WJ
 -----END PGP SIGNATURE-----

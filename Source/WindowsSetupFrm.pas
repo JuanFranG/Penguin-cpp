@@ -3,6 +3,8 @@ unit WindowsSetupFrm;
 {$mode objfpc}{$H+}
 interface
 uses WindowsGameCore;
+function WindowsEnvironmentIsReady(const Config: TWindowsGameConfig;
+  const UserDataDirectory: String): Boolean;
 function EnsureWindowsEnvironment(const Config: TWindowsGameConfig;
   const UserDataDirectory: String; Force: Boolean = False): Boolean;
 implementation
@@ -45,6 +47,21 @@ begin
     Result := SHA1Print(SHA1String(L.Text + Config.Runner + Config.Toolchain +
       IntToStr(FileAge(Cpp)) + IntToStr(FileAge(Config.Runner)) + Config.Prefix));
   finally L.Free end;
+end;
+function WindowsEnvironmentIsReady(const Config: TWindowsGameConfig;
+  const UserDataDirectory: String): Boolean;
+var Ready: TStringList; Root: String;
+begin
+  Result := False;
+  Root := IncludeTrailingPathDelimiter(UserDataDirectory) + 'Compatibility/windows';
+  if not FileExists(Root + '/ready') then Exit;
+  Ready := TStringList.Create;
+  try
+    try
+      Ready.LoadFromFile(Root + '/ready');
+      Result := Trim(Ready.Text) = EnvironmentKey(Config);
+    except Result := False end;
+  finally Ready.Free end;
 end;
 function TSetupWorker.RunCommand(const Command: TStrings; Timeout: QWord; out Output: String): Boolean;
 var Chunk: String; P: TProcess; I, N: Integer; Buffer: array[0..8191] of Byte; Started: QWord;

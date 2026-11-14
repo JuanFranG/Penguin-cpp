@@ -18,7 +18,12 @@ if [ ! -x "$ROOT/fpc/bin/fpc" ]; then
   "$ROOT/fpc/bin/fpcmkcfg" -d "basepath=$ROOT/fpc/lib/fpc/3.2.4" -o "$ROOT/fpc/etc/fpc.cfg"
   printf '\n-XR%s\n-Fl%s/usr/lib\n' "$SDK" "$SDK" >> "$ROOT/fpc/etc/fpc.cfg"
 fi
+# The driver otherwise finds Homebrew's ppca64 (3.2.2) on PATH, even when
+# --compiler points to our pinned fpc. Keep the backend beside the driver.
+ln -sfn ../lib/fpc/3.2.4/ppca64 "$ROOT/fpc/bin/ppca64"
 export PATH="$ROOT/fpc/bin:$PATH"
+export PPC_CONFIG_PATH="$ROOT/fpc/etc"
+[ "$("$ROOT/fpc/bin/fpc" -iV)" = 3.2.4 ]
 if [ ! -x "$ROOT/lazarus/lazbuild" ]; then
   git clone https://gitlab.com/freepascal.org/lazarus/lazarus.git "$ROOT/lazarus"
   git -C "$ROOT/lazarus" checkout --detach "$LAZ_REV"

@@ -89,3 +89,44 @@ La app se prepara con `build-macos.sh --app-only`; `--no-build` reutiliza un
 binario ya compilado y comprueba su destino mínimo. La opción habitual sigue
 produciendo el DMG. Véanse las pruebas, límites y requisitos de redistribución
 en [QA-pkg-macos.md](QA-pkg-macos.md).
+
+### Paquete completo y configuración automática
+
+`build-macos-pkg.py` exige por defecto el compilador LLVM-MinGW, el motor curado
+y GNU Make. Busca las versiones preparadas en `build/` o acepta las rutas
+explícitas `--toolchain`, `--runtime` y `--tools`. Si falta un componente,
+falla antes de crear el instalador. `--native-only` permite explícitamente el
+paquete de validación que solo contiene el IDE, usado por CI.
+
+El paquete completo coloca las herramientas dentro de `Penguin cpp.app`,
+con sus avisos, y crea `Compat/windows/environment.json`. La primera apertura
+comprueba la compilación y ejecución; no pide rutas ni instala herramientas
+globales. El diálogo muestra el estado del entorno. Las rutas personalizadas
+y GPTK quedan en Opciones avanzadas; Usar entorno incluido recupera los valores
+del bundle. La distribución pública del motor sigue sujeta a los pendientes
+de fuentes y dependencias de QA-pkg-macos.md.
+
+El mismo paquete se instala desde Terminal con:
+
+```sh
+sudo installer -pkg /ruta/al/paquete-completo.pkg -target /
+open -a "Penguin cpp"
+# También se puede iniciar directamente el ejecutable:
+"/Applications/Penguin cpp.app/Contents/MacOS/penguin-cpp"
+```
+
+La preparación inicial se ejecuta al iniciar la aplicación, con el usuario
+actual, tanto mediante Finder como desde Terminal. No se inicia Wine como
+root durante Installer. Si falta un componente de un paquete completo,
+Penguin lo avisa y exige reinstalar el paquete completo; no omite la
+comprobación silenciosamente. La compilación Windows vuelve a comprobar
+el entorno y se cancela si la preparación falla o se cancela.
+
+## Desinstalar en macOS
+
+Cierra Penguin y mueve `/Applications/Penguin cpp.app` a la Papelera. El
+compilador y el motor incluidos se eliminan con la app, sin desinstalar paquetes
+por separado. La configuración y el prefix privado se conservan en
+`~/Library/Application Support/penguin-cpp`. Borrar esa carpeta es opcional y
+elimina también los programas y datos guardados dentro del entorno Windows.
+El recibo de Installer no ejecuta una desinstalación por sí solo.

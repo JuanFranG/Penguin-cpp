@@ -18,6 +18,11 @@ class InstallTest(unittest.TestCase):
             previous = dest / "Penguin's QA.app"
             previous.mkdir(parents=True)
             (previous / 'version').write_text('old')
+            if failure == 'incomplete':
+                compat = previous/'Contents/Resources/Compat/windows'
+                compat.mkdir(parents=True)
+                (compat/'environment.json').write_text('{}')
+
             scripts = {
                 'uname': 'if [ "$1" = -s ]; then echo Darwin; else echo arm64; fi',
                 'sw_vers': 'if [ "$FAILURE" = oldmac ]; then echo 15.7; else echo 26.0; fi',
@@ -47,6 +52,7 @@ class InstallTest(unittest.TestCase):
     def test_failed_verification_keeps_old_app(self): self.run_case('verify')
     def test_failed_rename_restores_old_app(self): self.run_case('rename')
     def test_old_macos_is_rejected_without_changing_app(self): self.run_case('oldmac')
+    def test_native_download_cannot_remove_bundled_environment(self): self.run_case('incomplete')
 
 
 if __name__ == '__main__': unittest.main()

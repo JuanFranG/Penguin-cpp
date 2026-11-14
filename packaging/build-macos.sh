@@ -36,7 +36,7 @@ fi
 MINOS=$(otool -arch arm64 -l penguin-cpp | awk '/minos / {print $2; exit}')
 [ "$MINOS" = 26.0 ] || { echo "Rebuild Penguin with its macOS 26 deployment target" >&2; exit 1; }
 
-OUT=$ROOT/build/macos
+OUT=${MACOS_OUTPUT_DIR:-$ROOT/build/macos}
 APP=$OUT/Penguin\ cpp.app
 DMG=$OUT/Penguin-cpp-$VERSION-arm64.dmg
 rm -rf "$APP" "$DMG" "$OUT/dmg"

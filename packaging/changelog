@@ -1,3 +1,19 @@
+penguin-cpp (0.5.0) unstable; urgency=medium
+
+  * Show included environment readiness without requiring tool paths;
+    move custom paths and GPTK settings into Advanced options.
+  * Require the complete pinned Windows toolchain, Make and curated runtime
+    when generating a pkg by default; keep --native-only explicit.
+  * Check complete-package integrity on startup, including direct Terminal
+    launches, even when a damaged bundle has lost its environment manifest.
+  * Refuse native-only updates over a complete installation to preserve
+    bundled tools, with regression coverage for this rejection.
+  * Correct settings validation and document Terminal installation,
+    initialization, uninstallation and distribution limitations.
+  * Fix CI compiler selection to use the pinned Free Pascal backend/config.
+
+ -- Juan Francisco Gonzalez Pacheco <jfgonzalez@unimagdalena.edu.co>  Fri, 13 Nov 2026 22:00:00 -0500
+
 penguin-cpp (0.4.0) unstable; urgency=medium
 
   * Add Automatic / Native / Windows compilation modes, isolated Windows

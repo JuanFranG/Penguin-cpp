@@ -43,12 +43,25 @@ def validate_links(root):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--app', type=Path, default=Path('build/macos/Penguin cpp.app'))
+    parser.add_argument('--native-only', action='store_true', help='Explicitly build only the native IDE; no complete Windows environment')
     parser.add_argument('--toolchain', type=Path, help='Existing LLVM-MinGW distribution, copied with its notices')
     parser.add_argument('--output', type=Path, default=Path('build/macos/Penguin-cpp-arm64-UNSIGNED-VALIDATION.pkg'))
     parser.add_argument('--runtime', type=Path, help='Curated ARM64 Wine/FEX tree from prepare-windows-runtime.py')
     parser.add_argument('--tools', type=Path, help='Pinned GNU Make tree from build-compat-make.sh')
     parser.add_argument('--stage-app', type=Path, help='Prepare a review/test app instead of producing a pkg; destination must not exist')
     args = parser.parse_args()
+    repo = Path(__file__).resolve().parent.parent
+    if args.native_only:
+        if args.runtime or args.tools:
+            fail('--native-only cannot include a runtime or bundled Make.')
+    else:
+        args.toolchain = args.toolchain or repo/'build/windows-game-tools/llvm-mingw-20261104-ucrt-macos-universal'
+        args.runtime = args.runtime or repo/'build/compat-bundle/runtime'
+        args.tools = args.tools or repo/'build/compat-bundle/tools'
+        for name, directory in (('toolchain',args.toolchain),('runtime',args.runtime),('GNU Make',args.tools)):
+            if not directory.is_dir():
+                fail('Complete package requires the pinned ' + name + ': ' + str(directory) +
+                     '. Supply the prepared component, or use --native-only for an explicitly native validation build.')
     if args.stage_app and args.stage_app.exists(): fail('Stage destination already exists.')
     if bool(args.runtime) != bool(args.tools):
         fail('The curated runtime and GNU Make must be supplied together.')
@@ -131,7 +144,6 @@ def main():
                         magic = stream.read(4)
                     if magic in (b'\xcf\xfa\xed\xfe', b'\xfe\xed\xfa\xcf', b'\xca\xfe\xba\xbe', b'\xca\xfe\xba\xbf'):
                         run('codesign', '--force', '--sign', '-', path)
-        repo = Path(__file__).resolve().parent.parent
         shutil.copytree(repo/'Compat/common', resources/'Compat/common', dirs_exist_ok=True)
         for name in ('self-test.cpp','LICENSE'):
             target = resources/'Compat/windows'/name
@@ -152,6 +164,8 @@ def main():
             environment = {'schema':1,'toolchain':'llvm-mingw-20261104-ucrt','make':'4.4.1',
                            'runtime':runtime_info,'self_test_sha256':hashlib.sha256((resources/'Compat/windows/self-test.cpp').read_bytes()).hexdigest()}
             (resources/'Compat/windows/environment.json').write_text(json.dumps(environment,indent=2)+'\n')
+        (resources / 'PKG-CONTENT.txt').write_text(
+            'Complete included Windows environment\n' if args.runtime else 'Native IDE only; Windows tools are not bundled\n')
         (resources / 'PKG-VALIDATION.txt').write_text(
             'LOCAL VALIDATION BUILD — not a published release.\n'
             'Minimum: macOS 26.0, Apple Silicon.\n'

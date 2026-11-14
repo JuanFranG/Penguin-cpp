@@ -20,6 +20,7 @@ jobs:
         run: |
           bash packaging/bootstrap-macos-ci.sh "$RUNNER_TEMP/penguin-toolchain"
           echo "$RUNNER_TEMP/penguin-toolchain/fpc/bin" >> "$GITHUB_PATH"
+          echo "PPC_CONFIG_PATH=$RUNNER_TEMP/penguin-toolchain/fpc/etc" >> "$GITHUB_ENV"
           echo "LAZBUILD=$RUNNER_TEMP/penguin-toolchain/lazarus/lazbuild --lazarusdir=$RUNNER_TEMP/penguin-toolchain/lazarus --compiler=$RUNNER_TEMP/penguin-toolchain/fpc/bin/fpc --pcp=$RUNNER_TEMP/lazarus-config" >> "$GITHUB_ENV"
       - name: Release and Debug
         run: |
@@ -43,7 +44,7 @@ jobs:
           hdiutil verify build/macos/*.dmg
       - name: Validate unsigned Installer structure
         run: |
-          python3 packaging/build-macos-pkg.py
+          python3 packaging/build-macos-pkg.py --native-only
           pkgutil --expand-full build/macos/Penguin-cpp-arm64-UNSIGNED-VALIDATION.pkg "$RUNNER_TEMP/pkg-validation"
           codesign --verify --deep --strict "$RUNNER_TEMP/pkg-validation/penguin.pkg/Payload/Penguin cpp.app"
       - uses: actions/upload-artifact@v4

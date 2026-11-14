@@ -142,3 +142,24 @@ ni su ruta gráfica Windows, ni su comportamiento futuro en macOS 28.
   cuarentena para aprobarlo.
 - Incrementar versión y completar la integración del actualizador si se adopta
   `.pkg` como formato de distribución. Hoy el actualizador macOS usa `.dmg`.
+
+## Revisión del flujo incluido y de Terminal
+
+El generador exige por defecto los tres componentes fijados y rechaza un
+paquete incompleto antes de crear el producto. `--native-only` hace explícita
+la validación del IDE sin motor. El diálogo compacto muestra Entorno listo
+tras comprobar el compilador, Make y el motor; las rutas y GPTK son avanzados.
+
+La aplicación se inició directamente por su ejecutable en Terminal, con una
+configuración aislada y una nueva huella de entorno para forzar la preparación.
+El self-test terminó con `PENGUIN_WINDOWS_READY pid=32 sum=6`, y el diálogo
+mostró Environment ready sin introducir rutas. Installer habilitó el producto
+mediante `-showChoicesXML`; no se ejecutó una instalación real sobre la app del
+usuario. Un recibo de paquete completo obliga a comprobar componentes incluso
+si falta el manifiesto; las nuevas pruebas cubren esa distinción.
+
+El actualizador rechaza sustituir una app con entorno incluido por un DMG
+nativo sin dicho entorno. Seis pruebas de instalación/recuperación/rechazo
+pasaron. Eso protege el entorno existente, pero aún no proporciona un canal
+público de actualizaciones completas: el motor continúa fuera de los assets
+públicos hasta completar las obligaciones documentadas de redistribución.

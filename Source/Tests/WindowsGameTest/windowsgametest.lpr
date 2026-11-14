@@ -14,6 +14,15 @@ begin
   Ini := TMemIniFile.Create(Temp + 'test.ini'); Args := TStringList.Create;
   try
     DiscoverWindowsGameConfig(Temp, Config);
+    Check(not RequiresIncludedWindowsEnvironment(Temp), 'native/source copy does not require a bundled environment');
+    with TStringList.Create do try
+      Text := 'Complete included Windows environment'; SaveToFile(Temp + 'PKG-CONTENT.txt');
+      Check(RequiresIncludedWindowsEnvironment(Temp), 'complete package requires setup even if its manifest is missing');
+      Check(not HasIncludedWindowsEnvironment(Temp), 'receipt alone cannot claim installed tools');
+      Text := 'Native IDE only; Windows tools are not bundled'; SaveToFile(Temp + 'PKG-CONTENT.txt');
+      Check(not RequiresIncludedWindowsEnvironment(Temp), 'explicit native-only package remains native');
+      DeleteFile(Temp + 'PKG-CONTENT.txt');
+    finally Free end;
     Config.Mode := cmWindows; Config.Enabled := True; Config.UsesGPTK := False;
     Config.Toolchain := '/tool chain'; Config.Runner := '/runtime path/wine'; Config.Prefix := '/prefix path';
     WriteWindowsGameConfig(Ini, Config); Ini.UpdateFile;

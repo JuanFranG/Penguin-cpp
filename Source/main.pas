@@ -4272,7 +4272,10 @@ procedure TMainForm.PrepareCompatibility(Data: PtrInt);
 begin
   // Let Cocoa finish showing the main window before opening a modal setup form.
   // Keep environment preparation out of the initial visibility event.
-  EnsureWindowsEnvironment(fCompiler.StandaloneConfig,GetUserDataDir);
+  if RequiresIncludedWindowsEnvironment(devDirs.Exec) and
+    not HasIncludedWindowsEnvironment(devDirs.Exec) then
+    MessageDlg(Lang[80222],mtError,[mbOK],0)
+  else EnsureWindowsEnvironment(fCompiler.StandaloneConfig,GetUserDataDir);
   Application.QueueAsyncCall(FitToolbarDock,0);
 end;
 
@@ -6465,7 +6468,7 @@ begin
   end;
 
   // Set languages and other first time stuff
-  if FileExists(devDirs.Exec + 'Compat/windows/environment.json') then begin
+  if RequiresIncludedWindowsEnvironment(devDirs.Exec) then begin
     if devData.Language = '' then devData.Language := 'English.lng';
     Lang.Open(devData.Language);
   end else if devData.First or (devData.Language = '') then
@@ -6644,7 +6647,7 @@ begin
 
   ResizeWelcomeComponent;
 
-  if FileExists(devDirs.Exec + 'Compat/windows/environment.json') then
+  if RequiresIncludedWindowsEnvironment(devDirs.Exec) then
     Application.QueueAsyncCall(PrepareCompatibility,0);
 
   // Native builds/debugging require Apple's SDK; Windows builds use bundled tools.

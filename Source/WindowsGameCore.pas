@@ -13,6 +13,8 @@ type
   end;
   TWindowsGameError = (wgOK, wgToolchainMissing, wgToolchainNotNative,
     wgRunnerMissing, wgRunnerNotNative, wgPrefixInvalid, wgInvalidPE, wgGPTKPlatform);
+function RequiresIncludedWindowsEnvironment(const DataDirectory: String): Boolean;
+function HasIncludedWindowsEnvironment(const DataDirectory: String): Boolean;
 procedure DiscoverWindowsGameConfig(const DataDirectory: String; out Config: TWindowsGameConfig);
 procedure ReadWindowsGameConfig(Ini: TCustomIniFile; var Config: TWindowsGameConfig);
 procedure WriteWindowsGameConfig(Ini: TCustomIniFile; const Config: TWindowsGameConfig);
@@ -132,6 +134,35 @@ begin
 {$ENDIF}
   // Auto selects a target from source dependencies when compiling.
   Config.Enabled := False;
+end;
+function RequiresIncludedWindowsEnvironment(const DataDirectory: String): Boolean;
+var Text: TStringList; Receipt: String;
+begin
+  Result := FileExists(IncludeTrailingPathDelimiter(DataDirectory) + 'Compat/windows/environment.json');
+  if Result then Exit;
+  Receipt := IncludeTrailingPathDelimiter(DataDirectory) + 'PKG-CONTENT.txt';
+  if not FileExists(Receipt) then Exit;
+  Text := TStringList.Create;
+  try
+    try
+      Text.LoadFromFile(Receipt);
+      Result := Pos('Complete included Windows environment',Text.Text) > 0;
+    except Result := True end; // A damaged receipt must not silently skip setup.
+  finally Text.Free end;
+end;
+function HasIncludedWindowsEnvironment(const DataDirectory: String): Boolean;
+var Config: TWindowsGameConfig; Root, C, Cpp: String;
+begin
+  Root := IncludeTrailingPathDelimiter(DataDirectory) + 'Compat/windows/';
+  DiscoverWindowsGameConfig(DataDirectory,Config);
+  Result := FileExists(Root + 'environment.json') and
+    (Config.Toolchain = Root + 'toolchain') and
+    (Config.Runner = Root + 'runtime/bin/wine') and
+    (ResolveWindowsCompilers(Config,C,Cpp) = wgOK) and
+    FileExists(Root + 'tools/bin/make');
+{$IFDEF DARWIN}
+  Result := Result and HasArm64MachO(Config.Runner);
+{$ENDIF}
 end;
 procedure ReadWindowsGameConfig(Ini: TCustomIniFile; var Config: TWindowsGameConfig);
 begin

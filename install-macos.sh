@@ -81,6 +81,11 @@ say "Instalando en $DEST..."
 STAGE=$(mktemp -d "$DEST/.penguin-cpp-update.XXXXXX")
 ditto "$MOUNT/$APP_NAME" "$STAGE/$APP_NAME"
 codesign --verify --deep --strict "$STAGE/$APP_NAME" || fail "no se pudo verificar la copia nueva"
+# Never silently replace a complete Windows environment with a native-only DMG.
+if [ -f "$DEST/$TARGET_APP_NAME/Contents/Resources/Compat/windows/environment.json" ] &&
+   [ ! -f "$STAGE/$APP_NAME/Contents/Resources/Compat/windows/environment.json" ]; then
+  fail "la descarga solo incluye el IDE nativo; conserva el entorno completo. Instala un paquete completo compatible para actualizar esta copia"
+fi
 if [ -e "$DEST/$TARGET_APP_NAME" ]; then mv "$DEST/$TARGET_APP_NAME" "$STAGE/previous.app"; fi
 if ! mv "$STAGE/$APP_NAME" "$DEST/$TARGET_APP_NAME"; then
   fail "no se pudo reemplazar la app; se restaurará la versión anterior"

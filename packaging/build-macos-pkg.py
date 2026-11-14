@@ -72,7 +72,7 @@ def main():
     if info.get('LSMinimumSystemVersion') != '26.0':
         fail('The app must declare macOS 26.0 as its minimum.')
     binary = app / 'Contents/MacOS' / info['CFBundleExecutable']
-    run('lipo', '-verify_arch', 'arm64', binary)
+    run('lipo', binary, '-verify_arch', 'arm64')
     load_commands = capture('otool', '-arch', 'arm64', '-l', binary)
     if not re.search(r'\bminos\s+26\.0(?:\s|$)', load_commands):
         fail('The app binary must be linked for macOS 26.0; changing Info.plist alone is insufficient.')
@@ -85,7 +85,7 @@ def main():
             if not (toolchain / relative).is_file():
                 fail('Missing LLVM-MinGW file: ' + relative)
         validate_links(toolchain)
-        run('lipo', '-verify_arch', 'arm64', toolchain / 'bin/clang')
+        run('lipo', toolchain / 'bin/clang', '-verify_arch', 'arm64')
     runtime_info = None
     if args.runtime:
         runtime_info = json.loads((args.runtime / 'penguin-runtime.json').read_text())
@@ -115,7 +115,7 @@ def main():
             fail('Unpinned GNU Make source.')
         validate_links(args.runtime); validate_links(args.tools)
         for binary in (args.runtime/'bin/wine',args.runtime/'bin/wineserver',args.tools/'bin/make'):
-            run('lipo','-verify_arch','arm64',binary)
+            run('lipo',binary,'-verify_arch','arm64')
     output = args.output.resolve()
     output.parent.mkdir(parents=True, exist_ok=True)
     if not args.stage_app and output.exists():
@@ -159,7 +159,7 @@ def main():
                         if path.is_symlink(): continue
                         with path.open('rb') as stream: magic = stream.read(4)
                         if magic in (b'\xcf\xfa\xed\xfe',b'\xfe\xed\xfa\xcf',b'\xca\xfe\xba\xbe',b'\xca\xfe\xba\xbf'):
-                            run('lipo','-verify_arch','arm64',path)
+                            run('lipo',path,'-verify_arch','arm64')
                             run('codesign','--force','--sign','-',path)
             environment = {'schema':1,'toolchain':'llvm-mingw-20261104-ucrt','make':'4.4.1',
                            'runtime':runtime_info,'self_test_sha256':hashlib.sha256((resources/'Compat/windows/self-test.cpp').read_bytes()).hexdigest()}

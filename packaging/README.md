@@ -79,8 +79,7 @@ addr2line -f -C -e penguin-cpp_0.1.0_amd64_symbols 0x9BA4B9 0x52EE0D
 
 ## Validación del paquete macOS
 
-`build-macos-pkg.py` construye un `.pkg` **local de validación**, sin instalarlo
-ni publicarlo. Requiere una app enlazada y declarada para macOS 26.0/ARM64.
+`build-macos-pkg.py` construye un `.pkg`, sin instalarlo ni subirlo automáticamente. El perfil completo revisado de la 0.5.0 se publica en GitHub. Requiere una app enlazada y declarada para macOS 26.0/ARM64.
 Acepta `--app`, `--toolchain` (LLVM-MinGW existente) y `--output`. Conserva las
 licencias del compilador y rechaza una app que ya contenga un runtime Windows
 sin auditar. No acepta acuerdos ni descarga componentes.
@@ -103,8 +102,9 @@ con sus avisos, y crea `Compat/windows/environment.json`. La primera apertura
 comprueba la compilación y ejecución; no pide rutas ni instala herramientas
 globales. El diálogo muestra el estado del entorno. Las rutas personalizadas
 y GPTK quedan en Opciones avanzadas; Usar entorno incluido recupera los valores
-del bundle. La distribución pública del motor sigue sujeta a los pendientes
-de fuentes y dependencias de QA-pkg-macos.md.
+del bundle. Para distribución pública exige `--publishable --source-bundle <archivo>`: comprueba el SHA-256 de las fuentes y que el manifiesto del motor coincide con `Compat/redistribution-lock.json`. Rechaza componentes opcionales excluidos. La firma Developer ID y notarización siguen pendientes; el perfil público está etiquetado como experimental y sin firmar.
+
+`collect-runtime-sources.py` recoge revisiones y submódulos fijados; `assemble-compat-sources.py` verifica hashes y reúne fuentes, recetas, parches y avisos. No basta volver a empaquetar el archivo upstream completo. Véase [el informe](../Compat/REDISTRIBUTION.md) y [la validación](QA-pkg-macos.md).
 
 El mismo paquete se instala desde Terminal con:
 

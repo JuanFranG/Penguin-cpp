@@ -1,6 +1,6 @@
 # Windows compatibility integration
 
-Local integration build, 13 November 2026. No new public release has been published.
+Published experimental 0.5.0 profile, 13 November 2026. Complete PKG/DMG and corresponding sources are release assets; see [redistribution report](REDISTRIBUTION.md).
 
 ## User flow
 
@@ -47,13 +47,15 @@ Native macOS compilation and debugging still require Apple's developer tools.
 ## Runtime curation and limitations
 
 `packaging/prepare-windows-runtime.py` verifies the pinned upstream archive,
-curates a separate copy and records file hashes. The local copy has 169 thin
+curates a separate copy and records file hashes. The reviewed copy has 169 thin
 ARM64 host Mach-O files and no Intel-only host binaries. Windows x64 PE files
 are intentional guests for FEX. Original third-party files are retained unchanged.
 The IDE supplies the GStreamer/Vulkan environment formerly set by the wrapper.
 
 Excluded paths include Microsoft redistributable/font installers and shader SDK
 payloads, FMOD and Intel shims, Apple's Metal Shader Converter, Mono and Gecko.
+The optional unlicensed `lib/linuxhost` is also excluded; its Linux-module
+anticheat support is not supplied.
 No proprietary installer or Apple agreement is accepted by this flow. The base
 package does not use GPTK; its legacy advanced checkbox installs nothing.
 
@@ -63,10 +65,11 @@ or Wine. The separate native SDL/Metal prototype exposes a limited API and is no
 automatically linked in this Windows target. Native Windows debugging/profiling
 and code completion using the Windows SDK are not implemented.
 
-Before public distribution: collect complete corresponding sources and build
-recipes for all copyleft dependencies, complete the dependency/license review,
-sign/notarize the package, and test real installation/update/failure recovery on
-a clean Mac and macOS 26. Future macOS 28 support is not demonstrated by today's
+The pinned profile ships corresponding sources, patches, build recipes and
+notices in `Penguin-cpp-0.5.0-COMPAT-SOURCES.tar.gz`. The public packaging gate
+checks that archive against the reviewed lock. Developer ID signing/notarization
+and real installation/update/failure recovery on a clean Mac and macOS 26
+remain pending. Future macOS 28 support is not demonstrated by today's
 ARM64 execution. Linux package metadata uses APT MinGW/Wine dependencies on amd64;
 that is not evidence of a full installation/runtime test on Linux.
 

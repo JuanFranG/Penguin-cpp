@@ -66,7 +66,11 @@ TAG=${TAG##*/}
 [[ "$TAG" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]] ||
   fail "no se encontró una versión estable en https://github.com/$REPO/releases"
 
-URL="https://github.com/$REPO/releases/download/$TAG/Penguin-cpp-${TAG#v}-arm64.dmg"
+ASSET="Penguin-cpp-${TAG#v}-arm64.dmg"
+if [ -f "$DEST/$TARGET_APP_NAME/Contents/Resources/Compat/windows/environment.json" ]; then
+  ASSET="Penguin-cpp-${TAG#v}-COMPLETE-UNSIGNED.dmg"
+fi
+URL="https://github.com/$REPO/releases/download/$TAG/$ASSET"
 
 say "Descargando ${URL##*/}..."
 curl --proto '=https' --proto-redir '=https' --max-redirs 5 --connect-timeout 15 --max-time 600 -fL --progress-bar -o "$WORK/penguin-cpp.dmg" "$URL"

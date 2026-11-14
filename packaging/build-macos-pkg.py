@@ -43,6 +43,8 @@ def validate_links(root):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--app', type=Path, default=Path('build/macos/Penguin cpp.app'))
+    parser.add_argument('--publishable', action='store_true', help='Require the reviewed source profile and matching corresponding-source archive')
+    parser.add_argument('--source-bundle', type=Path, help='Corresponding-source archive required for the reviewed public profile')
     parser.add_argument('--native-only', action='store_true', help='Explicitly build only the native IDE; no complete Windows environment')
     parser.add_argument('--toolchain', type=Path, help='Existing LLVM-MinGW distribution, copied with its notices')
     parser.add_argument('--output', type=Path, default=Path('build/macos/Penguin-cpp-arm64-UNSIGNED-VALIDATION.pkg'))
@@ -62,6 +64,8 @@ def main():
             if not directory.is_dir():
                 fail('Complete package requires the pinned ' + name + ': ' + str(directory) +
                      '. Supply the prepared component, or use --native-only for an explicitly native validation build.')
+    if args.publishable and (args.native_only or not args.source_bundle):
+        fail('A public complete package requires --source-bundle and the complete environment.')
     if args.stage_app and args.stage_app.exists(): fail('Stage destination already exists.')
     if bool(args.runtime) != bool(args.tools):
         fail('The curated runtime and GNU Make must be supplied together.')
@@ -104,7 +108,7 @@ def main():
                 with path.open('rb') as stream:
                     for chunk in iter(lambda:stream.read(4*1024*1024),b''):digest.update(chunk)
                 if digest.hexdigest() != stamp['sha256']: fail('Runtime file changed: '+relative)
-        for excluded in ('share/metalsharp','share/wine/shadercompilers','share/wine/mono','share/wine/gecko','lib/libmetalirconverter.dylib'):
+        for excluded in ('share/metalsharp','share/wine/shadercompilers','share/wine/mono','share/wine/gecko','lib/libmetalirconverter.dylib','lib/linuxhost'):
             if (args.runtime / excluded).exists(): fail('Excluded payload has returned: ' + excluded)
         for required in ('bin/wine','bin/wineserver','share/licenses/wine/COPYING.LIB','share/licenses/fex/LICENSE'):
             if not (args.runtime / required).is_file(): fail('Missing runtime file: ' + required)
@@ -116,6 +120,17 @@ def main():
         validate_links(args.runtime); validate_links(args.tools)
         for binary in (args.runtime/'bin/wine',args.runtime/'bin/wineserver',args.tools/'bin/make'):
             run('lipo',binary,'-verify_arch','arm64')
+    review = None
+    if args.publishable:
+        review = json.loads((repo/'Compat/redistribution-lock.json').read_text())
+        if runtime_info is None or runtime_info.get('redistribution_review') != review:
+            fail('Runtime does not match the reviewed redistribution profile.')
+        digest = hashlib.sha256()
+        with args.source_bundle.open('rb') as stream:
+            for chunk in iter(lambda:stream.read(4*1024*1024),b''): digest.update(chunk)
+        if digest.hexdigest() != review['source_archive_sha256']:
+            fail('Corresponding-source archive does not match the reviewed profile.')
+        if review['profile'] != 'penguin-windows-foss-1': fail('Unknown redistribution profile.')
     output = args.output.resolve()
     output.parent.mkdir(parents=True, exist_ok=True)
     if not args.stage_app and output.exists():
@@ -166,14 +181,18 @@ def main():
             (resources/'Compat/windows/environment.json').write_text(json.dumps(environment,indent=2)+'\n')
         (resources / 'PKG-CONTENT.txt').write_text(
             'Complete included Windows environment\n' if args.runtime else 'Native IDE only; Windows tools are not bundled\n')
+        if review:
+            shutil.copy2(repo/'Compat/REDISTRIBUTION.md',resources/'Compat/REDISTRIBUTION.md')
+            (resources/'Compat/windows/COMPATIBILITY-REVIEW.json').write_text(json.dumps(review,indent=2)+'\n')
         (resources / 'PKG-VALIDATION.txt').write_text(
-            'LOCAL VALIDATION BUILD — not a published release.\n'
+            ('EXPERIMENTAL COMPLETE BUILD — reviewed source profile.\n' if review else 'LOCAL VALIDATION BUILD — not a published release.\n') +
             'Minimum: macOS 26.0, Apple Silicon.\n'
             'Tools retain their upstream licenses; LLVM-MinGW Mach-O files are re-signed ad hoc in this copy.\n'
             'Optional curated Wine/FEX and GNU Make are described in Compat/windows/environment.json when present.\n'
             'No Microsoft redistributable installer, FMOD, Apple SDK, GPTK or Metal Shader Converter is included.\n'
             'Apple Command Line Tools remain a separate prerequisite for native macOS builds and debugging.\n'
-            'Before public redistribution: complete corresponding sources/compliance, Developer ID signing and notarization.\n')
+            'Source/notice obligations are described by the companion source index when provided.\n'
+            'Developer ID signing and notarization are not supplied.\n')
         # No --deep re-signing: do not rewrite third-party nested code implicitly.
         run('codesign', '--force', '--sign', '-', staged)
         run('codesign', '--verify', '--deep', '--strict', staged)
@@ -209,7 +228,7 @@ exit 0
             '--version', info['CFBundleVersion'], '--ownership', 'recommended',
             '--scripts', scripts, component_pkg)
         distribution = ET.Element('installer-gui-script', {'minSpecVersion': '2'})
-        ET.SubElement(distribution, 'title').text = 'Penguin cpp — local validation'
+        ET.SubElement(distribution, 'title').text = 'Penguin cpp — complete environment' if review else 'Penguin cpp — local validation'
         ET.SubElement(distribution, 'options', {'customize': 'never', 'require-scripts': 'true', 'hostArchitectures': 'arm64'})
         ET.SubElement(distribution, 'domains', {'enable_localSystem': 'true', 'enable_currentUserHome': 'false', 'enable_anywhere': 'false'})
         volumes = ET.SubElement(distribution, 'volume-check')
@@ -224,8 +243,8 @@ exit 0
         distribution_file = work / 'Distribution.xml'
         ET.ElementTree(distribution).write(distribution_file, encoding='utf-8', xml_declaration=True)
         run('productbuild', '--distribution', distribution_file, '--package-path', work, output)
-    print('Built local validation package:', output)
-    print('Unsigned and not notarized. Not installed or published.')
+    print('Built complete package:' if review else 'Built local validation package:', output)
+    print('Unsigned and not notarized. This tool did not install or publish it.')
 
 
 if __name__ == '__main__':

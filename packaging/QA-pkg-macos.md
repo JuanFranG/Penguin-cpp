@@ -1,3 +1,18 @@
+## Perfil público revisado 0.5.0 — 13 de noviembre de 2026
+
+El PKG y DMG `COMPLETE-UNSIGNED` se publican junto a `COMPAT-SOURCES.tar.gz`, `SHA256SUMS-COMPLETE.txt` y el recibo de revisión. Esta sección sustituye el estado histórico de integración local descrito más abajo.
+
+- 93 entradas de fuentes, 88 archivos y 474 avisos; hashes verificados. Los parches de MoltenVK, SPIRV-Cross, VKD3D, dxil-spirv, DXVK y DXC se aplicaron a sus revisiones fijadas. No se recompilaron aquí todas las dependencias.
+- `--publishable` verifica el archivo de fuentes y el recibo de revisión del motor. `lib/linuxhost`, sin licencia identificada, se excluye además de los componentes propietarios opcionales.
+- App extraída del nuevo PKG: `codesign --verify --deep --strict` pasa; manifiesto, índice de fuentes, versión y exclusiones verificados.
+- Compilador reubicado: self-test Win32/conio/math/stdlib/STL/GDI compilado y ejecutado en un prefix nuevo. Marcador `PENGUIN_WINDOWS_READY pid=32 sum=6`, salida 0. Se observó la aserción no fatal de un hijo de Wine durante la preparación inicial.
+- DMG completo construido desde la misma app; `hdiutil verify` pasa. Siete pruebas del instalador verifican selección del DMG completo, recuperación y rechazo de un DMG nativo incompleto.
+- Pendientes: instalación/actualización real mediante Installer, Mac limpio, usuario estándar, fallos, Gatekeeper con cuarentena, firma Developer ID/notarización y ejecución física en macOS 26. No se reemplazó la aplicación en uso del usuario.
+
+Véanse [el informe y las fuentes](../Compat/REDISTRIBUTION.md) y [las notas actuales](../RELEASE_NOTES_0.5.0.md). Los apartados siguientes conservan la evidencia de prototipos anteriores, no el estado de las descargas actuales.
+
+---
+
 # Validación del instalador macOS
 
 13 de noviembre de 2026. Equipo de prueba: Apple Silicon, macOS 27.2.

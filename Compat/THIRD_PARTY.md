@@ -16,7 +16,7 @@ en la carpeta de compilación ignorada y no se incluyen en este directorio.
 | Wine | LGPL-2.1-or-later | Conservar licencia y avisos y satisfacer las obligaciones aplicables sobre fuentes y cambios al redistribuir el motor. No basta enlazar al sitio del autor. |
 | FEX | MIT | Conservar aviso de copyright y licencia. Una adaptación o dependencia puede tener condiciones adicionales. |
 | DXMT actual | LGPL-2.1-or-later | Revisar la versión exacta y sus fuentes; las versiones antiguas no tienen necesariamente la misma licencia. Solo se evaluó como candidato, no se integró. |
-| MetalSharp Wine: material propio | AGPL-3.0 según el repositorio | No asumir que la licencia de sus scripts cubre todos los componentes del paquete; su distribución mezcla licencias abiertas y redistribuibles propietarios. El subconjunto curado se usa en una integración local; no se ha publicado. |
+| MetalSharp Wine: material propio | AGPL-3.0 según el repositorio | No asumir que la licencia de sus scripts cubre todos los componentes del paquete; su distribución mezcla licencias abiertas y redistribuibles propietarios. El perfil curado `penguin-windows-foss-1` se publica con fuentes, recetas y avisos; ver [revisión específica](REDISTRIBUTION.md). |
 
 ## Componentes propietarios: resultado de la revisión
 
@@ -88,8 +88,8 @@ excluyen FMOD, shims Intel, instaladores Microsoft, SDK de shaders, el conversor
 Apple y las descargas opcionales de Mono/Gecko. El inventario y los hashes se
 registran en `penguin-runtime.json`; véase `WINDOWS-MODE.md`.
 
-Esto no aprueba su publicación: falta recopilar las fuentes correspondientes
+En aquella integración faltaba recopilar las fuentes correspondientes
 completas y recetas de los componentes copyleft, y completar la revisión de
-dependencias. Ningún instalador con este motor se ha publicado. La observación
+dependencias. Ese estado histórico queda sustituido para el perfil revisado 0.5.0 por [REDISTRIBUTION.md](REDISTRIBUTION.md), acompañado de fuentes en la release. La observación
 anterior de herramientas no incluidas se refiere al estado previo a esta
 integración local.

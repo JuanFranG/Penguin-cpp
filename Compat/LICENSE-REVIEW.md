@@ -1,5 +1,7 @@
 # Revisión de redistribuibles Microsoft y Apple
 
+El paquete completo público 0.5.0 usa un perfil abierto que excluye esos componentes propietarios. Su inventario, fuentes y exclusiones se documentan en [REDISTRIBUTION.md](REDISTRIBUTION.md). Los análisis siguientes no implican que se distribuyan esos paquetes.
+
 Fecha: 13 de noviembre de 2026. Revisión documental para decidir qué podría
 incorporarse a Penguin; no se han instalado binarios ni aceptado acuerdos.
 Las conclusiones siguientes son una lectura técnica del texto examinado,

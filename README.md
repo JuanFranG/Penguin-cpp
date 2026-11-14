@@ -13,8 +13,8 @@ ejecutar programas compilados para Windows.
 
 > **Estado: versión 0.5.0.** El IDE funciona en Linux Mint (paquete `.deb` y
 > repositorio APT, amd64) y en macOS 26 o posterior con Apple Silicon
-> (`.dmg` nativo, en pruebas). El `.pkg` con el entorno Windows completo sigue
-> como integración local. Ver [ROADMAP.md](ROADMAP.md).
+> (en pruebas). Hay `.pkg` y `.dmg` completos con el entorno Windows, además
+> del DMG nativo. Ver [ROADMAP.md](ROADMAP.md).
 
 ---
 
@@ -30,8 +30,7 @@ Penguin cpp tiene **propósitos educativos y de divulgación**:
   está explicada en [ROADMAP.md](ROADMAP.md) y en el historial de commits.
 - **Distribución:** paquete `.deb` y repositorio APT para Debian, Ubuntu,
   Linux Mint y derivadas; `.app`/`.dmg` para macOS 26+ con Apple Silicon.
-  El generador del `.pkg` completo está integrado, con pendientes de
-  redistribución antes de publicar su motor Windows.
+  `.pkg` y `.dmg` completos experimentales, con fuentes y avisos de sus dependencias.
 
 ---
 
@@ -107,15 +106,16 @@ tiene un error, lo anota en `penguin-cpp-errores.txt`, en el Escritorio.
 
 ### macOS 26 o posterior (Apple Silicon)
 
-La versión para Mac está en pruebas. Se instala (y se actualiza) con una
-línea en Terminal, que descarga la última versión, la pone en Aplicaciones y,
+Para incluir las herramientas Windows, descarga el [PKG completo 0.5.0](https://github.com/JuanFranG/Penguin-cpp/releases/download/v0.5.0/Penguin-cpp-0.5.0-COMPLETE-UNSIGNED.pkg). Incluye LLVM-MinGW, GNU Make y Wine ARM64/FEX dentro de la app. También está disponible el [DMG completo](https://github.com/JuanFranG/Penguin-cpp/releases/download/v0.5.0/Penguin-cpp-0.5.0-COMPLETE-UNSIGNED.dmg). Son experimentales y no tienen firma Developer ID ni notarización.
+
+Para una instalación nueva **solo del IDE nativo**, esta línea descarga la última versión, la pone en Aplicaciones y,
 si faltan, pide las Command Line Tools de Apple (clang, make y lldb):
 
 ```bash
 curl -fsSL https://juanfrang.github.io/Penguin-cpp/install-macos.sh | bash
 ```
 
-También se puede descargar el `.dmg` de
+También se puede descargar el DMG nativo `Penguin-cpp-0.5.0-arm64.dmg` de
 [Releases](https://github.com/JuanFranG/Penguin-cpp/releases/latest) y
 arrastrar *Penguin cpp* a Aplicaciones; como la app no está firmada por un
 desarrollador de Apple, la primera vez hay que abrirla, cerrar el aviso y
@@ -123,26 +123,25 @@ pulsar *Abrir igualmente* en *Configuración del Sistema > Privacidad y
 seguridad*.
 
 El formateador de código (astyle) viene dentro de la app. La configuración
-queda en `~/Library/Application Support/penguin-cpp`. El DMG público incluye
+queda en `~/Library/Application Support/penguin-cpp`. El DMG nativo incluye
 el IDE nativo y su integración de compatibilidad, **pero no incluye el
 compilador Windows ni el motor Wine/FEX completos**.
 
-El `.pkg` completo de integración instala LLVM-MinGW, GNU Make y el motor
+El `.pkg` completo instala LLVM-MinGW, GNU Make y el motor
 ARM64/FEX dentro de la app. Al abrirla, también desde Terminal, Penguin prepara
 un entorno privado, compila y ejecuta una prueba y muestra «Entorno listo».
 No pide rutas; las instalaciones personalizadas quedan en Opciones avanzadas.
-No depende de Rosetta. Ese paquete sigue siendo local y sin notarizar hasta
-completar las fuentes correspondientes y la revisión de dependencias del motor.
+No depende de Rosetta. Las [fuentes correspondientes](https://github.com/JuanFranG/Penguin-cpp/releases/download/v0.5.0/Penguin-cpp-0.5.0-COMPAT-SOURCES.tar.gz), recetas y avisos acompañan al perfil revisado; se excluyen componentes propietarios opcionales y el host anticheat sin licencia identificada. Ver [revisión y exclusiones](Compat/REDISTRIBUTION.md).
 Ver [validación y límites](packaging/QA-pkg-macos.md).
 
 | Archivo | Herramientas Windows incluidas | Disponibilidad |
 |---|---|---|
 | `Penguin-cpp-0.5.0-arm64.dmg` | No; IDE nativo | GitHub Releases |
-| `Penguin-cpp-0.5.0-COMPLETE-UNSIGNED.pkg` | Sí: LLVM-MinGW, GNU Make y Wine ARM64/FEX | Integración local, aún sin publicación pública |
-| `Penguin-cpp-0.5.0-COMPLETE-UNSIGNED.dmg` | Sí: el mismo entorno del PKG completo | Integración local, aún sin publicación pública |
+| `Penguin-cpp-0.5.0-COMPLETE-UNSIGNED.pkg` | Sí: LLVM-MinGW, GNU Make y Wine ARM64/FEX | GitHub Releases (experimental) |
+| `Penguin-cpp-0.5.0-COMPLETE-UNSIGNED.dmg` | Sí: el mismo entorno del PKG completo | GitHub Releases (experimental) |
 
 
-Con el `.pkg` completo ya generado, la instalación desde Terminal es:
+Con el `.pkg` completo descargado, la instalación desde Terminal es:
 
 ```bash
 sudo installer -pkg /ruta/al/paquete-completo.pkg -target /
@@ -173,8 +172,7 @@ nueva antes de reemplazar la anterior y vuelve a abrirla. El progreso aparece
 en Terminal. La carpeta de instalación debe permitir escritura; la app sigue
 sin firma Developer ID ni notarización. Desde la 0.5.0, el instalador rechaza
 reemplazar una copia con entorno Windows completo por un DMG nativo sin ese
-entorno. El botón todavía no distribuye actualizaciones completas del motor;
-esa publicación sigue pendiente.
+entorno. El nuevo paquete completo selecciona el DMG `COMPLETE-UNSIGNED` al actualizar; la edición nativa selecciona el DMG nativo. Se verificó con pruebas simuladas; falta probar una actualización real a una versión futura. Para pasar de una copia nativa o una integración local anterior de la misma 0.5.0, instala el nuevo PKG una vez: el buscador no ofrece de nuevo la misma versión.
 
 En Linux el botón ejecuta `sudo apt-get update` y
 `sudo apt-get install --only-upgrade -y penguin-cpp` en una terminal y pide

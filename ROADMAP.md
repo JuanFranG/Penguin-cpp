@@ -17,30 +17,24 @@ falta.
 
 El IDE nativo se distribuye en Linux amd64 mediante `.deb`/APT y en macOS
 **26 o posterior, Apple Silicon**, mediante `.dmg`. El `.pkg` con todo el
-entorno Windows está construido y probado como integración local; su motor
-no forma parte de las descargas públicas. Los apartados de fases conservan
+entorno Windows y el DMG completo están publicados como perfil experimental,
+con sus fuentes, recetas y avisos. Los apartados de fases conservan
 el historial del port: los pendientes vigentes se resumen aquí.
 
 | Entrega | Implementado y comprobado | Límites que permanecen |
 |---|---|---|
 | 0.3.0 | Buscar/instalar actualizaciones, acción Adjuntar a un proceso nativo, nombres de objetos sin colisiones y actualización macOS con preparación y recuperación. | Gatekeeper con cuarentena y recuperación mediante Installer real en un Mac limpio. |
 | 0.4.0 | Clipping de vistas LCL para corregir repintado Cocoa; barras adaptables observadas a 1440/1000 puntos; modos Automático/Nativo/Windows, objetos `.win.o`, LLVM-MinGW y Wine. | El análisis automático es heurístico; no garantiza compatibilidad con todas las APIs Windows. |
-| 0.5.0 | Diálogo compacto con estado del entorno; rutas avanzadas opcionales; `.pkg` completo por defecto; comprobación al arrancar desde Terminal; rechazo de un DMG nativo sobre una instalación completa. | Falta distribuir y actualizar públicamente el motor completo. Un paquete nativo no lo contiene. |
+| 0.5.0 | Diálogo compacto con estado del entorno; rutas avanzadas opcionales; `.pkg` completo por defecto; comprobación al arrancar desde Terminal; rechazo de un DMG nativo sobre una instalación completa. | PKG/DMG completos y fuentes publicados; canal completo probado con simulaciones. Instalación real, notarización y actualización futura pendientes. |
 
 ### Próximos trabajos
 
-1. **Distribución completa:** recopilar las fuentes y recetas correspondientes
-   y completar la revisión de dependencias del motor curado. No publicar el
-   archivo upstream completo: incluye componentes opcionales excluidos de
-   nuestra integración. No se incorporaron GPTK, el conversor Apple, FMOD ni
-   instaladores Microsoft opcionales al paquete local.
+1. **Mantener el perfil redistribuible:** fuentes, recetas y revisión completadas para `penguin-windows-foss-1` de la 0.5.0; repetir la revisión si cambian versiones o dependencias. No se distribuye el archivo upstream completo: quedan fuera GPTK, conversor Apple, FMOD, instaladores Microsoft y `lib/linuxhost`. Ver [informe](Compat/REDISTRIBUTION.md).
 2. **Instalación real:** probar primera instalación y actualización del `.pkg`,
    usuario estándar, fallos y recuperación, Mac limpio, Gatekeeper con
    cuarentena y ejecución física en macOS 26. `-showChoicesXML`, la extracción
    y el self-test no sustituyen una instalación real.
-3. **Actualizador completo:** publicar un artefacto completo redistribuible y
-   conectar su actualización. La protección de la 0.5.0 impide perder el motor,
-   pero no convierte el DMG público nativo en una actualización completa.
+3. **Actualización real:** el nuevo paquete selecciona el DMG completo y rechaza una descarga nativa incompleta; siete pruebas simuladas pasan. Probar una actualización real a una versión futura, con recuperación y datos existentes. Las copias anteriores de la misma 0.5.0 deben instalar el nuevo PKG una vez.
 4. **Compatibilidad:** ampliar y probar bibliotecas concretas. `graphics.h` y
    WinBGIm siguen sin integrarse automáticamente; el prototipo SDL/Metal tiene
    una API limitada. Depuración/perfilado Windows y autocompletado con sus
@@ -184,8 +178,8 @@ historial es lineal.
 | 6 · Compilación con el gcc de Linux | `fase6/compilador` | ✅ Hecha, probada en Mint: gcc, archivos sueltos, proyectos, terminal, errores, instancia única y formateadores |
 | 7 · Depurador (GDB/MI) | `fase7/depurador` | ✅ Hecha, probada en Mint, con la revisión general de errores de rango y de memoria |
 | 8 · Paquete `.deb` y pulido | `fase8/paquete` | ✅ Probado en Mint; las versiones 0.1.0 a 0.5.0 están en Releases y en el repositorio APT |
-| 9 · macOS (Apple Silicon) | `fase9/macos` | 🔄 IDE y DMG nativos disponibles; CI Cocoa implementado. Desde 0.4.0: macOS 26+. Paquete completo local y pendientes de publicación/instalación indicados arriba. |
-| 10 · Compatibilidad Windows | `main` / `fase9/macos` | 🔄 Modos, compilación cruzada, ejecución y preparación automática integrados. Entorno completo macOS local; publicación y ampliación de bibliotecas pendientes. |
+| 9 · macOS (Apple Silicon) | `fase9/macos` | 🔄 IDE y DMG nativos disponibles; CI Cocoa implementado. Desde 0.4.0: macOS 26+. Paquete completo y fuentes publicados; pendientes de instalación real indicados arriba. |
+| 10 · Compatibilidad Windows | `main` / `fase9/macos` | 🔄 Modos, compilación cruzada, ejecución y preparación automática integrados. Entorno completo macOS publicado; ampliación de bibliotecas y pruebas reales pendientes. |
 
 ### Registro del ciclo inicial (histórico)
 
@@ -847,7 +841,7 @@ curl -fsSL https://juanfrang.github.io/Penguin-cpp/install-macos.sh | bash
 
 El CI Cocoa ya construye y verifica el DMG como artefacto. La publicación
 Linux/APT la ejecuta `release.yml`; el DMG validado se adjunta a la release.
-El motor completo permanece local hasta resolver los pendientes de distribución.
+El perfil completo revisado de la 0.5.0 y sus fuentes se distribuyen como assets separados; no se debe confundir con el DMG nativo.
 
 Lecciones de Cocoa: las cabeceras Cocoa de FPC detienen al compilador al
 generar información de depuración (error interno 200609171), así que las

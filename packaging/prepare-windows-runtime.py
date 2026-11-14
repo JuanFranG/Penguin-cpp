@@ -19,7 +19,7 @@ import subprocess
 VERSION = '6.5'
 SHA256 = '574199696623371d6c4abfe5d242c86403cc4ba4b4b5643f5e6187a6d5b86d4b'
 EXCLUDE = ('share/metalsharp', 'share/wine/shadercompilers', 'share/wine/mono',
-           'share/wine/gecko', 'lib/libmetalirconverter.dylib')
+           'share/wine/gecko', 'lib/libmetalirconverter.dylib', 'lib/linuxhost')
 
 
 def main():

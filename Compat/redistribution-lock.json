@@ -1,0 +1,12 @@
+{
+  "schema": 1,
+  "profile": "penguin-windows-foss-1",
+  "source_archive": "Penguin-cpp-0.5.0-COMPAT-SOURCES.tar.gz",
+  "source_archive_sha256": "f493ab0bc203e3b219e03458e4a863906965527f94bbbada54417e59ab0075fe",
+  "source_index_sha256": "9159668ea7a0083098c92f4b62fef3d48521c674a5a74139fdb6c2406a5e0b4f",
+  "source_records": 93,
+  "notice_files": 474,
+  "upstream_runtime_sha256": "574199696623371d6c4abfe5d242c86403cc4ba4b4b5643f5e6187a6d5b86d4b",
+  "excluded_optional_component": "lib/linuxhost",
+  "source_url": "https://github.com/JuanFranG/Penguin-cpp/releases/download/v0.5.0/Penguin-cpp-0.5.0-COMPAT-SOURCES.tar.gz"
+}

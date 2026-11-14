@@ -14,7 +14,16 @@
 
 - **Linux amd64:** `sudo apt install ./penguin-cpp_0.5.0_amd64.deb`, o actualizar desde el [repositorio APT](https://juanfrang.github.io/Penguin-cpp/). APT resuelve las dependencias MinGW/Wine del paquete.
 - **macOS nativo:** DMG para **macOS 26.0 o posterior y Apple Silicon**. El desarrollo nativo necesita las herramientas oficiales de Apple. Firma ad hoc, sin notarización Developer ID.
-- **El DMG público no incluye el motor Windows completo.** El `.pkg` completo sigue como integración local hasta completar las fuentes correspondientes y la revisión de dependencias del motor. No se presenta como una descarga pública lista para redistribuir.
+- **El `.pkg` COMPLETO sí incluye las herramientas de compatibilidad:** LLVM-MinGW, GNU Make y Wine ARM64/FEX dentro de Penguin. Prepara el entorno automáticamente al abrir la aplicación, también desde Terminal. Se verificó extrayendo el instalador, compilando y ejecutando su ejemplo Windows. No requiere instalar esas herramientas por separado.
+- **Ese PKG completo es un archivo local de integración; todavía no es un asset descargable de esta release de GitHub.** Su publicación está pendiente de completar las fuentes correspondientes y la revisión de dependencias del motor.
+- **El DMG público de esta release contiene solo el IDE nativo**, con el código de integración. No incluye LLVM-MinGW ni Wine/FEX completos. El DMG completo generado localmente sí incluye el mismo entorno que el PKG completo.
+
+| Archivo 0.5.0 | ¿Incluye el entorno Windows completo? | Dónde está |
+|---|---|---|
+| `Penguin-cpp-0.5.0-arm64.dmg` | No; IDE nativo | Asset público de GitHub |
+| `Penguin-cpp-0.5.0-COMPLETE-UNSIGNED.pkg` | Sí; compilador, Make y Wine ARM64/FEX | Archivo local de integración, aún no publicado |
+| `Penguin-cpp-0.5.0-COMPLETE-UNSIGNED.dmg` | Sí; mismo entorno del PKG completo | Archivo local de integración, aún no publicado |
+
 - El motor de la integración completa es ARM64/FEX y no depende de Rosetta. Esto no garantiza ejecución en futuras versiones de macOS.
 - El botón Actualizar funciona para la edición nativa. **Todavía no distribuye el entorno completo por GitHub**; esta versión protege ese entorno rechazando descargas incompletas.
 

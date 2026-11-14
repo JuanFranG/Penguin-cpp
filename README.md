@@ -135,6 +135,13 @@ No depende de Rosetta. Ese paquete sigue siendo local y sin notarizar hasta
 completar las fuentes correspondientes y la revisión de dependencias del motor.
 Ver [validación y límites](packaging/QA-pkg-macos.md).
 
+| Archivo | Herramientas Windows incluidas | Disponibilidad |
+|---|---|---|
+| `Penguin-cpp-0.5.0-arm64.dmg` | No; IDE nativo | GitHub Releases |
+| `Penguin-cpp-0.5.0-COMPLETE-UNSIGNED.pkg` | Sí: LLVM-MinGW, GNU Make y Wine ARM64/FEX | Integración local, aún sin publicación pública |
+| `Penguin-cpp-0.5.0-COMPLETE-UNSIGNED.dmg` | Sí: el mismo entorno del PKG completo | Integración local, aún sin publicación pública |
+
+
 Con el `.pkg` completo ya generado, la instalación desde Terminal es:
 
 ```bash

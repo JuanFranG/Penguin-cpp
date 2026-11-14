@@ -4,15 +4,17 @@
 
 <h1 align="center">Penguin cpp</h1>
 
-<p align="center"><strong>Un IDE de C/C++ sencillo, libre y nativo para Linux.</strong></p>
+<p align="center"><strong>Un IDE de C/C++ sencillo, libre y nativo para Linux y macOS.</strong></p>
 
-Penguin cpp expande Embarcadero Dev-C++ a Linux. Es el mismo entorno ligero
-con el que mucha gente aprende C y C++, ahora como programa nativo de Linux,
-sin Wine.
+Penguin cpp lleva Embarcadero Dev-C++ a Linux y macOS con Apple Silicon.
+Conserva su entorno ligero para aprender C y C++, con una interfaz nativa.
+El IDE no necesita Wine; el modo opcional de compatibilidad lo utiliza para
+ejecutar programas compilados para Windows.
 
 > **Estado: versión 0.5.0.** El IDE funciona en Linux Mint (paquete `.deb` y
-> repositorio APT) y en macOS con Apple Silicon (`.dmg`, en pruebas). Ver
-> [ROADMAP.md](ROADMAP.md).
+> repositorio APT, amd64) y en macOS 26 o posterior con Apple Silicon
+> (`.dmg` nativo, en pruebas). El `.pkg` con el entorno Windows completo sigue
+> como integración local. Ver [ROADMAP.md](ROADMAP.md).
 
 ---
 
@@ -26,25 +28,32 @@ Penguin cpp tiene **propósitos educativos y de divulgación**:
 - **Para divulgar.** Muestra que un IDE clásico de Windows puede pasar a
   Linux como software libre, y documenta cómo se hizo: cada fase del port
   está explicada en [ROADMAP.md](ROADMAP.md) y en el historial de commits.
-- **Producto final: un paquete `.deb`** para Debian, Ubuntu, Linux Mint y
-  derivadas. Se instala con `apt`, trae sus dependencias (gcc/g++, gdb,
-  make) y aparece en el menú de aplicaciones.
+- **Distribución:** paquete `.deb` y repositorio APT para Debian, Ubuntu,
+  Linux Mint y derivadas; `.app`/`.dmg` para macOS 26+ con Apple Silicon.
+  El generador del `.pkg` completo está integrado, con pendientes de
+  redistribución antes de publicar su motor Windows.
 
 ---
 
 ## Qué ofrece
 
-Lo que trae del Dev-C++ original y se está portando:
+Funciones disponibles:
 
 - Editor con resaltado de sintaxis de C/C++, temas de color y numeración de
   líneas.
 - Navegador de clases y autocompletado, con un analizador de C++ propio.
 - Proyectos y plantillas (consola, bibliotecas…).
-- Compilación con el gcc/g++ del sistema, con errores que se pueden clicar.
-- Depuración con gdb.
+- Compilación con gcc/g++ en Linux y clang en macOS, con errores que llevan
+  a su línea en el editor.
+- Depuración nativa con gdb en Linux y lldb-dap en macOS; adjuntar a un
+  proceso nativo desde el menú Ejecutar.
 - Formateo de código con AStyle o clang-format.
 - Traducida a más de 30 idiomas, incluido el español (con variantes de
   España y Colombia).
+
+- Buscar e instalar actualizaciones del IDE desde el menú Ayuda.
+- Compatibilidad Windows experimental, con modos Automático/Nativo/Windows,
+  compilador cruzado y ejecución mediante Wine cuando el entorno está disponible.
 
 Qué funciona hoy y qué falta está en [ROADMAP.md](ROADMAP.md).
 
@@ -57,7 +66,8 @@ usarlo, en español y en inglés; también se abre desde el IDE con F1.
 
 Penguin cpp se instala con `apt` en Debian, Ubuntu, Linux Mint y derivadas
 (amd64). `apt` instala también todo lo que necesita: gcc, g++, make, gdb,
-astyle y clang-format.
+astyle y clang-format. En amd64 también resuelve las dependencias de MinGW
+y Wine para el modo Windows.
 
 Una sola vez, agrega su repositorio y la clave con la que está firmado:
 
@@ -76,7 +86,7 @@ sudo apt install penguin-cpp
 
 También se puede descargar el `.deb` de
 [Releases](https://github.com/JuanFranG/Penguin-cpp/releases) e instalarlo
-directamente (sin actualizaciones automáticas):
+directamente (sin agregar el repositorio APT):
 
 ```bash
 sudo apt install ./penguin-cpp_0.5.0_amd64.deb
@@ -113,7 +123,36 @@ pulsar *Abrir igualmente* en *Configuración del Sistema > Privacidad y
 seguridad*.
 
 El formateador de código (astyle) viene dentro de la app. La configuración
-queda en `~/Library/Application Support/penguin-cpp`.
+queda en `~/Library/Application Support/penguin-cpp`. El DMG público incluye
+el IDE nativo y su integración de compatibilidad, **pero no incluye el
+compilador Windows ni el motor Wine/FEX completos**.
+
+El `.pkg` completo de integración instala LLVM-MinGW, GNU Make y el motor
+ARM64/FEX dentro de la app. Al abrirla, también desde Terminal, Penguin prepara
+un entorno privado, compila y ejecuta una prueba y muestra «Entorno listo».
+No pide rutas; las instalaciones personalizadas quedan en Opciones avanzadas.
+No depende de Rosetta. Ese paquete sigue siendo local y sin notarizar hasta
+completar las fuentes correspondientes y la revisión de dependencias del motor.
+Ver [validación y límites](packaging/QA-pkg-macos.md).
+
+Con el `.pkg` completo ya generado, la instalación desde Terminal es:
+
+```bash
+sudo installer -pkg /ruta/al/paquete-completo.pkg -target /
+open -a "Penguin cpp"
+# También se puede iniciar directamente:
+"/Applications/Penguin cpp.app/Contents/MacOS/penguin-cpp"
+```
+
+Cierra Penguin antes de instalar o actualizar. La preparación se ejecuta con
+el usuario que abre la aplicación; Installer no inicia Wine como root. Las
+Command Line Tools siguen siendo necesarias para el desarrollo nativo macOS.
+
+Para desinstalar en macOS, cierra Penguin y mueve **Penguin cpp.app** a la
+Papelera: las herramientas incluidas se eliminan con la app. La configuración
+y el entorno Windows permanecen en `~/Library/Application Support/penguin-cpp`.
+Borrar también esa carpeta elimina los programas y datos guardados dentro
+del entorno Windows.
 
 ### Buscar e instalar actualizaciones
 
@@ -125,7 +164,10 @@ abierto y cancela la actualización.
 En macOS descarga el `.dmg`, verifica la integridad de la app, prepara la copia
 nueva antes de reemplazar la anterior y vuelve a abrirla. El progreso aparece
 en Terminal. La carpeta de instalación debe permitir escritura; la app sigue
-sin firma Developer ID ni notarización.
+sin firma Developer ID ni notarización. Desde la 0.5.0, el instalador rechaza
+reemplazar una copia con entorno Windows completo por un DMG nativo sin ese
+entorno. El botón todavía no distribuye actualizaciones completas del motor;
+esa publicación sigue pendiente.
 
 En Linux el botón ejecuta `sudo apt-get update` y
 `sudo apt-get install --only-upgrade -y penguin-cpp` en una terminal y pide
@@ -135,6 +177,21 @@ configurado. Para otras instalaciones está **Abrir descargas**.
 Esta función está disponible desde la versión 0.3.0; una versión anterior
 que todavía no tenga el menú necesita instalar esa primera actualización
 mediante el instalador habitual.
+
+## Últimas versiones y límites
+
+| Versión | Cambios principales |
+|---|---|
+| [0.3.0](https://github.com/JuanFranG/Penguin-cpp/releases/tag/v0.3.0) | Buscar/instalar actualizaciones, adjuntar a procesos nativos, corrección de colisiones de objetos y sustitución de la app con recuperación ante fallos. |
+| [0.4.0](RELEASE_NOTES_0.4.0.md) | Corrección de repintado Cocoa, barras que aprovechan el ancho de la ventana, modos de compatibilidad Windows y herramientas de empaquetado completo. |
+| [0.5.0](RELEASE_NOTES_0.5.0.md) | Estado del entorno sin rutas obligatorias, `.pkg` completo por defecto, comprobación al arrancar desde Terminal y protección contra actualizaciones incompletas. |
+
+La compatibilidad Windows es experimental. `windows.h`, `conio.h`, `math.h`
+y `stdlib.h` se usan mediante el compilador Windows; eso no convierte todas
+las APIs o bibliotecas Windows en bibliotecas nativas de macOS/Linux.
+`graphics.h`/WinBGIm no está integrado automáticamente; el prototipo SDL/Metal
+es limitado y separado. Tampoco se han implementado la depuración y el
+perfilado de programas Windows. Más detalles en [el estado del modo Windows](Compat/WINDOWS-MODE.md).
 
 ## Compilar desde el código
 
@@ -173,8 +230,11 @@ Las pruebas y más detalles están en [ROADMAP.md](ROADMAP.md#cómo-compilar-y-p
 **Juan Francisco Gonzalez Pacheco**: Ingeniería de Sistemas, Universidad
 del Magdalena.
 
-El port se desarrolló con la asistencia de **Claude Opus 5.5**, el modelo
-de inteligencia artificial de Anthropic.
+El proyecto se ha desarrollado con la asistencia de modelos de inteligencia
+artificial: **Claude Opus 5.5**, de Anthropic, y **Chat GPT 6.1 Sol**, de
+OpenAI. Esta asistencia ha acompañado el trabajo de portabilidad, revisión,
+pruebas, empaquetado y documentación; la autoría y las decisiones del proyecto
+corresponden a Juan Francisco Gonzalez Pacheco.
 
 ## Origen
 
@@ -184,9 +244,9 @@ Penguin cpp parte del código de **Embarcadero Dev-C++**
 (<https://www.bloodshed.net/devcpp.html>). El proyecto original solo funciona
 en Windows y está hecho con Delphi.
 
-Para llevarlo a Linux se pasó a **Lazarus y Free Pascal**, y se quitó todo lo
-que solo existe en Windows. El historial completo del proyecto original se
-conserva en este repositorio. Sus notas de versión están en
+Para llevarlo a Linux y macOS se pasó a **Lazarus y Free Pascal** y se
+sustituyeron las dependencias exclusivas de Windows del IDE. El historial
+completo del proyecto original se conserva en este repositorio. Sus notas de versión están en
 [NEWS.txt](NEWS.txt).
 
 ## Licencia

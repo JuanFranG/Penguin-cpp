@@ -9,7 +9,63 @@ funciona en Windows.
 Este documento explica de dónde viene, qué se ha hecho hasta ahora y qué
 falta.
 
-*Última actualización: 7 de noviembre de 2026. Versión 0.2.2.*
+*Última actualización: 13 de noviembre de 2026. Versión 0.5.0.*
+
+---
+
+## Estado actual: versiones 0.3 a 0.5
+
+El IDE nativo se distribuye en Linux amd64 mediante `.deb`/APT y en macOS
+**26 o posterior, Apple Silicon**, mediante `.dmg`. El `.pkg` con todo el
+entorno Windows está construido y probado como integración local; su motor
+no forma parte de las descargas públicas. Los apartados de fases conservan
+el historial del port: los pendientes vigentes se resumen aquí.
+
+| Entrega | Implementado y comprobado | Límites que permanecen |
+|---|---|---|
+| 0.3.0 | Buscar/instalar actualizaciones, acción Adjuntar a un proceso nativo, nombres de objetos sin colisiones y actualización macOS con preparación y recuperación. | Gatekeeper con cuarentena y recuperación mediante Installer real en un Mac limpio. |
+| 0.4.0 | Clipping de vistas LCL para corregir repintado Cocoa; barras adaptables observadas a 1440/1000 puntos; modos Automático/Nativo/Windows, objetos `.win.o`, LLVM-MinGW y Wine. | El análisis automático es heurístico; no garantiza compatibilidad con todas las APIs Windows. |
+| 0.5.0 | Diálogo compacto con estado del entorno; rutas avanzadas opcionales; `.pkg` completo por defecto; comprobación al arrancar desde Terminal; rechazo de un DMG nativo sobre una instalación completa. | Falta distribuir y actualizar públicamente el motor completo. Un paquete nativo no lo contiene. |
+
+### Próximos trabajos
+
+1. **Distribución completa:** recopilar las fuentes y recetas correspondientes
+   y completar la revisión de dependencias del motor curado. No publicar el
+   archivo upstream completo: incluye componentes opcionales excluidos de
+   nuestra integración. No se incorporaron GPTK, el conversor Apple, FMOD ni
+   instaladores Microsoft opcionales al paquete local.
+2. **Instalación real:** probar primera instalación y actualización del `.pkg`,
+   usuario estándar, fallos y recuperación, Mac limpio, Gatekeeper con
+   cuarentena y ejecución física en macOS 26. `-showChoicesXML`, la extracción
+   y el self-test no sustituyen una instalación real.
+3. **Actualizador completo:** publicar un artefacto completo redistribuible y
+   conectar su actualización. La protección de la 0.5.0 impide perder el motor,
+   pero no convierte el DMG público nativo en una actualización completa.
+4. **Compatibilidad:** ampliar y probar bibliotecas concretas. `graphics.h` y
+   WinBGIm siguen sin integrarse automáticamente; el prototipo SDL/Metal tiene
+   una API limitada. Depuración/perfilado Windows y autocompletado con sus
+   encabezados siguen pendientes. ARM64/FEX evita depender de Rosetta en la
+   integración probada; no acredita futuras versiones de macOS.
+5. **Cobertura visual:** completar formularios, idiomas, tamaños de fuente,
+   resoluciones y modo oscuro; impresión/PDF, exportaciones, perfilador y todas
+   las plantillas. Las 9.824 comprobaciones estructurales de 37 formularios
+   no equivalen a revisar visualmente todas esas combinaciones.
+6. **CI y Linux:** mantener verdes los flujos Qt5 y Cocoa. Linux prueba
+   compilación normal/Debug, funciones, empaquetado e instalación; la ejecución
+   Windows con cada biblioteca aún necesita cobertura específica. En Linux
+   amd64, APT instala MinGW/Wine/Make como dependencias; no se reutiliza el
+   paquete ARM64/FEX preparado para macOS.
+
+La preparación del paquete completo usa un prefix privado del usuario. Se
+activa al abrir la app desde Finder o desde Terminal y se vuelve a exigir al
+compilar Windows si falta o falla. La app incluye las herramientas; el
+instalador no ejecuta Wine como root. Desinstalar la app elimina las herramientas
+incluidas; borrar su carpeta de soporte es opcional y elimina también los
+programas y datos del prefix.
+
+Notas de versión: [0.4.0](RELEASE_NOTES_0.4.0.md),
+[0.5.0](RELEASE_NOTES_0.5.0.md). Evidencia y límites del instalador en
+[QA-pkg-macos.md](packaging/QA-pkg-macos.md).
 
 ---
 
@@ -42,8 +98,9 @@ historial en el commit `3832494`. El remoto `upstream` apunta al repositorio
 original para poder comparar.
 
 A partir de ahí el proyecto sigue su propio camino. Ya no compila con
-Delphi ni apunta a Windows: usa Lazarus/Free Pascal, la LCL, el gcc del
-sistema y las convenciones de Linux.
+Delphi: el IDE usa Lazarus/Free Pascal y la LCL para ejecutarse nativamente
+en Linux/macOS. El modo de compatibilidad añadido después permite generar
+y ejecutar programas Windows mediante un entorno separado.
 
 Penguin cpp **no es un producto de Embarcadero** ni está afiliado a ninguno
 de los proyectos anteriores. Se conservan sus avisos de copyright, como pide
@@ -100,8 +157,11 @@ Pruebas de consola:
 | `Source/Tests/LfmCheck/check.sh` | Que cada formulario (`.lfm`) solo use clases, propiedades, valores y eventos que existen, y que cada evento tenga los parámetros de su tipo | lazbuild, python3 |
 | `Source/Tests/FoldTest/build.sh --run` | Dónde abre y cierra el plegado de C++ (llaves, regiones, llaves en cadenas y comentarios) y que `Tests/Folds/main.cpp` quede balanceado | lazbuild |
 
-En GitHub, cada push compila el IDE con Qt5 (Release y Debug) y pasa estas
-cinco pruebas en Ubuntu 24.04 (`.github/workflows/build.yml`).
+En GitHub, el flujo Linux compila Qt5 normal y Debug, prueba también los
+motores de depuración, las actualizaciones y `WindowsGameTest`, construye el
+`.deb` y comprueba su instalación, arranque y retirada. El flujo Cocoa
+(`.github/workflows/macos.yml`) usa macOS 26, FPC 3.2.4 y Lazarus 3.8, prueba
+formularios y funciones y valida el DMG y un `.pkg` nativo explícito.
 
 ---
 
@@ -109,7 +169,7 @@ cinco pruebas en Ubuntu 24.04 (`.github/workflows/build.yml`).
 
 Cada fase se trabaja en su rama, que parte de la anterior, y se pasa a `main`
 al publicarla. Hoy `main` incluye todas las fases (hasta `fase9/macos`), en la
-versión 0.2.2, y está protegida: no admite force-push ni borrarla, y su
+versión 0.5.0, y está protegida: no admite force-push ni borrarla, y su
 historial es lineal.
 
 | Fase | Rama | Estado |
@@ -123,10 +183,14 @@ historial es lineal.
 | 5 · Editor (SynEdit de Lazarus) | `fase5/editor` | ✅ Hecha, probada en Mint: impresión, exportación a RTF/TeX y plegado |
 | 6 · Compilación con el gcc de Linux | `fase6/compilador` | ✅ Hecha, probada en Mint: gcc, archivos sueltos, proyectos, terminal, errores, instancia única y formateadores |
 | 7 · Depurador (GDB/MI) | `fase7/depurador` | ✅ Hecha, probada en Mint, con la revisión general de errores de rango y de memoria |
-| 8 · Paquete `.deb` y pulido | `fase8/paquete` | ✅ Probado en Mint; las versiones 0.1.0 a 0.2.2 están en Releases y en el repositorio APT |
-| 9 · macOS (Apple Silicon) | `fase9/macos` | 🔄 Bloques 0-5 hechos y publicados en la 0.2.0: compila, ejecuta, depura con `lldb-dap` y perfila con LLVM; `.dmg` en Releases e instalador de una línea. Faltan el CI de macOS (bloque 6) y algunas pruebas en el Mac |
+| 8 · Paquete `.deb` y pulido | `fase8/paquete` | ✅ Probado en Mint; las versiones 0.1.0 a 0.5.0 están en Releases y en el repositorio APT |
+| 9 · macOS (Apple Silicon) | `fase9/macos` | 🔄 IDE y DMG nativos disponibles; CI Cocoa implementado. Desde 0.4.0: macOS 26+. Paquete completo local y pendientes de publicación/instalación indicados arriba. |
+| 10 · Compatibilidad Windows | `main` / `fase9/macos` | 🔄 Modos, compilación cruzada, ejecución y preparación automática integrados. Entorno completo macOS local; publicación y ampliación de bibliotecas pendientes. |
 
-### Siguiente ciclo de trabajo
+### Registro del ciclo inicial (histórico)
+
+Este registro conserva las comprobaciones y pendientes de aquella fase. Para
+priorizar trabajo actual, consultar «Próximos trabajos» al principio.
 
 Estado al 18 de octubre de 2026, probado en Linux Mint 22 con Qt5:
 - ✅ gcc en la lista de compiladores, F11 compila y ejecuta en una terminal,
@@ -661,8 +725,10 @@ para programas, por bloques:
     compilación: `GetFileSize` no cerraba su `FindFirst` (memoria y una
     carpeta abierta). Lo mismo en Opciones del editor y en la biblioteca de
     iconos; corregido.
-6. **Adjuntarse a un proceso**, con un aviso claro cuando Linux no lo
-   permite (`/proc/sys/kernel/yama/ptrace_scope`).
+6. ✅ **Adjuntarse a un proceso nativo:** acción accesible en Ejecutar desde
+   la 0.3.0; al separar el depurador se conserva el proceso. Las restricciones
+   del sistema, como `ptrace_scope` en Linux, siguen aplicándose. No cubre
+   procesos Windows del modo de compatibilidad.
 
 En macOS con Apple Silicon no hay gdb: la fase 9 usa **lldb** a través de
 `lldb-dap` (el Debug Adapter Protocol, que viene con las herramientas de
@@ -698,7 +764,7 @@ El producto final del proyecto es un `.deb` que se instala con
 - Responsable del paquete: Juan Francisco Gonzalez Pacheco
   <jfgonzalez@unimagdalena.edu.co>.
 
-**Publicada:** probada en Linux Mint 22; las versiones 0.1.0 a 0.2.2 están en
+**Publicada:** probada en Linux Mint 22; las versiones 0.1.0 a 0.5.0 están en
 Releases y en el repositorio APT (<https://juanfrang.github.io/Penguin-cpp/>),
 firmado con una clave que solo está en los secretos de GitHub (se creó en
 una ejecución desechable de GitHub Actions y nunca estuvo en un equipo).
@@ -742,7 +808,7 @@ Lazarus también compila para macOS con la interfaz nativa (Cocoa), así que se
 usa el mismo código: todo lo de macOS va con `{$IFDEF DARWIN}` o en unidades
 propias, y Linux no cambia (el CI lo sigue comprobando). Rama `fase9/macos`.
 
-**Decisiones:** solo Apple Silicon; sin cuenta de Apple Developer: la app se
+**Decisiones:** macOS 26 o posterior y solo Apple Silicon; sin cuenta de Apple Developer: la app se
 sella ad hoc (`codesign -s -`, sin identidad) y la primera vez cada usuario la
 autoriza en *Privacidad y seguridad*. Sin ese sello, el programa lleva solo la
 firma que le pone el enlazador, que no cubre el resto de la app, y macOS dice
@@ -771,7 +837,7 @@ sistema):
 
 **Publicada** desde la versión 0.2.0 (la 0.2.1 trajo el manual propio y la
 revisión de memoria y robustez; la 0.2.2, tamaños de texto como los de
-macOS): `Penguin-cpp-0.2.2-arm64.dmg` en
+macOS). La distribución actual es `Penguin-cpp-0.5.0-arm64.dmg` en
 [Releases](https://github.com/JuanFranG/Penguin-cpp/releases/latest) y el
 instalador de una línea en <https://juanfrang.github.io/Penguin-cpp/>:
 
@@ -779,8 +845,9 @@ instalador de una línea en <https://juanfrang.github.io/Penguin-cpp/>:
 curl -fsSL https://juanfrang.github.io/Penguin-cpp/install-macos.sh | bash
 ```
 
-Hasta el bloque 6 el `.dmg` se arma en el Mac del autor y se sube al Release
-a mano (`gh release upload`).
+El CI Cocoa ya construye y verifica el DMG como artefacto. La publicación
+Linux/APT la ejecuta `release.yml`; el DMG validado se adjunta a la release.
+El motor completo permanece local hasta resolver los pendientes de distribución.
 
 Lecciones de Cocoa: las cabeceras Cocoa de FPC detienen al compilador al
 generar información de depuración (error interno 200609171), así que las
@@ -803,8 +870,8 @@ requiere una cuenta de Apple Developer (99 USD al año) y notarizar la app.
 
 | Bloque | Qué | Cómo |
 |---|---|---|
-| 6 · CI de macOS | El CI solo prueba Linux | Un trabajo en un runner de GitHub con Apple Silicon: FPC 3.2.4 y Lazarus 3.8 (en caché), el IDE, las pruebas (con `DapEngineTest`) y el `.dmg` como artefacto; `release.yml` lo adjunta al Release y la página de GitHub Pages ofrece las dos descargas |
-| Pruebas pendientes | Abrir con el navegador el `.dmg` sellado (debe pedir solo *Abrir igualmente*), adjuntar el depurador a un proceso (`attach`), el modo oscuro completo, la ventana CPU | En el Mac |
+| 6 · CI de macOS | Implementado en `macos.yml` | Verificar cada ejecución y mantener el compilador/configuración fijados; la 0.5.0 corrige la selección del backend y el orden de argumentos de `lipo` de Apple. |
+| Pruebas pendientes | Gatekeeper con cuarentena, instalación real del `.pkg`, Mac limpio y cobertura completa de modo oscuro/ventana CPU | El attach nativo se expuso y probó en la 0.3.0; la cobertura restante figura en Próximos trabajos. |
 
 | Parte | Linux | macOS |
 |---|---|---|
@@ -819,8 +886,8 @@ requiere una cuenta de Apple Developer (99 USD al año) y notarizar la app.
 
 - **Hecho cuando:** en un Mac con Apple Silicon, el `.dmg` instala la app y
   se compila, ejecuta y depura un "Hola mundo": ✅ con la app instalada en el
-  Mac del autor; falta el CI de macOS para que cada versión arme su `.dmg`
-  sola.
+  Mac del autor. El CI Cocoa está implementado; siguen pendientes las pruebas
+  de instalación y cobertura exhaustiva indicadas arriba.
 
 ---
 
@@ -881,8 +948,10 @@ distribuyen binarios, también hay que publicar el código fuente.
 Autor de Penguin cpp: **Juan Francisco Gonzalez Pacheco**: Ingeniería de Sistemas, Universidad
 del Magdalena.
 
-El port se desarrolló con la asistencia de **Claude Opus 5.5**, el modelo
-de inteligencia artificial de Anthropic.
+El proyecto se ha desarrollado con la asistencia de **Claude Opus 5.5**,
+de Anthropic, y **Chat GPT 6.1 Sol**, de OpenAI, en portabilidad, revisión,
+pruebas, empaquetado y documentación. La autoría y las decisiones del proyecto
+corresponden a Juan Francisco Gonzalez Pacheco.
 
 Créditos del código de origen:
 - Bloodshed Dev-C++: Colin Laplace y colaboradores.

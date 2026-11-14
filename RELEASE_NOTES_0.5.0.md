@@ -44,3 +44,13 @@ Para desinstalar, cierra Penguin y mueve **Penguin cpp.app** a la Papelera; las 
 - Depuración/perfilado Windows y revisión visual exhaustiva de formularios, traducciones, fuentes, resoluciones, impresión/exportaciones y todas las plantillas siguen pendientes.
 
 [Todos los cambios desde 0.4.0](https://github.com/JuanFranG/Penguin-cpp/compare/v0.4.0...v0.5.0).
+
+## Documentación y colaboración
+
+El [README](https://github.com/JuanFranG/Penguin-cpp/blob/main/README.md) y
+el [ROADMAP](https://github.com/JuanFranG/Penguin-cpp/blob/main/ROADMAP.md)
+reflejan las versiones recientes, las diferencias entre Linux/macOS, la
+instalación y desinstalación, y los pendientes del entorno completo.
+Se reconoce la asistencia de **Claude Opus 5.5** (Anthropic) y
+**Chat GPT 6.1 Sol** (OpenAI), manteniendo la autoría y las decisiones de
+Juan Francisco Gonzalez Pacheco.

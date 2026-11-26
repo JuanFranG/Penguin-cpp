@@ -30,6 +30,11 @@
   mantienen su orden al redimensionar; el panel deja de desplazarlos hacia arriba.
 - **Acerca de simplificado:** creador destacado, enlaces a documentación/licencia
   y créditos separados, sin el texto completo de la GPL dentro del diálogo.
+- **Cabecera adaptable:** el fondo azul de Acerca de ocupa todo el ancho y el
+  logotipo permanece centrado y proporcional.
+- **Linux con UCRT:** el `.deb` amd64 incluye LLVM-MinGW 20261104 con versión y
+  SHA-256 fijados. El modo automático prefiere ese compilador a MinGW/MSVCRT del
+  sistema para conservar los caracteres UTF-8 de `printf` y `std::cout`.
 - **Paquetes completos:** incluyen el nuevo código de preparación de consola,
   además del compilador, Make y runtime ya incluidos en la 0.5.0 completa.
 
@@ -47,6 +52,9 @@ bibliotecas arbitrarias todavía requieren una integración específica.
 
 - **Linux amd64:** paquete `.deb` y repositorio APT. El botón Actualizar ejecuta
   `apt-get update` y actualiza `penguin-cpp`; APT resuelve sus dependencias.
+  LLVM-MinGW/UCRT viene dentro del paquete; Wine/Make se instalan por APT.
+  Desde Terminal: `sudo apt update && sudo apt install --only-upgrade penguin-cpp`.
+  `apt update` por sí solo únicamente refresca los índices.
 - **macOS 26+ / Apple Silicon:** DMG nativo y PKG/DMG `COMPLETE-UNSIGNED` con
   LLVM-MinGW, GNU Make y Wine ARM64/FEX. No necesita Rosetta para ese motor.
 - **Canal completo:** el botón conserva ese canal y descarga el DMG completo.
@@ -70,7 +78,8 @@ estructura o self-test no acredita todas las bibliotecas ni todas las pantallas.
 
 - Linux/MinGW del sistema puede usar MSVCRT, que no ofrece locale UTF-8 completo.
   La consola configura UTF-8, pero las conversiones multibyte del CRT requieren
-  UCRT para ese soporte; el perfil incluido de macOS usa UCRT.
+  UCRT para ese soporte. Los compiladores incluidos de macOS y Linux usan UCRT;
+  una ruta personalizada a un MinGW antiguo conserva ese límite.
 - Compatibilidad Windows experimental; no hay garantía para todo Win32,
   videojuegos, llamadas contradictorias de página de códigos o texto mezclado.
 - Recursos Windows, depuración/perfilado de ejecutables Windows y WinBGIm no

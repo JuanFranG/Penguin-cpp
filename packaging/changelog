@@ -8,6 +8,9 @@ penguin-cpp (0.5.5) unstable; urgency=medium
   * Retire incomplete importer and obsolete dialogs/actions.
   * Link GitHub and release notes from Updates and About; require release notes.
   * Include the console startup source in native and complete packages.
+  * Bundle pinned LLVM-MinGW UCRT on Linux for UTF-8 printf and C++ output.
+  * Keep welcome actions ordered and the About header responsive.
+  * Authorize replacement of root-owned PKG installations before staging.
 
  -- Juan Francisco Gonzalez Pacheco <jfgonzalez@unimagdalena.edu.co>  Thu, 26 Nov 2026 16:00:00 -0500
 

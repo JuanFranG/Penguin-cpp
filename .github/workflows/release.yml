@@ -29,6 +29,9 @@ jobs:
 
       - name: Install Lazarus, Free Pascal and the packaging tools
         run: |
+          # This runner's optional Microsoft feed is unrelated to Penguin and
+          # can return HTTP 403; use the Ubuntu archives for our dependencies.
+          sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list /etc/apt/sources.list.d/microsoft-prod.sources
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             lazarus fpc lcl-qt5-3.0 libqt5pas-dev dpkg-dev lintian apt-utils gnupg

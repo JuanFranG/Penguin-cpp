@@ -36,10 +36,11 @@ Comment: On Debian systems the Apache License 2.0 is in
 
 Files: usr/lib/penguin-cpp/windows-toolchain/*
 Copyright: The LLVM Project, mingw-w64 and LLVM-MinGW contributors
-License: Apache-2.0 WITH LLVM-exception and other-permissive
+License: LLVM-MinGW-bundle
 Comment: Unmodified LLVM-MinGW 20261104 UCRT upstream binary distribution.
  Complete component notices and licenses are installed in
- /usr/lib/penguin-cpp/windows-toolchain/share.
+ /usr/lib/penguin-cpp/windows-toolchain/LICENSE.TXT and the share directories
+ of the individual components.
  Source and reproducible upstream build scripts:
  https://github.com/mstorsjo/llvm-mingw/tree/20261104
  https://github.com/mstorsjo/llvm-mingw/releases/tag/20261104
@@ -166,3 +167,10 @@ License: OFL-1.1
  DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
  FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
  OTHER DEALINGS IN THE FONT SOFTWARE.
+
+License: LLVM-MinGW-bundle
+ The LLVM Project is under Apache-2.0 with LLVM Exceptions; MinGW-w64,
+ winpthreads and other components retain their respective permissive terms.
+ Full notices are distributed unchanged in windows-toolchain/LICENSE.TXT
+ and windows-toolchain/*/share/mingw32/COPYING* under /usr/lib/penguin-cpp.
+ The LLVM exception text and Apache-2.0 license are in that LICENSE.TXT.

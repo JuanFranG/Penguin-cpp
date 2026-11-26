@@ -5,6 +5,7 @@ Esta carpeta tiene todo lo que hace falta para el paquete de Linux:
 | Archivo | Qué es |
 |---|---|
 | `build-deb.sh` | Compila el IDE y arma `build/deb/penguin-cpp_<versión>_amd64.deb`; lo revisa con lintian |
+| `prepare-linux-toolchain.sh` | Integra LLVM-MinGW/UCRT 20261104 oficial, verificado por SHA-256; amd64 |
 | `control.in`, `copyright`, `changelog`, `lintian-overrides` | Datos del paquete |
 | `penguin-cpp.desktop`, `penguin-cpp.xml`, `icons/` | Entrada del menú y tipo de archivo `.dev` |
 | `penguin-cpp.1`, `penguin-cpp.es.1` | Páginas de manual |
@@ -59,9 +60,12 @@ Lo hace el responsable del paquete en su equipo con Linux.
    git push origin v0.1.0
    ```
 
-3. El flujo *Release* compila, publica el Release con el `.deb` y el programa
-   con sus símbolos, y agrega el paquete al repositorio APT en la rama
-   `gh-pages`.
+3. El flujo *Release* compila y crea un **borrador** con el `.deb` y el programa
+   con sus símbolos. Agrega el paquete firmado a APT en `gh-pages`.
+   Adjuntar los paquetes macOS, fuentes, avisos y sumas SHA-256; publicar el
+   borrador solo después de comprobar todos los artefactos y los workflows.
+   Cada versión necesita `RELEASE_NOTES_<versión>.md` con cambios, validación
+   y límites; `check-release.py` verifica esa política.
 4. **Solo la primera vez:** en GitHub, *Settings → Pages → Build and
    deployment*, elegir *Deploy from a branch*, la rama `gh-pages` y la
    carpeta `/ (root)`. Al rato el repositorio queda en
@@ -145,3 +149,14 @@ checks Linux/macOS y subir todos los paquetes y hashes, publicar ese borrador.
 Así el botón de actualizar no anuncia una versión que todavía carece de DMG
 completo. El artefacto macOS completo debe contener `console-startup.c`, su
 licencia, toolchain, Make, runtime y manifiesto; el DMG nativo conserva su canal.
+
+## Compilador Windows incluido en Linux
+
+El `.deb` amd64 contiene el LLVM-MinGW UCRT oficial completo en
+`/usr/lib/penguin-cpp/windows-toolchain`, con sus licencias y enlaces originales.
+La ruta de recursos apunta allí y la detección automática lo prefiere al MinGW
+antiguo del sistema. El SHA-256 y la versión están fijados en
+`prepare-linux-toolchain.sh`. La descarga ocurre al construir el paquete,
+no con privilegios de administrador al instalarlo. Wine y Make son dependencias
+APT. Actualizar Penguin incorpora el compilador y las dependencias necesarias.
+ARM Linux requiere validar otro motor de traducción y no recibe este binario x64.

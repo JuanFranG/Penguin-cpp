@@ -80,7 +80,7 @@ jobs:
 
       - name: Install the package
         run: |
-          sudo apt-get install -y ./build/deb/penguin-cpp_*.deb
+          sudo apt-get install -y ./build/deb/*.deb
           test -L /usr/bin/penguin-cpp
           test -f /usr/share/penguin-cpp/Lang/English.lng
           test -f /usr/share/applications/penguin-cpp.desktop
@@ -108,6 +108,8 @@ jobs:
 
       - name: Windows console contract on Linux (included LLVM-MinGW UCRT and Wine)
         run: |
+          export PATH="/usr/lib/penguin-cpp/windows-runtime/bin:$PATH"
+          wine --version
           export WINEPREFIX="$RUNNER_TEMP/penguin-console-prefix"
           export WINEARCH=win64 WINEDEBUG=-all
           xvfb-run -a sh -ec '
@@ -123,7 +125,7 @@ jobs:
 
       - name: Remove the package without leaving files behind
         run: |
-          sudo apt-get remove -y penguin-cpp
+          sudo apt-get remove -y penguin-cpp penguin-windows-runtime
           for P in /usr/bin/penguin-cpp /usr/lib/penguin-cpp /usr/share/penguin-cpp \
                    /usr/share/fonts/truetype/penguin-cpp /usr/share/applications/penguin-cpp.desktop; do
             if [ -e "$P" ]; then echo "left behind: $P"; exit 1; fi
@@ -154,19 +156,21 @@ jobs:
           EXPECTED=$(sed -n "s/^ *DEVCPP_VERSION *= *'\([^']*\)'.*/\1/p" Source/Version.pas | tr -d '\r')
           test "$(dpkg-query -W -f='${Version}' penguin-cpp)" = "$EXPECTED"
           command -v x86_64-w64-mingw32-g++
-          command -v wine
+          /usr/lib/penguin-cpp/windows-runtime/bin/wine --version
           test -x /usr/share/penguin-cpp/Compat/windows/toolchain/bin/x86_64-w64-mingw32-clang++
           /usr/share/penguin-cpp/Compat/windows/toolchain/bin/x86_64-w64-mingw32-clang++ --version
           test -f /usr/share/penguin-cpp/Compat/windows/console-startup.c
           test -x /usr/lib/penguin-cpp/penguin-cpp
-          sudo apt-get remove -y penguin-cpp
+          sudo apt-get remove -y penguin-cpp penguin-windows-runtime
           sudo rm /etc/apt/sources.list.d/penguin-cpp-test.list /usr/share/keyrings/penguin-cpp-test.gpg
 
       - name: Keep the package
         uses: actions/upload-artifact@v6
         with:
           name: penguin-cpp-deb
-          path: build/deb/*.deb
+          path: |
+            build/deb/*.deb
+            build/deb/*SOURCES.tar.gz
 
       # The packaged program has no symbols, so the error report on the
       # user's desktop has only addresses: this same build, with its

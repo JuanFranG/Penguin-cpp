@@ -77,7 +77,7 @@ jobs:
           cp penguin-cpp "penguin-cpp_${VERSION}_amd64_symbols"
           cp "RELEASE_NOTES_${VERSION}.md" notes.md
           gh release create "$GITHUB_REF_NAME" --draft --title "Penguin cpp $VERSION" --notes-file notes.md \
-            build/deb/penguin-cpp_${VERSION}_amd64.deb "penguin-cpp_${VERSION}_amd64_symbols"
+            build/deb/*.deb build/deb/*SOURCES.tar.gz "penguin-cpp_${VERSION}_amd64_symbols"
 
       - name: Publish the APT repository
         run: |

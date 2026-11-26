@@ -4,12 +4,14 @@ object AboutForm: TAboutForm
   Caption = 'About Penguin cpp'
   ClientHeight = 376
   ClientWidth = 480
-  Color = clBtnFace
+  Color = clWindow
   Font.Name = 'default'
   Font.Height = -12
   Position = poMainFormCenter
   OnClose = FormClose
   OnCreate = FormCreate
+  OnShow = LayoutLinks
+  OnResize = LayoutLinks
   PixelsPerInch = 96
   object paBanner: TPanel
     Left = 0
@@ -2468,6 +2470,7 @@ object AboutForm: TAboutForm
     Width = 448
     Height = 64
     Caption = 'Project'
+    OnResize = LayoutLinks
     Anchors = [akLeft, akTop, akRight]
     TabOrder = 1
     object lblRepositoryURL: TLabel

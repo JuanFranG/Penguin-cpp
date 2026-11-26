@@ -34,6 +34,7 @@ type
     btnUpdateCheck, btnAuthors, btnOk: TButton;
     procedure URLLabelClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure LayoutLinks(Sender: TObject);
     procedure btnAuthorsClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure btnUpdateCheckClick(Sender: TObject);
@@ -43,7 +44,7 @@ type
 implementation
 
 uses
-  devCFG, Utils, MultiLangSupport, main, UpdateCheckFrm;
+  devCFG, Utils, MultiLangSupport, main, UpdateCheckFrm, PenguinPalette;
 
 {$R *.lfm}
 
@@ -55,7 +56,7 @@ end;
 procedure TAboutForm.FormCreate(Sender: TObject);
   procedure StyleLink(Link: TLabel);
   begin
-    Link.Font.Color := clBlue;
+    Link.Font.Color := PanelPaletteFor(ColorToRGB(Self.Color)).Link;
     Link.Font.Style := [fsUnderline];
     Link.ShowHint := True;
   end;
@@ -82,6 +83,18 @@ begin
   btnUpdateCheck.Caption := Lang[80000];
   btnOk.Caption := Lang[80008];
   if FileExists(devData.Splash) then imgBanner.Picture.LoadFromFile(devData.Splash);
+end;
+
+procedure TAboutForm.LayoutLinks(Sender: TObject);
+var Y: Integer;
+begin
+  if not Assigned(lblDocs) or not Assigned(lblRepositoryURL) then Exit;
+  grpLinks.HandleNeeded;
+  Y := (grpLinks.ClientHeight - lblRepositoryURL.Height) div 2;
+  if Y < 0 then Y := 0;
+  lblRepositoryURL.Top := Y;
+  lblLicense.Top := Y;
+  lblDocs.Top := Y;
 end;
 
 procedure TAboutForm.btnAuthorsClick(Sender: TObject);

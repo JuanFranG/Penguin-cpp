@@ -29,9 +29,9 @@ function ChangeMode(FD: cint; Mode: cuint): cint;
 function CopyMetadata(Src, Dst: cint; State: Pointer; Flags: cuint): cint;
   cdecl; external 'c' name 'fcopyfile';
 {$ELSE}
-function ListAttributes(FD: cint; Names: Pointer; Size: csize_t): cssize_t;
+function ListAttributes(FD: cint; Names: Pointer; Size: csize_t): ssize_t;
   cdecl; external 'c' name 'flistxattr';
-function GetAttribute(FD: cint; Name: PChar; Value: Pointer; Size: csize_t): cssize_t;
+function GetAttribute(FD: cint; Name: PChar; Value: Pointer; Size: csize_t): ssize_t;
   cdecl; external 'c' name 'fgetxattr';
 function SetAttribute(FD: cint; Name: PChar; Value: Pointer; Size: csize_t; Flags: cint): cint;
   cdecl; external 'c' name 'fsetxattr';

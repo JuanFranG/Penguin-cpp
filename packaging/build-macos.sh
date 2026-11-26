@@ -45,7 +45,8 @@ mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 # The program, without its local symbols (strip signs it again, as the
 # linker did)
 install -m 755 penguin-cpp "$APP/Contents/MacOS/penguin-cpp"
-strip -x "$APP/Contents/MacOS/penguin-cpp"
+/usr/bin/strip -x "$APP/Contents/MacOS/penguin-cpp"
+codesign --force --sign - "$APP/Contents/MacOS/penguin-cpp"
 codesign --verify "$APP/Contents/MacOS/penguin-cpp"
 
 # Its files (the manual too), in Contents/Resources (where the program looks

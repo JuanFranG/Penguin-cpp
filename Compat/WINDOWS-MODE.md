@@ -95,7 +95,8 @@ and real installation/update/failure recovery on a clean Mac and macOS 26
 remain pending. Future macOS 28 support is not demonstrated by today's
 ARM64 execution. The Linux amd64 package includes the official LLVM-MinGW UCRT
 20261104 compiler (pinned SHA-256), with Wine and other runtime dependencies
-installed by APT. Build-time paths in libtool metadata and unused lldb-mi are
+installed by APT. A separate private WineHQ 11 package avoids changing system
+Wine and ships matching upstream sources and Debian recipes. Build-time paths in libtool metadata and unused lldb-mi are
 omitted; executable compiler files and licenses remain unchanged. Linux ARM
 needs a separately validated translation engine.
 

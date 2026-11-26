@@ -50,7 +50,7 @@ runtime.parent.mkdir(parents=True)
 shutil.copytree(extracted / 'opt/wine-stable', runtime, symlinks=True)
 # Penguin invokes the runtime and builtins, not Wine's development toolchain.
 for path in (runtime / 'bin').iterdir():
-    if path.is_file() and not path.is_symlink() and path.name not in ('wine', 'wineserver'):
+    if (path.is_symlink() and path.readlink().name != 'wine') or (not path.is_symlink() and path.name not in ('wine', 'wineserver')):
         path.unlink()
 doc = stage / 'usr/share/doc/penguin-windows-runtime'
 shutil.copytree(extracted / 'usr/share/doc/wine-stable-amd64', doc, symlinks=True)
@@ -86,4 +86,5 @@ with tarfile.open(archive, 'w:gz') as target:
         if not name.endswith('.deb'):
             target.add(CACHE / name, arcname=name)
     target.add(doc / 'PENGUIN-SOURCES.txt', arcname='PENGUIN-SOURCES.txt')
+subprocess.run(['lintian', '--fail-on', 'error', str(package)], check=True)
 print('Built', package, package.stat().st_size, flush=True)

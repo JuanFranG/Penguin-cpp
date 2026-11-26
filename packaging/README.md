@@ -5,6 +5,7 @@ Esta carpeta tiene todo lo que hace falta para el paquete de Linux:
 | Archivo | Qué es |
 |---|---|
 | `build-deb.sh` | Compila el IDE y arma `build/deb/penguin-cpp_<versión>_amd64.deb`; lo revisa con lintian |
+| `build-linux-runtime.py` | Reempaqueta WineHQ 11 privado para APT y reúne sus fuentes exactas |
 | `prepare-linux-toolchain.sh` | Integra LLVM-MinGW/UCRT 20261104 oficial, verificado por SHA-256; amd64 |
 | `control.in`, `copyright`, `changelog`, `lintian-overrides` | Datos del paquete |
 | `penguin-cpp.desktop`, `penguin-cpp.xml`, `icons/` | Entrada del menú y tipo de archivo `.dev` |
@@ -160,5 +161,7 @@ La ruta de recursos apunta allí y la detección automática lo prefiere al MinG
 antiguo del sistema. El SHA-256 y la versión están fijados en
 `prepare-linux-toolchain.sh`. La descarga ocurre al construir el paquete,
 no con privilegios de administrador al instalarlo. Wine y Make son dependencias
-APT. Actualizar Penguin incorpora el compilador y las dependencias necesarias.
+APT. El motor WineHQ 11 reside en un paquete privado separado, con sus fuentes
+y recetas originales; no instala alternativas globales ni reemplaza el Wine del
+sistema. Actualizar Penguin incorpora el compilador y las dependencias necesarias.
 ARM Linux requiere validar otro motor de traducción y no recibe este binario x64.

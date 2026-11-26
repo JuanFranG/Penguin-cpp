@@ -91,4 +91,12 @@ with tempfile.TemporaryDirectory(prefix='penguin-console-') as temporary:
                 if process.poll() is None:
                     os.killpg(process.pid, signal.SIGKILL); process.wait()
                 os.close(master); os.close(slave)
+    probe = directory / 'environment-self-test.exe'
+    subprocess.run([args.cxx, '-static', '-I' + str(root / 'Compat/common/include'),
+                    '-DPENGUIN_CONSOLE_CP=65001', str(root / 'Compat/windows/self-test.cpp'),
+                    str(directory / 'startup-65001.o'), '-lgdi32', '-o', str(probe)], check=True)
+    env = dict(os.environ, WINEPREFIX=args.prefix, WINEDEBUG='-all', WINEDLLOVERRIDES='mscoree,mshtml=')
+    check = subprocess.run([args.runner, str(probe)], env=env, capture_output=True, timeout=45)
+    assert check.returncode == 0 and b'PENGUIN_WINDOWS_READY' in check.stdout, (check.returncode, check.stdout, check.stderr)
+    print('[OK] included environment self-test', flush=True)
 (here / 'build/console-results.json').write_text(json.dumps(results, indent=2))

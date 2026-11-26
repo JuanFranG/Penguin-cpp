@@ -36,7 +36,7 @@
   logotipo permanece centrado y proporcional.
 - **Linux con UCRT:** el `.deb` amd64 incluye LLVM-MinGW 20261104 con versión y
   SHA-256 fijados. El modo automático prefiere ese compilador a MinGW/MSVCRT del
-  sistema para conservar los caracteres UTF-8 de `printf` y `std::cout`.
+  sistema. Se verifica el texto UTF-8 de `printf` y `std::cout` con el runtime privado.
 - **Paquetes completos:** incluyen el nuevo código de preparación de consola,
   además del compilador, Make y runtime ya incluidos en la 0.5.0 completa.
 
@@ -54,7 +54,10 @@ bibliotecas arbitrarias todavía requieren una integración específica.
 
 - **Linux amd64:** paquete `.deb` y repositorio APT. El botón Actualizar ejecuta
   `apt-get update` y actualiza `penguin-cpp`; APT resuelve sus dependencias.
-  LLVM-MinGW/UCRT viene dentro del paquete; Wine/Make se instalan por APT.
+  LLVM-MinGW/UCRT viene dentro del paquete; el WineHQ 11 privado y Make se
+  instalan por APT. El motor no reemplaza el Wine del sistema. Para instalación
+  manual sin repositorio, descargar e instalar juntos los dos `.deb`.
+  WineHQ 11 se acompaña de su archivo de fuentes exactas y recetas Debian.
   Desde Terminal: `sudo apt update && sudo apt install --only-upgrade penguin-cpp`.
   `apt update` por sí solo únicamente refresca los índices.
 - **macOS 26+ / Apple Silicon:** DMG nativo y PKG/DMG `COMPLETE-UNSIGNED` con

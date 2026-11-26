@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <locale.h>
+#include <errno.h>
 #include <wchar.h>
 #ifdef __cplusplus
 #include <iostream>
@@ -55,6 +56,7 @@ int main(int argc, char **argv) {
     printf("\nEXPLICIT: Espa\xc3\xb1ol\nNUMBER:%.1f\nINPUT_READY\n", 1.5); fflush(stdout);
 #ifdef __cplusplus
     std::cout << "CPP_UTF8:Espa\xc3\xb1ol\n" << std::flush;
+    if (!std::cout) { fprintf(stderr, "C++ output error: errno=%d locale=%s\n", errno, setlocale(LC_CTYPE, 0)); return 19; }
     std::string line;
     if (!std::getline(std::cin, line) || line != "ni\xc3\xb1o") return 18;
     std::cout << "INPUT_OK:" << line << "\n" << std::flush;

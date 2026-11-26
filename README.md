@@ -75,7 +75,7 @@ usarlo, en español y en inglés; también se abre desde el IDE con F1.
 Penguin cpp se instala con `apt` en Debian, Ubuntu, Linux Mint y derivadas
 (amd64). `apt` instala también todo lo que necesita: gcc, g++, make, gdb,
 astyle y clang-format. En amd64 el paquete incluye LLVM-MinGW/UCRT 20261104
-para Windows y APT instala Wine y sus dependencias. Penguin detecta las
+para Windows y APT instala el paquete privado `penguin-windows-runtime` y sus dependencias. Penguin detecta las
 herramientas incluidas sin pedir rutas.
 
 Una sola vez, agrega su repositorio y la clave con la que está firmado:
@@ -95,10 +95,10 @@ sudo apt install penguin-cpp
 
 También se puede descargar el `.deb` de
 [Releases](https://github.com/JuanFranG/Penguin-cpp/releases) e instalarlo
-directamente (sin agregar el repositorio APT):
+directamente (sin agregar el repositorio APT), descargando ambos paquetes amd64:
 
 ```bash
-sudo apt install ./penguin-cpp_0.5.5_amd64.deb
+sudo apt install ./penguin-cpp_0.5.5_amd64.deb ./penguin-windows-runtime_11.0.0.0~noble-1+penguin1_amd64.deb
 ```
 
 Después aparece en el menú, en *Programación* y *Educación*. También se abre
@@ -108,6 +108,8 @@ Para desinstalarlo:
 
 ```bash
 sudo apt remove penguin-cpp
+# Opcional: retirar también las dependencias que ya no utilice otro programa
+sudo apt autoremove
 ```
 
 La configuración de cada usuario queda en `~/.config/penguin-cpp` y sus
@@ -191,7 +193,7 @@ En Linux el botón ejecuta `sudo apt-get update` y
 `sudo apt-get install --only-upgrade -y penguin-cpp` en una terminal y pide
 la contraseña de administración. Necesita APT y el repositorio de Penguin cpp
 configurado. El nuevo `.deb` incorpora el compilador UCRT y APT añade las
-dependencias que falten. En Terminal: `sudo apt update` seguido de
+dependencias que falten, incluido el motor Wine privado. En Terminal: `sudo apt update` seguido de
 `sudo apt install --only-upgrade penguin-cpp`. El primer comando por sí solo
 no actualiza la aplicación. Para otras instalaciones está **Abrir descargas**.
 

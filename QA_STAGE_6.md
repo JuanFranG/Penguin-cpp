@@ -91,3 +91,10 @@ Un compilador personalizado con MSVCRT sigue teniendo sus límites originales.
 El lector de la prueba PTY reconoce las secuencias de cursor que Wine intercala
 entre letras antes de enviar la entrada; mantiene las comprobaciones reales de
 texto, teclado, colores y salida. Esto corrige el arnés sin relajar el contrato.
+
+La matriz de Linux con UCRT detectó además pérdida de salida C++ al convertir
+UTF-8 byte a byte en Wine 9. Por ello se prepara y prueba un motor WineHQ 11
+privado, con binarios originales fijados por SHA-256, licencias y fuentes exactas
+junto a sus recetas Debian. El paquete separado permite la distribución APT
+sin superar el límite de tamaño por archivo de GitHub Pages. La prueba exige
+texto C++ completo y el self-test real del entorno; no se omiten esas aserciones.

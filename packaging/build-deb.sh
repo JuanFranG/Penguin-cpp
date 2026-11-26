@@ -73,6 +73,7 @@ if [ "$ARCH" = amd64 ]; then
 fi
 
 # The libraries the program links to (libc6, libqt5pas1...), as dpkg sees them
+command -v dpkg-shlibdeps > /dev/null || { echo "Install dpkg-dev to resolve package libraries" >&2; exit 1; }
 SHLIBS=
 if command -v dpkg-shlibdeps > /dev/null; then
   TMP=$(mktemp -d)
@@ -91,13 +92,13 @@ if command -v dpkg-shlibdeps > /dev/null; then
   SHLIBS=$(cd "$TMP" && dpkg-shlibdeps --ignore-missing-info -l"$STAGE/usr/lib/penguin-cpp/windows-toolchain/lib" -O "${ELFS[@]}" | sed -n 's/^shlibs:Depends=//p')
   rm -rf "$TMP"
 fi
-[ -n "$SHLIBS" ] || SHLIBS="libc6, libqt5pas1"
+[ -n "$SHLIBS" ] || { echo "No shared-library dependencies resolved" >&2; exit 1; }
 
 # APT installs the Windows compiler and runtime together with Penguin on amd64.
 # ARM Linux needs a separately validated x64 translation engine.
 COMPATDEPS=
 if [ "$ARCH" = amd64 ]; then
-  COMPATDEPS=", g++-mingw-w64-x86-64-posix, wine64, wine, python3:any, libstdc++6, libgcc-s1, zlib1g"
+  COMPATDEPS=", g++-mingw-w64-x86-64-posix, wine64, wine, python3:any"
 fi
 SIZE=$(du -sk --apparent-size "$STAGE/usr" | cut -f1)
 sed -e "s/@VERSION@/$VERSION/" -e "s/@ARCH@/$ARCH/" -e "s/@SIZE@/$SIZE/" -e "s/@SHLIBS@/$SHLIBS/" \

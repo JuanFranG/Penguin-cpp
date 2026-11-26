@@ -63,11 +63,17 @@ funcionalidades futuras, no como funciones disponibles.
 ### Próximos trabajos
 
 1. **Mantener el perfil redistribuible:** fuentes, recetas y revisión completadas para `penguin-windows-foss-1` de la 0.5.0; repetir la revisión si cambian versiones o dependencias. No se distribuye el archivo upstream completo: quedan fuera GPTK, conversor Apple, FMOD, instaladores Microsoft y `lib/linuxhost`. Ver [informe](Compat/REDISTRIBUTION.md).
-2. **Instalación real:** probar primera instalación y actualización del `.pkg`,
-   usuario estándar, fallos y recuperación, Mac limpio, Gatekeeper con
-   cuarentena y ejecución física en macOS 26. `-showChoicesXML`, la extracción
-   y el self-test no sustituyen una instalación real.
-3. **Actualización real:** el nuevo paquete selecciona el DMG completo y rechaza una descarga nativa incompleta; siete pruebas simuladas pasan. Probar una actualización real a una versión futura, con recuperación y datos existentes. Las copias anteriores de la misma 0.5.0 deben instalar el nuevo PKG una vez.
+2. **Instalación:** el PKG completo se instaló con Installer en este Mac,
+   de 0.4.0 a 0.5.5; recibo, ejecutable y entorno preparado verificados.
+   Pendientes Mac limpio, usuario estándar y fallos durante Installer.
+   La copia con cuarentena fue rechazada por Gatekeeper; faltan Developer ID
+   y notarización. Las pruebas locales usan macOS 27.2.1; CI ejecuta Cocoa en 26.
+3. **Actualización:** ocho regresiones del instalador pasan. Con bundles reales,
+   una copia completa 0.5.0 actualiza a 0.5.5 y un DMG nativo se rechaza conservando
+   la app anterior; el transporte de esa prueba es local. Falta probar el recorrido
+   descargado directamente desde el botón. El nuevo helper pide permisos para
+   reemplazar apps root; las copias PKG anteriores necesitan instalar 0.5.5 encima
+   una vez, sin desinstalar ni borrar datos.
 4. **Compatibilidad:** ampliar y probar bibliotecas concretas. `graphics.h` y
    WinBGIm siguen sin integrarse automáticamente; el prototipo SDL/Metal tiene
    una API limitada. Depuración/perfilado Windows y autocompletado con sus
@@ -80,8 +86,8 @@ funcionalidades futuras, no como funciones disponibles.
 6. **CI y Linux:** mantener verdes los flujos Qt5 y Cocoa. Linux prueba
    compilación normal/Debug, funciones, empaquetado e instalación; la ejecución
    Windows con cada biblioteca aún necesita cobertura específica. En Linux
-   amd64, APT instala MinGW/Wine/Make como dependencias; no se reutiliza el
-   paquete ARM64/FEX preparado para macOS.
+   amd64, el `.deb` incluye LLVM-MinGW/UCRT y APT instala Wine/Make y dependencias;
+   no se reutiliza el paquete ARM64/FEX preparado para macOS.
 
 La preparación del paquete completo usa un prefix privado del usuario. Se
 activa al abrir la app desde Finder o desde Terminal y se vuelve a exigir al

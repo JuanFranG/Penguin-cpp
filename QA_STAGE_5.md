@@ -1,5 +1,9 @@
 # Fiabilidad: etapa 5 — funciones heredadas
 
+> Informe histórico de desarrollo. Estos cambios se reúnen en la entrega
+> **0.5.5**; la evidencia de integración y sus límites están en [QA_STAGE_6.md](QA_STAGE_6.md).
+
+
 Cambios de desarrollo para la próxima **0.5.5**. No publican una release ni
 modifican los instaladores de la 0.5.0. Continúan las [etapas 1–4](QA_STAGES_3_4.md).
 
@@ -54,7 +58,7 @@ solo por su origen o nombre.
 
 ## Validación y pendientes
 
-Validación local en macOS 26 / ARM64:
+Validación local en macOS 27.2.1 / ARM64 (destino mínimo 26.0):
 
 - Compilaciones completas Default (distribución) y Debug correctas con Lazarus
   3.8 / FPC 3.2.4. Permanecen los avisos conocidos del enlazador sobre alineación

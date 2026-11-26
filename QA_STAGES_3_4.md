@@ -1,5 +1,9 @@
 # Fiabilidad: etapas 3 y 4
 
+> Informe histórico de desarrollo. Estos cambios se reúnen en la entrega
+> **0.5.5**; la evidencia de integración y sus límites están en [QA_STAGE_6.md](QA_STAGE_6.md).
+
+
 Validación de desarrollo del 26 de noviembre de 2026. Continúa las
 [etapas 1 y 2](QA_STAGES_1_2.md). No cambia la versión 0.5.0 publicada ni sus
 paquetes. Los cambios están en el árbol de trabajo para una entrega posterior.

@@ -74,8 +74,9 @@ usarlo, en español y en inglés; también se abre desde el IDE con F1.
 
 Penguin cpp se instala con `apt` en Debian, Ubuntu, Linux Mint y derivadas
 (amd64). `apt` instala también todo lo que necesita: gcc, g++, make, gdb,
-astyle y clang-format. En amd64 también resuelve las dependencias de MinGW
-y Wine para el modo Windows.
+astyle y clang-format. En amd64 el paquete incluye LLVM-MinGW/UCRT 20261104
+para Windows y APT instala Wine y sus dependencias. Penguin detecta las
+herramientas incluidas sin pedir rutas.
 
 Una sola vez, agrega su repositorio y la clave con la que está firmado:
 
@@ -178,15 +179,21 @@ abierto y cancela la actualización.
 
 En macOS descarga el `.dmg`, verifica la integridad de la app, prepara la copia
 nueva antes de reemplazar la anterior y vuelve a abrirla. El progreso aparece
-en Terminal. La carpeta de instalación debe permitir escritura; la app sigue
-sin firma Developer ID ni notarización. Desde la 0.5.0, el instalador rechaza
+en Terminal. Desde la 0.5.5 pide autorización de administrador cuando la app
+instalada por PKG pertenece a root; la autorización se obtiene antes de mover
+la copia anterior. La app sigue sin firma Developer ID ni notarización. Desde la 0.5.0, el instalador rechaza
 reemplazar una copia con entorno Windows completo por un DMG nativo sin ese
-entorno. El nuevo paquete completo selecciona el DMG `COMPLETE-UNSIGNED` al actualizar; la edición nativa selecciona el DMG nativo. Las pruebas de actualización y sus límites se documentan en [la entrega 0.5.5](QA_STAGE_6.md). Para pasar de una copia nativa o una integración local anterior de la misma 0.5.0, instala el nuevo PKG una vez: el buscador no ofrece de nuevo la misma versión.
+entorno. El nuevo paquete completo selecciona el DMG `COMPLETE-UNSIGNED` al actualizar; la edición nativa selecciona el DMG nativo. Las instalaciones PKG antiguas
+que todavía usan el actualizador anterior deben instalar el PKG 0.5.5 encima
+una vez; no hace falta desinstalar ni borrar preferencias o datos. Las pruebas de actualización y sus límites se documentan en [la entrega 0.5.5](QA_STAGE_6.md). Para pasar de una copia nativa o una integración local anterior de la misma 0.5.0, instala el nuevo PKG una vez: el buscador no ofrece de nuevo la misma versión.
 
 En Linux el botón ejecuta `sudo apt-get update` y
 `sudo apt-get install --only-upgrade -y penguin-cpp` en una terminal y pide
 la contraseña de administración. Necesita APT y el repositorio de Penguin cpp
-configurado. Para otras instalaciones está **Abrir descargas**.
+configurado. El nuevo `.deb` incorpora el compilador UCRT y APT añade las
+dependencias que falten. En Terminal: `sudo apt update` seguido de
+`sudo apt install --only-upgrade penguin-cpp`. El primer comando por sí solo
+no actualiza la aplicación. Para otras instalaciones está **Abrir descargas**.
 
 Esta función está disponible desde la versión 0.3.0; una versión anterior
 que todavía no tenga el menú necesita instalar esa primera actualización

@@ -1,6 +1,9 @@
 # Windows compatibility integration
 
-Published experimental 0.5.0 profile, 13 November 2026. Complete PKG/DMG and corresponding sources are release assets; see [redistribution report](REDISTRIBUTION.md).
+Experimental compatibility profile, updated for 0.5.5 on 26 November 2026.
+The macOS runtime/dependency versions retain the reviewed 0.5.0 source archive;
+Penguin's current source is provided by the 0.5.5 tag. See the
+[redistribution report](REDISTRIBUTION.md) and [delivery evidence](../QA_STAGE_6.md).
 
 ## User flow
 
@@ -25,16 +28,16 @@ fully resolved by this heuristic; use explicit Windows mode for ambiguous cases.
 
 Compile and Compile & Run save/build the Windows executable using bundled Make.
 Console output uses Penguin's terminal launcher; GUI projects run directly.
-Development changes after 0.5.0 add Unicode/UTF-8 (default), OEM 437, ANSI 1252
+Version 0.5.5 adds Unicode/UTF-8 (default), OEM 437, ANSI 1252
 and program-controlled console profiles. Recompile after changing the profile;
 DOS box bytes such as 218/196/191 need OEM 437. The MIT-licensed
 `windows/console-startup.c` aligns CRT LC_CTYPE and console code pages without
 changing numeric formatting. Explicit program settings take precedence. The
 launcher restores Unix keyboard mode and terminal style on exit. Program-controlled
-mode links no startup object. These changes do not update the published packages;
+mode links no startup object. The 0.5.5 packages include the startup source;
 see [stage 3/4 validation and limits](../QA_STAGES_3_4.md).
 
-Development stage 5 explicitly rejects active `.rc`/`.res` inputs in generated
+Version 0.5.5 explicitly rejects active `.rc`/`.res` inputs in generated
 builds, including resource files listed as extra linker inputs. Windows builds
 also reject requested private resources, icons, version information and XP
 manifests because that pipeline is not implemented. Native builds preserve this
@@ -90,16 +93,19 @@ notices in `Penguin-cpp-0.5.0-COMPAT-SOURCES.tar.gz`. The public packaging gate
 checks that archive against the reviewed lock. Developer ID signing/notarization
 and real installation/update/failure recovery on a clean Mac and macOS 26
 remain pending. Future macOS 28 support is not demonstrated by today's
-ARM64 execution. Linux package metadata uses APT MinGW/Wine dependencies on amd64;
-that is not evidence of a full installation/runtime test on Linux.
+ARM64 execution. The Linux amd64 package includes the official LLVM-MinGW UCRT
+20261104 compiler (pinned SHA-256), with Wine and other runtime dependencies
+installed by APT. Build-time paths in libtool metadata and unused lldb-mi are
+omitted; executable compiler files and licenses remain unchanged. Linux ARM
+needs a separately validated translation engine.
 
 Pinned runtime archive: https://github.com/metalsharp/MetalSharp-Wine/releases/tag/v6.5
 SHA256: `574199696623371d6c4abfe5d242c86403cc4ba4b4b5643f5e6187a6d5b86d4b`.
 
 
-On Linux, the distribution MinGW may target legacy MSVCRT rather than UCRT.
-That CRT has no UTF-8 `LC_CTYPE` locale in Wine 9. Penguin still sets the console
-input/output pages so UTF-8 byte output and keyboard input work; CRT multibyte
-conversion functions retain that CRT's limitations. UCRT (the included macOS
-LLVM-MinGW profile) provides the UTF-8 CRT locale. OEM 437/ANSI 1252 profiles are
-validated separately. See the phase 6 console evidence.
+The included macOS and Linux compilers both target UCRT for UTF-8 CRT locale
+support. A manually selected legacy MSVCRT compiler can still corrupt UTF-8
+`printf`/C++ output and lacks UTF-8 multibyte conversion support under Wine 9,
+even when `WriteConsoleA/W` work. Console code pages alone cannot fix that CRT.
+Use the included UCRT compiler or an appropriately configured toolchain.
+OEM 437/ANSI 1252 profiles are validated separately. See the phase 6 evidence.

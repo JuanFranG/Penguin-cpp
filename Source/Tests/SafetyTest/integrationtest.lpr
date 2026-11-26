@@ -173,6 +173,12 @@ begin
  About:=TAboutForm.Create(MainForm);
  try
   About.Show; Application.ProcessMessages; SaveFormImage(About,'about');
+  About.ClientWidth:=640; Application.ProcessMessages;
+  Check((About.paBanner.Width=About.ClientWidth) and (About.imgBanner.Width=About.paBanner.ClientWidth) and
+   About.imgBanner.Proportional and not About.paBanner.ParentBackground and (About.paBanner.Color=$00FCEEDA),
+   'About header fills available width while preserving image proportions');
+  SaveFormImage(About,'about-wide');
+  About.ClientWidth:=480; Application.ProcessMessages;
   Check((Pos(DEVCPP_VERSION,About.lblVersion.Caption)>0) and Assigned(About.lblVersion.OnClick) and
    (Pos(DEVCPP_RELEASE_URL,About.lblVersion.Hint)=1),'About version links to its own release notes');
   Check((About.lblCreator.Caption=DEVCPP_CREATOR) and

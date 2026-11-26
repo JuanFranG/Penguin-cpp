@@ -18,6 +18,9 @@ object AboutForm: TAboutForm
     Height = 124
     Align = alTop
     BevelOuter = bvNone
+    Color = 16576218
+    ParentColor = False
+    ParentBackground = False
     TabOrder = 0
     object imgBanner: TImage
       Left = 0
@@ -2465,6 +2468,7 @@ object AboutForm: TAboutForm
     Width = 448
     Height = 64
     Caption = 'Project'
+    Anchors = [akLeft, akTop, akRight]
     TabOrder = 1
     object lblRepositoryURL: TLabel
       Left = 16
@@ -2503,6 +2507,7 @@ object AboutForm: TAboutForm
     Width = 110
     Height = 32
     Caption = 'Credits'
+    Anchors = [akTop, akRight]
     OnClick = btnAuthorsClick
     TabOrder = 3
   end
@@ -2512,6 +2517,7 @@ object AboutForm: TAboutForm
     Width = 104
     Height = 32
     Caption = 'Close'
+    Anchors = [akTop, akRight]
     Default = True
     Cancel = True
     OnClick = btnOkClick

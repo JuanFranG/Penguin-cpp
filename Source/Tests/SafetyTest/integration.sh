@@ -8,6 +8,7 @@ if [ -z "${WS:-}" ]; then
   case "$(uname -s)" in Darwin) WS=cocoa ;; *) WS=qt5 ;; esac
 fi
 mkdir -p "$HERE/build"
+export PENGUIN_GUI_SCREENSHOTS="$HERE/build/screenshots"
 # The main project generates the icon resources used by the real main form.
 ${LAZBUILD:-lazbuild} --ws="$WS" Source/penguin-cpp.lpi > "$HERE/build/main-build.log" 2>&1
 ${LAZBUILD:-lazbuild} -B --ws="$WS" "$HERE/integrationtest.lpi" > "$HERE/build/integration-build.log" 2>&1

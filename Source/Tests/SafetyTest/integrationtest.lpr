@@ -31,14 +31,22 @@ begin
  for I:=0 to Parent.ControlCount-1 do begin
   Item:=Parent.Controls[I]; if not Item.Visible then Continue;
   if (Item.Left<0) or (Item.Top<0) or (Item.Left+Item.Width>Parent.ClientWidth) or
-    (Item.Top+Item.Height>Parent.ClientHeight) then Exit;
+    (Item.Top+Item.Height>Parent.ClientHeight) then begin WriteLn('Outside: ',Item.Name,' ',Item.Left,',',Item.Top,' ',Item.Width,'x',Item.Height,' parent ',Parent.Name,' ',Parent.ClientWidth,'x',Parent.ClientHeight); Exit end;
   for J:=0 to I-1 do begin
    Other:=Parent.Controls[J];
-   if Other.Visible and IntersectRect(Overlap,Item.BoundsRect,Other.BoundsRect) then Exit;
+   if Other.Visible and IntersectRect(Overlap,Item.BoundsRect,Other.BoundsRect) then begin WriteLn('Overlap: ',Parent.Name,'/',Item.Name,' with ',Other.Name); Exit end;
   end;
   if (Item is TPanel) and not ControlsFit(TWinControl(Item)) then Exit;
  end;
  Result:=True;
+end;
+procedure SaveFormImage(Form:TCustomForm; const Name:String);
+var Image:TBitmap; PNG:TPortableNetworkGraphic; Folder:String;
+begin
+ Folder:=GetEnvironmentVariable('PENGUIN_GUI_SCREENSHOTS'); if Folder='' then Exit;
+ ForceDirectories(Folder); Image:=Form.GetFormImage; PNG:=TPortableNetworkGraphic.Create;
+ try PNG.Assign(Image); PNG.SaveToFile(IncludeTrailingPathDelimiter(Folder)+Name+'.png');
+ finally PNG.Free; Image.Free end;
 end;
 procedure TCallbacks.InspectUpdateDialog(Sender:TObject);
 var F:TCustomForm; Repo,Notes,Retry:TComponent;
@@ -53,6 +61,7 @@ begin
    UpdateLinksValid:=(TLabel(Repo).Hint=DEVCPP_REPOSITORY_URL) and
     (TLabel(Notes).Hint=ExpectedRelease) and Assigned(TLabel(Notes).OnClick) and
     (TLabel(Notes).Cursor=crHandPoint) and (TLabel(Notes).Caption=Lang[80018]);
+  SaveFormImage(F,'updates-'+IntToStr(Length(ExpectedRelease)));
   F.ModalResult:=mrCancel; TTimer(Sender).Enabled:=False;
  end else if SetupTicks>100 then begin F.ModalResult:=mrCancel; TTimer(Sender).Enabled:=False end;
 end;
@@ -134,13 +143,40 @@ begin
   mrCancel: DialogReply:=idButtonCancel;
  else DialogReply:=idButtonOK end;
 end;
+procedure WelcomeLayoutTest;
+var I:Integer; Buttons:array[0..2] of TControl; Bounds:TRect;
+begin
+ MainForm.Show;
+ try
+  for I:=0 to 1 do begin
+   MainForm.WindowState:=wsNormal;
+   if I=0 then MainForm.SetBounds(0,0,1024,768) else MainForm.SetBounds(0,0,1440,900);
+   Application.ProcessMessages; Application.ProcessMessages;
+   Buttons[0]:=MainForm.ButtonNewDocument; Buttons[1]:=MainForm.ButtonOpenDocument; Buttons[2]:=MainForm.ButtonOptions;
+   Check(not MainForm.PanelRight.AutoSize,'welcome actions are not moved by panel autosizing');
+   Check((Buttons[0].Top>=20) and (Buttons[0].Top=Buttons[1].Top) and (Buttons[1].Top=Buttons[2].Top) and
+    (Buttons[0].Left+Buttons[0].Width<=Buttons[1].Left) and
+    (Buttons[1].Left+Buttons[1].Width<=Buttons[2].Left) and
+    (Buttons[2].Left+Buttons[2].Width<=MainForm.PanelRight.ClientWidth),
+    'welcome New/Open/Options stay ordered inside their column after resizing');
+   Check(not IntersectRect(Bounds,Buttons[0].BoundsRect,MainForm.ButtonChangeTheme.BoundsRect),
+    'welcome primary and secondary actions do not overlap');
+   SaveFormImage(MainForm,'welcome-'+IntToStr(I));
+  end;
+ finally MainForm.Hide end;
+end;
+
 procedure ReleaseLinksTest;
 var About:TAboutForm; Timer:TTimer; Hook:TCallbacks; OldPath,Script:String; I:Integer;
 begin
  About:=TAboutForm.Create(MainForm);
  try
+  About.Show; Application.ProcessMessages; SaveFormImage(About,'about');
   Check((Pos(DEVCPP_VERSION,About.lblVersion.Caption)>0) and Assigned(About.lblVersion.OnClick) and
    (Pos(DEVCPP_RELEASE_URL,About.lblVersion.Hint)=1),'About version links to its own release notes');
+  Check((About.lblCreator.Caption=DEVCPP_CREATOR) and
+   (Pos('/COPYING.txt',About.lblLicense.Hint)>0) and ControlsFit(About) and ControlsFit(About.grpLinks),
+   'About is compact, credits its creator and links the license without overlap');
   Check((About.lblRepositoryURL.Hint=DEVCPP_REPOSITORY_URL) and
    (About.lblRepositoryURL.Left+About.lblRepositoryURL.Width<=About.grpLinks.ClientWidth),
    'About repository hyperlink fits its group');
@@ -525,6 +561,7 @@ begin
    Check(not FileExists(Dir+'attempt'),'Clean recognizes Mach-O');
   finally C.Free end;
 
+  WelcomeLayoutTest;
   ReleaseLinksTest;
   CompatibilityLayoutTest;
   SetupErrorTest;

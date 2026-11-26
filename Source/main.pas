@@ -7069,7 +7069,7 @@ end;
 
 procedure TMainForm.PageControlPanelResize(Sender: TObject);
 begin
-  if Assigned(fWelcomeContent) then
+  if not (csLoading in ComponentState) then
     ResizeWelcomeComponent;
   if MainForm.Visible then
     fEditorList.OnPanelResize(Sender);
@@ -7561,16 +7561,12 @@ begin
   SpeedButton3.Left := ButtonNewDocument.Left;
   RichEdit4.Left := ButtonNewDocument.Left;
   SpeedButton4.Left := ButtonNewDocument.Left;
-{$IFDEF DARWIN}
   LayOutWelcomeRight;
-{$ENDIF}
   GetProjectHistory; // the folders are shortened to the boxes' width
 end;
 
-// macOS: the welcome screen's right column, placed for the font it has
-// (macOS' text is larger than Linux', and the fixed places of the form made
-// the buttons touch the window's edge and cut the recent files): the
-// buttons, then the recent files, each two lines high, all centered
+// Keep the welcome actions in ordered rows on Cocoa and Qt5. AutoSize
+// must stay off: it moves visible children to the panel's upper left.
 procedure TMainForm.LayOutWelcomeRight;
 const
   Gap = 24;

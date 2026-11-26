@@ -22,149 +22,71 @@ unit AboutFrm;
 interface
 
 uses
-  LCLIntf, LCLType, SysUtils, Classes, Version, Graphics, Controls, Forms, Dialogs, StdCtrls,
-  Buttons, ExtCtrls, DataFrm;
+  LCLIntf, SysUtils, Classes, Version, Graphics, Controls, Forms, Dialogs, StdCtrls, ExtCtrls;
 
 type
   TAboutForm = class(TForm)
-    lblVersion: TLabel;
-    btnOk: TBitBtn;
-    lblCopyright: TLabel;
-    grpLicense: TGroupBox;
-    txtLicense: TMemo;
+    lblVersion, lblCreatorTitle, lblCreator, lblDescription: TLabel;
+    lblRepositoryURL, lblLicense, lblDocs: TLabel;
     grpLinks: TGroupBox;
-    lblBlood: TLabel;
-    lblBloodURL: TLabel;
-    lblMinGW: TLabel;
-    lblMinGWURL: TLabel;
-    lblDiscussion: TLabel;
-    lblDiscussionURL: TLabel;
-    lblMailing: TLabel;
-    lblMailingURL: TLabel;
-    lblResources: TLabel;
-    lblResourcesURL: TLabel;
-    lblBlog: TLabel;
-    lblBlogURL: TLabel;
-    btnAuthors: TBitBtn;
-    btnUpdateCheck: TBitBtn;
-    timerFish: TTimer;
-    pnlFish: TPanel;
-    FishImage: TImage;
-    imgBanner: TImage;
-    bvNew: TBevel;
-    lblSubreddit: TLabel;
-    lblSubredditURL: TLabel;
-    lblRepository: TLabel;
-    lblRepositoryURL: TLabel;
-    lblTDM: TLabel;
-    lblTDMURL: TLabel;
-    lblPost4992: TLabel;
-    lblCompilers: TLabel;
-    lblPre4992: TLabel;
-    bvCompilers: TBevel;
-    Bevel1: TBevel;
-    Label1: TLabel;
-    Label2: TLabel;
-    Label3: TLabel;
-    imgLogo: TImage;
-    lblForkBy: TLabel;
     paBanner: TPanel;
+    imgBanner: TImage;
+    btnUpdateCheck, btnAuthors, btnOk: TButton;
     procedure URLLabelClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure btnAuthorsClick(Sender: TObject);
-    procedure btnAuthorsDragOver(Sender, Source: TObject; X, Y: Integer; State: TDragState; var Accept: Boolean);
-    procedure btnAuthorsDragDrop(Sender, Source: TObject; X, Y: Integer);
-    procedure timerFishTimer(Sender: TObject);
-    procedure FishImageClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure btnUpdateCheckClick(Sender: TObject);
     procedure btnOkClick(Sender: TObject);
-  private
-    procedure LoadText;
   end;
 
 implementation
 
 uses
-  devCFG, Utils, MultiLangSupport, main, devPlatform, UpdateCheckFrm;
+  devCFG, Utils, MultiLangSupport, main, UpdateCheckFrm;
 
 {$R *.lfm}
 
-procedure TAboutForm.LoadText;
-begin
-  // Set interface font
-  Font.Name := devData.InterfaceFont;
-  Font.Size := devData.InterfaceFontSize;
-
-  Caption := Lang[ID_AB_CAPTION];
-  grpLicense.Caption := Lang[ID_AB_LICENSE];
-  grpLinks.Caption := Lang[ID_AB_WEBCAP];
-  lblPost4992.Caption := Lang[ID_AB_POST4992];
-  lblRepository.Caption := Lang[ID_AB_REPOSITORY];
-  lblSubreddit.Caption := Lang[ID_AB_SUBREDDIT];
-  lblBlog.Caption := Lang[ID_AB_BLOGNAME];
-  lblCompilers.Caption := Lang[ID_AB_COMPILERS];
-  lblMinGW.Caption := Lang[ID_AB_LBLMINGWSITE];
-  lblTDM.Caption := Lang[ID_AB_TDMGCC];
-  lblPre4992.Caption := Lang[ID_AB_PRE4992];
-  lblBlood.Caption := Lang[ID_AB_LBLBLOODSITE];
-  lblDiscussion.Caption := Lang[ID_AB_LBLFORUM];
-  lblMailing.Caption := Lang[ID_AB_LBLMAIL];
-  lblResources.Caption := Lang[ID_AB_LBLEMAIL];
-  btnOk.Caption := Lang[ID_BTN_OK];
-  btnUpdateCheck.Caption := Lang[ID_AB_UPDATE];
-  btnAuthors.Caption := Lang[ID_BTN_AUTHOR];
-end;
-
 procedure TAboutForm.URLLabelClick(Sender: TObject);
-var
-  S: String;
 begin
-  if Sender = lblVersion then S := DEVCPP_RELEASE_URL
-  else if Sender = lblRepositoryURL then S := DEVCPP_REPOSITORY_URL
-  else S := TLabel(Sender).Caption;
-  OpenDocument(S);
+  OpenURL(TLabel(Sender).Hint);
 end;
 
 procedure TAboutForm.FormCreate(Sender: TObject);
-var
-  datestring: String;
-  f: Double;
+  procedure StyleLink(Link: TLabel);
+  begin
+    Link.Font.Color := clBlue;
+    Link.Font.Style := [fsUnderline];
+    Link.ShowHint := True;
+  end;
 begin
-  LoadText;
-
-  // Use modified time, not the PE headers
-  datestring := GetBuildTime(ParamStr(0));
+  Font.Name := devData.InterfaceFont;
+  Font.Size := devData.InterfaceFontSize;
+  Caption := Lang[80026];
   lblVersion.Caption := 'Version ' + DEVCPP_VERSION;
-  lblVersion.Font.Color := clBlue;
-  lblVersion.Font.Style := [fsUnderline];
-  lblVersion.Cursor := crHandPoint;
-  lblVersion.Hint := DEVCPP_RELEASE_URL + LineEnding + 'Build time: ' + datestring;
+  lblVersion.Hint := DEVCPP_RELEASE_URL;
   lblVersion.ShowHint := True;
-  lblVersion.OnClick := URLLabelClick;
-  lblRepositoryURL.Caption := 'JuanFranG/Penguin-cpp';
+  lblCreatorTitle.Caption := Lang[80019];
+  lblCreator.Caption := DEVCPP_CREATOR;
+  lblCreator.Font.Assign(Font);
+  lblCreator.Font.Style := [fsBold];
+  lblDescription.Caption := Lang[80020];
+  grpLinks.Caption := Lang[80021];
   lblRepositoryURL.Hint := DEVCPP_REPOSITORY_URL;
-  lblRepositoryURL.ShowHint := True;
-
-  if FileExists(devData.Splash) then // TODO: check all folders?
-    imgBanner.Picture.LoadFromFile(devData.Splash);
-
-  f := 1;
-  if Assigned(imgBanner.Picture) and (imgBanner.Picture.Width > 0) then
-    f := imgBanner.Picture.Height / imgBanner.Picture.Width;
-
-  imgBanner.Width := paBanner.Width;
-  imgBanner.Height := Round(paBanner.Width * f);
-  imgBanner.Stretch := True;
-  imgBanner.Left := 0;
-  imgBanner.Top := - Round(imgBanner.Height * 0.14);
-  lblForkBy.Top := Round(imgLogo.Top * 0.95);
+  lblLicense.Hint := DEVCPP_REPOSITORY_URL + '/blob/v' + DEVCPP_VERSION + '/COPYING.txt';
+  lblDocs.Caption := Lang[80023];
+  lblDocs.Hint := MANUAL_URL;
+  StyleLink(lblVersion); StyleLink(lblRepositoryURL);
+  StyleLink(lblLicense); StyleLink(lblDocs);
+  btnAuthors.Caption := Lang[80022];
+  btnUpdateCheck.Caption := Lang[80000];
+  btnOk.Caption := Lang[80008];
+  if FileExists(devData.Splash) then imgBanner.Picture.LoadFromFile(devData.Splash);
 end;
 
 procedure TAboutForm.btnAuthorsClick(Sender: TObject);
 const
-  MessageText =
-    'Authors:'#13#10#13#10 +
+  HistoricalCredits =
     '- Post-5.12 development sponsored by Embarcadero'#13#10 +
     '- 4.9.9.2 to 5.12 development: Johan Mes'#13#10 +
     '- Development: Colin Laplace, Mike Berg, Hongli Lai, Yiannis Mandravellos'#13#10 +
@@ -175,14 +97,10 @@ const
     '- Gnome icons: Gnome designers'#13#10 +
     '- Blue theme: Thomas Thron';
 begin
-  Beep;
-  MessageDlg(MessageText, MtInformation, [MbOK], 0);
-end;
-
-procedure TAboutForm.btnAuthorsDragOver(Sender, Source: TObject; X,
-  Y: Integer; State: TDragState; var Accept: Boolean);
-begin
-  Accept := True;
+  MessageDlg('Penguin cpp' + LineEnding + DEVCPP_CREATOR + LineEnding + LineEnding +
+    'AI-assisted development: Claude Opus 5.5 (Anthropic), Chat GPT 6.1 Sol (OpenAI).' +
+    LineEnding + LineEnding + 'Dev-C++ contributors:' + LineEnding + HistoricalCredits,
+    mtInformation, [mbOK], 0);
 end;
 
 procedure TAboutForm.btnOkClick(Sender: TObject);
@@ -198,37 +116,9 @@ begin
   end;
 end;
 
-procedure TAboutForm.btnAuthorsDragDrop(Sender, Source: TObject; X,
-  Y: Integer);
-begin
-  pnlFish.Left := 0 - pnlFish.Width;
-  pnlFish.Top := Random(Height - pnlFish.Height - (pnlFish.Height div 3));
-  pnlFish.Tag := 0;
-  timerFish.Enabled := True;
-end;
-
-procedure TAboutForm.timerFishTimer(Sender: TObject);
-begin
-  if ((pnlFish.Tag = 0) and (pnlFish.Left > Width + 10)) or
-    ((pnlFish.Tag <> 1) and (pnlFish.Left < 0 - pnlFish.Width - 10)) then
-    timerFish.Enabled := False;
-
-  if pnlFish.Tag = 0 then
-    pnlFish.Left := pnlFish.Left + 5
-  else
-    pnlFish.Left := pnlFish.Left - 5;
-  pnlFish.Top := pnlFish.Top + 1;
-end;
-
-procedure TAboutForm.FishImageClick(Sender: TObject);
-begin
-  pnlFish.Tag := not pnlFish.Tag;
-end;
-
 procedure TAboutForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   Action := caFree;
 end;
 
 end.
-

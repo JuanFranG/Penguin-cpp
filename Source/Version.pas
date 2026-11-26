@@ -29,6 +29,7 @@ const
   DEVCPP = 'Penguin cpp';
   // Penguin cpp's own version (semantic versioning); it continues Dev-C++ 6.3
   DEVCPP_VERSION = '0.5.5';
+  DEVCPP_CREATOR = 'Juan Francisco Gonzalez Pacheco';
   DEVCPP_REPOSITORY_URL = 'https://github.com/JuanFranG/Penguin-cpp';
   DEVCPP_RELEASE_URL = DEVCPP_REPOSITORY_URL + '/releases/tag/v' + DEVCPP_VERSION;
 

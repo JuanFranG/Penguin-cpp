@@ -101,7 +101,7 @@ jobs:
           grep '/usr/share/penguin-cpp/Lang/English.lng' trace.log | grep -v ENOENT
 
       - name: IDE failure paths and release links (Qt5)
-        run: xvfb-run -a env WS=qt5 sh Source/Tests/SafetyTest/integration.sh
+        run: xvfb-run -a -s "-screen 0 1600x1000x24" env WS=qt5 sh Source/Tests/SafetyTest/integration.sh
 
       - name: Windows console contract on Linux (MinGW and Wine)
         run: |
@@ -135,9 +135,21 @@ jobs:
           packaging/update-apt-repo.sh "$REPO" build/deb/*.deb
           sudo install -m 644 "$REPO/penguin-cpp.gpg" /usr/share/keyrings/penguin-cpp-test.gpg
           echo "deb [signed-by=/usr/share/keyrings/penguin-cpp-test.gpg] file:$REPO stable main" | sudo tee /etc/apt/sources.list.d/penguin-cpp-test.list
+          # Start with a pre-compatibility version and no MinGW/Wine packages.
+          curl -fL --retry 3 -o /tmp/penguin-old.deb https://github.com/JuanFranG/Penguin-cpp/releases/download/v0.3.0/penguin-cpp_0.3.0_amd64.deb
+          sudo dpkg -i /tmp/penguin-old.deb
+          sudo apt-get remove -y g++-mingw-w64-x86-64-posix wine wine64
+          test "$(dpkg-query -W -f='${Version}' penguin-cpp)" = 0.3.0
           sudo apt-get update
+          # update only refreshes metadata; the installed version stays old.
+          test "$(dpkg-query -W -f='${Version}' penguin-cpp)" = 0.3.0
           apt-cache policy penguin-cpp
-          sudo apt-get install -y penguin-cpp
+          sudo apt-get install --only-upgrade -y penguin-cpp
+          EXPECTED=$(sed -n "s/^ *DEVCPP_VERSION *= *'\([^']*\)'.*/\1/p" Source/Version.pas | tr -d '\r')
+          test "$(dpkg-query -W -f='${Version}' penguin-cpp)" = "$EXPECTED"
+          command -v x86_64-w64-mingw32-g++
+          command -v wine
+          test -f /usr/share/penguin-cpp/Compat/windows/console-startup.c
           test -x /usr/lib/penguin-cpp/penguin-cpp
           sudo apt-get remove -y penguin-cpp
           sudo rm /etc/apt/sources.list.d/penguin-cpp-test.list /usr/share/keyrings/penguin-cpp-test.gpg
@@ -159,3 +171,12 @@ jobs:
         with:
           name: penguin-cpp-symbols
           path: penguin-cpp
+
+      - name: Keep GUI validation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: penguin-gui-linux
+          path: |
+            Source/Tests/SafetyTest/build/screenshots/
+            Source/Tests/SafetyTest/build/*build.log

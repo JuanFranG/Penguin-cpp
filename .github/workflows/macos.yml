@@ -56,3 +56,12 @@ jobs:
         with:
           name: penguin-cpp-macos-arm64
           path: build/macos/*.dmg
+
+      - name: Keep GUI validation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: penguin-gui-macos
+          path: |
+            Source/Tests/SafetyTest/build/screenshots/
+            Source/Tests/SafetyTest/build/*build.log

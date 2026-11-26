@@ -5969,7 +5969,7 @@ object MainForm: TMainForm
         Width = 526
         Height = 439
         Align = alClient
-        AutoSize = True
+        AutoSize = False
         TabOrder = 1
         object SpeedButton0: TSpeedButton
           Left = 70

@@ -49,8 +49,10 @@ bibliotecas arbitrarias todavía requieren una integración específica.
   `apt-get update` y actualiza `penguin-cpp`; APT resuelve sus dependencias.
 - **macOS 26+ / Apple Silicon:** DMG nativo y PKG/DMG `COMPLETE-UNSIGNED` con
   LLVM-MinGW, GNU Make y Wine ARM64/FEX. No necesita Rosetta para ese motor.
-- **Desde la 0.5.0 completa:** el botón conserva el canal completo y descarga el
-  DMG completo. No se requiere desinstalar ni borrar preferencias o prefix.
+- **Canal completo:** el botón conserva ese canal y descarga el DMG completo.
+  Desde la 0.5.5, si la app fue instalada por PKG, pide autorización de
+  administrador antes de reemplazarla. Las copias PKG antiguas con actualizador
+  anterior deben instalar este PKG encima para evitar sus límites de permisos. No se requiere desinstalar ni borrar preferencias o prefix.
   Quien tenga la edición nativa y quiera añadir el entorno debe instalar el PKG
   completo encima. Cambiar el perfil de consola requiere volver a compilar.
 - El motor y sus fuentes fijadas conservan el perfil `penguin-windows-foss-1`.
@@ -66,6 +68,9 @@ estructura o self-test no acredita todas las bibliotecas ni todas las pantallas.
 
 ## Límites y pendientes
 
+- Linux/MinGW del sistema puede usar MSVCRT, que no ofrece locale UTF-8 completo.
+  La consola configura UTF-8, pero las conversiones multibyte del CRT requieren
+  UCRT para ese soporte; el perfil incluido de macOS usa UCRT.
 - Compatibilidad Windows experimental; no hay garantía para todo Win32,
   videojuegos, llamadas contradictorias de página de códigos o texto mezclado.
 - Recursos Windows, depuración/perfilado de ejecutables Windows y WinBGIm no

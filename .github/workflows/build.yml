@@ -107,13 +107,14 @@ jobs:
         run: |
           export WINEPREFIX="$RUNNER_TEMP/penguin-console-prefix"
           export WINEARCH=win64 WINEDEBUG=-all
-          xvfb-run -a wineboot -u
-          xvfb-run -a timeout 240 python3 Source/Tests/WindowsGameTest/console_test.py \
-            --cc "$(command -v x86_64-w64-mingw32-gcc)" \
-            --cxx "$(command -v x86_64-w64-mingw32-g++)" \
-            --runner "$(command -v wine)" --prefix "$WINEPREFIX"
-          wineserver -k
-          wineserver -w
+          xvfb-run -a sh -ec '
+            trap "wineserver -k; wineserver -w" EXIT
+            wineboot -u
+            timeout 240 python3 Source/Tests/WindowsGameTest/console_test.py \
+              --cc "$(command -v x86_64-w64-mingw32-gcc)" \
+              --cxx "$(command -v x86_64-w64-mingw32-g++)" \
+              --runner "$(command -v wine)" --prefix "$WINEPREFIX"
+          '
 
       - name: Remove the package without leaving files behind
         run: |

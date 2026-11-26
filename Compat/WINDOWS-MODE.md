@@ -95,3 +95,11 @@ that is not evidence of a full installation/runtime test on Linux.
 
 Pinned runtime archive: https://github.com/metalsharp/MetalSharp-Wine/releases/tag/v6.5
 SHA256: `574199696623371d6c4abfe5d242c86403cc4ba4b4b5643f5e6187a6d5b86d4b`.
+
+
+On Linux, the distribution MinGW may target legacy MSVCRT rather than UCRT.
+That CRT has no UTF-8 `LC_CTYPE` locale in Wine 9. Penguin still sets the console
+input/output pages so UTF-8 byte output and keyboard input work; CRT multibyte
+conversion functions retain that CRT's limitations. UCRT (the included macOS
+LLVM-MinGW profile) provides the UTF-8 CRT locale. OEM 437/ANSI 1252 profiles are
+validated separately. See the phase 6 console evidence.

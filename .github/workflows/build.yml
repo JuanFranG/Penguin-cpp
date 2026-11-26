@@ -103,7 +103,7 @@ jobs:
       - name: IDE failure paths and release links (Qt5)
         run: xvfb-run -a -s "-screen 0 1600x1000x24" env WS=qt5 sh Source/Tests/SafetyTest/integration.sh
 
-      - name: Windows console contract on Linux (MinGW and Wine)
+      - name: Windows console contract on Linux (included LLVM-MinGW UCRT and Wine)
         run: |
           export WINEPREFIX="$RUNNER_TEMP/penguin-console-prefix"
           export WINEARCH=win64 WINEDEBUG=-all
@@ -113,8 +113,8 @@ jobs:
             wineserver -k
             wineserver -w
             timeout 240 python3 Source/Tests/WindowsGameTest/console_test.py \
-              --cc "$(command -v x86_64-w64-mingw32-gcc)" \
-              --cxx "$(command -v x86_64-w64-mingw32-g++)" \
+              --cc /usr/lib/penguin-cpp/windows-toolchain/bin/x86_64-w64-mingw32-clang \
+              --cxx /usr/lib/penguin-cpp/windows-toolchain/bin/x86_64-w64-mingw32-clang++ \
               --runner "$(command -v wine)" --prefix "$WINEPREFIX"
           '
 
@@ -152,6 +152,8 @@ jobs:
           test "$(dpkg-query -W -f='${Version}' penguin-cpp)" = "$EXPECTED"
           command -v x86_64-w64-mingw32-g++
           command -v wine
+          test -x /usr/share/penguin-cpp/Compat/windows/toolchain/bin/x86_64-w64-mingw32-clang++
+          /usr/share/penguin-cpp/Compat/windows/toolchain/bin/x86_64-w64-mingw32-clang++ --version
           test -f /usr/share/penguin-cpp/Compat/windows/console-startup.c
           test -x /usr/lib/penguin-cpp/penguin-cpp
           sudo apt-get remove -y penguin-cpp

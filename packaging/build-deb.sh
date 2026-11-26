@@ -67,6 +67,11 @@ find "$STAGE/usr" -type d -exec chmod 755 {} +
 find "$STAGE/usr" -type f -exec chmod 644 {} +
 chmod 755 "$STAGE/usr/lib/penguin-cpp/penguin-cpp"
 
+# Keep executable modes and symlinks of the upstream compiler intact.
+if [ "$ARCH" = amd64 ]; then
+  packaging/prepare-linux-toolchain.sh "$STAGE"
+fi
+
 # The libraries the program links to (libc6, libqt5pas1...), as dpkg sees them
 SHLIBS=
 if command -v dpkg-shlibdeps > /dev/null; then
@@ -82,7 +87,7 @@ fi
 # ARM Linux needs a separately validated x64 translation engine.
 COMPATDEPS=
 if [ "$ARCH" = amd64 ]; then
-  COMPATDEPS=", g++-mingw-w64-x86-64-posix, wine64, wine"
+  COMPATDEPS=", g++-mingw-w64-x86-64-posix, wine64, wine, libstdc++6, libgcc-s1, zlib1g"
 fi
 SIZE=$(du -sk --apparent-size "$STAGE/usr" | cut -f1)
 sed -e "s/@VERSION@/$VERSION/" -e "s/@ARCH@/$ARCH/" -e "s/@SIZE@/$SIZE/" -e "s/@SHLIBS@/$SHLIBS/" \

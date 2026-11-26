@@ -25,6 +25,12 @@ args = parser.parse_args()
 here = Path(__file__).resolve().parent
 root = here.parents[2]
 support = root / 'Compat/windows/console-startup.c'
+def visible_text(data):
+    text = data.decode('utf-8', errors='replace')
+    # Wine's terminal driver emits cursor controls even between letters.
+    text = re.sub(r'\x1b\[(\d*)C', lambda m: ' ' * int(m[1] or 1), text)
+    return re.sub(r'\x1b\[[0-?]*[ -/]*[@-~]', '', text).replace('\r', '')
+
 results = []
 with tempfile.TemporaryDirectory(prefix='penguin-console-') as temporary:
     directory = Path(temporary)
@@ -58,7 +64,7 @@ with tempfile.TemporaryDirectory(prefix='penguin-console-') as temporary:
                         if not block: break
                         data += block
                         (here/'build/console-live.log').write_bytes(data)
-                        if b'INPUT_READY' in data and not sent:
+                        if 'INPUT_READY' in visible_text(data) and not sent:
                             os.write(master, 'niño\r'.encode('utf-8')); sent = True
                     if process.poll() is not None and not select.select([master], [], [], .05)[0]: break
                 if process.poll() is None: raise AssertionError('console test timeout')
@@ -66,7 +72,7 @@ with tempfile.TemporaryDirectory(prefix='penguin-console-') as temporary:
                 (here / 'build' / ('console-' + str(cp) + '-' + language.replace('+', 'p') + '.log')).write_bytes(data)
                 assert process.returncode == 0, (cp, language, process.returncode, text)
                 # Ignore terminal control sequences when checking visible text.
-                visible = re.sub(r'\x1b\[[0-?]*[ -/]*[@-~]', '', text).replace('\r', '')
+                visible = visible_text(data)
                 assert marker in visible, (marker, visible)
                 for expected in ('WIDE: Español ┌─┐', 'EXPLICIT: Español', 'NUMBER:1.5', 'INPUT_OK:niño', 'CONSOLE_CONTRACT_OK'):
                     assert expected in visible, (expected, visible)

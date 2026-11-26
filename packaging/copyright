@@ -34,6 +34,18 @@ Comment: On Debian systems the Apache License 2.0 is in
  /usr/share/common-licenses/Apache-2.0. The LLVM exception lets object code
  built from LLVM's sources be distributed without attribution.
 
+Files: usr/lib/penguin-cpp/windows-toolchain/*
+Copyright: The LLVM Project, mingw-w64 and LLVM-MinGW contributors
+License: Apache-2.0 WITH LLVM-exception and other-permissive
+Comment: Unmodified LLVM-MinGW 20261104 UCRT upstream binary distribution.
+ Complete component notices and licenses are installed in
+ /usr/lib/penguin-cpp/windows-toolchain/share.
+ Source and reproducible upstream build scripts:
+ https://github.com/mstorsjo/llvm-mingw/tree/20261104
+ https://github.com/mstorsjo/llvm-mingw/releases/tag/20261104
+ The same upstream sources are included in Penguin's compatibility source
+ archive linked from the versioned release notes.
+
 License: GPL-2+
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by

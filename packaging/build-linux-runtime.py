@@ -2,6 +2,7 @@
 """Repackage pinned WineHQ 11 for Penguin's private x64 runtime (no root install)."""
 import argparse
 import hashlib
+import json
 from pathlib import Path
 import shutil
 import subprocess
@@ -14,15 +15,10 @@ args = parser.parse_args()
 ROOT = Path(__file__).resolve().parents[1]
 CACHE = ROOT / 'build/linux-runtime'
 OUT = ROOT / 'build/deb'
-VERSION = '11.0.0.0~noble-1+penguin1'
-BASE = 'https://dl.winehq.org/wine-builds/ubuntu/pool/main/w/wine/'
-INPUTS = {
-    'wine-stable_11.0.0.0~noble-1_amd64.deb': '04e7b4b995262c734019099d93277d8f219f7d180ebb65b5ccb3df7f97be1078',
-    'wine-stable-amd64_11.0.0.0~noble-1_amd64.deb': '6cb835e2171b5572b17f1c06729735c2c7e40178239d7fa6c29ef14bd9b40d16',
-    'wine_11.0.0.0~noble.orig.tar.gz': '00c6ac20e94f0786ca946410b2da6034699b1c977821039fbb21d5dc958f793a',
-    'wine_11.0.0.0~noble-1.debian.tar.xz': '24e5d80b9f8a7ac3cf0a75b353b86af01266fa27debbbe4e858ce4b000a82b61',
-    'wine_11.0.0.0~noble-1.dsc': 'd4f051ed91151ef263beaa3a0c26157b22067c615f6831c264581cd6949977d4',
-}
+LOCK = json.loads((ROOT / 'packaging/linux-runtime-lock.json').read_text())
+VERSION = LOCK['version']
+BASE = LOCK['base_url']
+INPUTS = LOCK['files']
 CACHE.mkdir(parents=True, exist_ok=True)
 OUT.mkdir(parents=True, exist_ok=True)
 for name, expected in INPUTS.items():

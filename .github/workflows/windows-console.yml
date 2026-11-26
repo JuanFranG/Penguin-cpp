@@ -1,0 +1,61 @@
+# Isolates upstream Wine/CRT behavior from GUI and repackaging regressions.
+name: Windows console smoke
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  console:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install native test tools
+        run: |
+          sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list /etc/apt/sources.list.d/microsoft-prod.sources
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends fpc xvfb
+      - name: Verify and install upstream WineHQ x64 in this disposable runner
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, subprocess, urllib.request
+          from pathlib import Path
+          lock = json.loads(Path('packaging/linux-runtime-lock.json').read_text())
+          for name, expected in lock['files'].items():
+              if not name.endswith('.deb'): continue
+              path = Path('/tmp') / name
+              urllib.request.urlretrieve(lock['base_url'] + name, path)
+              assert hashlib.sha256(path.read_bytes()).hexdigest() == expected, name
+              if name.startswith('wine-stable-amd64_'):
+                  subprocess.run(['sudo', 'apt-get', 'install', '-y', str(path)], check=True)
+              else:
+                  subprocess.run(['dpkg-deb', '-x', str(path), '/tmp/wine-common'], check=True)
+          subprocess.run(['sudo', 'cp', '-a', '/tmp/wine-common/opt/wine-stable/.', '/opt/wine-stable/'], check=True)
+          PY
+      - name: Verify compiler and prepare production command helper
+        run: |
+          packaging/prepare-linux-toolchain.sh "$RUNNER_TEMP/compiler-stage"
+          Source/Tests/WindowsGameTest/build.sh --run
+      - name: Real C and C++ console and environment readiness
+        run: |
+          export PATH="/opt/wine-stable/bin:$PATH"
+          export WINEPREFIX="$RUNNER_TEMP/windows-smoke" WINEARCH=win64 WINEDEBUG=-all
+          wine --version
+          xvfb-run -a sh -ec '
+            trap "wineserver -k; wineserver -w" EXIT
+            wineboot -u
+            wineserver -k
+            wineserver -w
+            python3 Source/Tests/WindowsGameTest/console_test.py \
+              --cc "$RUNNER_TEMP/compiler-stage/usr/lib/penguin-cpp/windows-toolchain/bin/x86_64-w64-mingw32-clang" \
+              --cxx "$RUNNER_TEMP/compiler-stage/usr/lib/penguin-cpp/windows-toolchain/bin/x86_64-w64-mingw32-clang++" \
+              --runner /opt/wine-stable/bin/wine --prefix "$WINEPREFIX"
+          '
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: windows-console-smoke
+          path: |
+            Source/Tests/WindowsGameTest/build/console*.log
+            Source/Tests/WindowsGameTest/build/console-results.json

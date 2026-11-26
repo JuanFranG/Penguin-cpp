@@ -56,6 +56,9 @@ shutil.copytree(extracted / 'opt/wine-stable', runtime, symlinks=True)
 for path in (runtime / 'bin').iterdir():
     if (path.is_symlink() and path.readlink().name != 'wine') or (not path.is_symlink() and path.name not in ('wine', 'wineserver')):
         path.unlink()
+# Wine's development import archives are not needed to execute programs.
+for path in runtime.rglob('*.a'):
+    path.unlink()
 # Preserve executable code, resources and unwind data; omit PE debug sections.
 pe_files = []
 for path in (runtime / 'lib/wine/x86_64-windows').iterdir():

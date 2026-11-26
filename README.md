@@ -72,8 +72,9 @@ prevista es **0.5.5**; validación de entrega en [etapa 6](QA_STAGE_6.md).
 El [manual](https://juanfrang.github.io/Penguin-cpp/manual/) explica cómo
 usarlo, en español y en inglés; también se abre desde el IDE con F1.
 
-Penguin cpp se instala con `apt` en Debian, Ubuntu, Linux Mint y derivadas
-(amd64). `apt` instala también todo lo que necesita: gcc, g++, make, gdb,
+El paquete actual se valida en **Ubuntu 24.04 / base de Linux Mint 22, amd64**.
+Otras versiones de Debian, Ubuntu o derivadas deben satisfacer las dependencias;
+no se actualiza el sistema operativo automáticamente. Penguin se instala con `apt`. `apt` instala también todo lo que necesita: gcc, g++, make, gdb,
 astyle y clang-format. En amd64 el paquete incluye LLVM-MinGW/UCRT 20261104
 para Windows y APT instala el paquete privado `penguin-windows-runtime` y sus dependencias. Penguin detecta las
 herramientas incluidas sin pedir rutas.

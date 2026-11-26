@@ -109,14 +109,15 @@ jobs:
       - name: Windows console contract on Linux (included LLVM-MinGW UCRT and Wine)
         run: |
           export PATH="/usr/lib/penguin-cpp/windows-runtime/bin:$PATH"
+          export WINEDLLOVERRIDES="mscoree,mshtml="
           wine --version
           export WINEPREFIX="$RUNNER_TEMP/penguin-console-prefix"
           export WINEARCH=win64 WINEDEBUG=-all
           xvfb-run -a sh -ec '
             trap "wineserver -k; wineserver -w" EXIT
-            wineboot -u
+            timeout 120 wineboot -u
             wineserver -k
-            wineserver -w
+            timeout 30 wineserver -w
             timeout 240 python3 Source/Tests/WindowsGameTest/console_test.py \
               --cc /usr/lib/penguin-cpp/windows-toolchain/bin/x86_64-w64-mingw32-clang \
               --cxx /usr/lib/penguin-cpp/windows-toolchain/bin/x86_64-w64-mingw32-clang++ \

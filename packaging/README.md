@@ -165,3 +165,11 @@ APT. El motor WineHQ 11 reside en un paquete privado separado, con sus fuentes
 y recetas originales; no instala alternativas globales ni reemplaza el Wine del
 sistema. Actualizar Penguin incorpora el compilador y las dependencias necesarias.
 ARM Linux requiere validar otro motor de traducción y no recibe este binario x64.
+
+El runtime Linux parte de los binarios oficiales WineHQ 11 para Ubuntu noble;
+el lock fija cada entrada por SHA-256. Se conservan sus fuentes originales y
+recetas Debian en la release. Se omiten herramientas/archivos de desarrollo y
+se retiran únicamente las secciones de depuración PE para distribuir el motor
+por APT; código, recursos y datos de desenrollado se conservan. No instala
+alternativas globales. Las dependencias corresponden a Ubuntu 24.04/Mint 22;
+otras distribuciones requieren validación independiente.

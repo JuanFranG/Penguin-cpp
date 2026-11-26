@@ -52,7 +52,7 @@ bibliotecas arbitrarias todavía requieren una integración específica.
 
 ## Descargas y actualización
 
-- **Linux amd64:** paquete `.deb` y repositorio APT. El botón Actualizar ejecuta
+- **Linux amd64 / Ubuntu 24.04 y base de Mint 22:** paquetes `.deb` y repositorio APT. El botón Actualizar ejecuta
   `apt-get update` y actualiza `penguin-cpp`; APT resuelve sus dependencias.
   LLVM-MinGW/UCRT viene dentro del paquete; el WineHQ 11 privado y Make se
   instalan por APT. El motor no reemplaza el Wine del sistema. Para instalación
@@ -68,8 +68,10 @@ bibliotecas arbitrarias todavía requieren una integración específica.
   anterior deben instalar este PKG encima para evitar sus límites de permisos. No se requiere desinstalar ni borrar preferencias o prefix.
   Quien tenga la edición nativa y quiera añadir el entorno debe instalar el PKG
   completo encima. Cambiar el perfil de consola requiere volver a compilar.
-- El motor y sus fuentes fijadas conservan el perfil `penguin-windows-foss-1`.
+- El motor macOS y sus fuentes fijadas conservan el perfil `penguin-windows-foss-1`.
   Los componentes Apple GPTK/conversor, Microsoft opcional y FMOD siguen excluidos.
+  Linux utiliza WineHQ 11 fijado en `packaging/linux-runtime-lock.json`, con sus
+  fuentes exactas en `WineHQ-11.0.0.0-noble-SOURCES.tar.gz`.
 
 ## Validación
 

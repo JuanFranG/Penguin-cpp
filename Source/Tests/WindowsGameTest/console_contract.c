@@ -17,6 +17,11 @@ int main(int argc, char **argv) {
     char input[64];
     if (GetConsoleOutputCP() != (UINT)cp || GetConsoleCP() != (UINT)cp) return 10;
     if (GetFileType(out) != FILE_TYPE_CHAR) return 11;
+    {
+        wchar_t converted = 0;
+        int available = mbtowc(&converted, "\xc3\xb1", 2) == 2 && converted == 0x00f1;
+        printf("CRT_UTF8_AVAILABLE:%d\n", available); fflush(stdout);
+    }
     if (cp == 437) {
         const char box[] = { (char)218, (char)196, (char)191, ' ', (char)219, 0 };
         printf("PRINTF_BOX:%s\n", box); fflush(stdout);

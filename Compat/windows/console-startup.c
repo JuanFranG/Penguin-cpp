@@ -37,8 +37,8 @@ static void __attribute__((constructor(101))) penguin_console_startup(void)
     have_attributes = GetConsoleScreenBufferInfo(console_output, &info);
     if (have_attributes) original_attributes = info.wAttributes;
     /* Keep numeric formatting and all other locale categories unchanged. */
-    if (setlocale(LC_CTYPE, locale)) {
-        SetConsoleCP(PENGUIN_CONSOLE_CP);
-        SetConsoleOutputCP(PENGUIN_CONSOLE_CP);
-    }
+    setlocale(LC_CTYPE, locale);
+    /* Legacy MSVCRT has no UTF-8 locale; raw console I/O still needs its pages. */
+    SetConsoleCP(PENGUIN_CONSOLE_CP);
+    SetConsoleOutputCP(PENGUIN_CONSOLE_CP);
 }

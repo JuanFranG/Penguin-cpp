@@ -23,8 +23,11 @@ int main() {
     if (mbtowc(&converted, "\xda", 1) != 1 || converted != 0x250c) return 7;
 #elif PENGUIN_CONSOLE_CP == 1252
     if (mbtowc(&converted, "\xf1", 1) != 1 || converted != 0x00f1) return 7;
-#else
+#elif defined(_UCRT)
     if (mbtowc(&converted, "\xc3\xb1", 2) != 2 || converted != 0x00f1) return 7;
+#else
+    // System MinGW/MSVCRT lacks a UTF-8 locale; validate the Win32 UTF-8 API.
+    if (MultiByteToWideChar(CP_UTF8, 0, "\xc3\xb1", 2, &converted, 1) != 1 || converted != 0x00f1) return 7;
 #endif
 #endif
     Sleep(1); (void)_kbhit();

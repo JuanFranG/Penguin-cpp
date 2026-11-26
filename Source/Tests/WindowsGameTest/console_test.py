@@ -79,7 +79,7 @@ with tempfile.TemporaryDirectory(prefix='penguin-console-') as temporary:
                     # BSD sets PENDIN when returning to canonical input; it is queue state.
                     return re.sub(r'lflag=([0-9a-f]+)', lambda match: 'lflag=' + format(int(match[1], 16) & ~getattr(termios, 'PENDIN', 0), 'x'), value)
                 assert stable_mode(after) == stable_mode(before), ('launcher restores keyboard mode', before, after)
-                results.append(dict(codepage=cp, language=language, result='passed'))
+                results.append(dict(codepage=cp, language=language, result='passed', crt_utf8_available='CRT_UTF8_AVAILABLE:1' in visible))
                 print('[OK]', cp, language, 'characters, input, cursor, colors, explicit override and terminal restoration', flush=True)
             finally:
                 if process.poll() is None:

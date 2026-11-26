@@ -180,3 +180,5 @@ jobs:
           path: |
             Source/Tests/SafetyTest/build/screenshots/
             Source/Tests/SafetyTest/build/*build.log
+            Source/Tests/WindowsGameTest/build/console*.log
+            Source/Tests/WindowsGameTest/build/console-results.json

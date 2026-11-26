@@ -23,6 +23,7 @@ class InstallTest(unittest.TestCase):
                 compat.mkdir(parents=True)
                 (compat/'environment.json').write_text('{}')
 
+            if failure == 'privilege': previous.chmod(0o555)
             scripts = {
                 'uname': 'if [ "$1" = -s ]; then echo Darwin; else echo arm64; fi',
                 'sw_vers': 'if [ "$FAILURE" = oldmac ]; then echo 15.7; else echo 26.0; fi',
@@ -33,6 +34,7 @@ class InstallTest(unittest.TestCase):
                 'ditto': 'if [ "$FAILURE" = copy ]; then mkdir -p "$2"; exit 1; fi; /bin/cp -R "$1" "$2"',
                 'mv': r'case "$1" in */Penguin\ cpp.app) if [ "$FAILURE" = rename ]; then exit 1; fi;; esac; exec /bin/mv "$@"',
                 'xcode-select': 'exit 0',
+                'sudo': 'exit 1',
             }
             for name, body in scripts.items():
                 path = tools / name
@@ -50,6 +52,7 @@ class InstallTest(unittest.TestCase):
                 self.assertIn('Penguin-cpp-0.2.3-COMPLETE-UNSIGNED.dmg', result.stdout)
                 self.assertTrue((previous/'Contents/Resources/Compat/windows/environment.json').is_file())
 
+    def test_cancel_admin_authorization_preserves_old_app(self): self.run_case('privilege')
     def test_success(self): self.run_case('')
     def test_complete_update_uses_complete_asset(self): self.run_case('', complete=True)
     def test_partial_copy_keeps_old_app(self): self.run_case('copy')

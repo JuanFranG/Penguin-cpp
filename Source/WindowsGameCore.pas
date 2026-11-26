@@ -5,7 +5,9 @@ interface
 uses Classes, SysUtils, IniFiles;
 type
   TCompatibilityMode = (cmAutomatic, cmNative, cmWindows);
+  TWindowsConsoleProfile = (wcUTF8, wcOEM437, wcANSI1252, wcProgram);
   TWindowsGameConfig = record
+    ConsoleProfile: TWindowsConsoleProfile;
     Mode: TCompatibilityMode;
     DataDirectory: String;
     Enabled, UsesGPTK: Boolean;
@@ -21,8 +23,12 @@ procedure WriteWindowsGameConfig(Ini: TCustomIniFile; const Config: TWindowsGame
 function FileNeedsWindows(const FileName: String; IncludeDirs: TStrings = nil): Boolean;
 function WindowsMakeProgram(const Config: TWindowsGameConfig): String;
 function WindowsDefaultPrefix(const UserDataDirectory: String): String;
+function WindowsPrefixIsReady(const Prefix: String): Boolean;
+function WindowsPrefixNeedsRecovery(const Prefix: String): Boolean;
+function PrepareManagedWindowsPrefix(const UserDataDirectory: String; out Backup: String): String;
 function WindowsRuntimeCommand(const Config: TWindowsGameConfig; const Prefix: String;
   Command: TStrings): TWindowsGameError;
+procedure WrapWindowsConsoleCommand(Command: TStrings);
 function WindowsGameErrorText(Error: TWindowsGameError): String;
 function HasArm64MachO(const FileName: String): Boolean;
 function WindowsPEMachine(const FileName: String): Word;
@@ -120,6 +126,7 @@ var Root: String;
 {$IFNDEF DARWIN} C: String; {$ENDIF}
 begin
   Config.Mode := cmAutomatic; Config.DataDirectory := IncludeTrailingPathDelimiter(DataDirectory);
+  Config.ConsoleProfile := wcUTF8;
   Config.Enabled := False; Config.UsesGPTK := False;
   Config.Toolchain := ''; Config.Runner := ''; Config.Prefix := '';
   Root := IncludeTrailingPathDelimiter(DataDirectory) + 'Compat/windows/';
@@ -179,6 +186,7 @@ begin
   if Ini.ReadString(Section, 'Runner', '') <> '' then
     Config.Runner := Ini.ReadString(Section, 'Runner', Config.Runner);
   Config.Prefix := Ini.ReadString(Section, 'Prefix', Config.Prefix);
+  Config.ConsoleProfile := TWindowsConsoleProfile(EnsureRange(Ini.ReadInteger(Section, 'ConsoleProfile', Ord(Config.ConsoleProfile)), Ord(Low(TWindowsConsoleProfile)), Ord(High(TWindowsConsoleProfile))));
 end;
 procedure WriteWindowsGameConfig(Ini: TCustomIniFile; const Config: TWindowsGameConfig);
 begin
@@ -192,7 +200,20 @@ begin
     Ini.DeleteKey(Section, 'Runner')
   else Ini.WriteString(Section, 'Runner', Config.Runner);
   Ini.WriteString(Section, 'Prefix', Config.Prefix);
+  Ini.WriteInteger(Section, 'ConsoleProfile', Ord(Config.ConsoleProfile));
 end;
+procedure WrapWindowsConsoleCommand(Command: TStrings);
+const Script =
+  'saved=$(stty -g 2>/dev/null) || saved=; ' +
+  'restore() { printf "\033[0m"; if [ -n "$saved" ]; then stty "$saved" 2>/dev/null; fi; }; ' +
+  'trap restore EXIT; trap ''exit 130'' INT; trap ''exit 143'' TERM; ' +
+  'if [ -n "$saved" ]; then stty raw -echo 2>/dev/null || exit 1; fi; ' +
+  '"$@"; code=$?; exit "$code"';
+begin
+  Command.Insert(0, 'penguin-windows-console'); Command.Insert(0, Script);
+  Command.Insert(0, '-c'); Command.Insert(0, '/bin/sh');
+end;
+
 function WindowsGameErrorText(Error: TWindowsGameError): String;
 const Messages: array[TWindowsGameError] of String = (
   '', 'Select an installed LLVM-MinGW or MinGW-w64 toolchain.',
@@ -294,6 +315,31 @@ begin
 end;
 function WindowsDefaultPrefix(const UserDataDirectory: String): String;
 begin Result := IncludeTrailingPathDelimiter(UserDataDirectory) + 'Compatibility/windows/prefix' end;
+
+function WindowsPrefixIsReady(const Prefix: String): Boolean;
+begin Result := FileExists(Prefix + '/system.reg') and DirectoryExists(Prefix + '/drive_c') end;
+
+function WindowsPrefixNeedsRecovery(const Prefix: String): Boolean;
+var Info: Stat;
+begin
+  if (fpLStat(Prefix, Info) = 0) and not fpS_ISDIR(Info.st_mode) then
+    raise EInOutError.Create('Managed runtime folder is not a directory: ' + Prefix);
+  Result := DirectoryExists(Prefix) and not EmptyDirectory(Prefix) and not WindowsPrefixIsReady(Prefix);
+end;
+
+function PrepareManagedWindowsPrefix(const UserDataDirectory: String; out Backup: String): String;
+var ID: TGUID;
+begin
+  Result := WindowsDefaultPrefix(UserDataDirectory); Backup := '';
+  // Only the app's default private prefix is managed. Never follow a custom link.
+  if WindowsPrefixNeedsRecovery(Result) then begin
+    if CreateGUID(ID) <> 0 then raise EInOutError.Create('Cannot reserve recovery folder');
+    Backup := Result + '.incomplete-' + GUIDToString(ID);
+    if not RenameFile(Result, Backup) then RaiseLastOSError;
+  end;
+  if not ForceDirectories(Result) then RaiseLastOSError;
+  if fpChmod(Result, &700) <> 0 then RaiseLastOSError;
+end;
 function WindowsRuntimeCommand(const Config: TWindowsGameConfig; const Prefix: String;
   Command: TStrings): TWindowsGameError;
 var P, Root: String;
@@ -312,7 +358,7 @@ begin
   if Prefix[1] <> PathDelim then Exit(wgPrefixInvalid);
   P := ExcludeTrailingPathDelimiter(ExpandFileName(Prefix));
   if (P = '') or (P = PathDelim) or (P = ExcludeTrailingPathDelimiter(GetUserDir)) then Exit(wgPrefixInvalid);
-  if not EmptyDirectory(P) and not (FileExists(P + '/system.reg') and DirectoryExists(P + '/drive_c')) then Exit(wgPrefixInvalid);
+  if not EmptyDirectory(P) and not WindowsPrefixIsReady(P) then Exit(wgPrefixInvalid);
   Command.Add('/usr/bin/env'); Command.Add('WINEPREFIX=' + P);
   Command.Add('WINEDEBUG=-all'); Command.Add('WINEDLLOVERRIDES=mscoree,mshtml=');
   Root := ExpandFileName(ExtractFilePath(Config.Runner) + '..');

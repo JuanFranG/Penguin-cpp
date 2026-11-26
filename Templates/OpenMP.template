@@ -3,7 +3,7 @@ ver=1
 Name=OpenMP
 Icon=File Management.ico
 svg=File Management.svg
-Description=A OpenMP multithreading example
+Description=OpenMP example; requires a compiler and matching OpenMP runtime (not included with Apple clang)
 Category=Console
 
 [Unit0]

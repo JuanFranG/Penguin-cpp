@@ -320,15 +320,13 @@ begin
     Exit;
 
   // Ask user if he wants to save
-  if Editor.Text.Modified and not Editor.Text.Text.IsEmpty then begin
+  if Editor.Text.Modified and (not Editor.New or not Editor.Text.Text.IsEmpty) then begin
     case MessageDlg(Format(Lang[ID_MSG_ASKSAVECLOSE], [Editor.FileName]), mtConfirmation, mbYesNoCancel, 0) of
       mrYes:
-        if not Editor.Save then
-          Exit;
-      mrCancel:
-      begin
-        Exit; // stop closing
-      end;
+        if not Editor.Save then Exit;
+      mrNo: ; // Explicitly discard.
+    else
+      Exit; // Cancellation or an unavailable native dialog never discards edits.
     end;
   end;
   

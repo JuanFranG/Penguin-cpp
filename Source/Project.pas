@@ -22,7 +22,7 @@ unit Project;
 interface
 
 uses
-  WindowsGameCore, devPlatform, IniFiles, SysUtils, System.UITypes, Dialogs, ComCtrls, Editor, Contnrs, SynExportHTML, Classes, Controls,
+  FileTransactions, WindowsGameCore, devPlatform, IniFiles, SysUtils, System.UITypes, Dialogs, ComCtrls, Editor, Contnrs, SynExportHTML, Classes, Controls,
   Version, Forms, Templates, ProjectTypes, LCLIntf, LCLType;
 
 type
@@ -86,7 +86,7 @@ type
   private
     fUnits: TUnitList;
     fOptions: TProjOptions;
-    finiFile: TMemIniFile;
+    finiFile: TAtomicIniFile;
     fFileName: String;
     fName: String;
     fNode: TTreeNode;
@@ -121,14 +121,13 @@ type
     function OpenUnit(index: integer): TEditor;
     procedure CloseUnit(index: integer);
     procedure SaveUnitAs(i: integer; sFileName: String); // save single [UnitX]
-    procedure SaveAll; // save [Project] and  all [UnitX]
+    function SaveAll(const NewFileName: String = ''): Boolean;
     procedure LoadLayout; // load all [UnitX]
     procedure LoadUnitLayout(e: TEditor; Index: integer); // load single [UnitX] cursor positions
     procedure SaveLayout; // save all [UnitX]
     procedure SaveUnitLayout(e: TEditor; Index: integer); // save single [UnitX] cursor positions
     function MakeProjectNode: TTreeNode;
     function MakeNewFileNode(const s: String; IsFolder: boolean; NewParent: TTreeNode): TTreeNode;
-    procedure BuildPrivateResource(ForceSave: boolean = False);
     // What the project runs besides gcc, one line each for the user, and the
     // same as raw text (to remember that the user trusted exactly that)
     procedure ListOwnCommands(Lines: TStrings; out Raw: String);
@@ -145,13 +144,14 @@ type
     function ListUnitStr(Separator: char): String;
     procedure ExportToHTML;
     function ShowOptions: Integer;
+    function OptionsCopy: TProject;
+    constructor CreateOptionsCopy(Source: TProject);
     function AssignTemplate(const aFileName: String; aTemplate: TTemplate): boolean;
     function FolderNodeFromName(const name: String): TTreeNode;
     procedure CreateFolderNodes;
     procedure UpdateNodeIndexes;
     procedure SetNodeValue(value: TTreeNode);
     procedure CheckProjectFileForUpdate;
-    procedure IncrementBuildNumber;
     function GetCompilerOption(const OptionString: String): Integer;
     procedure SetCompilerOption(const OptionString: String; Value: Integer);
     procedure SaveToLog;
@@ -184,20 +184,16 @@ begin
 end;
 
 function TProjUnit.Save: boolean;
-var
-  workeditor: TSynEdit;
 begin
   MainForm.FileMonitor.BeginUpdate;
   try
     try
       result := true;
       if not Assigned(fEditor) and not FileExists(fFileName) then begin // file is neither open, nor saved
-        workeditor := TSynEdit.Create(nil);
-        workeditor.Lines.SaveToFile(fFileName);
-        workeditor.Free;
-      end else if Assigned(fEditor) and Modified then begin
+        AtomicWriteFile(fFileName, '');
+      end else if Assigned(fEditor) and (Modified or fEditor.New) then begin
         result := fEditor.Save;
-        if FileExists(fEditor.FileName) then
+        if Result and FileExists(fEditor.FileName) then
           FileSetDate(fEditor.FileName, DateTimeToFileDate(Now));
       end;
     except
@@ -260,7 +256,7 @@ begin
   fFolderNodes := TObjectList.Create(false);
   fUnits := TUnitList.Create;
   fFileName := nFileName;
-  finiFile := TMemIniFile.Create(fFileName);
+  finiFile := TAtomicIniFile.Create(fFileName);
   fOptions := TProjOptions.Create;
   if nName = DEV_INTERNAL_OPEN then
     Open
@@ -466,229 +462,6 @@ begin
     Add(Lang[ID_PRJRUNS_ARGS], fOptions.CmdLineArgs);
 end;
 
-procedure TProject.BuildPrivateResource(ForceSave: boolean = False);
-var
-  ResFile, Original: TStringList;
-  Res, Def, Icon: String;
-  comp, i: Integer;
-begin
-  // The private resource script holds what Windows puts inside a .exe (icon,
-  // version information, XP theme manifest), compiled with windres. Linux
-  // programs have none of that: no script, and the Makefile has no RES.
-  fOptions.PrivateResource := '';
-  Exit;
-
-  comp := 0;
-  for i := 0 to Units.Count - 1 do
-    if GetFileTyp(Units[i].FileName) = utResSrc then
-      if Units[i].Compile then
-        Inc(comp);
-
-  // if project has no other resources included
-  // and does not have an icon
-  // and does not include the XP style manifest
-  // and does not include version info
-  // then do not create a private resource file
-  if (comp = 0) and (not Options.SupportXPThemes) and (not Options.IncludeVersionInfo) and (Options.Icon = '') then begin
-    fOptions.PrivateResource := '';
-    exit;
-  end;
-
-  // change private resource from <project_filename>.res
-  // to <project_filename>_private.res
-  //
-  // in many cases (like in importing a MSVC project)
-  // the project's resource file has already the
-  // <project_filename>.res filename.
-  if Length(Options.PrivateResource) > 0 then begin
-    Res := GetRealPath(Options.PrivateResource, Directory);
-    if ChangeFileExt(Res, DEV_EXT) = FileName then
-      Res := ChangeFileExt(FileName, '_private' + RC_EXT);
-  end else
-    Res := ChangeFileExt(FileName, '_private' + RC_EXT);
-  Res := StringReplace(ExtractRelativePath(FileName, Res), ' ', '_', [rfReplaceAll]);
-
-  // don't run the private resource file and header if not modified,
-  // unless ForceSave is true
-  if (not ForceSave) and FileExists(Res) and FileExists(ChangeFileExt(Res, H_EXT)) and not Modified then
-    Exit;
-
-  ResFile := TStringList.Create;
-  ResFile.Add('/* THIS FILE WILL BE OVERWRITTEN BY DEV-C++ */');
-  ResFile.Add('/* DO NOT EDIT! */');
-  ResFile.Add('');
-
-  if Options.IncludeVersionInfo then begin
-    ResFile.Add('#include <windows.h> // include for version info constants');
-    ResFile.Add('');
-  end;
-
-  for i := 0 to Units.Count - 1 do
-    if GetFileTyp(Units[i].FileName) = utResSrc then
-      if Units[i].Compile then
-        ResFile.Add('#include "' + GenMakePath(ExtractRelativePath(Directory, Units[i].FileName), False, False) + '"');
-
-  if Length(Options.Icon) > 0 then begin
-    ResFile.Add('');
-    Icon := GetRealPath(Options.Icon, Directory);
-    if FileExists(Icon) then begin
-      Icon := ExtractRelativePath(FileName, Icon);
-      Icon := StringReplace(Icon, '\', '/', [rfReplaceAll]);
-      ResFile.Add('A ICON "' + Icon + '"')
-    end else
-      fOptions.Icon := '';
-  end;
-
-  if fOptions.SupportXPThemes then begin
-    ResFile.Add('');
-    ResFile.Add('//');
-    ResFile.Add('// SUPPORT FOR WINDOWS XP THEMES:');
-    ResFile.Add('// THIS WILL MAKE THE PROGRAM USE THE COMMON CONTROLS');
-    ResFile.Add('// LIBRARY VERSION 6.0 (IF IT IS AVAILABLE)');
-    ResFile.Add('//');
-    if (Options.ExeOutput <> '') then
-      ResFile.Add('1 24 "' + GenMakePath2(IncludeTrailingPathDelimiter(Options.ExeOutput) + ExtractFileName(Executable))
-        + '.Manifest"')
-    else
-      ResFile.Add('1 24 "' + ExtractFileName(Executable) + '.Manifest"');
-  end;
-
-  if Options.IncludeVersionInfo then begin
-    ResFile.Add('');
-    ResFile.Add('//');
-    ResFile.Add('// TO CHANGE VERSION INFORMATION, EDIT PROJECT OPTIONS...');
-    ResFile.Add('//');
-    ResFile.Add('1 VERSIONINFO');
-    ResFile.Add('FILEVERSION ' + Format('%d,%d,%d,%d', [Options.VersionInfo.Major, Options.VersionInfo.Minor,
-      Options.VersionInfo.Release, Options.VersionInfo.Build]));
-    ResFile.Add('PRODUCTVERSION ' + Format('%d,%d,%d,%d', [Options.VersionInfo.Major, Options.VersionInfo.Minor,
-      Options.VersionInfo.Release, Options.VersionInfo.Build]));
-    case Options.typ of
-      dptGUI,
-        dptCon: ResFile.Add('FILETYPE VFT_APP');
-      dptStat: ResFile.Add('FILETYPE VFT_STATIC_LIB');
-      dptDyn: ResFile.Add('FILETYPE VFT_DLL');
-    end;
-    ResFile.Add('{');
-    ResFile.Add('  BLOCK "StringFileInfo"');
-    ResFile.Add('  {');
-    ResFile.Add('    BLOCK "' + Format('%4.4x%4.4x', [fOptions.VersionInfo.LanguageID, fOptions.VersionInfo.CharsetID])
-      +
-      '"');
-    ResFile.Add('    {');
-    ResFile.Add('      VALUE "CompanyName", "' + fOptions.VersionInfo.CompanyName + '"');
-    ResFile.Add('      VALUE "FileVersion", "' + fOptions.VersionInfo.FileVersion + '"');
-    ResFile.Add('      VALUE "FileDescription", "' + fOptions.VersionInfo.FileDescription + '"');
-    ResFile.Add('      VALUE "InternalName", "' + fOptions.VersionInfo.InternalName + '"');
-    ResFile.Add('      VALUE "LegalCopyright", "' + fOptions.VersionInfo.LegalCopyright + '"');
-    ResFile.Add('      VALUE "LegalTrademarks", "' + fOptions.VersionInfo.LegalTrademarks + '"');
-    ResFile.Add('      VALUE "OriginalFilename", "' + fOptions.VersionInfo.OriginalFilename + '"');
-    ResFile.Add('      VALUE "ProductName", "' + fOptions.VersionInfo.ProductName + '"');
-    ResFile.Add('      VALUE "ProductVersion", "' + fOptions.VersionInfo.ProductVersion + '"');
-    ResFile.Add('    }');
-    ResFile.Add('  }');
-
-    // additional block for windows 95->NT
-    ResFile.Add('  BLOCK "VarFileInfo"');
-    ResFile.Add('  {');
-    ResFile.Add('    VALUE "Translation", ' + Format('0x%4.4x, %4.4d', [fOptions.VersionInfo.LanguageID,
-      fOptions.VersionInfo.CharsetID]));
-    ResFile.Add('  }');
-
-    ResFile.Add('}');
-  end;
-
-  Res := GetRealPath(Res, Directory);
-  if ResFile.Count > 3 then begin
-    if FileExists(Res) and not ForceSave then begin
-      Original := TStringList.Create;
-      Original.LoadFromFile(Res);
-      if CompareStr(Original.Text, ResFile.Text) <> 0 then begin
-        ResFile.SaveToFile(Res);
-      end;
-      Original.Free;
-    end else begin
-      ResFile.SaveToFile(Res);
-    end;
-    fOptions.PrivateResource := ExtractRelativePath(Directory, Res);
-  end else begin
-    if FileExists(Res) then
-      DeleteFile(PChar(Res));
-    Res := ChangeFileExt(Res, RES_EXT);
-    if FileExists(Res) then
-      DeleteFile(PChar(Res));
-    fOptions.PrivateResource := '';
-  end;
-  if FileExists(Res) then
-    FileSetDate(Res, DateTimeToFileDate(Now)); // fix the "Clock skew detected" warning ;)
-
-  // create XP manifest
-  if fOptions.SupportXPThemes then begin
-    ResFile.Clear;
-    ResFile.Add('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>');
-    ResFile.Add('<assembly');
-    ResFile.Add('  xmlns="urn:schemas-microsoft-com:asm.v1"');
-    ResFile.Add('  manifestVersion="1.0">');
-    ResFile.Add('<assemblyIdentity');
-    ResFile.Add('    name="DevCpp.Apps.' + StringReplace(Name, ' ', '_', [rfReplaceAll]) + '"');
-    ResFile.Add('    processorArchitecture="*"');
-    ResFile.Add('    version="1.0.0.0"');
-    ResFile.Add('    type="win32"/>');
-    ResFile.Add('<description>' + Name + '</description>');
-    ResFile.Add('<dependency>');
-    ResFile.Add('    <dependentAssembly>');
-    ResFile.Add('        <assemblyIdentity');
-    ResFile.Add('            type="win32"');
-    ResFile.Add('            name="Microsoft.Windows.Common-Controls"');
-    ResFile.Add('            version="6.0.0.0"');
-    ResFile.Add('            processorArchitecture="*"');
-    ResFile.Add('            publicKeyToken="6595b64144ccf1df"');
-    ResFile.Add('            language="*"');
-    ResFile.Add('        />');
-    ResFile.Add('    </dependentAssembly>');
-    ResFile.Add('</dependency>');
-    ResFile.Add('</assembly>');
-    ResFile.SaveToFile(Executable + '.Manifest');
-    FileSetDate(Executable + '.Manifest', DateTimeToFileDate(Now)); // fix the "Clock skew detected" warning ;)
-  end else if FileExists(Executable + '.Manifest') then
-    DeleteFile(PChar(Executable + '.Manifest'));
-
-  // create private header file
-  Res := ChangeFileExt(Res, H_EXT);
-  ResFile.Clear;
-  Def := StringReplace(ExtractFilename(UpperCase(Res)), '.', '_', [rfReplaceAll]);
-  ResFile.Add('/* THIS FILE WILL BE OVERWRITTEN BY DEV-C++ */');
-  ResFile.Add('/* DO NOT EDIT ! */');
-  ResFile.Add('');
-  ResFile.Add('#ifndef ' + Def);
-  ResFile.Add('#define ' + Def);
-  ResFile.Add('');
-  ResFile.Add('/* VERSION DEFINITIONS */');
-  ResFile.Add('#define VER_STRING'#9 + Format('"%d.%d.%d.%d"', [fOptions.VersionInfo.Major, fOptions.VersionInfo.Minor,
-    fOptions.VersionInfo.Release, fOptions.VersionInfo.Build]));
-  ResFile.Add('#define VER_MAJOR'#9 + IntToStr(fOptions.VersionInfo.Major));
-  ResFile.Add('#define VER_MINOR'#9 + IntToStr(fOptions.VersionInfo.Minor));
-  ResFile.Add('#define VER_RELEASE'#9 + IntToStr(fOptions.VersionInfo.Release));
-  ResFile.Add('#define VER_BUILD'#9 + IntToStr(fOptions.VersionInfo.Build));
-  ResFile.Add('#define COMPANY_NAME'#9'"' + fOptions.VersionInfo.CompanyName + '"');
-  ResFile.Add('#define FILE_VERSION'#9'"' + fOptions.VersionInfo.FileVersion + '"');
-  ResFile.Add('#define FILE_DESCRIPTION'#9'"' + fOptions.VersionInfo.FileDescription + '"');
-  ResFile.Add('#define INTERNAL_NAME'#9'"' + fOptions.VersionInfo.InternalName + '"');
-  ResFile.Add('#define LEGAL_COPYRIGHT'#9'"' + fOptions.VersionInfo.LegalCopyright + '"');
-  ResFile.Add('#define LEGAL_TRADEMARKS'#9'"' + fOptions.VersionInfo.LegalTrademarks + '"');
-  ResFile.Add('#define ORIGINAL_FILENAME'#9'"' + fOptions.VersionInfo.OriginalFilename + '"');
-  ResFile.Add('#define PRODUCT_NAME'#9'"' + fOptions.VersionInfo.ProductName + '"');
-  ResFile.Add('#define PRODUCT_VERSION'#9'"' + fOptions.VersionInfo.ProductVersion + '"');
-  ResFile.Add('');
-  ResFile.Add('#endif /*' + Def + '*/');
-  ResFile.SaveToFile(Res);
-
-  if FileExists(Res) then
-    FileSetDate(Res, DateTimeToFileDate(Now)); // fix the "Clock skew detected" warning ;)
-
-  ResFile.Free;
-end;
-
 function TProject.NewUnit(NewProject: boolean; ParentNode: TTreeNode; const CustomFileName: String): integer;
 var
   NewUnit: TProjUnit;
@@ -885,7 +658,11 @@ begin
 end;
 
 procedure TProject.SaveOptions;
+var IconPath: String;
 begin
+  IconPath := fOptions.Icon;
+  if (IconPath <> '') and (IconPath[1] = PathDelim) then
+    IconPath := ExtractRelativePath(Directory, IconPath);
   WriteWindowsGameConfig(finiFile, fOptions.WindowsGame);
   with finiFile do begin
     WriteString('Project', 'FileName', ExtractRelativePath(Directory, fFileName));
@@ -902,7 +679,7 @@ begin
     WriteString('Project', 'CppCompiler', fOptions.CppCompilerCmd);
     WriteString('Project', 'Linker', fOptions.LinkerCmd);
     WriteBool('Project', 'IsCpp', fOptions.UseGpp);
-    WriteString('Project', 'Icon', ExtractRelativePath(Directory, fOptions.Icon));
+    WriteString('Project', 'Icon', IconPath);
     WriteString('Project', 'ExeOutput', fOptions.ExeOutput);
     WriteString('Project', 'ObjectOutput', fOptions.ObjectOutput);
     WriteString('Project', 'LogOutput', fOptions.LogOutput);
@@ -955,31 +732,13 @@ function TProject.SaveUnits: Boolean;
 var
   Count: integer;
   idx: integer;
-  rd_only: boolean;
 begin
   Result := False;
   Count := 0;
-  rd_only := false;
   for idx := 0 to pred(fUnits.Count) do begin
     with fUnits[idx] do begin
 
-{$WARN SYMBOL_PLATFORM OFF}
-      if fUnits[idx].Modified and FileExists(fUnits[idx].FileName) and (FileGetAttr(fUnits[idx].FileName) and faReadOnly
-        <>
-        0) then begin
-        // file is read-only
-        if MessageDlg(Format(Lang[ID_MSG_FILEISREADONLY], [fUnits[idx].FileName]), mtConfirmation, [mbYes, mbNo], 0) =
-          mrNo then
-          rd_only := false
-        else if FileSetAttr(fUnits[idx].FileName, FileGetAttr(fUnits[idx].FileName) - faReadOnly) <> 0 then begin
-          MessageDlg(Format(Lang[ID_MSG_FILEREADONLYERROR], [fUnits[idx].FileName]), mtError, [mbOk], 0);
-          rd_only := false;
-        end;
-      end;
-{$WARN SYMBOL_PLATFORM ON}
-
-      if not rd_only and (not fUnits[idx].Save) and New then
-        Exit;
+      if not fUnits[idx].Save then Exit;
 
       // saved new file or an existing file add to project file
       if not (New and Modified) then begin
@@ -1199,14 +958,14 @@ end;
 
 procedure TProject.SaveLayout;
 var
-  layIni: TIniFile;
+  layIni: TAtomicIniFile;
   I: Integer;
   sl: TStringList;
   S: String;
   e, e2: TEditor;
 begin
   s := ChangeFileExt(Filename, '.layout');
-  layIni := TIniFile.Create(s);
+  layIni := TAtomicIniFile.Create(s);
   try
     sl := TStringList.Create;
     try
@@ -1249,6 +1008,7 @@ begin
         fIniFile.DeleteKey('Unit' + IntToStr(I + 1), 'TopLine');
         fIniFile.DeleteKey('Unit' + IntToStr(I + 1), 'LeftChar');
       end;
+    layIni.UpdateFile;
   finally
     layIni.Free;
   end;
@@ -1256,9 +1016,9 @@ end;
 
 procedure TProject.SaveUnitLayout(e: TEditor; Index: integer);
 var
-  layIni: TIniFile;
+  layIni: TAtomicIniFile;
 begin
-  layIni := TIniFile.Create(ChangeFileExt(Filename, '.layout'));
+  layIni := TAtomicIniFile.Create(ChangeFileExt(Filename, '.layout'));
   try
     if Assigned(e) then begin
       layIni.WriteInteger('Editor_' + IntToStr(Index), 'CursorCol', e.Text.CaretX);
@@ -1268,21 +1028,39 @@ begin
       //   layIni.WriteBool('Editor_' + IntToStr(Index), 'PageControl', e.TabSheet.PageControl =
       //     MainForm.EditorList.LeftPageControl);
     end;
+    layIni.UpdateFile;
   finally
     layIni.Free;
   end;
 end;
 
-procedure TProject.SaveAll;
+function TProject.SaveAll(const NewFileName: String): Boolean;
+var OldName: String;
 begin
-  // Save to memory file
-  if not SaveUnits then // update [Unitx] list
-    Exit;
-  SaveOptions; // update other data, and save to disk
-  SaveLayout; // save current opened files, and which is "active".
-
-  // We have saved everything to disk, so mark unmodified
-  SetModified(false);
+  Result := False;
+  OldName := fFileName;
+  try
+    if NewFileName <> '' then begin
+      fFileName := ExpandFileName(NewFileName);
+      fIniFile.Rename(fFileName, False);
+    end;
+    try
+      if not SaveUnits then Exit;
+      SaveLayout;
+      SaveOptions;
+      SetModified(False);
+      Result := True;
+    except
+      on E: Exception do
+        MessageDlg(Format(Lang[ID_ERR_SAVEFILE], [fFileName]) + LineEnding + E.Message,
+          mtError, [mbOK], 0);
+    end;
+  finally
+    if not Result then begin
+      fFileName := OldName;
+      fIniFile.Rename(OldName, False);
+    end;
+  end;
 end;
 
 function TProject.RemoveFolder(Node: TTreeNode): boolean;
@@ -1526,11 +1304,8 @@ end;
 
 procedure TProject.SetModified(value: boolean);
 begin
-  // only mark modified if *not* read-only
-{$WARN SYMBOL_PLATFORM OFF}
-  if not FileExists(FileName) or (FileExists(FileName) and (FileGetAttr(FileName) and faReadOnly = 0)) then
-{$WARN SYMBOL_PLATFORM ON}
-    fModified := value;
+  // Dirty state describes memory, including changes to a read-only project.
+  fModified := value;
 end;
 
 procedure TProject.SetNodeValue(value: TTreeNode);
@@ -1651,9 +1426,29 @@ begin
   end;
 end;
 
+constructor TProject.CreateOptionsCopy(Source: TProject);
+var I: Integer; U, Original: TProjUnit;
+begin
+  inherited Create;
+  fFileName := Source.FileName; fName := Source.Name;
+  fFolders := TStringList.Create; fFolders.Assign(Source.fFolders);
+  fFolderNodes := TObjectList.Create(False); fUnits := TUnitList.Create;
+  fIniFile := TAtomicIniFile.Create(fFileName);
+  fOptions := TProjOptions.Create; fOptions.Assign(Source.Options);
+  for I := 0 to Source.Units.Count-1 do begin
+    Original := Source.Units[I]; U := TProjUnit.Create(Self);
+    U.FileName := Original.FileName; U.Folder := Original.Folder;
+    U.Compile := Original.Compile; U.CompileCpp := Original.CompileCpp; U.Link := Original.Link;
+    U.Priority := Original.Priority; U.OverrideBuildCmd := Original.OverrideBuildCmd;
+    U.BuildCmd := Original.BuildCmd;
+    fUnits.Add(U);
+  end;
+end;
+
+function TProject.OptionsCopy: TProject;
+begin Result := TProject.CreateOptionsCopy(Self) end;
+
 function TProject.ShowOptions: Integer;
-var
-  IconFileName: String;
 begin
   with TProjectOptionsFrm.Create(MainForm) do try
 
@@ -1674,13 +1469,6 @@ begin
       SortUnitsByPriority;
       RebuildNodes;
 
-      // Copy icon to project directoy
-      IconFileName := ChangeFileExt(ExtractFileName(FileName), '.ico');
-      if not SameText(IconFileName, fOptions.Icon) and (fOptions.Icon <> '') then begin
-        CopyFile(fOptions.Icon, ExpandFileto(IconFileName, Directory));
-        fOptions.Icon := IconFileName;
-      end;
-
       // Update the project's main node caption
       if edProjectName.Text <> '' then begin
         fName := edProjectName.Text;
@@ -1688,11 +1476,8 @@ begin
       end;
     end;
 
-    // Discard changes, even when canceling
-    if (cmbCompiler.ItemIndex < devCompilerSets.Count) and (cmbCompiler.ItemIndex >= 0) then
-      devCompilerSets.LoadSet(cmbCompiler.ItemIndex);
   finally
-    Close;
+    Free;
   end;
 end;
 
@@ -1710,7 +1495,7 @@ begin
       if Assigned(finiFile) then
         finiFile.Rename(aFileName, false)
       else
-        fIniFile := TMemIniFile.Create(aFileName);
+        fIniFile := TAtomicIniFile.Create(aFileName);
       NewUnit(FALSE, nil);
       with fUnits[fUnits.Count - 1] do begin
         Editor := MainForm.EditorList.NewEditor(FileName, True, True);
@@ -1724,7 +1509,7 @@ begin
     if Assigned(finiFile) then
       finiFile.Rename(aFileName, false)
     else
-      fIniFile := TMemIniFile.Create(aFileName);
+      fIniFile := TAtomicIniFile.Create(aFileName);
     fOptions.Assign(aTemplate.Options);
 
     // Copy icon to project directory
@@ -1918,25 +1703,26 @@ var
   oldRes: String;
   sl: TStringList;
   i, uCount: integer;
-  cnvt: boolean;
 begin
-  cnvt := False;
   uCount := fIniFile.ReadInteger('Project', 'UnitCount', 0);
 
-  // check if using old way to store resources and fix it
+  // Normalize legacy resource entries in memory; opening never writes the project.
   oldRes := finifile.ReadString('Project', 'Resources', '');
   if oldRes <> '' then begin
-    CopyFile(Filename, FileName + '.bak');
     sl := TStringList.Create;
     try
       sl.Delimiter := ';';
+      sl.StrictDelimiter := True;
       sl.DelimitedText := oldRes;
       for i := 0 to sl.Count - 1 do begin
-        finifile.WriteString(IntToStr(uCount + i), 'Filename', sl[i]);
-        finifile.WriteString(IntToStr(uCount + i), 'Folder', 'Resources');
-        finifile.WriteBool(IntToStr(uCount + i), 'Compile', True);
+        if Trim(sl[i]) = '' then Continue;
+        Inc(uCount);
+        finifile.WriteString('Unit' + IntToStr(uCount), 'FileName', sl[i]);
+        finifile.WriteString('Unit' + IntToStr(uCount), 'Folder', 'Resources');
+        finifile.WriteBool('Unit' + IntToStr(uCount), 'Compile', True);
+        finifile.WriteBool('Unit' + IntToStr(uCount), 'Link', False);
       end;
-      fIniFile.WriteInteger('Project', 'UnitCount', uCount + sl.Count);
+      fIniFile.WriteInteger('Project', 'UnitCount', uCount);
       oldRes := finifile.ReadString('Project', 'Folders', '');
       if oldRes <> '' then
         oldRes := oldRes + ',Resources'
@@ -1947,7 +1733,6 @@ begin
     finally
       sl.Free;
     end;
-    cnvt := True;
   end;
 
   finifile.DeleteKey('Project', 'Resources');
@@ -1955,11 +1740,6 @@ begin
   finifile.DeleteKey('Project', 'Order');
   finifile.DeleteKey('Project', 'DebugInfo');
   finifile.DeleteKey('Project', 'ProfileInfo');
-
-  if cnvt then
-    MessageDlg('Your project was succesfully updated to a newer file format!'#13#10 +
-      'If something has gone wrong, we kept a backup-file: "' +
-      FileName + '.bak"...', mtInformation, [mbOk], 0);
 end;
 
 procedure TProject.SortUnitsByPriority;
@@ -1983,17 +1763,6 @@ begin
       Inc(I);
     end;
   until not Again;
-end;
-
-procedure TProject.IncrementBuildNumber;
-begin
-  Inc(fOptions.VersionInfo.Build);
-  fOptions.VersionInfo.FileVersion := Format('%d.%d.%d.%d', [fOptions.VersionInfo.Major, fOptions.VersionInfo.Minor,
-    fOptions.VersionInfo.Release, fOptions.VersionInfo.Build]);
-  if fOptions.VersionInfo.SyncProduct then
-    fOptions.VersionInfo.ProductVersion := Format('%d.%d.%d.%d', [fOptions.VersionInfo.Major,
-      fOptions.VersionInfo.Minor, fOptions.VersionInfo.Release, fOptions.VersionInfo.Build]);
-  SetModified(True);
 end;
 
 { TUnitList }

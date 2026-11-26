@@ -1,9 +1,9 @@
 [Template]
 ver=1
-Name=OpenGL
+Name=OpenGL (Windows / WGL)
 Icon=Pizza.ico
 svg=Pizza.svg
-Description=A basic OpenGL program
+Description=Windows-only WinAPI/WGL example; requires Windows compatibility mode and OpenGL support in the runtime
 Category=Multimedia
 
 [Unit0]

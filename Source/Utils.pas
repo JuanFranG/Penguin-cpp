@@ -102,10 +102,6 @@ function GenMakePath(const FileName: String; EscapeSpaces, EncloseInQuotes: Bool
 
 function GetRealPath(const BrokenFileName: String; const Directory: String = ''): String;
 
-function GetVersionString(const FileName: String): String;
-
-function GetAssociatedProgram(const Extension: String; var Filename, Description: String): boolean;
-
 function IsNumeric(const s: String): boolean;
 
 function CountChar(const s: String; c: Char): integer;
@@ -1088,22 +1084,6 @@ begin
     result := '"' + s + '"'
   else
     result := s;
-end;
-
-// added by mandrav 13 Sep 2002
-// returns the file version of the .exe specified by filename
-// in the form x.x.x.x
-
-function GetVersionString(const FileName: String): String;
-begin
-  Result := ''; // executables have no version resource outside Windows
-end;
-
-function GetAssociatedProgram(const Extension: String; var Filename, Description: String): boolean;
-begin
-  // Windows looked this up in the registry; on Linux devPlatform.OpenDocument
-  // (xdg-open) hands files to the desktop's default application instead
-  Result := False;
 end;
 
 function IsNumeric(const s: String): boolean;

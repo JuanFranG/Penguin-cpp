@@ -1,3 +1,16 @@
+penguin-cpp (0.5.5) unstable; urgency=medium
+
+  * Preserve pending edits and previous files on save, cancellation or failure.
+  * Use real compiler exit status and isolate Compile/Run intentions per attempt.
+  * Commit preferences atomically and recover incomplete private Wine prefixes.
+  * Add matching CRT/console UTF-8, OEM 437 and ANSI 1252 profiles.
+  * Preserve legacy resource metadata and reject unsupported generated resources.
+  * Retire incomplete importer and obsolete dialogs/actions.
+  * Link GitHub and release notes from Updates and About; require release notes.
+  * Include the console startup source in native and complete packages.
+
+ -- Juan Francisco Gonzalez Pacheco <jfgonzalez@unimagdalena.edu.co>  Thu, 26 Nov 2026 16:00:00 -0500
+
 penguin-cpp (0.5.0) unstable; urgency=medium
 
   * Show included environment readiness without requiring tool paths;

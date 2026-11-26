@@ -120,7 +120,9 @@ procedure TAboutForm.URLLabelClick(Sender: TObject);
 var
   S: String;
 begin
-  S := TLabel(Sender).Caption;
+  if Sender = lblVersion then S := DEVCPP_RELEASE_URL
+  else if Sender = lblRepositoryURL then S := DEVCPP_REPOSITORY_URL
+  else S := TLabel(Sender).Caption;
   OpenDocument(S);
 end;
 
@@ -133,13 +135,22 @@ begin
 
   // Use modified time, not the PE headers
   datestring := GetBuildTime(ParamStr(0));
-  lblVersion.Caption := lblVersion.Caption + DEVCPP_VERSION + #13#10 + 'Build time: ' + datestring;
+  lblVersion.Caption := 'Version ' + DEVCPP_VERSION;
+  lblVersion.Font.Color := clBlue;
+  lblVersion.Font.Style := [fsUnderline];
+  lblVersion.Cursor := crHandPoint;
+  lblVersion.Hint := DEVCPP_RELEASE_URL + LineEnding + 'Build time: ' + datestring;
+  lblVersion.ShowHint := True;
+  lblVersion.OnClick := URLLabelClick;
+  lblRepositoryURL.Caption := 'JuanFranG/Penguin-cpp';
+  lblRepositoryURL.Hint := DEVCPP_REPOSITORY_URL;
+  lblRepositoryURL.ShowHint := True;
 
   if FileExists(devData.Splash) then // TODO: check all folders?
     imgBanner.Picture.LoadFromFile(devData.Splash);
 
   f := 1;
-  if Assigned(imgBanner.Picture) then
+  if Assigned(imgBanner.Picture) and (imgBanner.Picture.Width > 0) then
     f := imgBanner.Picture.Height / imgBanner.Picture.Width;
 
   imgBanner.Width := paBanner.Width;

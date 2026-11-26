@@ -80,7 +80,7 @@ var
   Folder: String;
 begin
   if ObjectFolder = '' then
-    Exit(ChangeFileExt(MakeSourceName(ProjectFile, SourceFile), ObjExt));
+    Exit(MakeSourceName(ProjectFile, SourceFile) + ObjExt);
   Folder := ObjectFolder;
   if Folder[1] <> PathDelim then // relative to the project's folder
     Folder := ExtractFilePath(ProjectFile) + Folder;

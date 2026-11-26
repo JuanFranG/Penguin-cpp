@@ -10,6 +10,9 @@ jobs:
     runs-on: macos-26
     steps:
       - uses: actions/checkout@v5
+
+      - name: Versioned release notes
+        run: python3 packaging/check-release.py
       - name: Bootstrap compiler
         run: brew install fpc
       - uses: actions/cache@v4
@@ -28,8 +31,8 @@ jobs:
           $LAZBUILD -B --ws=cocoa --bm=Debug Source/penguin-cpp.lpi
       - name: Console tests
         run: |
-          export FPCFLAGS="-B -Cr -Co -Ct -CR -Sa -gh -gl"
-          for SUITE in ParserTest PlatformTest GdbMITest GdbEngineTest DapEngineTest MakefileTest UpdateTest WindowsGameTest; do
+          export FPCFLAGS="-B -k-no_fixup_chains -Cr -Co -Ct -CR -Sa -gh -gl"
+          for SUITE in ParserTest PlatformTest GdbMITest GdbEngineTest DapEngineTest MakefileTest UpdateTest WindowsGameTest SafetyTest; do
             Source/Tests/$SUITE/build.sh --run
           done
           python3 Source/Tests/UpdateTest/install_test.py
@@ -37,6 +40,8 @@ jobs:
         run: |
           WS=cocoa Source/Tests/LfmCheck/check.sh
           WS=cocoa Source/Tests/FoldTest/build.sh --run
+      - name: IDE failure paths and release links
+        run: WS=cocoa sh Source/Tests/SafetyTest/integration.sh
       - name: Package and verify
         run: |
           packaging/build-macos.sh --no-build

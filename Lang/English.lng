@@ -1368,3 +1368,12 @@ Ver=1
 80228=Your selected tools override the included environment. Use the included environment to restore automatic configuration.
 80229=Windows environment unavailable
 80230=Use a custom Apple GPTK runtime
+
+80231=Console: Unicode (UTF-8)
+80232=Console: DOS / OEM 437
+80233=Console: Windows ANSI 1252
+80234=Console: controlled by the program
+80235=Recompile after changing the console profile. Explicit settings in your program take precedence.
+80236=Penguin does not compile or link Windows resources in generated builds (%s). Use an external build system; project metadata is preserved.
+80237=Windows resource metadata is preserved but is not applied to the native target.
+80018=What is new in this release

@@ -147,6 +147,7 @@ type
     procedure OptionsLinkClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
+    fCompilerSnapshots: array of TCompilerOptionsValues;
     procedure UpdateDirButtons;
     procedure UpdateMakButtons;
     procedure LoadText;
@@ -154,7 +155,8 @@ type
     procedure SaveDirSettings;
   public
     fOldIndex: integer;
-    fProjectCopy: TProject; // do work on this copy and assign it to the original when the user presses OK
+    fProjectCopy: TProject; // owned detached working copy
+    destructor Destroy; override;
     procedure SetInterface(Source: TProject); // fProjectCopy -> UI
     procedure GetInterface(Destination: TProject); // UI -> fProjectCopy
   end;
@@ -162,7 +164,7 @@ type
 implementation
 
 uses
-  FileCtrl, devCFG, IconFrm, Utils, MultiLangSupport, Version, Math, devPlatform;
+  FileCtrl, devCFG, IconFrm, Utils, MultiLangSupport, Version, Math, devPlatform, MakeNames;
 
 {$R *.lfm}
 
@@ -302,10 +304,29 @@ begin
   UpdateDirButtons;
 end;
 
+destructor TProjectOptionsFrm.Destroy;
+var I: Integer;
+begin
+  inherited Destroy;
+  for I := 0 to High(fCompilerSnapshots) do
+    if I < devCompilerSets.Count then devCompilerSets[I].INIOptions := fCompilerSnapshots[I];
+  fProjectCopy.Free;
+end;
+
 procedure TProjectOptionsFrm.GetInterface(Destination: TProject);
 var
   I: integer;
 begin
+  SaveDirSettings;
+  Destination.Options.Assign(fProjectCopy.Options);
+  for I := 0 to fProjectCopy.Units.Count-1 do begin
+    Destination.Units[I].Compile := fProjectCopy.Units[I].Compile;
+    Destination.Units[I].CompileCpp := fProjectCopy.Units[I].CompileCpp;
+    Destination.Units[I].Link := fProjectCopy.Units[I].Link;
+    Destination.Units[I].Priority := fProjectCopy.Units[I].Priority;
+    Destination.Units[I].OverrideBuildCmd := fProjectCopy.Units[I].OverrideBuildCmd;
+    Destination.Units[I].BuildCmd := fProjectCopy.Units[I].BuildCmd;
+  end;
   with Destination.Options do begin
 
     // General tab
@@ -316,7 +337,7 @@ begin
 
     // Compiler tab
     if (cmbCompiler.ItemIndex < devCompilerSets.Count) and (cmbCompiler.ItemIndex >= 0) then
-      CompilerOptions := devCompilerSets[cmbCompiler.ItemIndex].INIOptions;
+      CompilerOptions := Copy(devCompilerSets[cmbCompiler.ItemIndex].INIOptions);
     CompilerSet := cmbCompiler.ItemIndex;
 
     // Options tab
@@ -361,7 +382,11 @@ procedure TProjectOptionsFrm.SetInterface(Source: TProject);
 var
   I, cntSrc, cntHdr, cntRes, cntOther: integer;
 begin
-  fProjectCopy := Source;
+  FreeAndNil(fProjectCopy);
+  fProjectCopy := Source.OptionsCopy;
+  SetLength(fCompilerSnapshots, devCompilerSets.Count);
+  for I := 0 to devCompilerSets.Count-1 do
+    fCompilerSnapshots[I] := Copy(devCompilerSets[I].INIOptions);
 
   with fProjectCopy.Options do begin
 
@@ -878,16 +903,15 @@ begin
   if not (GetFileTyp(fProjectCopy.Units[idx].FileName) in [utcSrc, utcppSrc]) then
     Exit;
 
-  tfile := ExtractFileName(fProjectCopy.Units[idx].FileName);
-  if fProjectCopy.Options.ObjectOutput <> '' then begin
-    ofile := IncludeTrailingPathDelimiter(fProjectCopy.Options.ObjectOutput) + ExtractFileName(tfile);
-    ofile := GenMakePath1(ExtractRelativePath(fProjectCopy.FileName, ChangeFileExt(ofile, OBJ_EXT)));
-  end else
-    ofile := GenMakePath1(ChangeFileExt(tfile, OBJ_EXT));
-  if fProjectCopy.Units[idx].CompileCpp then
-    Result := '$(CPP) -c ' + GenMakePath1(tfile) + ' -o ' + ofile + ' $(CXXFLAGS)'
+  tfile := MakeSourceName(fProjectCopy.FileName, fProjectCopy.Units[idx].FileName);
+  if fProjectCopy.Options.WindowsGame.Enabled then
+    ofile := MakeObjectName(fProjectCopy.FileName, fProjectCopy.Units[idx].FileName, fProjectCopy.Options.ObjectOutput, '.win.o')
   else
-    Result := '$(CC) -c ' + GenMakePath1(tfile) + ' -o ' + ofile + ' $(CFLAGS)';
+    ofile := MakeObjectName(fProjectCopy.FileName, fProjectCopy.Units[idx].FileName, fProjectCopy.Options.ObjectOutput, OBJ_EXT);
+  if fProjectCopy.Units[idx].CompileCpp then
+    Result := '$(CPP) -c ' + MakeShellArg(tfile) + ' -o ' + MakeShellArg(ofile) + ' $(CXXFLAGS)'
+  else
+    Result := '$(CC) -c ' + MakeShellArg(tfile) + ' -o ' + MakeShellArg(ofile) + ' $(CFLAGS)';
 end;
 
 procedure TProjectOptionsFrm.txtOverrideBuildCmdChange(Sender: TObject);
@@ -974,7 +998,7 @@ begin
   // Correct memory leak in VCL
   CompOptionsFrame1.vle.Strings.Clear;
 
-  Action := caFree;
+  Action := caHide; // The modal caller owns and frees the working copy.
 end;
 
 end.

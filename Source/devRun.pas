@@ -22,7 +22,7 @@ unit devRun;
 interface
 
 uses
-  Classes, LCLIntf, LCLType, Dialogs, Utils;
+  Classes, LCLIntf, LCLType, Dialogs, Utils, devPlatform, SysUtils;
 
 type
   TLineOutputEvent = procedure(Sender: TObject; const Line: String) of object;
@@ -40,6 +40,9 @@ type
     Command: String;
     Directory: String;
     Output: String;
+    CommandArgs: TStringList;
+    RunResult: TProcessResult;
+    destructor Destroy; override;
     property OnLineOutput: TLineOutputEvent read FLineOutput write FLineOutput;
     property OnCheckAbort: TCheckAbortFunc read FCheckAbort write FCheckAbort;
   end;
@@ -58,10 +61,20 @@ begin
     Synchronize(CallLineOutputEvent);
 end;
 
+destructor TDevRun.Destroy;
+begin CommandArgs.Free; inherited Destroy end;
+
 procedure TDevRun.Execute;
 begin
   // The compiler, make and the linker speak English: their messages are parsed
-  Output := RunAndGetOutput(Command, Directory, LineOutput, FCheckAbort, True, True);
+  try
+    Output := devPlatform.RunAndGetOutput(Command, Directory, LineOutput, FCheckAbort, True, True, @RunResult, CommandArgs);
+  except
+    on E: Exception do begin
+      RunResult.ExitCode := -1; RunResult.ErrorText := E.Message;
+      LineOutput(E.Message);
+    end;
+  end;
 end;
 
 end.

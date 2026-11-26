@@ -130,3 +130,18 @@ por separado. La configuración y el prefix privado se conservan en
 `~/Library/Application Support/penguin-cpp`. Borrar esa carpeta es opcional y
 elimina también los programas y datos guardados dentro del entorno Windows.
 El recibo de Installer no ejecuta una desinstalación por sí solo.
+
+
+## Notas y publicación de cada versión
+
+Antes de etiquetar, actualizar `DEVCPP_VERSION`, la primera entrada de
+`packaging/changelog` y `RELEASE_NOTES_<version>.md`. Las notas deben incluir
+cambios, validación y límites/pendientes; `python3 packaging/check-release.py`
+lo comprueba en los tres workflows. Los enlaces de Acerca de apuntan a la
+versión instalada y Actualizaciones muestra la publicación detectada.
+
+El workflow Release prepara una publicación **en borrador**. Tras completar los
+checks Linux/macOS y subir todos los paquetes y hashes, publicar ese borrador.
+Así el botón de actualizar no anuncia una versión que todavía carece de DMG
+completo. El artefacto macOS completo debe contener `console-startup.c`, su
+licencia, toolchain, Make, runtime y manifiesto; el DMG nativo conserva su canal.

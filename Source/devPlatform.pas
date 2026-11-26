@@ -32,6 +32,21 @@ uses
 type
   TLineOutputFunc = procedure(const Line: String) of object;
   TCheckAbortFunc = procedure(var AbortThread: boolean) of object;
+  TProcessResult = record
+    Started, Cancelled: Boolean;
+    ExitCode: Integer;
+    ErrorText: String;
+  end;
+  PProcessResult = ^TProcessResult;
+{$IFDEF FPC}
+  TManagedProcess = class(TProcess)
+  private
+    procedure StartGroup(Sender: TObject);
+  public
+    constructor Create(AOwner: TComponent); override;
+    procedure StopTree;
+  end;
+{$ENDIF}
 
 {$IFDEF FPC}
 var
@@ -69,7 +84,7 @@ procedure InstallDeveloperTools;
 // polled while the program runs and can stop it. EnglishMessages: see
 // PrepareProcessEnvironment.
 function RunAndGetOutput(const Cmd, WorkDir: String; LineOutputFunc: TLineOutputFunc;
-  CheckAbortFunc: TCheckAbortFunc; ShowReturnValue: Boolean = True; EnglishMessages: Boolean = False): String;
+  CheckAbortFunc: TCheckAbortFunc; ShowReturnValue: Boolean = True; EnglishMessages: Boolean = False; Outcome: PProcessResult = nil; Arguments: TStrings = nil): String;
 
 // Directory for the IDE's settings, with trailing delimiter, e.g.
 // ~/.config/penguin-cpp/ ($XDG_CONFIG_HOME is honored). Not created here.
@@ -229,87 +244,124 @@ begin
 end;
 {$ENDIF}
 
+function SetProcessGroup(PID, PGID: LongInt): LongInt; cdecl; external 'c' name 'setpgid';
+
+constructor TManagedProcess.Create(AOwner: TComponent);
+begin
+  inherited Create(AOwner);
+  OnForkEvent := StartGroup;
+end;
+
+procedure TManagedProcess.StartGroup(Sender: TObject);
+begin
+  // Only async-signal-safe syscalls are allowed in the child after fork.
+  if SetProcessGroup(0, 0) <> 0 then fpExit(127);
+end;
+
+procedure TManagedProcess.StopTree;
+var Started: QWord;
+begin
+  if ProcessID <= 0 then Exit;
+  // Execute may return before the child's fork callback creates its group.
+  // setpgid in both parent and child closes that launch/stop race.
+  SetProcessGroup(ProcessID, ProcessID);
+  if fpKill(-ProcessID, SIGTERM) <> 0 then fpKill(ProcessID, SIGTERM);
+  Started := GetTickCount64;
+  while (fpKill(-ProcessID, 0) = 0) and (GetTickCount64-Started < 1000) do begin
+    // Reap an exited leader while its group is still shutting down.
+    if not Running and (fpKill(-ProcessID, 0) <> 0) then Break;
+    Sleep(10);
+  end;
+  fpKill(-ProcessID, SIGKILL);
+  if Running then fpKill(ProcessID, SIGKILL);
+  WaitOnExit;
+end;
+
 function RunAndGetOutput(const Cmd, WorkDir: String; LineOutputFunc: TLineOutputFunc;
-  CheckAbortFunc: TCheckAbortFunc; ShowReturnValue: Boolean; EnglishMessages: Boolean): String;
+  CheckAbortFunc: TCheckAbortFunc; ShowReturnValue: Boolean; EnglishMessages: Boolean;
+  Outcome: PProcessResult; Arguments: TStrings): String;
 var
-  P: TProcess;
+  P: TManagedProcess;
   Args: TStringList;
-  Output, CurrentLine, Chunk: String;
+  Output, CurrentLine, Chunk, Line: String;
   Abort: Boolean;
-  I: Integer;
+  I, N, BreakAt, Batches, Code: Integer;
+  Buffer: array[0..8191] of Byte;
 
   procedure ReadAvailable;
-  var
-    Count: Integer;
   begin
-    Count := P.Output.NumBytesAvailable;
-    while Count > 0 do begin
-      SetLength(Chunk, Count);
-      Count := P.Output.Read(Chunk[1], Count);
-      SetLength(Chunk, Count);
+    Batches := 0;
+    while (P.Output.NumBytesAvailable > 0) and (Batches < 16) do begin
+      N := P.Output.Read(Buffer, SizeOf(Buffer));
+      if N <= 0 then Break;
+      Inc(Batches);
+      SetString(Chunk, PChar(@Buffer[0]), N);
       Output := Output + Chunk;
       if Assigned(LineOutputFunc) then begin
         CurrentLine := CurrentLine + Chunk;
-        if (CurrentLine <> '') and (CurrentLine[Length(CurrentLine)] = #10) then begin
-          Delete(CurrentLine, Length(CurrentLine), 1);
-          LineOutputFunc(CurrentLine);
-          CurrentLine := '';
+        BreakAt := Pos(#10, CurrentLine);
+        while BreakAt > 0 do begin
+          Line := Copy(CurrentLine, 1, BreakAt-1);
+          if (Line <> '') and (Line[Length(Line)] = #13) then Delete(Line, Length(Line), 1);
+          LineOutputFunc(Line);
+          Delete(CurrentLine, 1, BreakAt);
+          BreakAt := Pos(#10, CurrentLine);
         end;
       end;
-      Count := P.Output.NumBytesAvailable;
     end;
   end;
 
 begin
-  Output := '';
-  CurrentLine := '';
+  if Assigned(Outcome) then begin
+    Outcome^.Started := False; Outcome^.Cancelled := False;
+    Outcome^.ExitCode := -1; Outcome^.ErrorText := '';
+  end;
+  Output := ''; CurrentLine := ''; Code := -1;
   Args := TStringList.Create;
-  P := TProcess.Create(nil);
+  P := TManagedProcess.Create(nil);
   try
-    CommandToList(Cmd, Args);
-    if Args.Count = 0 then
-      Exit('CreateProcess error: empty command');
-    P.Executable := FindExecutable(Args[0]);
-    for I := 1 to Args.Count - 1 do
-      P.Parameters.Add(Args[I]);
-    if WorkDir <> '' then
-      P.CurrentDirectory := WorkDir;
-    P.Options := [poUsePipes, poStderrToOutPut];
-    P.ShowWindow := swoHIDE;
-    PrepareProcessEnvironment(P, EnglishMessages);
     try
+      if Assigned(Arguments) then Args.Assign(Arguments) else CommandToList(Cmd, Args);
+      if Args.Count = 0 then raise EProcess.Create('empty command');
+      P.Executable := FindExecutable(Args[0]);
+      for I := 1 to Args.Count - 1 do P.Parameters.Add(Args[I]);
+      if WorkDir <> '' then P.CurrentDirectory := WorkDir;
+      P.Options := [poUsePipes, poStderrToOutPut];
+      P.ShowWindow := swoHIDE;
+      PrepareProcessEnvironment(P, EnglishMessages);
       P.Execute;
     except
-      on E: Exception do
-        Exit('CreateProcess error: ' + E.Message);
+      on E: Exception do begin
+        Result := 'CreateProcess error: ' + E.Message;
+        if Assigned(Outcome) then Outcome^.ErrorText := Result;
+        if Assigned(LineOutputFunc) then LineOutputFunc(Result);
+        Exit;
+      end;
     end;
-    P.CloseInput; // the tools we run don't read stdin; give them EOF
-
+    if Assigned(Outcome) then Outcome^.Started := True;
+    P.CloseInput;
     Abort := False;
     while True do begin
-      if Assigned(CheckAbortFunc) then
-        CheckAbortFunc(Abort);
+      if Assigned(CheckAbortFunc) then CheckAbortFunc(Abort);
       if Abort then begin
-        P.Terminate(1);
+        if Assigned(Outcome) then Outcome^.Cancelled := True;
+        P.StopTree;
         Break;
       end;
-      if P.Output.NumBytesAvailable > 0 then
-        ReadAvailable
-      else if not P.Running then begin
-        ReadAvailable; // whatever was written right before exiting
-        Break;
-      end else
-        Sleep(10);
+      ReadAvailable;
+      if not P.Running and (P.Output.NumBytesAvailable = 0) then Break;
+      Sleep(10);
     end;
     P.WaitOnExit;
-
-    if ShowReturnValue then
-      Result := Output + ' ' + IntToStr(P.ExitCode)
-    else
-      Result := Output;
+    if Assigned(LineOutputFunc) and (CurrentLine <> '') then LineOutputFunc(CurrentLine);
+    if WIFEXITED(P.ExitStatus) then Code := WEXITSTATUS(P.ExitStatus)
+    else if WIFSIGNALED(P.ExitStatus) then Code := 128 + WTERMSIG(P.ExitStatus);
+    if Assigned(Outcome) then Outcome^.ExitCode := Code;
+    if ShowReturnValue then Result := Output + ' ' + IntToStr(Code)
+    else Result := Output;
   finally
-    P.Free;
-    Args.Free;
+    if P.Running then P.StopTree;
+    P.Free; Args.Free;
   end;
 end;
 
@@ -550,7 +602,7 @@ const
     '{' + #10 +
     '  print -r -- ''#!/bin/zsh -f''' + #10 +
     '  print -r -- "dir=${(qq)dir}"' + #10 +
-    '  print -r -- ''trap "exit 129" HUP INT TERM; trap "touch \$dir/done" EXIT; print $$ > $dir/pid''' + #10 +
+    '  print -r -- ''trap "exit 129" HUP INT TERM; trap "touch \$dir/done" EXIT; print $$ > $dir/pid || exit 129; [[ -d $dir && ! -e $dir/cancel ]] || exit 129''' + #10 +
     '  print -r -- ''name=${dir:t}; print -n "\e]0;$name\a"''' + #10 +
     '  print -r -- "cd ${(qq)PWD}"' + #10 +
     '  print -r -- ''zmodload zsh/datetime; start=$EPOCHREALTIME''' + #10 +
@@ -563,7 +615,8 @@ const
     '  print -r -- ''(sleep 0.3; osascript -e "on run {n}" -e "tell application \"Terminal\" to close (every window whose name contains n)" -e "end run" "$name" >/dev/null 2>&1) &!''' + #10 +
     '} > $dir/run.command' + #10 +
     'chmod 700 $dir/run.command' + #10 +
-    'trap ''p=$(<$dir/pid) 2>/dev/null; if [[ -n $p ]]; then pkill -TERM -P $p; kill $p; fi; rm -rf $dir; exit 143'' TERM INT' + #10 +
+    'stop_tree() { local p=$1 c; for c in $(pgrep -P $p); do stop_tree $c; done; kill -TERM $p 2>/dev/null; kill -KILL $p 2>/dev/null; }' + #10 +
+    'trap ''touch $dir/cancel 2>/dev/null; p=$(<$dir/pid) 2>/dev/null; [[ $p == <-> ]] && stop_tree $p; rm -rf $dir; exit 143'' TERM INT' + #10 +
     'open -a Terminal $dir/run.command || { rm -rf $dir; exit 1 }' + #10 +
     'while [[ ! -e $dir/done ]]; do sleep 0.3; done' + #10 +
     'rm -rf $dir';

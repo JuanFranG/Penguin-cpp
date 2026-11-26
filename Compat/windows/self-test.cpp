@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <vector>
 #include <numeric>
+#include <wchar.h>
 int main() {
     char *end = nullptr;
     long n = strtol("81", &end, 10);
@@ -16,6 +17,16 @@ int main() {
     int sum = values[0] + values[1] + values[2]; free(values);
     std::vector<int> v{1, 2, 3};
     if (sum != 6 || std::accumulate(v.begin(), v.end(), 0) != 6) return 3;
+#ifdef PENGUIN_CONSOLE_CP
+    wchar_t converted = 0;
+#if PENGUIN_CONSOLE_CP == 437
+    if (mbtowc(&converted, "\xda", 1) != 1 || converted != 0x250c) return 7;
+#elif PENGUIN_CONSOLE_CP == 1252
+    if (mbtowc(&converted, "\xf1", 1) != 1 || converted != 0x00f1) return 7;
+#else
+    if (mbtowc(&converted, "\xc3\xb1", 2) != 2 || converted != 0x00f1) return 7;
+#endif
+#endif
     Sleep(1); (void)_kbhit();
     HDC dc = CreateCompatibleDC(nullptr);
     if (!dc) return 4;

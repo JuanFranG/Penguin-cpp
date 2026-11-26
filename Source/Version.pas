@@ -28,7 +28,9 @@ const
   // exe properties
   DEVCPP = 'Penguin cpp';
   // Penguin cpp's own version (semantic versioning); it continues Dev-C++ 6.3
-  DEVCPP_VERSION = '0.5.0';
+  DEVCPP_VERSION = '0.5.5';
+  DEVCPP_REPOSITORY_URL = 'https://github.com/JuanFranG/Penguin-cpp';
+  DEVCPP_RELEASE_URL = DEVCPP_REPOSITORY_URL + '/releases/tag/v' + DEVCPP_VERSION;
 
   // delimiters
   DEV_INTERNAL_OPEN = '$__DEV_INTERNAL_OPEN';
@@ -38,7 +40,6 @@ const
   DEV_SHORTCUTS_FILE = 'shortcuts.ini';
   DEV_CLASSFOLDERS_FILE = 'classfolders.ini';
   DEV_CODEINS_FILE = 'codeinsertion.ini';
-  DEV_WEBMIRRORS_FILE = 'webmirrors.ini';
   DEV_TOOLS_FILE = 'tools.ini';
 
   // make stuff
@@ -59,7 +60,6 @@ const
   MANUAL_URL = 'https://juanfrang.github.io/Penguin-cpp/manual/';
   TEMPLATE_DIR = 'Templates' + pd;
   THEME_DIR = 'Themes' + pd;
-  PACKAGES_DIR = 'Packages' + pd;
 
   // file extensions
   LIB_EXT = '.a';
@@ -112,8 +112,6 @@ const
   FLT_HEADS = 'Header files (*.h;*.hpp;*.rh;*.hh)|*.h;*.hpp;*.rh;*.hh';
   FLT_CS = 'C source files (*.c)|*.c';
   FLT_CPPS = 'C++ source files (*.cpp;*.cc;*.cxx;*.c++;*.cp)|*.cpp;*.cc;*.cxx;*.c++;*.cp';
-  FLT_MSVCPROJECTS = 'MS Visual C++ projects (*.dsp)|*.dsp';
-  FLT_CBPROJECTS = 'Code::Blocks projects (*.cbp)|*.cbp';
 
   // Custom synedit style properties
   cBP = 'Breakpoints';

@@ -22,7 +22,7 @@ unit devExec;
 interface
 
 uses
-  Classes, SysUtils, SyncObjs, Forms, Process, devCFG, Utils;
+  Classes, SysUtils, SyncObjs, Forms, Process, devCFG, Utils, devPlatform;
 
 const
   INFINITE = Cardinal($FFFFFFFF); // no time-out
@@ -36,29 +36,33 @@ type
     fParams: String;
     fArgs: TStringList; // when set, used instead of fParams
     fTimeOut: Cardinal;
-    fProcess: TProcess; // only valid while the program runs
+    fProcess: TManagedProcess; // only valid while the program runs
     fProcessLock: TCriticalSection; // Reset (main thread) vs. the thread freeing it
     fVisible: boolean;
+    fErrorText: String;
     procedure ExecAndWait;
   public
     constructor Create(CreateSuspended: Boolean);
     destructor Destroy; override;
     procedure Execute; override;
     procedure TerminateProcess;
+    procedure Release;
     property Args: TStringList read fArgs write fArgs; // owned
+    property ErrorText: String read fErrorText;
   published
     property FileName: String read fFile write fFile;
     property Path: String read fPath write fPath;
     property Params: String read fParams write fParams;
     property TimeOut: Cardinal read fTimeOut write fTimeOut;
     property Visible: boolean read fVisible write fVisible;
-    property Process: TProcess read fProcess;
+    property Process: TManagedProcess read fProcess;
   end;
 
   TdevExecutor = class(TPersistent)
   private
     fExec: TExecThread;
     fIsRunning: boolean;
+    fLastError: String;
     fOnTermEvent: TNotifyEvent;
     procedure TerminateEvent(Sender: TObject);
   public
@@ -72,6 +76,7 @@ type
       OnTermEvent: TNotifyEvent); overload;
   published
     property Running: boolean read fIsRunning;
+    property LastError: String read fLastError;
   end;
 
 function devExecutor: TdevExecutor;
@@ -96,15 +101,16 @@ begin
   inherited;
 end;
 
+procedure TExecThread.Release;
+begin
+  WaitFor;
+  Free;
+end;
+
 procedure TExecThread.TerminateProcess;
 begin
-  fProcessLock.Enter;
-  try
-    if Assigned(fProcess) then
-      fProcess.Terminate(0);
-  finally
-    fProcessLock.Leave;
-  end;
+  // The worker owns process polling and waitpid; Reset waits for it to stop.
+  Terminate;
 end;
 
 procedure TExecThread.Execute;
@@ -115,11 +121,11 @@ end;
 
 procedure TExecThread.ExecAndWait;
 var
-  P: TProcess;
+  P: TManagedProcess;
   Args: TStringList;
   Started: QWord;
 begin
-  P := TProcess.Create(nil);
+  P := TManagedProcess.Create(nil);
   Args := TStringList.Create;
   try
     P.Executable := fFile;
@@ -137,19 +143,23 @@ begin
     try
       P.Execute;
     except
-      Exit; // could not start; OnTerminate still reports the end
+      on E: Exception do begin
+        fErrorText := E.Message;
+        Exit;
+      end;
     end;
     fProcessLock.Enter;
     fProcess := P;
     fProcessLock.Leave;
 
-    // Wait for it to finish, like WaitForSingleObject with a time-out
-    if fTimeOut = INFINITE then
-      P.WaitOnExit
-    else begin
-      Started := GetTickCount64;
-      while P.Running and (GetTickCount64 - Started < fTimeOut) do
-        Sleep(50);
+    Started := GetTickCount64;
+    while P.Running do begin
+      if Terminated or ((fTimeOut <> INFINITE) and (GetTickCount64-Started >= fTimeOut)) then begin
+        fProcessLock.Enter;
+        try P.StopTree finally fProcessLock.Leave end;
+        Break;
+      end;
+      Sleep(10);
     end;
   finally
     fProcessLock.Enter;
@@ -180,16 +190,8 @@ end;
 // The watching thread reports the end of the program to this object: end the
 // program and let that report arrive before the object goes
 destructor TdevExecutor.Destroy;
-var
-  Started: QWord;
 begin
-  if Assigned(fExec) then begin
-    fOnTermEvent := nil; // the IDE is going away too
-    fExec.TerminateProcess;
-    Started := GetTickCount64;
-    while Assigned(fExec) and (GetTickCount64 - Started < 5000) do
-      CheckSynchronize(20);
-  end;
+  Reset;
   fDevExecutorSingleton := nil;
   inherited;
 end;
@@ -197,7 +199,9 @@ end;
 procedure TdevExecutor.ExecuteAndWatch(sFileName, sParams, sPath: String;
   bVisible: boolean; iTimeOut: Cardinal; OnTermEvent: TNotifyEvent);
 begin
+  Reset;
   fIsRunning := True;
+  fLastError := '';
   fOnTermEvent := OnTermEvent;
   fExec := TExecThread.Create(True);
   with fExec do begin
@@ -207,7 +211,7 @@ begin
     TimeOut := iTimeOut;
     Visible := bVisible;
     OnTerminate := TerminateEvent;
-    FreeOnTerminate := True;
+    FreeOnTerminate := False;
     Start;
   end;
 end;
@@ -215,7 +219,9 @@ end;
 procedure TdevExecutor.ExecuteAndWatch(const sFileName: String; sArgs: TStrings; const sPath: String;
   OnTermEvent: TNotifyEvent);
 begin
+  Reset;
   fIsRunning := True;
+  fLastError := '';
   fOnTermEvent := OnTermEvent;
   fExec := TExecThread.Create(True);
   with fExec do begin
@@ -226,24 +232,43 @@ begin
     TimeOut := INFINITE;
     Visible := True;
     OnTerminate := TerminateEvent;
-    FreeOnTerminate := True;
+    FreeOnTerminate := False;
     Start;
   end;
 end;
 
 procedure TdevExecutor.Reset;
+var Previous: TExecThread;
 begin
-  if Assigned(fExec) then
-    fExec.TerminateProcess;
+  Previous := fExec;
+  fOnTermEvent := nil;
+  if Assigned(Previous) then begin
+    // Detach the callback before waiting; the thread is owned until WaitFor ends.
+    Previous.OnTerminate := nil;
+    Previous.FreeOnTerminate := False;
+    Previous.TerminateProcess;
+    Previous.WaitFor;
+    Previous.Free;
+    if fExec = Previous then fExec := nil;
+  end;
   fIsRunning := False;
 end;
 
 procedure TdevExecutor.TerminateEvent(Sender: TObject);
+var Handler: TNotifyEvent;
 begin
+  if Sender <> fExec then Exit;
+  fLastError := TExecThread(Sender).ErrorText;
+  Handler := fOnTermEvent;
+  fOnTermEvent := nil;
   fIsRunning := False;
-  fExec := nil; // freed after this (FreeOnTerminate)
-  if Assigned(fOnTermEvent) then
-    fOnTermEvent(Self);
+  fExec := nil;
+  try
+    if Assigned(Handler) then Handler(Self);
+  finally
+    // OnTerminate is still synchronizing this worker; release after it returns.
+    TThread.ForceQueue(nil, TExecThread(Sender).Release);
+  end;
 end;
 
 end.

@@ -26,7 +26,7 @@ uses
   CodeCompletion, CppParser, SynEditExport, Menus, ImgList, ComCtrls, StdCtrls, ExtCtrls, SynEdit,
   SynEditKeyCmds, Version, SynExportHTML, SynEditTextBuffer, Math, StrUtils, SynEditTypes,
   SynEditHighlighter, DateUtils, CodeToolTip, CBUtils, Contnrs, ExtDlgs,
-  SynEditCompat, SynEditMarks, LazSynEditText, LazUTF8, LConvEncoding, SynEditFoldedView, SynEditMiscClasses;
+  SynEditCompat, SynEditMarks, LazSynEditText, LazUTF8, LConvEncoding, SynEditFoldedView, SynEditMiscClasses, FileTransactions;
 
 type
   TCloseTabSheet = class(TTabSheet)
@@ -370,9 +370,7 @@ begin
 end;
 
 procedure WriteTextFile(const FileName, Text, Encoding: string);
-var
-  Stream: TFileStream;
-  Data: string;
+var Data: RawByteString;
 begin
   if Encoding = EncodingUTF8BOM then
     Data := #$EF#$BB#$BF + Text
@@ -380,13 +378,7 @@ begin
     Data := Text
   else
     Data := ConvertEncoding(Text, EncodingUTF8, Encoding);
-  Stream := TFileStream.Create(FileName, fmCreate);
-  try
-    if Length(Data) > 0 then
-      Stream.WriteBuffer(Data[1], Length(Data));
-  finally
-    Stream.Free;
-  end;
+  AtomicWriteFile(FileName, Data);
 end;
 
 { TEditor }
@@ -1824,8 +1816,10 @@ begin
 end;
 
 function TEditor.Save: boolean;
+var PreviousEncoding: String;
 begin
-  Result := True;
+  Result := False;
+  PreviousEncoding := fEncoding;
 
   // We will be changing files. Stop monitoring
   MainForm.FileMonitor.BeginUpdate;
@@ -1834,7 +1828,7 @@ begin
     if FileExists(fFileName) and (FileGetAttr(fFileName) and faReadOnly <> 0) then begin
 
       // Yes, ask the user if he wants us to fix that
-      if MessageDlg(Format(Lang[ID_MSG_FILEISREADONLY], [fFileName]), mtConfirmation, [mbYes, mbNo], 0) = mrNo then
+      if MessageDlg(Format(Lang[ID_MSG_FILEISREADONLY], [fFileName]), mtConfirmation, [mbYes, mbNo], 0) <> mrYes then
         Exit;
 
       // Yes, remove read-only attribute
@@ -1854,12 +1848,15 @@ begin
         fText.Modified := false;
       except
         MessageDlg(Format(Lang[ID_ERR_SAVEFILE], [fFileName]), mtError, [mbOk], 0);
-        Result := False;
+        fEncoding := PreviousEncoding;
+        Exit;
       end;
-
       MainForm.CppParser.ParseFile(fFileName, InProject);
-    end else if fNew then
-      Result := SaveAs; // we need a file name, use dialog
+    end else if fNew then begin
+      Result := SaveAs;
+      Exit;
+    end;
+    Result := True;
 
   finally
     MainForm.FileMonitor.EndUpdate;
@@ -1869,9 +1866,9 @@ end;
 function TEditor.SaveAs: boolean;
 var
   UnitIndex: integer;
-  SaveFileName: String;
+  SaveFileName, PreviousEncoding: String;
 begin
-  Result := True;
+  Result := False;
   with TSaveDialog.Create(nil) do try
     Title := Lang[ID_NV_SAVEAS];
     Filter := BuildFilter([FLT_CS, FLT_CPPS, FLT_HEADS]);
@@ -1914,45 +1911,48 @@ begin
     Free;
   end;
 
-  // Remove *old* file from statement list
-  MainForm.CppParser.InvalidateFile(FileName);
-
-  // Try to save to disk
+  MainForm.FileMonitor.BeginUpdate;
   try
-    UpdateEncoding(SaveFileName);
-    WriteTextFile(SaveFileName, fText.Lines.Text, fEncoding);
-    fText.Modified := False;
-    fNew := False;
-  except
-    MessageDlg(Format(Lang[ID_ERR_SAVEFILE], [SaveFileName]), mtError, [mbOk], 0);
-    Result := False;
-  end;
+    PreviousEncoding := fEncoding;
+    try
+      UpdateEncoding(SaveFileName);
+      WriteTextFile(SaveFileName, fText.Lines.Text, fEncoding);
+      fText.Modified := False;
+      fNew := False;
+    except
+      MessageDlg(Format(Lang[ID_ERR_SAVEFILE], [SaveFileName]), mtError, [mbOk], 0);
+      fEncoding := PreviousEncoding;
+      Exit;
+    end;
 
-  // Update highlighter
-  devEditor.AssignEditor(fText, SaveFileName);
+    MainForm.CppParser.InvalidateFile(FileName);
+    // Update highlighter
+    devEditor.AssignEditor(fText, SaveFileName);
 
-  // Update project information
-  if Assigned(MainForm.Project) and Self.InProject then begin
-    UnitIndex := MainForm.Project.Units.IndexOf(FileName); // index of *old* filename
-    if UnitIndex <> -1 then
-      MainForm.Project.SaveUnitAs(UnitIndex, SaveFileName); // save as new filename
-  end else
-    fTabSheet.Caption := ExtractFileName(SaveFileName) + CTAB_PADDING;
+    // Update project information
+    if Assigned(MainForm.Project) and Self.InProject then begin
+      UnitIndex := MainForm.Project.Units.IndexOf(FileName); // index of *old* filename
+      if UnitIndex <> -1 then
+        MainForm.Project.SaveUnitAs(UnitIndex, SaveFileName); // save as new filename
+    end else
+      fTabSheet.Caption := ExtractFileName(SaveFileName) + CTAB_PADDING;
 
-  // Update window captions
-  MainForm.UpdateAppTitle;
+    // Update window captions
+    MainForm.UpdateAppTitle;
 
-  // Update class browser, redraw once
-  MainForm.ClassBrowser.BeginUpdate;
-  try
-    MainForm.CppParser.ParseFile(SaveFileName, InProject);
-    MainForm.ClassBrowser.CurrentFile := SaveFileName;
-  finally
-    MainForm.ClassBrowser.EndUpdate;
-  end;
+    // Update class browser, redraw once
+    MainForm.ClassBrowser.BeginUpdate;
+    try
+      MainForm.CppParser.ParseFile(SaveFileName, InProject);
+      MainForm.ClassBrowser.CurrentFile := SaveFileName;
+    finally
+      MainForm.ClassBrowser.EndUpdate;
+    end;
 
-  // Set new file name
-  FileName := SaveFileName;
+    // Set new file name
+    FileName := SaveFileName;
+    Result := True;
+  finally MainForm.FileMonitor.EndUpdate end;
 end;
 
 

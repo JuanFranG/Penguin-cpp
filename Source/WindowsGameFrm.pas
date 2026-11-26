@@ -10,7 +10,7 @@ type
   TGameForm = class(TForm)
   private
     InitialConfig, IncludedConfig: TWindowsGameConfig;
-    ModeBox: TComboBox;
+    ModeBox, ConsoleBox: TComboBox;
     GPTKBox: TCheckBox;
     ToolchainEdit, RunnerEdit, PrefixEdit: TEdit;
     Details: TPanel;
@@ -47,7 +47,7 @@ begin
   OnShow := @Populate;
   Caption := Lang[80100]; Position := poMainFormCenter;
   BorderStyle := bsDialog; BorderIcons := [biSystemMenu]; Font.Assign(Screen.SystemFont);
-  ClientWidth := 660; ClientHeight := 260;
+  ClientWidth := 660; ClientHeight := 300;
   ModeBox := TComboBox.Create(Self); ModeBox.Parent := Self; ModeBox.Style := csDropDownList;
   ModeBox.SetBounds(20,20,360,28);
   ModeBox.Items.Add(Lang[80201]); ModeBox.Items.Add(Lang[80202]); ModeBox.Items.Add(Lang[80203]);
@@ -58,12 +58,19 @@ begin
   Status.SetBounds(20,66,620,26); Status.Font.Style := [fsBold];
   Info := TLabel.Create(Self); Info.Parent := Self; Info.AutoSize := False; Info.WordWrap := True;
   Info.SetBounds(20,102,620,68);
+  ConsoleBox := TComboBox.Create(Self); ConsoleBox.Parent := Self; ConsoleBox.Style := csDropDownList;
+  ConsoleBox.Name := 'ConsoleProfile';
+  ConsoleBox.SetBounds(20,180,620,28);
+  ConsoleBox.Items.Add(Lang[80231]); ConsoleBox.Items.Add(Lang[80232]);
+  ConsoleBox.Items.Add(Lang[80233]); ConsoleBox.Items.Add(Lang[80234]);
+  ConsoleBox.ItemIndex := Ord(Config.ConsoleProfile); ConsoleBox.OnChange := @RefreshStatus;
+  ConsoleBox.Hint := Lang[80235]; ConsoleBox.ShowHint := True;
   AdvancedButton := TButton.Create(Self); AdvancedButton.Parent := Self;
-  AdvancedButton.SetBounds(20,180,200,28); AdvancedButton.Caption := Lang[80223]; AdvancedButton.OnClick := @ToggleAdvanced;
+  AdvancedButton.SetBounds(20,220,200,28); AdvancedButton.Caption := Lang[80223]; AdvancedButton.OnClick := @ToggleAdvanced;
   IncludedButton := TButton.Create(Self); IncludedButton.Parent := Self;
-  IncludedButton.SetBounds(230,180,250,28); IncludedButton.Caption := Lang[80224]; IncludedButton.OnClick := @UseIncluded;
+  IncludedButton.SetBounds(230,220,250,28); IncludedButton.Caption := Lang[80224]; IncludedButton.OnClick := @UseIncluded;
   Details := TPanel.Create(Self); Details.Parent := Self; Details.BevelOuter := bvNone;
-  Details.SetBounds(20,216,620,302); Details.Visible := False;
+  Details.SetBounds(20,256,620,302); Details.Visible := False;
   ToolchainEdit := PathRow(Lang[80103],0,1);
   RunnerEdit := PathRow(Lang[80104],72,2);
   PrefixEdit := PathRow(Lang[80106],144,3);
@@ -75,14 +82,15 @@ begin
   Notice := TLabel.Create(Self); Notice.Parent := Details; Notice.AutoSize := False; Notice.WordWrap := True;
   Notice.SetBounds(0,256,620,44); Notice.Caption := Lang[80108];
   SaveButton := TButton.Create(Self); SaveButton.Parent := Self;
-  SaveButton.SetBounds(420,218,105,28); SaveButton.Caption := Lang[80109]; SaveButton.OnClick := @Save; SaveButton.Default := True;
+  SaveButton.SetBounds(420,258,105,28); SaveButton.Caption := Lang[80109]; SaveButton.OnClick := @Save; SaveButton.Default := True;
   CancelButton := TButton.Create(Self); CancelButton.Parent := Self;
-  CancelButton.SetBounds(535,218,105,28); CancelButton.Caption := Lang[80110]; CancelButton.ModalResult := mrCancel; CancelButton.Cancel := True;
+  CancelButton.SetBounds(535,258,105,28); CancelButton.Caption := Lang[80110]; CancelButton.ModalResult := mrCancel; CancelButton.Cancel := True;
   ToolchainEdit.OnChange := @RefreshStatus; RunnerEdit.OnChange := @RefreshStatus; PrefixEdit.OnChange := @RefreshStatus;
 end;
 function TGameForm.CurrentConfig: TWindowsGameConfig;
 begin
   Result := InitialConfig;
+  Result.ConsoleProfile := TWindowsConsoleProfile(ConsoleBox.ItemIndex);
   Result.Mode := TCompatibilityMode(ModeBox.ItemIndex); Result.Enabled := Result.Mode = cmWindows;
   Result.Toolchain := Trim(ToolchainEdit.Text); Result.Runner := Trim(RunnerEdit.Text);
   Result.Prefix := Trim(PrefixEdit.Text); Result.UsesGPTK := GPTKBox.Checked;
@@ -118,7 +126,7 @@ var Config: TWindowsGameConfig;
 begin
   Config := CurrentConfig;
   Details.Visible := not Details.Visible;
-  if Details.Visible then ClientHeight := 568 else ClientHeight := 260;
+  if Details.Visible then ClientHeight := 608 else ClientHeight := 300;
   SaveButton.Top := ClientHeight-42; CancelButton.Top := ClientHeight-42;
   if Top+Height > Monitor.WorkareaRect.Bottom then Top := Monitor.WorkareaRect.Bottom-Height;
   if Top < Monitor.WorkareaRect.Top then Top := Monitor.WorkareaRect.Top;

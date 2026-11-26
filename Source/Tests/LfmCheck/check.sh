@@ -13,11 +13,9 @@ SRC=$(cd "$HERE/../.." && pwd)
 OUT="$HERE/build"
 mkdir -p "$OUT"
 
-# FormatterOptionsFrm is not used by the IDE; Tools/ is not part of it; lib/
-# is build output
+# Tools/ is not part of the IDE; lib/ is build output
 LFMS=$(cd "$SRC" && find . -name '*.lfm' \
-  ! -path './Tests/*' ! -path './Tools/*' ! -path './lib/*' \
-  ! -name FormatterOptionsFrm.lfm | sed 's#^\./##' | sort)
+  ! -path './Tests/*' ! -path './Tools/*' ! -path './lib/*' | sed 's#^\./##' | sort)
 python3 "$HERE/lfmparse.py" "$OUT" "$SRC" $LFMS
 
 # -B: FPC 3.2.2 can stop with "Internal error 200611031" on incremental builds

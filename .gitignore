@@ -81,3 +81,5 @@ heaptrc.log
 Source/Tests/UpdateTest/build/
 
 Source/Tests/WindowsGameTest/build/
+
+Source/Tests/SafetyTest/build/

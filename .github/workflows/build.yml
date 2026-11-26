@@ -15,6 +15,9 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - name: Versioned release notes
+        run: python3 packaging/check-release.py
+
       - name: Install Lazarus, Free Pascal and the C/C++ tools
         run: |
           sudo apt-get update
@@ -45,6 +48,9 @@ jobs:
 
       - name: Operating system layer
         run: FPCFLAGS="-Cr -Co -Ct -CR -Sa -gh -gl" Source/Tests/PlatformTest/build.sh --run
+
+      - name: File and process failure regression tests
+        run: FPCFLAGS="-B -Cr -Co -Ct -CR -Sa -gh -gl" Source/Tests/SafetyTest/build.sh --run
 
       - name: GDB/MI reader
         run: FPCFLAGS="-Cr -Co -Ct -CR -Sa -gh -gl" Source/Tests/GdbMITest/build.sh --run
@@ -93,6 +99,9 @@ jobs:
           if grep -q "Penguin cpp: E" run.log; then exit 1; fi # an unhandled error
           grep -c 'penguin-cpp' trace.log
           grep '/usr/share/penguin-cpp/Lang/English.lng' trace.log | grep -v ENOENT
+
+      - name: IDE failure paths and release links (Qt5)
+        run: xvfb-run -a env WS=qt5 sh Source/Tests/SafetyTest/integration.sh
 
       - name: Remove the package without leaving files behind
         run: |

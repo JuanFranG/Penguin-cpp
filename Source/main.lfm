@@ -6307,16 +6307,6 @@ object MainForm: TMainForm
       object N1: TMenuItem
         Caption = '-'
       end
-      object ImportItem: TMenuItem
-        Visible = False
-        Caption = '&Import'
-        object ImportCBCproject: TMenuItem
-          Caption = 'Code::Blocks project'
-          Enabled = False
-          Visible = False
-          OnClick = ImportCBCprojectClick
-        end
-      end
       object ExportItem: TMenuItem
         Caption = '&Export'
         ImageIndex = 12
@@ -6815,10 +6805,6 @@ object MainForm: TMainForm
       object AboutDevCppItem: TMenuItem
         Tag = 18
         Action = actAbout
-      end
-      object DonateItem: TMenuItem
-        Action = actDonate
-        Visible = False
       end
     end
   end
@@ -7952,17 +7938,6 @@ object MainForm: TMainForm
       Caption = 'Goto Breakpoint'
       OnExecute = actGotoBreakPointExecute
       OnUpdate = actUpdateDebuggerRunning
-    end
-    object actRunTests: TAction
-      Category = 'Tests'
-      Caption = 'Run Tests'
-      Enabled = False
-      ShortCut = 16497
-      OnExecute = actRunTestsExecute
-    end
-    object actDonate: TAction
-      Caption = 'Donate :)'
-      ImageIndex = 41
     end
     object actAStyleFormatCurrentFile: TAction
       Category = 'Format'

@@ -22,12 +22,16 @@ unit CFGData;
 interface
 
 uses
-  LCLIntf, LCLType, Classes, sysUtils, TypInfo, IniFiles, Graphics;
+  LCLIntf, LCLType, Classes, sysUtils, TypInfo, IniFiles, Graphics, FileTransactions;
 
 type
   TConfigData = class(TPersistent)
   private
-    fIni: TIniFile;
+    fIni: TAtomicIniFile;
+    fUpdateDepth: Integer;
+    fSnapshot: TStringList;
+    procedure Flush;
+    procedure WriteObjectData(const Section: String; Obj: TPersistent);
     function GetIniFileName: String;
     procedure SetIniFileName(const s: String);
   public
@@ -37,6 +41,8 @@ type
 
     procedure ReadSelf;
     procedure SaveSelf;
+    procedure BeginUpdate;
+    procedure EndUpdate(Commit: Boolean);
 
     procedure EraseSection(const name: String);
 
@@ -64,6 +70,7 @@ type
     procedure WriteDelimitedString(const key: String; const entry: String; value: TStringList);
 
     property INIFileName: String read GetIniFileName write SetIniFileName;
+    property Ini: TAtomicIniFile read fIni;
   end;
 
 function GetPropName(Instance: TPersistent; Index: Integer): ShortString;
@@ -112,6 +119,7 @@ destructor TConfigData.Destroy;
 begin
   if Assigned(fIni) then
     fIni.free;
+  fSnapshot.Free;
   inherited Destroy;
 end;
 
@@ -125,9 +133,10 @@ end;
 
 procedure TConfigData.SetIniFileName(const s: String);
 begin
+  if fUpdateDepth <> 0 then raise EInOutError.Create('Cannot change the configuration file during a save');
   if Assigned(fIni) then
     fini.free;
-  fIni := TIniFile.Create(s);
+  fIni := TAtomicIniFile.Create(s);
 end;
 
 procedure TConfigData.ReadObject(const Section: String; Obj: TPersistent);
@@ -175,7 +184,7 @@ begin
   end;
 end;
 
-procedure TConfigData.WriteObject(const Section: String; Obj: TPersistent);
+procedure TConfigData.WriteObjectData(const Section: String; Obj: TPersistent);
 var
   I: integer;
   PropName: String;
@@ -209,7 +218,7 @@ begin
           if TPersistent(GetOrdProp(Obj, PropName)) is TStrings then
             WriteStrings(Section + '.' + PropName, TStrings(GetOrdProp(Obj, PropName)))
           else
-            WriteObject(Section + '.' + PropName, TPersistent(GetOrdProp(Obj, PropName)));
+            WriteObjectData(Section + '.' + PropName, TPersistent(GetOrdProp(Obj, PropName)));
         end;
     end;
   end;
@@ -226,15 +235,46 @@ begin
   end;
 end;
 
+procedure TConfigData.Flush;
+begin
+  if fUpdateDepth = 0 then fIni.UpdateFile;
+end;
+
+procedure TConfigData.BeginUpdate;
+begin
+  if not Assigned(fIni) then raise EInOutError.Create('No configuration file selected');
+  if fUpdateDepth = 0 then begin
+    fSnapshot := TStringList.Create;
+    fIni.GetStrings(fSnapshot);
+  end;
+  Inc(fUpdateDepth);
+end;
+
+procedure TConfigData.EndUpdate(Commit: Boolean);
+begin
+  if fUpdateDepth = 0 then Exit;
+  Dec(fUpdateDepth);
+  if fUpdateDepth <> 0 then Exit;
+  try
+    if Commit then begin
+      try fIni.UpdateFile
+      except fIni.SetStrings(fSnapshot); raise end;
+    end else fIni.SetStrings(fSnapshot);
+  finally FreeAndNil(fSnapshot) end;
+end;
+
+procedure TConfigData.WriteObject(const Section: String; Obj: TPersistent);
+begin
+  BeginUpdate;
+  try
+    WriteObjectData(Section, Obj);
+    EndUpdate(True);
+  except EndUpdate(False); raise end;
+end;
+
 procedure TConfigData.SaveSelf;
 begin
-  if not Assigned(fIni) then
-    Exit;
-
-  try
-    WriteObject('Options', self);
-  except
-  end;
+  WriteObject('Options', Self);
 end;
 
 procedure TConfigData.ReadStrings(const key: String; value: TStrings);
@@ -253,12 +293,16 @@ procedure TConfigData.WriteStrings(const key: String; value: TStrings);
 var
   I: integer;
 begin
-  EraseSection(key);
-  for I := 0 to Pred(value.Count) do
-    if Value.Names[I] = '' then // name/value stuff not found...
-      fIni.WriteString(key, IntToStr(I), value[I])
-    else
-      fIni.WriteString(key, Value.Names[I], value.Values[Value.Names[I]]);
+  BeginUpdate;
+  try
+    EraseSection(key);
+    for I := 0 to Pred(value.Count) do
+      if Value.Names[I] = '' then // name/value stuff not found...
+        fIni.WriteString(key, IntToStr(I), value[I])
+      else
+        fIni.WriteString(key, Value.Names[I], value.Values[Value.Names[I]]);
+    EndUpdate(True);
+  except EndUpdate(False); raise end;
 end;
 
 // fix without using StringList.DelimitedText:
@@ -319,22 +363,26 @@ end;
 procedure TConfigData.Write(const key: String; const entry: String; value: integer);
 begin
   fIni.WriteInteger(Key, Entry, Value);
+  Flush;
 end;
 
 procedure TConfigData.Write(const key: String; const entry: String; value: boolean);
 begin
   fIni.WriteBool(Key, Entry, value);
+  Flush;
 end;
 
 procedure TConfigData.Write(const key: String; const entry: String; const value: String);
 begin
   fIni.WriteString(Key, Entry, Value);
+  Flush;
 end;
 
 procedure TConfigData.EraseSection(const name: String);
 begin
   if fIni.SectionExists(Name) then
     fIni.EraseSection(Name);
+  Flush;
 end;
 
 end.

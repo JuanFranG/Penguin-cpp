@@ -863,15 +863,19 @@ end;
 
 procedure SaveOptions;
 begin
-  devData.SaveSelf;
-  devDirs.SaveSettings;
-  // devCompiler saving is done by CompOptForm
-  devEditor.SaveSettings;
-  devCodeCompletion.SaveSettings;
-  devClassBrowsing.SaveSettings;
-  devExternalPrograms.SaveSettings;
-  devFormatterAStyle.SaveSettings;
-  devFormatterClang.SaveSettings;
+  devData.BeginUpdate;
+  try
+    devData.SaveSelf;
+    devDirs.SaveSettings;
+    // devCompiler saving is done by CompOptForm
+    devEditor.SaveSettings;
+    devCodeCompletion.SaveSettings;
+    devClassBrowsing.SaveSettings;
+    devExternalPrograms.SaveSettings;
+    devFormatterAStyle.SaveSettings;
+    devFormatterClang.SaveSettings;
+    devData.EndUpdate(True);
+  except devData.EndUpdate(False); raise end;
 end;
 
 procedure DestroyOptions;

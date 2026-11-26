@@ -59,9 +59,16 @@ type
     fGameCompilerSet: TdevCompilerSet;
     fStandaloneConfig, fActiveConfig: TWindowsGameConfig;
     fWindowsActive: Boolean;
+    fSucceeded: Boolean;
     function SourceExecutable: String;
+    function HasConsoleSupport: Boolean;
+    function ConsoleObject(ForMake: Boolean = False): String;
+    function ConsoleSource: String;
+    function ConsoleCodePage: String;
+    function ConsoleCompileCommand(const Command: String): String;
     procedure SetCompilerSet(Value: TdevCompilerSet);
     function ConfigureWindowsGameCompiler: Boolean;
+    function CheckResources: Boolean;
     procedure RunWindowsGame;
     procedure DoLogEntry(const msg: String);
     procedure DoOutput(const s1, s2, s3, s4: String);
@@ -78,13 +85,14 @@ type
     property WindowsActive: Boolean read fWindowsActive;
     property StandaloneConfig: TWindowsGameConfig read fStandaloneConfig write fStandaloneConfig;
     destructor Destroy; override;
-    procedure BuildMakeFile;
+    procedure BuildMakeFile(ForClean: Boolean = False);
     procedure CheckSyntax;
-    procedure Compile;
+    function Compile: Boolean;
     procedure Run;
     procedure Clean;
-    procedure RebuildAll;
+    function RebuildAll: Boolean;
     property Compiling: Boolean read GetCompiling;
+    property Succeeded: Boolean read fSucceeded;
     property Project: TProject read fProject write fProject;
     property OnLogEntry: TLogEntryEvent read fOnLogEntry write fOnLogEntry;
     property OnOutput: TOutputEvent read fOnOutput write fOnOutput;
@@ -149,6 +157,52 @@ function TCompiler.SourceExecutable: String;
 begin
   if fWindowsActive then Result := ChangeFileExt(fSourceFile, '.exe')
   else Result := ChangeFileExt(fSourceFile, EXE_EXT);
+end;
+
+function TCompiler.HasConsoleSupport: Boolean;
+begin
+  Result := fWindowsActive and not fCheckSyntax and (fActiveConfig.ConsoleProfile <> wcProgram) and
+    (((fTarget = ctFile) and (GetFileTyp(fSourceFile) in [utcSrc, utcppSrc])) or
+     ((fTarget = ctProject) and Assigned(fProject) and (fProject.Options.typ = dptCon)));
+end;
+
+function TCompiler.ConsoleSource: String;
+begin Result := fActiveConfig.DataDirectory + 'Compat/windows/console-startup.c' end;
+
+function TCompiler.ConsoleObject(ForMake: Boolean): String;
+begin
+  if Assigned(fProject) then Result := fProject.Executable else Result := SourceExecutable;
+  Result := Result + '.penguin-console.win.o';
+  if ForMake then Result := ExtractRelativePath(fProject.FileName, Result);
+end;
+
+function TCompiler.ConsoleCodePage: String;
+begin
+  case fActiveConfig.ConsoleProfile of
+    wcOEM437: Result := '437';
+    wcANSI1252: Result := '1252';
+  else Result := '65001' end;
+end;
+
+function ShellArgument(const Value: String): String;
+begin
+  // A standalone shell has no make dollar expansion.
+  Result := StringReplace(MakeShellArg(Value), '$$', '$', [rfReplaceAll]);
+end;
+
+function TCompiler.ConsoleCompileCommand(const Command: String): String;
+var Args: TStringList; I: Integer; C, Cpp, Build, Link: String;
+begin
+  if ResolveWindowsCompilers(fActiveConfig, C, Cpp) <> wgOK then
+    raise EInOutError.Create('Windows console compiler unavailable');
+  Args := TStringList.Create;
+  try
+    CommandToList(Command, Args); Link := '';
+    for I := 0 to Args.Count-1 do Link := Link + ' ' + ShellArgument(Args[I]);
+    Build := ShellArgument(C) + ' -std=c11 -c ' + ShellArgument(ConsoleSource) +
+      ' -DPENGUIN_CONSOLE_CP=' + ConsoleCodePage + ' -o ' + ShellArgument(ConsoleObject);
+    Result := Build + ' &&' + Link;
+  finally Args.Free end;
 end;
 
 function TCompiler.SelectCompatibility: Boolean;
@@ -248,6 +302,7 @@ begin
       MessageDlg(WindowsGameErrorText(Error), mtError, [mbOK], 0); Exit;
     end;
     if not GUI then begin
+      WrapWindowsConsoleCommand(Command);
       if not BuildTerminalCommand(Command, devData.ConsolePause, Lang[ID_RUN_EXITED],
         Lang[ID_RUN_PRESSENTER], Terminal, Args, devData.TerminalProgram) then begin
         MessageDlg(Lang[ID_RUN_NOTERMINAL], mtError, [mbOK], 0); Exit;
@@ -280,9 +335,50 @@ begin
   result := fMakefile;
 end;
 
-procedure TCompiler.BuildMakeFile;
+function TCompiler.CheckResources: Boolean;
+var
+  Input, MessageText: String;
+  I: Integer;
+begin
+  Result := True;
+  Input := '';
+  if (fTarget = ctFile) and (GetFileTyp(fSourceFile) = utResSrc) then
+    Input := fSourceFile
+  else if (fTarget = ctProject) and Assigned(fProject) then begin
+    // A native custom Makefile owns resource compilation and linking itself.
+    if fProject.Options.UseCustomMakefile and not fWindowsActive then Exit;
+    for I := 0 to fProject.Units.Count - 1 do
+      if (GetFileTyp(fProject.Units[I].FileName) = utResSrc) and
+        (fProject.Units[I].Compile or
+         (SameText(ExtractFileExt(fProject.Units[I].FileName), RES_EXT) and fProject.Units[I].Link)) then begin
+        Input := fProject.Units[I].FileName;
+        Break;
+      end;
+    if Input = '' then
+      for I := 0 to fProject.Options.ObjFiles.Count - 1 do
+        if GetFileTyp(fProject.Options.ObjFiles[I]) = utResSrc then begin
+          Input := fProject.Options.ObjFiles[I]; Break;
+        end;
+    if fWindowsActive and (Input = '') then
+      with fProject.Options do begin
+        if PrivateResource <> '' then Input := PrivateResource
+        else if Icon <> '' then Input := Icon
+        else if IncludeVersionInfo or SupportXPThemes then Input := fProject.FileName;
+      end;
+  end;
+  if Input = '' then Exit;
+  Result := False;
+  fSucceeded := False;
+  fErrCount := 1;
+  MessageText := Format(Lang[ID_ERR_UNSUPPORTEDRESOURCES], [Input]);
+  DoLogEntry('[Error] ' + MessageText);
+  MessageDlg(MessageText, mtError, [mbOK], 0);
+end;
+
+procedure TCompiler.BuildMakeFile(ForClean: Boolean);
 begin
   if not SelectCompatibility then begin fMakeFile := ''; Exit end;
+  if not ForClean and not CheckResources then begin fMakeFile := ''; Exit end;
   if not Assigned(fProject) then begin
     fMakeFile := '';
     Exit;
@@ -383,6 +479,7 @@ begin
     if UnitIsBuilt(fProject, I) then
       if not Check(UnitSource(fProject, I)) or not Check(UnitObject(fProject, I)) then
         Exit;
+  if HasConsoleSupport and (not Check(ConsoleSource) or not Check(ConsoleObject(True))) then Exit;
   for I := 0 to fProject.Options.MakeIncludes.Count - 1 do
     if not Check(fProject.Options.MakeIncludes[I]) then
       Exit;
@@ -452,6 +549,8 @@ begin
     if UnitIsBuilt(fProject, I) then
       Objects := Objects + ' ' + MakeRuleName(UnitObject(fProject, I));
 
+  if HasConsoleSupport then Objects := Objects + ' ' + MakeRuleName(ConsoleObject(True));
+
   // Flags, with the folders quoted for /bin/sh
   GetCompileParams;
   GetLibrariesParams(MakeShellArg);
@@ -504,6 +603,12 @@ var
   I: integer;
   Source, ObjFile, BuildCmd: String;
 begin
+  if HasConsoleSupport then begin
+    Writeln(F);
+    Writeln(F, MakeRuleName(ConsoleObject(True)) + ': ' + MakeRuleName(ConsoleSource) + ' $(MAKEFILE_LIST)');
+    Writeln(F, #9 + '$(CC) -std=c11 -c ' + MakeShellArg(ConsoleSource) +
+      ' -DPENGUIN_CONSOLE_CP=' + ConsoleCodePage + ' -o ' + MakeShellArg(ConsoleObject(True)));
+  end;
   for I := 0 to fProject.Units.Count - 1 do begin
     if not UnitIsBuilt(fProject, I) then
       Continue;
@@ -546,6 +651,8 @@ begin
   for I := 0 to fProject.Units.Count - 1 do
     if UnitIsBuilt(fProject, I) then
       Files := Files + ' ' + MakeShellArg(UnitObject(fProject, I));
+  if fWindowsActive and (fProject.Options.typ = dptCon) then
+    Files := Files + ' ' + MakeShellArg(ConsoleObject(True));
   Writeln(F, 'clean: clean-custom');
   Writeln(F, #9 + CLEAN_PROGRAM + Files + ' ' + ProgramArg(fProject));
   Writeln(F);
@@ -557,7 +664,8 @@ var
 begin
   try
     NewMakeFile(F);
-    Writeln(F, '$(BIN): $(OBJ)');
+    if fWindowsActive then Writeln(F, '$(BIN): $(OBJ) $(MAKEFILE_LIST)')
+    else Writeln(F, '$(BIN): $(OBJ)');
     if not fCheckSyntax then
       if fProject.Options.useGPP then
         Writeln(F, #9 + '$(CPP)' + LinkObjects(fProject) + ' -o ' + ProgramArg(fProject) + ' $(LIBS)')
@@ -575,7 +683,8 @@ var
 begin
   try
     NewMakeFile(F);
-    Writeln(F, '$(BIN): $(OBJ)');
+    if fWindowsActive then Writeln(F, '$(BIN): $(OBJ) $(MAKEFILE_LIST)')
+    else Writeln(F, '$(BIN): $(OBJ)');
     if not fCheckSyntax then begin
       Writeln(F, #9 + 'ar r ' + ProgramArg(fProject) + LinkObjects(fProject));
       Writeln(F, #9 + 'ranlib ' + ProgramArg(fProject));
@@ -594,7 +703,8 @@ var
 begin
   try
     NewMakeFile(F);
-    Writeln(F, '$(BIN): $(OBJ)');
+    if fWindowsActive then Writeln(F, '$(BIN): $(OBJ) $(MAKEFILE_LIST)')
+    else Writeln(F, '$(BIN): $(OBJ)');
     if not fCheckSyntax then begin
       if fProject.Options.useGPP then
         Writeln(F, #9 + '$(CPP) -shared' + LinkObjects(fProject) + ' -o ' + ProgramArg(fProject) + ' $(LIBS)')
@@ -705,11 +815,14 @@ end;
 procedure TCompiler.CheckSyntax;
 begin
   fCheckSyntax := True;
-  Compile;
-  fCheckSyntax := False;
+  try
+    Compile;
+  finally
+    fCheckSyntax := False;
+  end;
 end;
 
-procedure TCompiler.Compile;
+function TCompiler.Compile: Boolean;
 const
   // gcc, input, compileparams, includeparams, librariesparams
   cSyntaxCmdLine = '%s "%s" %s %s %s';
@@ -723,7 +836,11 @@ var
   cmdline: String;
   s: String;
 begin
-  if not SelectCompatibility or not ConfigureWindowsGameCompiler then Exit;
+  Result := False;
+  fSucceeded := False;
+  if not SelectCompatibility then Exit;
+  if not CheckResources then Exit;
+  if not ConfigureWindowsGameCompiler then Exit;
   case Target of
     ctFile: begin
         // The commands are split into arguments at spaces outside quotes
@@ -731,10 +848,6 @@ begin
         // file name and turn the rest of it into options for gcc
         if Pos('"', fSourceFile) > 0 then begin
           MessageDlg(Format(Lang[ID_ERR_QUOTEDFILENAME], [fSourceFile]), mtError, [mbOK], 0);
-          Exit;
-        end;
-        if GetFileTyp(fSourceFile) = utResSrc then begin
-          MessageDlg(Lang[ID_ERR_NORESOURCES], mtInformation, [mbOK], 0);
           Exit;
         end;
 
@@ -823,6 +936,10 @@ begin
         DoLogEntry(Lang[ID_LOG_PROJECTCOMPILE]);
         DoLogEntry('--------');
         DoLogEntry(Format(Lang[ID_LOG_PROJECTFILE], [fProject.FileName]));
+        if not fWindowsActive and not fProject.Options.UseCustomMakefile and
+          ((fProject.Options.PrivateResource <> '') or (fProject.Options.Icon <> '') or
+           fProject.Options.IncludeVersionInfo or fProject.Options.SupportXPThemes) then
+          DoLogEntry('[Warning] ' + Lang[ID_LOG_PRESERVEDRESOURCES]);
         DoLogEntry(Format(Lang[ID_LOG_COMPILERNAME], [fCompilerSet.Name]));
         DoLogEntry('');
 
@@ -849,13 +966,14 @@ begin
         LaunchThread(cmdline, ExtractFilePath(Project.FileName));
       end;
   end;
+  Result := Assigned(fDevRun);
 end;
 
 procedure TCompiler.RunTerminate(Sender: TObject);
 begin
   Application.Restore;
 
-  OnRunEnd;
+  if Assigned(fOnRunEnd) then fOnRunEnd;
 
   MainForm.UpdateAppTitle;
 end;
@@ -961,17 +1079,20 @@ begin
   end;
 end;
 
-// Whether a file is a compiled program: ELF ($7F 'E' 'L' 'F')
+// Recognize native ELF and Mach-O programs, including universal binaries.
 function IsProgramFile(const FileName: String): Boolean;
 var
   F: TFileStream;
-  Magic: array[0..3] of Char;
+  Magic: LongWord;
 begin
   Result := False;
   try
     F := TFileStream.Create(FileName, fmOpenRead or fmShareDenyNone);
     try
-      Result := (F.Read(Magic, SizeOf(Magic)) = SizeOf(Magic)) and (Magic = #$7F'ELF');
+      Result := (F.Read(Magic, SizeOf(Magic)) = SizeOf(Magic)) and
+        ((Magic = $464C457F) or (Magic = $FEEDFACE) or (Magic = $CEFAEDFE) or
+         (Magic = $FEEDFACF) or (Magic = $CFFAEDFE) or (Magic = $CAFEBABE) or
+         (Magic = $BEBAFECA) or (Magic = $CAFEBABF) or (Magic = $BFBAFECA));
     finally
       F.Free;
     end;
@@ -1015,13 +1136,14 @@ begin
           end;
         end;
         // Programs have no extension on Linux: main.cpp builds main. Only
-        // delete a program (ELF) by that name, not another file of the user's.
+        // delete a recognized program by that name, not an ordinary user file.
         if FileExists(FileName) and (not (GetFileTyp(fSourceFile) in [utcSrc, utcppSrc]) or IsProgramFile(FileName) or (WindowsPEMachine(FileName) <> 0))
         then begin
           DoLogEntry(Format(Lang[ID_LOG_CLEANEDFILE], [FileName]));
           DeleteFile(FileName);
         end else
           DoLogEntry(Lang[ID_LOG_NOCLEANFILE]);
+        if fWindowsActive then DeleteFile(ConsoleObject);
       end;
     ctProject: begin
         InitProgressForm;
@@ -1033,7 +1155,7 @@ begin
         DoLogEntry('');
 
         // Try to create a makefile that cleans for the whole project...
-        BuildMakeFile;
+        BuildMakeFile(True);
         if not FileExists(fMakefile) then begin
           DoLogEntry(Lang[ID_ERR_NOMAKEFILE]);
           DoLogEntry(Lang[ID_ERR_CLEANFAILED]);
@@ -1057,15 +1179,19 @@ begin
   end;
 end;
 
-procedure TCompiler.RebuildAll; // TODO: unite with TCompiler.Clean?
+function TCompiler.RebuildAll: Boolean; // TODO: unite with TCompiler.Clean?
 const
   cCleanLine = '%s -f "%s" clean all';
 var
   cmdLine: String;
 begin
+  Result := False;
+  fSucceeded := False;
+  if not SelectCompatibility then Exit;
+  if not CheckResources then Exit;
   case Target of
     ctFile: begin
-        Compile;
+        Result := Compile;
       end;
     ctProject: begin
         InitProgressForm;
@@ -1091,12 +1217,13 @@ begin
         DoLogEntry(Lang[ID_LOG_PROCESSINGMAKE]);
         DoLogEntry('--------');
         DoLogEntry(Format(Lang[ID_LOG_MAKEFILEPROC],
-          [IncludeTrailingPathDelimiter(fCompilerSet.BinDir[0]) + fCompilerSet.MakeName]));
+          [FindExecutable(fCompilerSet.MakeName)]));
         DoLogEntry(Format(Lang[ID_LOG_COMMAND], [cmdLine]));
         DoLogEntry('');
 
         // Let make parse the makefile
         LaunchThread(cmdLine, fProject.Directory);
+        Result := Assigned(fDevRun);
       end;
   end;
 end;
@@ -1108,13 +1235,24 @@ begin
   else begin
     fAbortThread := False;
     fDevRun := TDevRun.Create(true);
-    fDevRun.Command := s;
-    fDevRun.Directory := dir;
-    fDevRun.OnTerminate := OnCompilationTerminated;
-    fDevRun.OnLineOutput := OnLineOutput;
-    fDevRun.OnCheckAbort := ThreadCheckAbort;
-    fDevRun.FreeOnTerminate := True;
-    fDevRun.Start;
+    try
+      fDevRun.Command := s;
+      if (fTarget = ctFile) and HasConsoleSupport then begin
+        fDevRun.CommandArgs := TStringList.Create;
+        fDevRun.CommandArgs.Add('/bin/sh'); fDevRun.CommandArgs.Add('-c');
+        fDevRun.CommandArgs.Add(ConsoleCompileCommand(s));
+      end;
+      fDevRun.Directory := dir;
+      fDevRun.OnTerminate := OnCompilationTerminated;
+      fDevRun.OnLineOutput := OnLineOutput;
+      fDevRun.OnCheckAbort := ThreadCheckAbort;
+      fDevRun.FreeOnTerminate := True;
+      fDevRun.Start;
+    except
+      fDevRun.OnTerminate := nil;
+      FreeAndNil(fDevRun);
+      raise;
+    end;
 
     MainForm.UpdateAppTitle;
   end;
@@ -1128,15 +1266,10 @@ end;
 // The compile thread calls back into this object (Synchronize, OnTerminate):
 // stop it and let those calls run before the IDE frees it
 procedure TCompiler.StopAndWait;
-var
-  Started: QWord;
 begin
-  if not Assigned(fDevRun) then
-    Exit;
+  if not Assigned(fDevRun) then Exit;
   AbortThread;
-  Started := GetTickCount64;
-  while Assigned(fDevRun) and (GetTickCount64 - Started < 5000) do
-    CheckSynchronize(20);
+  while Assigned(fDevRun) do CheckSynchronize(20);
 end;
 
 procedure TCompiler.AbortThread;
@@ -1147,17 +1280,22 @@ begin
 end;
 
 procedure TCompiler.OnCompilationTerminated(Sender: TObject);
+var Worker: TDevRun;
 begin
-  OnCompEnd;
-
+  if Sender <> fDevRun then Exit;
+  Worker := TDevRun(Sender);
+  fSucceeded := Worker.RunResult.Started and not Worker.RunResult.Cancelled and
+    (Worker.RunResult.ExitCode = 0) and (fErrCount = 0) and not fAbortThread;
+  if not fSucceeded and not fAbortThread and (fErrCount = 0) then begin
+    Inc(fErrCount);
+    DoOutput('', '', '', '[Error] Compiler process failed (exit ' +
+      IntToStr(Worker.RunResult.ExitCode) + '). ' + Worker.RunResult.ErrorText);
+  end;
   fDevRun := nil;
-
+  if Assigned(fOnCompEnd) then fOnCompEnd;
   MainForm.UpdateAppTitle;
-
   EndProgressForm;
-
-  if (fErrCount = 0) and not fAbortThread then
-    OnCompSuccess;
+  if fSucceeded and Assigned(fOnCompSuccess) then fOnCompSuccess;
 end;
 
 procedure TCompiler.OnLineOutput(Sender: TObject; const Line: String);
@@ -1354,6 +1492,8 @@ begin
   end;
 
   fLibrariesParams := Trim(fLibrariesParams);
+  if HasConsoleSupport then
+    fLibrariesParams := fLibrariesParams + ' ' + Quote(ConsoleObject(Assigned(fProject)));
 end;
 
 procedure TCompiler.GetIncludesParams(Quote: TArgQuote = nil); // see GetLibrariesParams

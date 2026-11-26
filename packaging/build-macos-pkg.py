@@ -160,7 +160,7 @@ def main():
                     if magic in (b'\xcf\xfa\xed\xfe', b'\xfe\xed\xfa\xcf', b'\xca\xfe\xba\xbe', b'\xca\xfe\xba\xbf'):
                         run('codesign', '--force', '--sign', '-', path)
         shutil.copytree(repo/'Compat/common', resources/'Compat/common', dirs_exist_ok=True)
-        for name in ('self-test.cpp','LICENSE'):
+        for name in ('self-test.cpp','console-startup.c','LICENSE'):
             target = resources/'Compat/windows'/name
             target.parent.mkdir(parents=True,exist_ok=True)
             shutil.copy2(repo/'Compat/windows'/name,target)

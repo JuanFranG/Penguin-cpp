@@ -5,4 +5,5 @@ SRC=$(cd "$HERE/../.." && pwd)
 OUT="$HERE/build"
 mkdir -p "$OUT"
 fpc -vewn ${FPCFLAGS:-} -FU"$OUT" -FE"$OUT" -Fu"$SRC" "$HERE/windowsgametest.lpr"
+fpc -vewn ${FPCFLAGS:-} -FU"$OUT" -FE"$OUT" -Fu"$SRC" "$HERE/consolecommand.lpr"
 if [ "${1:-}" = --run ]; then "$OUT/windowsgametest"; fi

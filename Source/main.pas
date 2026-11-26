@@ -336,7 +336,6 @@ type
     actProjectRenameFolder: TAction;
     Newfolder1: TMenuItem;
     N40: TMenuItem;
-    ImportItem: TMenuItem;
     N41: TMenuItem;
     ToggleBreakpointPopupItem: TMenuItem;
     AddWatchPopupItem: TMenuItem;
@@ -518,9 +517,6 @@ type
     actToggleCommentInline: TAction;
     actCommentInlineSel1: TMenuItem;
     FormatMenu: TMenuItem;
-    actRunTests: TAction;
-    DonateItem: TMenuItem;
-    actDonate: TAction;
     PopupMenu1: TPopupMenu;
     MainPanel: TPanel;
     PanelLeft: TPanel;
@@ -631,6 +627,7 @@ type
     procedure actReplaceExecute(Sender: TObject);
     procedure actGotoLineExecute(Sender: TObject);
     procedure actCompileExecute(Sender: TObject);
+    procedure StartCompilation(Rebuild: Boolean; FollowUp: TCompSuccessAction);
     procedure actRunExecute(Sender: TObject);
     procedure actCompRunExecute(Sender: TObject);
     procedure actRebuildExecute(Sender: TObject);
@@ -765,7 +762,6 @@ type
     procedure actMsgSaveAllExecute(Sender: TObject);
     procedure actDeleteProfileExecute(Sender: TObject);
     procedure actGotoImplDeclEditorExecute(Sender: TObject);
-    procedure ImportCBCprojectClick(Sender: TObject);
     procedure CompilerOutputAdvancedCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       Stage: TCustomDrawStage; var DefaultDraw: Boolean);
     procedure cmbGenericDropDown(Sender: TObject);
@@ -829,7 +825,6 @@ type
     procedure actFormatOptionsExecute(Sender: TObject);
     procedure FindOutputSelectItem(Sender: TObject; Item: TListItem;
       Selected: Boolean);
-    procedure actRunTestsExecute(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure ButtonChangeThemeClick(Sender: TObject);
     procedure RecentFileClick(Sender: TObject);
@@ -972,9 +967,9 @@ implementation
 
 uses
   ErrorLog, MacSupport, PageTabs, Math, IniFiles, Clipbrd, MultiLangSupport, Version, DataFrm, NewProjectFrm, AboutFrm, PrintFrm,
-  CompOptionsFrm, EditorOptFrm, IncrementalFrm, EnviroFrm, SynEdit, ImageTheme, SynEditKeyCmds, Types, FindFrm, ProjectTypes, devExec, Tests, NewTemplateFrm, FunctionSearchFrm,
+  CompOptionsFrm, EditorOptFrm, IncrementalFrm, EnviroFrm, SynEdit, ImageTheme, SynEditKeyCmds, Types, FindFrm, ProjectTypes, devExec, NewTemplateFrm, FunctionSearchFrm,
   NewFunctionFrm, NewVarFrm, NewClassFrm, ProfileAnalysisFrm, FilePropertiesFrm, AddToDoFrm,
-  ViewToDoFrm, ImportCBFrm, CPUFrm, TipOfTheDayFrm, WindowListFrm, RemoveUnitFrm,
+  ViewToDoFrm, CPUFrm, TipOfTheDayFrm, WindowListFrm, RemoveUnitFrm,
   ParamsFrm, ProcessListFrm, SynEditHighlighter, devPlatform, SynEditCompat, LCLProc,
   EditorPrint, PdfPrint, crc, devInstance, PenguinTheme, FileCtrl;
 
@@ -1098,7 +1093,16 @@ begin
   if Assigned(fReportToolWindow) then
     devData.ReportWindowState.GetPlacement(fReportToolWindow);
 
-  SaveOptions;
+  try
+    SaveOptions;
+  except
+    on E: Exception do begin
+      Action := caNone;
+      MessageDlg(Format(Lang[ID_ERR_SAVEFILE], [devData.INIFileName]) + LineEnding + E.Message,
+        mtError, [mbOK], 0);
+      Exit;
+    end;
+  end;
 
   if fUpdatePending and not LaunchUpdateInstaller then begin
     fUpdatePending := False;
@@ -1227,7 +1231,6 @@ begin
   actFileProperties.Caption := Lang[ID_ITEM_PROPERTIES];
 
   // Import submenu
-  ImportItem.Caption := Lang[ID_SUB_IMPORT];
 
   // Exprt submenu
   ExportItem.Caption := Lang[ID_SUB_EXPORT];
@@ -1364,7 +1367,6 @@ begin
   actHelp.Caption := Lang[ID_ITEM_HELPDEVCPP];
   actAbout.Caption := Lang[ID_ITEM_ABOUT];
   actShowTips.Caption := Lang[ID_ITEM_TIP];
-  actDonate.Caption := Lang[ID_ITEM_DONATE];
 
   // Debugging buttons
   actAddWatch.Caption := Lang[ID_ITEM_WATCHADD];
@@ -1657,6 +1659,7 @@ begin
       actCloseProject.Execute
     else
       exit;
+    if Assigned(fProject) then Exit; // Save failed or the close was cancelled.
   end;
 
   // Only update class browser once
@@ -1895,6 +1898,7 @@ procedure TMainForm.CompEndProc;
 var
   I: integer;
 begin
+  if not fCompiler.Succeeded then fCompSuccessAction := csaNone;
   // Close it if there's nothing to show
   if (CompilerOutput.Items.Count = 0) and devData.AutoCloseProgress then begin
     OpenCloseMessageSheet(FALSE)
@@ -1953,8 +1957,11 @@ begin
 end;
 
 procedure TMainForm.CompSuccessProc;
+var FollowUp: TCompSuccessAction;
 begin
-  case fCompSuccessAction of
+  FollowUp := fCompSuccessAction;
+  fCompSuccessAction := csaNone;
+  case FollowUp of
     csaRun: begin
         fCompiler.Run;
       end;
@@ -1965,11 +1972,17 @@ begin
         actProfile.Execute
       end;
   end;
-  fCompSuccessAction := csaNone;
 end;
 
 procedure TMainForm.RunEndProc;
 begin
+  if devExecutor.LastError <> '' then begin
+    LogEntryProc('[Error] Cannot run program: ' + devExecutor.LastError);
+    OpenCloseMessageSheet(True);
+    MessageControl.ActivePage := LogSheet;
+    fRunEndAction := reaNone;
+    Exit;
+  end;
   case fRunEndAction of
     reaProfile: begin
         if not Assigned(ProfileAnalysisForm) then
@@ -2220,7 +2233,7 @@ begin
   try
     // Make changes to files
     if Assigned(fProject) then begin
-      fProject.SaveAll;
+      if not fProject.SaveAll then Exit;
       UpdateAppTitle;
       if CppParser.Statements.Count = 0 then // only scan entire project if it has not already been scanned...
         ScanActiveProject;
@@ -2295,16 +2308,14 @@ begin
 
       case MessageDlg(Format(Lang[ID_MSG_SAVEPROJECT], [s]), mtConfirmation, mbYesNoCancel, 0) of
         mrYes: begin
-            fProject.SaveAll; // do NOT save layout twice
+            if not fProject.SaveAll then Exit;
           end;
         mrNo: begin
             fProject.Modified := FALSE;
             fProject.SaveLayout;
           end;
-        mrCancel: begin
-            fProject.SaveLayout;
-            Exit;
-          end;
+      else
+        Exit; // Cancel or no native dialog result: retain the project.
       end;
     end else
       fProject.SaveLayout; // always save layout, but not when SaveAll has been called
@@ -2735,37 +2746,28 @@ begin
         if Assigned(e) and not fEditorList.CloseEditor(e) then
           Exit; // the user kept it
 
-        // Remove it from the current project...
-        projindex := fProject.Units.IndexOf(NewName);
-        if projindex <> -1 then begin
-          fProject.RemoveEditor(projindex, false);
-          if projindex < I then
-            Dec(I); // the unit being renamed moved up one place
-        end;
-
-        // All references to the file are removed. Delete the file from disk
-        DeleteFile(NewName);
-
         // User didn't want to overwrite
       end else
         Exit;
     end;
 
-    // Target filename does not exist anymore. Do a rename
+    FileMonitor.BeginUpdate;
     try
-      // change name in project file first (no actual file renaming on disk)
+      // Failed filesystem operations leave both the files and project references intact.
+      if not RenameFile(OldName, NewName) then begin
+        MessageDlg(Format(Lang[ID_ERR_RENAMEFILE], [OldName]), mtError, [mbOK], 0);
+        Exit;
+      end;
+      projindex := fProject.Units.IndexOf(NewName);
+      if (projindex <> -1) and (projindex <> I) then begin
+        fProject.RemoveEditor(projindex, False);
+        if projindex < I then Dec(I);
+      end;
       fProject.SaveUnitAs(I, NewName);
-
-      // remove old file from monitor list
       FileMonitor.UnMonitor(OldName);
-
-      // Finally, we can rename without issues
-      RenameFile(OldName, NewName);
-
-      // Add new filename to file minitor
       FileMonitor.Monitor(NewName);
-    except
-      MessageDlg(Format(Lang[ID_ERR_RENAMEFILE], [OldName]), mtError, [mbok], 0);
+    finally
+      FileMonitor.EndUpdate;
     end;
   end;
 end;
@@ -3133,10 +3135,6 @@ begin
             Exit;
         end;
 
-        // Increment build number automagically
-        if fProject.Options.VersionInfo.AutoIncBuildNr then
-          fProject.IncrementBuildNumber;
-        fProject.BuildPrivateResource;
       end;
   end;
 
@@ -3199,16 +3197,28 @@ begin
   Result := True;
 end;
 
-procedure TMainForm.actCompileExecute(Sender: TObject);
+procedure TMainForm.StartCompilation(Rebuild: Boolean; FollowUp: TCompSuccessAction);
 begin
   actStopExecuteExecute(nil);
   if fCompiler.Compiling then begin
     MessageDlg(Lang[ID_MSG_ALREADYCOMP], mtInformation, [mbOK], 0);
     Exit;
   end;
-  if not PrepareForCompile then
-    Exit;
-  fCompiler.Compile;
+  fCompSuccessAction := csaNone;
+  if not PrepareForCompile then Exit;
+  fCompSuccessAction := FollowUp;
+  try
+    if Rebuild then begin
+      if not fCompiler.RebuildAll then fCompSuccessAction := csaNone;
+    end else if not fCompiler.Compile then fCompSuccessAction := csaNone;
+  finally
+    if not fCompiler.Compiling then fCompSuccessAction := csaNone;
+  end;
+end;
+
+procedure TMainForm.actCompileExecute(Sender: TObject);
+begin
+  StartCompilation(False, csaNone);
 end;
 
 procedure TMainForm.actRunExecute(Sender: TObject);
@@ -3225,28 +3235,12 @@ end;
 
 procedure TMainForm.actCompRunExecute(Sender: TObject);
 begin
-  actStopExecuteExecute(nil);
-  if fCompiler.Compiling then begin
-    MessageDlg(Lang[ID_MSG_ALREADYCOMP], mtInformation, [mbOK], 0);
-    Exit;
-  end;
-  if not PrepareForCompile then
-    Exit;
-
-  fCompSuccessAction := csaRun;
-  fCompiler.Compile;
+  StartCompilation(False, csaRun);
 end;
 
 procedure TMainForm.actRebuildExecute(Sender: TObject);
 begin
-  actStopExecuteExecute(nil);
-  if fCompiler.Compiling then begin
-    MessageDlg(Lang[ID_MSG_ALREADYCOMP], mtInformation, [mbOK], 0);
-    Exit;
-  end;
-  if not PrepareForCompile then
-    Exit;
-  fCompiler.RebuildAll;
+  StartCompilation(True, csaNone);
 end;
 
 procedure TMainForm.actClangFormatCurrentFileExecute(Sender: TObject);
@@ -3341,8 +3335,7 @@ begin
           fProject.SetCompilerOption('-g3', 1);
           fProject.SetCompilerOption('-s', 0);
 
-          fCompSuccessAction := csaDebug;
-          actRebuildExecute(nil);
+          StartCompilation(True, csaDebug);
           Exit;
         end;
 
@@ -3395,8 +3388,7 @@ begin
           // Save changes to compiler set
           devCompilerSets.SaveSet(devCompilerSets.CompilationSetIndex);
 
-          fCompSuccessAction := csaDebug;
-          actRebuildExecute(nil);
+          StartCompilation(True, csaDebug);
           Exit;
         end;
 
@@ -3406,8 +3398,7 @@ begin
           // Did we compile?
           if not FileExists(ChangeFileExt(e.FileName, EXE_EXT)) then begin
             if MessageDlg(Lang[ID_ERR_SRCNOTCOMPILEDSUGGEST], mtConfirmation, [mbYes, mbNo], 0) = mrYes then begin
-              fCompSuccessAction := csaDebug;
-              actCompileExecute(nil);
+              StartCompilation(False, csaDebug);
             end;
             Exit;
           end;
@@ -4280,7 +4271,7 @@ begin
 end;
 
 procedure TMainForm.WindowsGameClick(Sender: TObject);
-var Config: TWindowsGameConfig; Ini: TMemIniFile;
+var Config: TWindowsGameConfig;
 begin
   if fCompiler.Compiling or fDebugger.Executing or devExecutor.Running then Exit;
   if Assigned(fProject) then Config := fProject.Options.WindowsGame
@@ -4290,9 +4281,12 @@ begin
       fProject.Options.WindowsGame := Config; fProject.ResolveCompatibility;
       fProject.SaveOptions; fProject.Modified := True;
     end else begin
+      devData.BeginUpdate;
+      try
+        WriteWindowsGameConfig(devData.Ini, Config);
+        devData.EndUpdate(True);
+      except devData.EndUpdate(False); raise end;
       fCompiler.StandaloneConfig := Config;
-      Ini := TMemIniFile.Create(devData.INIFileName);
-      try WriteWindowsGameConfig(Ini,Config); Ini.UpdateFile finally Ini.Free end;
     end;
   end;
 end;
@@ -4964,8 +4958,7 @@ begin
           fProject.SetCompilerOption(PROFILE_OPTION, 1);
           fProject.SetCompilerOption('-s', 0);
 
-          fCompSuccessAction := csaProfile;
-          actRebuildExecute(nil);
+          StartCompilation(True, csaProfile);
           Exit;
         end;
       end;
@@ -4989,8 +4982,7 @@ begin
           // Save changes to compiler set
           devCompilerSets.SaveSet(devCompilerSets.CompilationSetIndex);
 
-          fCompSuccessAction := csaProfile;
-          actRebuildExecute(nil);
+          StartCompilation(True, csaProfile);
           Exit;
         end;
       end;
@@ -5690,8 +5682,7 @@ begin
     Title := Lang[ID_NV_SAVEPROJECT];
 
     if Execute then begin
-      fProject.FileName := FileName;
-      fProject.SaveAll;
+      if not fProject.SaveAll(FileName) then Exit;
       UpdateAppTitle;
     end;
   finally
@@ -5703,7 +5694,7 @@ procedure TMainForm.BuildOpenWith;
 var
   idx, idx2: integer;
   item: TMenuItem;
-  ext, s, s1: String;
+  ext: String;
 begin
   mnuOpenWith.Clear;
   if not assigned(fProject) then
@@ -5724,18 +5715,7 @@ begin
     item.OnClick := mnuOpenWithClick;
     mnuOpenWith.Add(item);
   end;
-  if GetAssociatedProgram(ext, s, s1) then begin
-    item := TMenuItem.Create(nil);
-    item.Caption := '-';
-    item.Tag := -1;
-    item.OnClick := mnuOpenWithClick;
-    mnuOpenWith.Add(item);
-    item := TMenuItem.Create(nil);
-    item.Caption := s1;
-    item.Tag := -1;
-    item.OnClick := mnuOpenWithClick;
-    mnuOpenWith.Add(item);
-  end;
+
 end;
 
 procedure TMainForm.ButtonChangeThemeClick(Sender: TObject);
@@ -6178,14 +6158,6 @@ procedure TMainForm.FormResize(Sender: TObject);
 begin
   ResizeWelcomeComponent;
   Application.QueueAsyncCall(FitToolbarDock, 0); // rows change with the width
-end;
-
-procedure TMainForm.ImportCBCprojectClick(Sender: TObject);
-begin
-  with TImportCBForm.Create(Self) do begin
-    if ShowModal = mrOK then
-      OpenProject(GetFilename);
-  end;
 end;
 
 procedure TMainForm.CompilerOutputAdvancedCustomDrawItem(Sender: TCustomListView; Item: TListItem; State:
@@ -7223,15 +7195,6 @@ begin
     Item.Caption := '>'
   else
     Item.Caption := '';
-end;
-
-procedure TMainForm.actRunTestsExecute(Sender: TObject);
-begin
-  with TTestClass.Create do try
-    TestAll;
-  finally
-    Free;
-  end;
 end;
 
 function TMainForm.ParseParameters: Integer;

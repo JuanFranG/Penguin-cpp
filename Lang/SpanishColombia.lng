@@ -1272,3 +1272,12 @@ Ver=1
 80228=Las herramientas seleccionadas sustituyen al entorno incluido. Usa el entorno incluido para restaurar la configuración automática.
 80229=Entorno Windows no disponible
 80230=Usar un motor Apple GPTK personalizado
+
+80231=Consola: Unicode (UTF-8)
+80232=Consola: DOS / OEM 437
+80233=Consola: Windows ANSI 1252
+80234=Consola: controlada por el programa
+80235=Vuelve a compilar al cambiar el perfil. La configuración explícita de tu programa tiene prioridad.
+80236=Penguin no compila ni enlaza recursos Windows en sus compilaciones generadas (%s). Usa un sistema de compilación externo; se conservan los metadatos del proyecto.
+80237=Los metadatos de recursos Windows se conservan, pero no se aplican al destino nativo.
+80018=Novedades de la versión

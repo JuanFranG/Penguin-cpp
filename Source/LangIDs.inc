@@ -62,6 +62,8 @@ const
   // compiling
   ID_ERR_QUOTEDFILENAME                 = 1050;
   ID_ERR_NORESOURCES                    = 1051;
+  ID_ERR_UNSUPPORTEDRESOURCES           = 80236;
+  ID_LOG_PRESERVEDRESOURCES             = 80237;
 
   // running
   ID_RUN_EXITED                         = 1052; // printf format: %s seconds, %d exit code

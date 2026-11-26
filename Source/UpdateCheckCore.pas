@@ -2,10 +2,10 @@
 unit UpdateCheckCore;
 {$mode objfpc}{$H+}
 interface
-uses Classes, SysUtils;
+uses Classes, SysUtils, Version;
 const
-  LatestReleaseURL = 'https://github.com/JuanFranG/Penguin-cpp/releases/latest';
-  ReleaseTagPrefix = 'https://github.com/JuanFranG/Penguin-cpp/releases/tag/';
+  LatestReleaseURL = DEVCPP_REPOSITORY_URL + '/releases/latest';
+  ReleaseTagPrefix = DEVCPP_REPOSITORY_URL + '/releases/tag/';
 type
   TUpdateResult = (urSuccess, urNoCurl, urNetworkError, urInvalidReply, urCancelled);
   TCancelUpdate = function: Boolean of object;

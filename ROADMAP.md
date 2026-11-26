@@ -9,7 +9,7 @@ funciona en Windows.
 Este documento explica de dónde viene, qué se ha hecho hasta ahora y qué
 falta.
 
-*Última actualización: 13 de noviembre de 2026. Versión 0.5.0.*
+*Última actualización: 26 de noviembre de 2026. Publicación vigente: 0.5.0.*
 
 ---
 
@@ -23,9 +23,42 @@ el historial del port: los pendientes vigentes se resumen aquí.
 
 | Entrega | Implementado y comprobado | Límites que permanecen |
 |---|---|---|
-| 0.3.0 | Buscar/instalar actualizaciones, acción Adjuntar a un proceso nativo, nombres de objetos sin colisiones y actualización macOS con preparación y recuperación. | Gatekeeper con cuarentena y recuperación mediante Installer real en un Mac limpio. |
+| 0.3.0 | Buscar/instalar actualizaciones, acción Adjuntar a un proceso nativo, objetos sin colisiones en una carpeta de salida común y actualización macOS con preparación y recuperación. | Gatekeeper con cuarentena y recuperación mediante Installer real en un Mac limpio. |
 | 0.4.0 | Clipping de vistas LCL para corregir repintado Cocoa; barras adaptables observadas a 1440/1000 puntos; modos Automático/Nativo/Windows, objetos `.win.o`, LLVM-MinGW y Wine. | El análisis automático es heurístico; no garantiza compatibilidad con todas las APIs Windows. |
 | 0.5.0 | Diálogo compacto con estado del entorno; rutas avanzadas opcionales; `.pkg` completo por defecto; comprobación al arrancar desde Terminal; rechazo de un DMG nativo sobre una instalación completa. | PKG/DMG completos y fuentes publicados; canal completo probado con simulaciones. Instalación real, notarización y actualización futura pendientes. |
+
+### Refuerzo de fiabilidad de la 0.5.5: etapas 1 a 6
+
+- Guardado por reemplazo atómico de fuentes, proyecto y disposición de editores;
+  los errores y las cancelaciones se propagan hasta el cierre. Descartar cambios
+  no guarda el proyecto desde su destructor. Abrir otro proyecto respeta un
+  cierre cancelado.
+- La compilación usa el resultado real del proceso, conserva el último diagnóstico
+  aunque no tenga salto de línea y consume la acción pendiente por intento.
+  Reiniciar la ejecución espera al proceso anterior; detener alcanza a sus hijos.
+- Los objetos junto a las fuentes conservan su extensión (`util.c.o`,
+  `util.cpp.o`); Limpiar reconoce Mach-O. Las recetas de compilación personalizada
+  usan el mismo cálculo de nombres que el Makefile.
+- Opciones de proyecto en una copia de trabajo; cancelar descarta las ediciones.
+  Preferencias con commit atómico y errores visibles. Recuperación del prefix
+  privado con respaldo y cierre de su servidor antes de moverlo. El estado listo
+  requiere archivos de registro guardados y un self-test válido.
+- Consola Windows con perfiles UTF-8, OEM 437, ANSI 1252 y control por el programa.
+  Preparación de CRT/entrada/salida enlazada al compilar; restauración del terminal
+  al finalizar. Probados C/C++, caracteres, teclado, cursor y atributos.
+- Funciones heredadas: recursos no admitidos producen un error explícito y
+  conservan los metadatos; se retiraron importador Code::Blocks, formulario de
+  formato antiguo, pruebas internas obsoletas y funciones sin consumidores.
+  Los recursos del formato antiguo se cargan sin modificar el archivo original.
+- Pruebas de regresión incorporadas a los workflows Linux/macOS. La validación
+  local se ejecuta en macOS; Linux necesita confirmar su ejecución en CI.
+
+Detalle y límites en [etapas 1–2](QA_STAGES_1_2.md),
+[etapas 3–4](QA_STAGES_3_4.md) y [etapa 5](QA_STAGE_5.md). La próxima entrega
+prevista es **0.5.5**; su evidencia de entrega se recoge en [etapa 6](QA_STAGE_6.md). Siguen pendientes la lectura de
+preferencias malformadas y la cobertura general/entrega multiplataforma. El
+soporte de recursos Windows y un importador Code::Blocks válido quedan como
+funcionalidades futuras, no como funciones disponibles.
 
 ### Próximos trabajos
 
@@ -913,12 +946,11 @@ requiere una cuenta de Apple Developer (99 USD al año) y notarizar la app.
     su interfaz es de WinAPI y su lógica se puede portar.
   - `Icons/*.ico`, que muestra Nuevo proyecto, y `CodeToolTip.res`, que se
     enlaza, se usan tal como están.
-- **Otra limpieza**, preguntando antes de borrar: `FormatterOptionsFrm`, que
-  no lo usa nada; las imágenes del original que ya no se usan
-  (`Source/Images/devcpplogo.png`, `splash.bmp`, `donate.bmp`…); `Tests.pas`
-  y su acción *Run Tests* (desactivada; ejecutaba todas las acciones del
-  menú y borraba los compiladores configurados) y la acción oculta
-  *Donate*; los datos de prueba del original en `Source/Tests` (`Document`,
+- **Limpieza realizada en la etapa 5:** `FormatterOptionsFrm`, `Tests.pas` y las
+  acciones antiguas *Run Tests* y *Donate*.
+- **Otra limpieza pendiente**, previa comprobación de consumidores: las imágenes
+  del original que ya no se usan
+  (`Source/Images/devcpplogo.png`, `splash.bmp`, `donate.bmp`…); los datos de prueba del original en `Source/Tests` (`Document`,
   `Explorer`, un proyecto de DirectX, `Parser`, `Project`, `Fail.txt`;
   `Folds` sí se usa, en `FoldTest`). `NEWS.txt` es el historial de Dev-C++ 6.3: falta uno propio.
 - **Avisos de compilación**: bajaron de 118 a 29. Se quitaron la línea de

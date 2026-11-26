@@ -18,13 +18,14 @@ type
   private
     Worker: TReleaseThread;
     Timer: TTimer;
-    StatusText: TLabel;
+    StatusText, RepositoryLink, ReleaseLink: TLabel;
     Details: TMemo;
     RetryButton, DownloadButton, InstallButton, CloseButton: TButton;
     DownloadURL: String;
     procedure StartCheck(Sender: TObject);
     procedure Poll(Sender: TObject);
     procedure OpenDownload(Sender: TObject);
+    procedure OpenLink(Sender: TObject);
   public
     constructor CreateDialog;
     destructor Destroy; override;
@@ -42,7 +43,7 @@ begin
   Caption := Lang[80000]; Position := poMainFormCenter;
   BorderStyle := bsDialog; BorderIcons := [biSystemMenu];
   Font.Assign(Screen.SystemFont);
-  ClientWidth := 600; ClientHeight := 250;
+  ClientWidth := 600; ClientHeight := 300;
   StatusText := TLabel.Create(Self); StatusText.Parent := Self;
   StatusText.AutoSize := False; StatusText.WordWrap := True;
   StatusText.SetBounds(20, 20, 560, 56); StatusText.Font.Style := [fsBold];
@@ -50,18 +51,30 @@ begin
   Details.SetBounds(20, 86, 560, 105); Details.ReadOnly := True;
   Details.BorderStyle := bsNone; Details.Color := clBtnFace;
   Details.TabStop := False; Details.ScrollBars := ssAutoVertical;
-  RetryButton := TButton.Create(Self); RetryButton.Parent := Self;
-  RetryButton.SetBounds(20, 210, 120, 28); RetryButton.Caption := Lang[80006];
+  RetryButton := TButton.Create(Self); RetryButton.Parent := Self; RetryButton.Name := 'RetryButton';
+  RetryButton.SetBounds(20, 260, 120, 28); RetryButton.Caption := Lang[80006];
   RetryButton.OnClick := @StartCheck;
   DownloadButton := TButton.Create(Self); DownloadButton.Parent := Self;
-  DownloadButton.SetBounds(310, 210, 145, 28); DownloadButton.Caption := Lang[80007];
+  DownloadButton.SetBounds(310, 260, 145, 28); DownloadButton.Caption := Lang[80007];
   DownloadButton.OnClick := @OpenDownload;
   InstallButton := TButton.Create(Self); InstallButton.Parent := Self;
-  InstallButton.SetBounds(150, 210, 150, 28); InstallButton.Caption := Lang[80015];
+  InstallButton.SetBounds(150, 260, 150, 28); InstallButton.Caption := Lang[80015];
   InstallButton.ModalResult := mrYes;
   CloseButton := TButton.Create(Self); CloseButton.Parent := Self;
-  CloseButton.SetBounds(465, 210, 115, 28); CloseButton.Caption := Lang[80008];
+  CloseButton.SetBounds(465, 260, 115, 28); CloseButton.Caption := Lang[80008];
   CloseButton.ModalResult := mrCancel; CloseButton.Cancel := True;
+  RepositoryLink := TLabel.Create(Self); RepositoryLink.Parent := Self;
+  RepositoryLink.Name := 'RepositoryLink'; RepositoryLink.Caption := 'GitHub: Penguin cpp';
+  RepositoryLink.SetBounds(20, 204, 240, 20);
+  RepositoryLink.Font.Color := clBlue; RepositoryLink.Font.Style := [fsUnderline];
+  RepositoryLink.Cursor := crHandPoint; RepositoryLink.Hint := DEVCPP_REPOSITORY_URL;
+  RepositoryLink.ShowHint := True; RepositoryLink.OnClick := @OpenLink;
+  ReleaseLink := TLabel.Create(Self); ReleaseLink.Parent := Self;
+  ReleaseLink.Name := 'ReleaseNotesLink'; ReleaseLink.Caption := Lang[80018];
+  ReleaseLink.SetBounds(20, 230, 560, 20);
+  ReleaseLink.Font.Color := clBlue; ReleaseLink.Font.Style := [fsUnderline];
+  ReleaseLink.Cursor := crHandPoint; ReleaseLink.Hint := DEVCPP_RELEASE_URL;
+  ReleaseLink.ShowHint := True; ReleaseLink.OnClick := @OpenLink;
   Timer := TTimer.Create(Self); Timer.Enabled := False; Timer.Interval := 80;
   Timer.OnTimer := @Poll;
   StartCheck(nil);
@@ -77,6 +90,7 @@ end;
 procedure TUpdateForm.StartCheck(Sender: TObject);
 begin
   if Assigned(Worker) then Exit;
+  ReleaseLink.Hint := DEVCPP_RELEASE_URL;
   StatusText.Caption := Lang[80001];
   Details.Text := Format(Lang[80010], [DEVCPP_VERSION]);
   RetryButton.Enabled := False; DownloadButton.Enabled := False; InstallButton.Enabled := False; DownloadURL := '';
@@ -91,6 +105,7 @@ begin
   try
     if (Worker.Status = urSuccess) and
       CompareReleaseVersions(Worker.LatestVersion, DEVCPP_VERSION, Comparison) then begin
+      ReleaseLink.Hint := Worker.PageURL;
       if Comparison > 0 then begin
         StatusText.Caption := Format(Lang[80002], [Worker.LatestVersion, DEVCPP_VERSION]);
         DownloadURL := Worker.PageURL; DownloadButton.Enabled := True; InstallButton.Enabled := True;
@@ -118,6 +133,10 @@ end;
 procedure TUpdateForm.OpenDownload(Sender: TObject);
 begin
   if DownloadURL <> '' then OpenURL(DownloadURL);
+end;
+procedure TUpdateForm.OpenLink(Sender: TObject);
+begin
+  OpenURL(TLabel(Sender).Hint);
 end;
 function ShowUpdateCheck: Boolean;
 var F: TUpdateForm;

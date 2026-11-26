@@ -110,6 +110,8 @@ jobs:
           xvfb-run -a sh -ec '
             trap "wineserver -k; wineserver -w" EXIT
             wineboot -u
+            wineserver -k
+            wineserver -w
             timeout 240 python3 Source/Tests/WindowsGameTest/console_test.py \
               --cc "$(command -v x86_64-w64-mingw32-gcc)" \
               --cxx "$(command -v x86_64-w64-mingw32-g++)" \

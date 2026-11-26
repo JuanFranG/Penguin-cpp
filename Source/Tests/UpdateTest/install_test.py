@@ -48,6 +48,7 @@ class InstallTest(unittest.TestCase):
             self.assertEqual(result.returncode == 0, failure == '', result.stdout+result.stderr)
             self.assertEqual((previous/'version').read_text().strip(), 'old' if failure else 'new')
             self.assertEqual(list(dest.glob('.penguin-cpp-update.*')), [])
+            if failure == 'privilege': self.assertIn('autorización de administrador', result.stdout)
             if complete:
                 self.assertIn('Penguin-cpp-0.2.3-COMPLETE-UNSIGNED.dmg', result.stdout)
                 self.assertTrue((previous/'Contents/Resources/Compat/windows/environment.json').is_file())

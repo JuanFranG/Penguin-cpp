@@ -37,7 +37,9 @@ Comment: On Debian systems the Apache License 2.0 is in
 Files: usr/lib/penguin-cpp/windows-toolchain/*
 Copyright: The LLVM Project, mingw-w64 and LLVM-MinGW contributors
 License: LLVM-MinGW-bundle
-Comment: Unmodified LLVM-MinGW 20261104 UCRT upstream binary distribution.
+Comment: LLVM-MinGW 20261104 UCRT upstream binary distribution.
+ Unused lldb-mi and build-machine-specific libtool .la files are omitted;
+ compiler binaries and component notices remain unchanged.
  Complete component notices and licenses are installed in
  /usr/lib/penguin-cpp/windows-toolchain/LICENSE.TXT and the share directories
  of the individual components.

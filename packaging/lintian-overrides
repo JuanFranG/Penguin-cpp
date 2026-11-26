@@ -4,3 +4,7 @@ national-encoding [usr/share/penguin-cpp/Lang/*]
 
 # Free Pascal 3.2 does not build position independent executables
 hardening-no-pie [usr/lib/penguin-cpp/penguin-cpp]
+
+# Windows COFF import archives contain linker import tables, not ELF code.
+# Lintian assumes native archives; keep this exception confined to the SDK.
+no-code-sections [usr/lib/penguin-cpp/windows-toolchain/*/lib/*.a]

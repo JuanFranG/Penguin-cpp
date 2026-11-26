@@ -18,5 +18,8 @@ tar -xJf "$ARCHIVE" -C "$CACHE"
 DEST="$1/usr/lib/penguin-cpp/windows-toolchain"
 mkdir -p "$DEST"
 cp -a "$CACHE/$NAME/." "$DEST/"
+# Build-machine libtool paths and the unused MI debugger are not relocatable.
+find "$DEST" -type f -name '*.la' -delete
+rm -f "$DEST/bin/lldb-mi"
 mkdir -p "$1/usr/share/penguin-cpp/Compat/windows"
 ln -s ../../../../lib/penguin-cpp/windows-toolchain "$1/usr/share/penguin-cpp/Compat/windows/toolchain"

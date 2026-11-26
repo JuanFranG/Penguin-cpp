@@ -153,7 +153,9 @@ licencia, toolchain, Make, runtime y manifiesto; el DMG nativo conserva su canal
 ## Compilador Windows incluido en Linux
 
 El `.deb` amd64 contiene el LLVM-MinGW UCRT oficial completo en
-`/usr/lib/penguin-cpp/windows-toolchain`, con sus licencias y enlaces originales.
+`/usr/lib/penguin-cpp/windows-toolchain`, con sus licencias y enlaces originales. Se omiten los metadatos libtool `.la`
+con rutas de la máquina de compilación y `lldb-mi`, que no participa en la
+compilación/ejecución ni en el depurador nativo de Penguin.
 La ruta de recursos apunta allí y la detección automática lo prefiere al MinGW
 antiguo del sistema. El SHA-256 y la versión están fijados en
 `prepare-linux-toolchain.sh`. La descarga ocurre al construir el paquete,

@@ -97,7 +97,7 @@ fi
 # ARM Linux needs a separately validated x64 translation engine.
 COMPATDEPS=
 if [ "$ARCH" = amd64 ]; then
-  COMPATDEPS=", g++-mingw-w64-x86-64-posix, wine64, wine, libstdc++6, libgcc-s1, zlib1g"
+  COMPATDEPS=", g++-mingw-w64-x86-64-posix, wine64, wine, python3:any, libstdc++6, libgcc-s1, zlib1g"
 fi
 SIZE=$(du -sk --apparent-size "$STAGE/usr" | cut -f1)
 sed -e "s/@VERSION@/$VERSION/" -e "s/@ARCH@/$ARCH/" -e "s/@SIZE@/$SIZE/" -e "s/@SHLIBS@/$SHLIBS/" \

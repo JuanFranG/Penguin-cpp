@@ -39,7 +39,15 @@ compatibilidad general con todas las bibliotecas Windows. Los recursos `.rc` y
 - Local macOS: Default/Debug y suites ParserTest, PlatformTest, GdbMITest,
   GdbEngineTest, DapEngineTest, MakefileTest, UpdateTest, WindowsGameTest y
   SafetyTest correctas (GDB real se omite si no está instalado).
-- Siete pruebas de selección de canal, reemplazo y recuperación del instalador.
+- Ocho pruebas de selección de canal, reemplazo, recuperación y cancelación de
+  permisos del instalador; la autorización se pide antes de tocar la app anterior.
+- Actualización con bundles reales: copia completa 0.5.0 → 0.5.5 correcta;
+  un DMG nativo se rechaza y conserva 0.5.0. Se usan hdiutil/codesign/ditto reales,
+  copias desechables y transporte GitHub sustituido por archivos locales.
+- Consola real macOS: seis casos (C/C++ × UTF-8/OEM 437/ANSI 1252), con acentos,
+  cuadros, entrada, cursor, colores y restauración del modo de terminal correctos.
+- Cabecera de Acerca de a 480 y 640 puntos: panel azul de ancho completo e imagen
+  proporcional. Captura Qt5 inspeccionada; comprobaciones de geometría Cocoa y Qt5.
 - Diálogos reales Cocoa: links de novedades con versión disponible y fallo de red;
   Acerca de compacto; controles sin solapamiento. Se guardan capturas del arnés.
 - Bienvenida: `PanelRight.AutoSize` movía los botones al origen en Qt5. Se
@@ -58,6 +66,10 @@ Installer: la copia de `/Applications` pasó de 0.4.0 a 0.5.5 y el recibo del si
 confirmó la versión. Se respaldó la app anterior. Desde la app instalada, un
 arranque directo con HOME/configuración temporales preparó el entorno privado,
 escribió `ready` y ejecutó el self-test `PENGUIN_WINDOWS_READY` con resultado correcto.
+La instalación se realizó en Apple Silicon/macOS 27.2.1. El hash del ejecutable
+instalado coincide con el de la app del PKG final. Ambos DMG pasan `hdiutil verify`
+y la app completa pasa `codesign --verify --deep --strict` con firma ad hoc.
+Una copia con cuarentena fue rechazada por `spctl`: no hay Developer ID/notarización.
 No se considera una instalación en un Mac limpio ni acredita notarización o
 aceptación automática por Gatekeeper. Se mantiene macOS mínimo 26.0/ARM64.
 
@@ -65,3 +77,17 @@ No se acredita compatibilidad con macOS futuro ni todas las combinaciones de
 pantallas, idiomas, fuentes, impresión/PDF y exportaciones. Se mantienen los
 límites de lectura de preferencias malformadas y de APIs del runtime. Los
 paquetes macOS siguen siendo experimentales, con firma ad hoc y sin Developer ID.
+
+## Compilador de Linux y alcance del texto
+
+La prueba con GCC/MinGW del sistema detectó que MSVCRT convierte incorrectamente
+algunos bytes UTF-8 de `printf`, aunque `WriteConsoleA/W` funcione. No se ocultó
+esa diferencia: el `.deb` amd64 incorpora el LLVM-MinGW UCRT oficial 20261104,
+con SHA-256 `919380403de87dca3c581c2053230cd298af5e891286628ba0613b7fed370926`.
+La detección existente prefiere ese árbol incluido. Sus licencias se conservan;
+el código MinGW-w64/gendef corresponde a las fuentes fijadas ya distribuidas.
+Un compilador personalizado con MSVCRT sigue teniendo sus límites originales.
+
+El lector de la prueba PTY reconoce las secuencias de cursor que Wine intercala
+entre letras antes de enviar la entrada; mantiene las comprobaciones reales de
+texto, teclado, colores y salida. Esto corrige el arnés sin relajar el contrato.

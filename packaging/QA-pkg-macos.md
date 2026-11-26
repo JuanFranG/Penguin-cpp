@@ -1,3 +1,20 @@
+## Entrega 0.5.5 — 26 de noviembre de 2026
+
+El PKG completo se instaló realmente con Installer y autorización del usuario,
+actualizando la copia de `/Applications` de 0.4.0 a 0.5.5 en Apple Silicon/macOS
+27.2.1. El recibo y el hash del ejecutable coinciden con el paquete final.
+La app instalada preparó y probó su entorno con HOME/configuración aislados.
+Ambos DMG verifican su integridad y la app completa verifica su firma ad hoc.
+La actualización sobre una copia completa 0.5.0 se probó con bundles reales,
+con transporte local; el intento de usar un DMG nativo conserva la copia anterior.
+La cuarentena provoca rechazo de `spctl`, como corresponde a una entrega sin
+Developer ID/notarización. Mac limpio, usuario estándar y actualización descargada
+directamente por el botón no quedan acreditados. Véase [QA_STAGE_6](../QA_STAGE_6.md).
+
+Los apartados siguientes conservan la evidencia histórica de 0.5.0.
+
+---
+
 ## Perfil público revisado 0.5.0 — 13 de noviembre de 2026
 
 El PKG y DMG `COMPLETE-UNSIGNED` se publican junto a `COMPAT-SOURCES.tar.gz`, `SHA256SUMS-COMPLETE.txt` y el recibo de revisión. Esta sección sustituye el estado histórico de integración local descrito más abajo.

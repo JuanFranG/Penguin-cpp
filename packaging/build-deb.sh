@@ -78,7 +78,17 @@ if command -v dpkg-shlibdeps > /dev/null; then
   TMP=$(mktemp -d)
   mkdir "$TMP/debian"
   printf 'Source: penguin-cpp\n\nPackage: penguin-cpp\nArchitecture: any\n' > "$TMP/debian/control"
-  SHLIBS=$(cd "$TMP" && dpkg-shlibdeps -O "$STAGE/usr/lib/penguin-cpp/penguin-cpp" | sed -n 's/^shlibs:Depends=//p')
+  ELFS=("$STAGE/usr/lib/penguin-cpp/penguin-cpp")
+  if [ "$ARCH" = amd64 ]; then
+    for FILE in "$STAGE/usr/lib/penguin-cpp/windows-toolchain/bin/"* "$STAGE/usr/lib/penguin-cpp/windows-toolchain/lib/"*.so.*; do
+      if [ -f "$FILE" ] && [ ! -L "$FILE" ] && file -b "$FILE" | grep -q '^ELF '; then
+        ELFS+=("$FILE")
+      fi
+    done
+  fi
+  # Private upstream libraries have no Debian shlibs metadata; their external
+  # dependencies still come from the runner's installed package metadata.
+  SHLIBS=$(cd "$TMP" && dpkg-shlibdeps --ignore-missing-info -l"$STAGE/usr/lib/penguin-cpp/windows-toolchain/lib" -O "${ELFS[@]}" | sed -n 's/^shlibs:Depends=//p')
   rm -rf "$TMP"
 fi
 [ -n "$SHLIBS" ] || SHLIBS="libc6, libqt5pas1"

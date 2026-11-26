@@ -170,7 +170,9 @@ License: OFL-1.1
 
 License: LLVM-MinGW-bundle
  The LLVM Project is under Apache-2.0 with LLVM Exceptions; MinGW-w64,
- winpthreads and other components retain their respective permissive terms.
+ winpthreads and other components retain their respective terms.
+ The gendef utility is GPL-3.0; its matching MinGW-w64 source is provided
+ in the compatibility source archive and its license under share/gendef.
  Full notices are distributed unchanged in windows-toolchain/LICENSE.TXT
  and windows-toolchain/*/share/mingw32/COPYING* under /usr/lib/penguin-cpp.
  The LLVM exception text and Apache-2.0 license are in that LICENSE.TXT.

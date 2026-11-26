@@ -12,9 +12,9 @@ if [ ! -f "$ARCHIVE" ]; then
   mv "$ARCHIVE.part" "$ARCHIVE"
 fi
 printf '%s  %s\n' "$SHA" "$ARCHIVE" | sha256sum -c -
-if [ ! -d "$CACHE/$NAME" ]; then
-  tar -xJf "$ARCHIVE" -C "$CACHE"
-fi
+# Re-extract verified bytes; an interrupted previous build must not be reused.
+rm -rf "$CACHE/$NAME"
+tar -xJf "$ARCHIVE" -C "$CACHE"
 DEST="$1/usr/lib/penguin-cpp/windows-toolchain"
 mkdir -p "$DEST"
 cp -a "$CACHE/$NAME/." "$DEST/"

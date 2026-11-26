@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Repackage pinned WineHQ 11 for Penguin's private x64 runtime (no root install)."""
+import argparse
 import hashlib
 from pathlib import Path
 import shutil
@@ -7,6 +8,9 @@ import subprocess
 import tarfile
 import urllib.request
 
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--strip', required=True, help='verified LLVM-MinGW llvm-strip executable')
+args = parser.parse_args()
 ROOT = Path(__file__).resolve().parents[1]
 CACHE = ROOT / 'build/linux-runtime'
 OUT = ROOT / 'build/deb'
@@ -52,11 +56,20 @@ shutil.copytree(extracted / 'opt/wine-stable', runtime, symlinks=True)
 for path in (runtime / 'bin').iterdir():
     if (path.is_symlink() and path.readlink().name != 'wine') or (not path.is_symlink() and path.name not in ('wine', 'wineserver')):
         path.unlink()
+# Preserve executable code, resources and unwind data; omit PE debug sections.
+pe_files = []
+for path in (runtime / 'lib/wine/x86_64-windows').iterdir():
+    if path.is_file():
+        with path.open('rb') as candidate:
+            if candidate.read(2) == b'MZ':
+                pe_files.append(str(path))
+for start in range(0, len(pe_files), 100):
+    subprocess.run([args.strip, '--strip-debug', *pe_files[start:start + 100]], check=True)
 doc = stage / 'usr/share/doc/penguin-windows-runtime'
 shutil.copytree(extracted / 'usr/share/doc/wine-stable-amd64', doc, symlinks=True)
 (doc / 'PENGUIN-SOURCES.txt').write_text(
     'WineHQ 11.0, Ubuntu noble build. Binary files are unchanged and relocated.\n'
-    'Only unused build tools are omitted. Original licenses remain installed.\n'
+    'Only unused build tools and PE debug sections are omitted. Original licenses remain installed.\n'
     'Exact upstream source + Debian recipes: WineHQ-11.0.0.0-noble-SOURCES.tar.gz\n'
     'https://github.com/JuanFranG/Penguin-cpp/releases/tag/v0.5.5\n'
     'Repackaging recipe: packaging/build-linux-runtime.py in the Penguin tag.\n'

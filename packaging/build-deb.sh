@@ -70,7 +70,7 @@ chmod 755 "$STAGE/usr/lib/penguin-cpp/penguin-cpp"
 # Keep executable modes and symlinks of the upstream compiler intact.
 if [ "$ARCH" = amd64 ]; then
   packaging/prepare-linux-toolchain.sh "$STAGE"
-  python3 packaging/build-linux-runtime.py
+  python3 packaging/build-linux-runtime.py --strip "$STAGE/usr/lib/penguin-cpp/windows-toolchain/bin/llvm-strip"
   ln -s ../../../../lib/penguin-cpp/windows-runtime "$SHARE/Compat/windows/runtime"
 fi
 

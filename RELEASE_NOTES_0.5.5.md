@@ -26,6 +26,10 @@
 - **GitHub y novedades:** Actualizaciones enlaza al repositorio y a las notas de
   versión, incluso si falla la consulta. La versión de Acerca de es un enlace a
   su publicación. Las entregas futuras requieren notas con cambios y pendientes.
+- **Bienvenida Linux:** los botones Nuevo documento, Abrir documento y Opciones
+  mantienen su orden al redimensionar; el panel deja de desplazarlos hacia arriba.
+- **Acerca de simplificado:** creador destacado, enlaces a documentación/licencia
+  y créditos separados, sin el texto completo de la GPL dentro del diálogo.
 - **Paquetes completos:** incluyen el nuevo código de preparación de consola,
   además del compilador, Make y runtime ya incluidos en la 0.5.0 completa.
 

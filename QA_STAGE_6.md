@@ -21,8 +21,10 @@ compatibilidad general con todas las bibliotecas Windows. Los recursos `.rc` y
 
 ## Actualizaciones y notas
 
-- Acerca de: la versión instalada enlaza a su publicación y el repositorio usa
-  un texto compacto para caber en el grupo.
+- Acerca de: panel compacto con Juan Francisco Gonzalez Pacheco destacado como
+  creador, versión enlazada a su publicación y enlaces a GitHub, documentación y
+  GPL-2.0-or-later. La licencia completa no ocupa el diálogo; los créditos
+  históricos y de asistencia de IA están en un botón separado.
 - Actualizaciones: enlaces permanentes a GitHub y a novedades. Al detectar una
   publicación válida, el segundo apunta a ella; si falla la red, conserva el de
   la versión instalada. No es necesario aceptar instalar para leer los cambios.
@@ -34,14 +36,29 @@ compatibilidad general con todas las bibliotecas Windows. Los recursos `.rc` y
 
 ## Resultados de validación
 
-En curso: compilación Cocoa, regresiones de diálogos/enlaces, checks Linux/macOS,
-consola, contenido/firma de paquetes y reemplazo de instalación aislada.
+- Local macOS: Default/Debug y suites ParserTest, PlatformTest, GdbMITest,
+  GdbEngineTest, DapEngineTest, MakefileTest, UpdateTest, WindowsGameTest y
+  SafetyTest correctas (GDB real se omite si no está instalado).
+- Siete pruebas de selección de canal, reemplazo y recuperación del instalador.
+- Diálogos reales Cocoa: links de novedades con versión disponible y fallo de red;
+  Acerca de compacto; controles sin solapamiento. Se guardan capturas del arnés.
+- Bienvenida: `PanelRight.AutoSize` movía los botones al origen en Qt5. Se
+  desactivó y se comparte la distribución de filas; regresión a 1024×768 y
+  1440×900 para Nuevo/Abrir/Opciones y acciones secundarias.
+- PKG: extracción completa, verificación de firma de la app y presencia/hash de
+  `console-startup.c`, self-test, bits/stdc++.h, licencias y actualizador; manifiesto
+  revisado y binarios ARM64 del compilador, Wine y Make.
+- CI Linux/Qt5, consola Linux/MinGW/Wine y actualización APT antigua: en curso;
+  los resultados y enlaces se incorporarán al terminar.
 
 ## Límites que requieren otro entorno
 
-No hay un Mac limpio ni una credencial de administrador disponible para instalar
-el PKG sobre el sistema mediante Installer. La extracción y la prueba de su
-aplicación no sustituyen esa instalación. Tampoco acreditan notarización o
+Se instaló realmente el PKG completo con autorización del usuario mediante
+Installer: la copia de `/Applications` pasó de 0.4.0 a 0.5.5 y el recibo del sistema
+confirmó la versión. Se respaldó la app anterior. Desde la app instalada, un
+arranque directo con HOME/configuración temporales preparó el entorno privado,
+escribió `ready` y ejecutó el self-test `PENGUIN_WINDOWS_READY` con resultado correcto.
+No se considera una instalación en un Mac limpio ni acredita notarización o
 aceptación automática por Gatekeeper. Se mantiene macOS mínimo 26.0/ARM64.
 
 No se acredita compatibilidad con macOS futuro ni todas las combinaciones de

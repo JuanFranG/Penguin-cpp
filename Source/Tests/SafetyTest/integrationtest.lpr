@@ -61,7 +61,8 @@ begin
    UpdateLinksValid:=(TLabel(Repo).Hint=DEVCPP_REPOSITORY_URL) and
     (TLabel(Notes).Hint=ExpectedRelease) and Assigned(TLabel(Notes).OnClick) and
     (TLabel(Notes).Cursor=crHandPoint) and (TLabel(Notes).Caption=Lang[80018]);
-  SaveFormImage(F,'updates-'+IntToStr(Length(ExpectedRelease)));
+  if ExpectedRelease=DEVCPP_RELEASE_URL then SaveFormImage(F,'updates-offline')
+  else SaveFormImage(F,'updates-new');
   F.ModalResult:=mrCancel; TTimer(Sender).Enabled:=False;
  end else if SetupTicks>100 then begin F.ModalResult:=mrCancel; TTimer(Sender).Enabled:=False end;
 end;

@@ -163,7 +163,7 @@ jobs:
           sudo rm /etc/apt/sources.list.d/penguin-cpp-test.list /usr/share/keyrings/penguin-cpp-test.gpg
 
       - name: Keep the package
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: penguin-cpp-deb
           path: build/deb/*.deb
@@ -175,14 +175,14 @@ jobs:
         run: file penguin-cpp | tee /dev/stderr | grep -q "with debug_info"
 
       - name: Keep the program with its symbols
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: penguin-cpp-symbols
           path: penguin-cpp
 
       - name: Keep GUI validation evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: penguin-gui-linux
           path: |

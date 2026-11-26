@@ -15,7 +15,7 @@ jobs:
         run: python3 packaging/check-release.py
       - name: Bootstrap compiler
         run: brew install fpc
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: ${{ runner.temp }}/penguin-toolchain
           key: cocoa-fpc324rc2-laz38-${{ runner.arch }}-${{ hashFiles('packaging/bootstrap-macos-ci.sh') }}
@@ -52,14 +52,14 @@ jobs:
           python3 packaging/build-macos-pkg.py --native-only
           pkgutil --expand-full build/macos/Penguin-cpp-arm64-UNSIGNED-VALIDATION.pkg "$RUNNER_TEMP/pkg-validation"
           codesign --verify --deep --strict "$RUNNER_TEMP/pkg-validation/penguin.pkg/Payload/Penguin cpp.app"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: penguin-cpp-macos-arm64
           path: build/macos/*.dmg
 
       - name: Keep GUI validation evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: penguin-gui-macos
           path: |

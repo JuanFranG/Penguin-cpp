@@ -30,6 +30,8 @@
   mantienen su orden al redimensionar; el panel deja de desplazarlos hacia arriba.
 - **Acerca de simplificado:** creador destacado, enlaces a documentación/licencia
   y créditos separados, sin el texto completo de la GPL dentro del diálogo.
+- **GitHub Actions:** caché y artefactos actualizados a acciones con Node.js 24,
+  retirando el aviso de retirada de Node.js 20.
 - **Cabecera adaptable:** el fondo azul de Acerca de ocupa todo el ancho y el
   logotipo permanece centrado y proporcional.
 - **Linux con UCRT:** el `.deb` amd64 incluye LLVM-MinGW 20261104 con versión y

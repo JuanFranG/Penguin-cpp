@@ -2,14 +2,18 @@
 const search = document.querySelector('#window-search');
 const cards = [...document.querySelectorAll('.window-card')];
 const count = document.querySelector('#window-count');
+const spanish = document.documentElement.lang === 'es';
+const normalise = text => text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase();
 function filterWindows() {
-  const query = search.value.trim().toLocaleLowerCase();
+  const query = normalise(search.value.trim());
   let visible = 0;
   for (const card of cards) {
-    card.hidden = !card.textContent.toLocaleLowerCase().includes(query);
+    card.hidden = !normalise(card.textContent).includes(query);
     if (!card.hidden) visible++;
   }
-  count.textContent = `${visible} of ${cards.length} illustrated views`;
+  count.textContent = spanish
+    ? `${visible} de ${cards.length} vistas ilustradas`
+    : `${visible} of ${cards.length} illustrated views`;
   document.querySelector('#no-windows').hidden = visible !== 0;
 }
 search.addEventListener('input', filterWindows);

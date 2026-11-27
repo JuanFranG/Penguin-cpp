@@ -302,9 +302,12 @@ y también saber si pasa sin abrir ningún archivo.
   primera ejecución.
 - ✅ **F. Manual propio:** el manual de Dev-C++ (`Help/`) hablaba de Windows,
   de `devcpp.exe` y de MinGW, y enlazaba a Embarcadero. Lo reemplaza un manual
-  de Penguin cpp en español e inglés (`Manual/`), para Linux y macOS: viene
-  con el IDE (F1, *Ver documentación* y los botones de ayuda lo abren, en el
-  idioma del IDE) y se publica en <https://juanfrang.github.io/Penguin-cpp/manual/>.
+  de Penguin cpp (`Manual/`), para Linux y macOS. La revisión de 0.5.6 lo
+  amplía con 37 vistas reales de macOS, instrucciones, búsqueda y ampliación
+  de capturas. El manual y la interfaz capturada están en inglés; los demás
+  idiomas se consultan con la traducción del navegador. Viene con el IDE
+  (F1, *Ver documentación* y los botones de ayuda) y se publica en
+  <https://juanfrang.github.io/Penguin-cpp/manual/>. El tema sigue al sistema.
 
 **4. Fase 7:** el depurador sobre GDB/MI.
 

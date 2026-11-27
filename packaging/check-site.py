@@ -38,3 +38,7 @@ assert 'localStorage' not in (root/'site/site.js').read_text()
 assert 'data-theme' not in (root/'apt-repo-index.html').read_text()
 assert 'cp -R "$HERE/site/." ./' in (root/'update-apt-repo.sh').read_text()
 print('OK: page anchors, images, tab panels, themes and deployment resources')
+
+# The manual is also bundled locally and copied into the APT website.
+import runpy
+runpy.run_path(str(root / "check-manual.py"), run_name="__main__")

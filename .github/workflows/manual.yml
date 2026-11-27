@@ -1,0 +1,59 @@
+name: User manual
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'Manual/**'
+      - 'packaging/*manual.py'
+      - '.github/workflows/manual.yml'
+  pull_request:
+    paths:
+      - 'Manual/**'
+      - 'packaging/*manual.py'
+      - '.github/workflows/manual.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: manual-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - name: Validate the English manual and its images
+        run: |
+          python3 packaging/build-manual.py
+          git diff --exit-code -- Manual/index.html
+          python3 packaging/check-manual.py
+          node --check Manual/manual.js
+
+  publish:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: check
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+      - name: Update only the manual in the existing Pages branch
+        run: |
+          git fetch origin gh-pages
+          git worktree add "$RUNNER_TEMP/penguin-pages" origin/gh-pages
+          cd "$RUNNER_TEMP/penguin-pages"
+          rm -rf manual
+          cp -R "$GITHUB_WORKSPACE/Manual" manual
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- manual
+          if git diff --cached --quiet; then
+            echo 'The published manual is already current.'
+          else
+            git commit -m 'Publish illustrated English user manual'
+            git push origin HEAD:gh-pages
+          fi

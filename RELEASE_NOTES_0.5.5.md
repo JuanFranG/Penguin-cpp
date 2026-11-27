@@ -87,6 +87,8 @@ estructura o self-test no acredita todas las bibliotecas ni todas las pantallas.
   La consola configura UTF-8, pero las conversiones multibyte del CRT requieren
   UCRT para ese soporte. Los compiladores incluidos de macOS y Linux usan UCRT;
   una ruta personalizada a un MinGW antiguo conserva ese límite.
+- La preparación inicial macOS todavía registra una aserción del motor; el
+  self-test posterior pasa. Queda pendiente investigar ese diagnóstico.
 - Compatibilidad Windows experimental; no hay garantía para todo Win32,
   videojuegos, llamadas contradictorias de página de códigos o texto mezclado.
 - Recursos Windows, depuración/perfilado de ejecutables Windows y WinBGIm no

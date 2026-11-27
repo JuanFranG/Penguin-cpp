@@ -126,3 +126,12 @@ Comprueba que Source/Compat/Lang/Templates y el constructor coinciden con el tag
 valida las firmas ad hoc, el contenido del PKG y ejecuta su self-test con un
 prefix temporal. Publica un manifiesto de hashes y el registro. El contenedor
 público se genera en CI; Installer real se probó con el candidato local 0.5.5.
+
+Resultado público macOS: [Complete macOS release](https://github.com/JuanFranG/Penguin-cpp/actions/runs/45939461787)
+terminó correctamente. PKG y DMG completos, firmas, contenido y self-test
+`PENGUIN_WINDOWS_READY pid=32 sum=6` verificados en el runner macOS 26.
+El manifiesto y el registro se adjuntan a la release. El reensamblado restaura
+solo la firma original de `wine-launcher`, con extremos SHA-256 fijados y código
+sin firma idéntico, para satisfacer el control de integridad original sin cambiarlo.
+La preparación inicial todavía registra una aserción del motor; el self-test
+posterior termina con éxito. Investigar ese diagnóstico sigue pendiente.

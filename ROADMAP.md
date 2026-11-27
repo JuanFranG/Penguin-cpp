@@ -9,7 +9,7 @@ funciona en Windows.
 Este documento explica de dónde viene, qué se ha hecho hasta ahora y qué
 falta.
 
-*Última actualización: 26 de noviembre de 2026. Publicación vigente: 0.5.5.*
+*Última actualización: 27 de noviembre de 2026. Publicación vigente: 0.5.6.*
 
 ---
 

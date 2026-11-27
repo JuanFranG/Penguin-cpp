@@ -32,6 +32,8 @@ type
     Config: TWindowsGameConfig;
     Root, Fingerprint: String;
     ReadyTicks: Integer;
+    WorkerJoined: Boolean;
+    procedure JoinWorker;
     procedure Start(Sender: TObject);
     procedure Poll(Sender: TObject);
   public
@@ -215,13 +217,22 @@ begin
   Timer := TTimer.Create(Self); Timer.Enabled := False; Timer.Interval := 80; Timer.OnTimer := @Poll;
   Start(nil);
 end;
+procedure TSetupForm.JoinWorker;
+begin
+  // FPC's Unix WaitFor joins the native handle again on every call; it may already be reused.
+  if Assigned(Worker) and not WorkerJoined then begin
+    Worker.WaitFor;
+    WorkerJoined := True;
+  end;
+end;
 procedure TSetupForm.Start(Sender: TObject);
 begin
-  if Assigned(Worker) then begin Worker.WaitFor; FreeAndNil(Worker) end;
+  if Assigned(Worker) then begin JoinWorker; FreeAndNil(Worker) end;
   ReadyTicks := 0; RetryButton.Visible := False;
   ErrorDetails.Visible := False; Status.Height := 70; ClientHeight := 200;
   Bar.Top := 105; CloseButton.Top := 155; RetryButton.Top := 155;
   Status.Caption := Lang[80211]; Bar.Position := 0;
+  WorkerJoined := False;
   Worker := TSetupWorker.Create(True); Worker.FreeOnTerminate := False;
   Worker.Config := Config; Worker.Root := Root; Worker.Fingerprint := Fingerprint;
   Worker.Start; Timer.Enabled := True;
@@ -234,7 +245,7 @@ begin
     if Worker.Step >= 2 then Status.Caption := Lang[80212];
     Exit;
   end;
-  Worker.WaitFor;
+  JoinWorker;
   if Worker.Success then begin
     Status.Caption := Lang[80213]; Inc(ReadyTicks);
     if ReadyTicks >= 10 then begin Timer.Enabled := False; ModalResult := mrOK end;
@@ -251,7 +262,7 @@ end;
 destructor TSetupForm.Destroy;
 begin
   Timer.Enabled := False;
-  if Assigned(Worker) then begin Worker.Terminate; Worker.WaitFor; Worker.Free end;
+  if Assigned(Worker) then begin Worker.Terminate; JoinWorker; Worker.Free end;
   inherited Destroy;
 end;
 function EnsureWindowsEnvironment(const Config: TWindowsGameConfig;

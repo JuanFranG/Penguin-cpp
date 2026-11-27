@@ -28,6 +28,13 @@ el historial del port: los pendientes vigentes se resumen aquí.
 | 0.5.0 | Diálogo compacto con estado del entorno; rutas avanzadas opcionales; `.pkg` completo por defecto; comprobación al arrancar desde Terminal; rechazo de un DMG nativo sobre una instalación completa. | PKG/DMG completos y fuentes publicados; canal completo probado con simulaciones. Instalación real, notarización y actualización futura pendientes. |
 | 0.5.5 | Guardado/ejecución recuperables, perfiles de consola, LLVM-MinGW/UCRT y Wine 11 privado en Linux, Acerca de compacto y adaptable, bienvenida Qt5 ordenada, CI y actualización APT desde 0.3.0; instalación PKG real. | Compatibilidad Windows experimental, WinBGIm y depuración Windows pendientes; Mac limpio y notarización pendientes. |
 
+### Hotfix 0.5.6 y página del proyecto
+
+- Recuperar valores INI antiguos entre comillas, incluidas las parejas acumuladas en idioma, rutas, tema y fuente de interfaz. Conservar comillas significativas de comandos.
+- Regresión de los 32 idiomas y sus cadenas con respaldo al inglés en Cocoa y Qt5.
+- Validación de la corrección en aplicaciones extraídas de DMG/PKG y en el paquete DEB: [QA 0.5.6](packaging/QA-0.5.6.md).
+- Página con capturas reales, genealogía Bloodshed → Orwell → Embarcadero → Penguin, motivación del port, autoría y notas de versión. Tema claro/oscuro automático mediante `prefers-color-scheme`, sin preferencia fija ni selector.
+
 ### Refuerzo de fiabilidad de la 0.5.5: etapas 1 a 6
 
 - Guardado por reemplazo atómico de fuentes, proyecto y disposición de editores;

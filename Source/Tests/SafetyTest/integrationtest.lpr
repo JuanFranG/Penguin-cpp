@@ -111,6 +111,37 @@ var C:TProbeCompiler; Hooks:TCallbacks;
 Dir,SourceRoot:String; E:TEditor; P:TProject; OptionsDialog:TProjectOptionsFrm; OriginalCompile:Boolean; Values:TCompilerOptionsValues;
 procedure Check(Value:Boolean; const Name:String);
 begin if not Value then raise Exception.Create(Name); WriteLn('[OK] ',Name) end;
+procedure AllLanguagesTest;
+var Files,English:TStringList; Search:TSearchRec; I,J,ID,Checked:Integer; Text:String;
+begin
+ Files:=TStringList.Create; English:=TStringList.Create;
+ try
+  English.LoadFromFile(devDirs.Lang+'English.lng');
+  if FindFirst(devDirs.Lang+'*.lng',faAnyFile,Search)=0 then begin
+   repeat Files.Add(Search.Name) until FindNext(Search)<>0;
+   FindClose(Search);
+  end;
+  Files.Sort;
+  Check(Files.Count>=32,'all bundled language files are present');
+  for I:=0 to Files.Count-1 do begin
+   devData.Ini.WriteString('Options','Language','""'+Files[I]+'""');
+   devData.ReadSelf;
+   Check(devData.Language=Files[I],'nested legacy preference resolves: '+Files[I]);
+   Lang.Open(devData.Language); Checked:=0;
+   for J:=0 to English.Count-1 do
+    if TryStrToInt(English.Names[J],ID) and (English.ValueFromIndex[J]<>'') then begin
+     Text:=Lang[ID];
+     if (Text='') or (Pos('translation missing',Text)>0) then
+      Check(False,Files[I]+' missing translation and fallback: '+IntToStr(ID));
+     Inc(Checked);
+    end;
+   Check(Checked>1000,'complete language and fallback coverage: '+Files[I]);
+  end;
+ finally
+  devData.Language:='English.lng'; Lang.Open(devData.Language);
+  English.Free; Files.Free;
+ end;
+end;
 procedure WaitCompile;
 var Start:QWord;
 begin
@@ -579,16 +610,27 @@ begin
  MainForm.Close;
  Application.Terminate;
 end;
-var Runner:TRunner;
+var Runner:TRunner; LegacySettings:TStringList;
 begin
  SourceRoot:=GetCurrentDir;
  Dir:=IncludeTrailingPathDelimiter(ExpandFileName(ParamStr(2))); ForceDirectories(Dir);
+ LegacySettings:=TStringList.Create;
+ try
+  LegacySettings.Text:='[Options]'+LineEnding+'First=0'+LineEnding+
+   'Language=""English.lng""'+LineEnding+'ShowTipsOnStart=0'+LineEnding+
+   '[Directories]'+LineEnding+'Lang=""'+ExpandFileName('Lang')+PathDelim+'""';
+  LegacySettings.SaveToFile(Dir+'config.ini');
+ finally LegacySettings.Free end;
  devData.INIFileName:=Dir+'config.ini'; devData.ReadSelf; CreateOptions;
- devData.First:=False; devData.Language:='English.lng'; devDirs.Lang:=ExpandFileName('Lang')+PathDelim;
+ Check(devData.Language='English.lng','legacy quoted language preference resolves before GUI startup');
+ Check(FileExists(devDirs.Lang+'English.lng'),'legacy quoted resource directory resolves before GUI startup');
+ devData.First:=False;
  devData.ShowTipsOnStart:=False;
  Application.Initialize;
  Application.ShowMainForm:=False;
  Application.CreateForm(TMainForm,MainForm);
+ Check(Lang[80026]='About Penguin cpp','real GUI loads translated captions from a legacy configuration');
+ AllLanguagesTest;
  MainForm.OnShow:=nil;
  Runner:=TRunner.Create;
  Application.QueueAsyncCall(Runner.Run,0);

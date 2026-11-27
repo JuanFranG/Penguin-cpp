@@ -3,92 +3,65 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Penguin cpp · repositorio APT</title>
-<style>
-  :root { --bg: #ffffff; --fg: #1d2330; --muted: #5b6475; --code: #f2f4f8; --line: #dde1e8; --accent: #1f6feb; }
-  @media (prefers-color-scheme: dark) {
-    :root { --bg: #14171d; --fg: #e6e8ec; --muted: #9aa3b2; --code: #1e232c; --line: #2c3340; --accent: #6ea8fe; }
-  }
-  body { background: var(--bg); color: var(--fg); font: 16px/1.55 system-ui, sans-serif; margin: 0; }
-  main { max-width: 760px; margin: 0 auto; padding: 32px 16px 48px; }
-  h1 { font-size: 1.9rem; margin: 0 0 4px; }
-  h2 { font-size: 1.2rem; margin-top: 2rem; }
-  p.lead { color: var(--muted); margin-top: 0; }
-  pre { background: var(--code); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; overflow-x: auto; }
-  code { font-family: ui-monospace, "Source Code Pro", monospace; font-size: 0.92rem; }
-  a { color: var(--accent); }
-  kbd { font-family: inherit; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 4px; font-size: 0.9em; }
-</style>
+<meta name="description" content="Penguin cpp: el espíritu de Dev-C++, nativo en Linux y macOS. Conoce el proyecto, sus capturas, su historia y sus versiones.">
+<meta name="theme-color" content="#123f6b">
+<title>Penguin cpp — De la primera línea al primer programa</title>
+<link rel="icon" href="assets/penguin.png" type="image/png">
+<link rel="stylesheet" href="site.css">
+<script src="site.js" defer></script>
 </head>
 <body>
-<main>
-  <h1>Penguin cpp</h1>
-  <p class="lead">Un IDE de C y C++ sencillo para aprender, para Linux (Debian, Ubuntu, Linux Mint y derivadas, amd64) y macOS (Apple Silicon).</p>
-
-  <h2>Instalar en Linux</h2>
-  <p>Una sola vez, agrega el repositorio y su clave:</p>
-<pre><code>curl -fsSL https://juanfrang.github.io/Penguin-cpp/penguin-cpp.gpg | sudo tee /usr/share/keyrings/penguin-cpp.gpg &gt; /dev/null
+<a class="skip" href="#contenido">Saltar al contenido</a>
+<div class="page-shell">
+<header class="site-header">
+  <a class="brand" href="#inicio" aria-label="Penguin cpp, inicio"><img src="assets/penguin.png" width="48" height="48" alt=""><span>Penguin <b>cpp</b><small>C / C++ · SOFTWARE LIBRE</small></span></a>
+  <nav aria-label="Navegación principal"><a href="#programa">El programa</a><a href="#historia">Historia</a><a href="#versiones">Versiones</a><a href="#acerca">Acerca de</a></nav>
+</header>
+<main id="contenido">
+<section class="hero" id="inicio" aria-labelledby="hero-title">
+  <div class="hero-copy"><p class="eyebrow">EL ESPÍRITU DE DEV-C++ · OTROS HORIZONTES</p><h1 id="hero-title">Tu primera línea.<br>Tu próximo<br><em>programa.</em></h1><p class="hero-lead">Un lugar sencillo para aprender C y C++. El entorno que conoces, con una nueva vida en Linux y macOS.</p><div class="hero-actions"><a class="button primary" href="#descargas">Instalar Penguin cpp</a><a class="text-link" href="manual/">Abrir el manual</a></div><p class="hero-meta">Nativo · Sin Electron · GPL-2.0 o posterior</p></div>
+  <figure class="hero-figure"><div class="window-frame"><div class="window-title"><span class="window-mark" aria-hidden="true">▣</span><span>Penguin cpp <span class="current-version">0.5.5</span></span><span>Linux / Qt5</span></div><a href="assets/penguin-linux.png" aria-label="Ver la captura completa de Penguin en Linux"><img src="assets/penguin-linux.png" width="1024" height="768" alt="Penguin cpp 0.5.5 en Linux: panel de proyecto, bienvenida, barra de herramientas y resultados de compilación."></a></div><figcaption>Una interfaz de escritorio, de verdad. Captura de Penguin 0.5.5 en Linux.</figcaption></figure>
+</section>
+<div class="platform-strip"><p>HECHO PARA APRENDER</p><span>Linux · Ubuntu 24.04 / Mint 22 · amd64</span><span>macOS 26+ · Apple Silicon</span><a href="https://github.com/JuanFranG/Penguin-cpp">Código en GitHub</a></div>
+<section class="section program-section" id="programa" aria-labelledby="program-title">
+  <div class="section-intro"><p class="eyebrow">EL PROGRAMA</p><h2 id="program-title">Menos preparación.<br>Más C++.</h2><p>Escribe, compila y entiende lo que ocurre. Penguin conserva la forma directa de trabajar de Dev-C++, con herramientas e interfaz propias de tu sistema.</p><a class="text-link" href="manual/">Aprende a usarlo en el manual</a></div>
+  <dl class="capabilities"><div><dt>Un editor para concentrarte</dt><dd>Resaltado de sintaxis, proyectos, plantillas, navegador de clases y autocompletado. El código ocupa el centro.</dd></div><div><dt>Del error a su línea</dt><dd>Compila con GCC en Linux o Clang en macOS. Revisa los diagnósticos en el editor y depura con GDB o LLDB-DAP.</dd></div><div><dt>Guardar. Compilar. Ejecutar.</dt><dd><kbd>F11</kbd> compila y ejecuta cuando la compilación termina correctamente. Los archivos y las preferencias se guardan de forma atómica.</dd></div><div><dt>También, ejercicios de Windows</dt><dd>El entorno completo incorpora LLVM-MinGW y un motor Wine privado para programas Windows. Es experimental: no garantiza todas las APIs ni integra automáticamente <code>graphics.h</code>/WinBGIm.</dd></div></dl>
+</section>
+<section class="section gallery-section" aria-labelledby="gallery-title">
+  <div class="section-heading"><div><p class="eyebrow">POR DENTRO</p><h2 id="gallery-title">Así se ve Penguin.</h2></div><p>Capturas reales del programa.<br>Bienvenida, herramientas y origen.</p></div>
+  <div class="tab-list" role="tablist" aria-label="Capturas del programa"><button id="shot-linux" role="tab" aria-selected="true" aria-controls="panel-linux" tabindex="0">Bienvenida en Linux</button><button id="shot-updates" role="tab" aria-selected="false" aria-controls="panel-updates" tabindex="-1">Actualizaciones</button><button id="shot-original" role="tab" aria-selected="false" aria-controls="panel-original" tabindex="-1">El Dev-C++ original</button></div>
+  <figure id="panel-linux" role="tabpanel" aria-labelledby="shot-linux" tabindex="0"><a href="assets/penguin-linux.png"><img loading="lazy" src="assets/penguin-linux.png" width="1024" height="768" alt="Vista completa de la bienvenida de Penguin cpp 0.5.5 en Linux Qt5."></a><figcaption>Penguin cpp 0.5.5 · Linux / Qt5. Proyecto, editor y compilación en una misma ventana.</figcaption></figure>
+  <figure id="panel-updates" role="tabpanel" aria-labelledby="shot-updates" tabindex="0" hidden><a href="assets/penguin-updates.png"><img loading="lazy" src="assets/penguin-updates.png" width="1024" height="768" alt="Diálogo de actualización de Penguin cpp durante una prueba de interfaz en Linux."></a><figcaption>Prueba de interfaz del diálogo de actualizaciones en Linux; los datos de versión pertenecen al escenario de prueba.</figcaption></figure>
+  <figure id="panel-original" role="tabpanel" aria-labelledby="shot-original" tabindex="0" hidden><a href="assets/devcpp-original.png"><img loading="lazy" src="assets/devcpp-original.png" width="800" height="600" alt="Captura histórica de Embarcadero Dev-C++ 6.0 en Windows, con editor oscuro y consola PowerShell."></a><figcaption>Archivo histórico: Embarcadero Dev-C++ 6.0 en Windows. Esta imagen pertenece al proyecto original; no muestra la versión actual de Penguin.</figcaption></figure>
+</section>
+<section class="history-section" id="historia" aria-labelledby="history-title">
+  <div class="history-header"><p class="eyebrow">DE DÓNDE VENIMOS</p><h2 id="history-title">Una herramienta de aula.<br>Una historia compartida.</h2><p>Penguin no empezó desde cero. Continúa una familia de software libre y conserva el historial y los avisos del código original.</p></div>
+  <ol class="lineage"><li><h3>Bloodshed</h3><p class="lineage-name">Dev-C++</p><p>Colin Laplace y colaboradores. El comienzo de la familia de la que nace este proyecto.</p><a href="https://www.bloodshed.net/devcpp.html">Proyecto original</a></li><li><h3>Orwell</h3><p class="lineage-name">Dev-C++</p><p>Johan Mes y colaboradores continuaron el entorno y su desarrollo como software libre.</p><a href="https://sourceforge.net/projects/orwelldevcpp/">Proyecto Orwell</a></li><li><h3>Embarcadero</h3><p class="lineage-name">Dev-C++</p><p>Un fork para Windows construido con Delphi y VCL. Su código es el punto de partida de Penguin.</p><a href="https://github.com/Embarcadero/Dev-Cpp">Código e historia</a></li><li class="lineage-current"><img src="assets/penguin.png" width="52" height="52" alt=""><h3>Penguin cpp</h3><p class="lineage-name">Linux y macOS</p><p>Lazarus, Free Pascal y la LCL sustituyen las dependencias de Windows para dar al IDE una vida nativa.</p><a href="https://github.com/JuanFranG/Penguin-cpp/blob/main/ROADMAP.md">El camino del port</a></li></ol>
+  <div class="why-linux"><h3>¿Por qué llevarlo a Linux?</h3><div><p>Porque aprender C y C++ no debería obligarte a cambiar de sistema. Estudiantes y docentes que conocen Dev-C++ en Windows necesitan una herramienta familiar también en Linux.</p><p>Penguin nace con un propósito educativo y de divulgación: conservar un entorno ligero, documentar su transformación y permitir que otras personas estudien y continúen el trabajo. El port se extendió después a macOS con Apple Silicon.</p><p class="source-note">Fuentes: <a href="https://github.com/JuanFranG/Penguin-cpp#origen">origen de Penguin</a>, <a href="https://github.com/Embarcadero/Dev-Cpp#readme">README de Embarcadero</a> y <a href="https://github.com/JuanFranG/Penguin-cpp/blob/main/ROADMAP.md#de-dónde-viene">historial del port</a>. Penguin es un proyecto independiente, sin afiliación a Embarcadero.</p></div></div>
+</section>
+<section class="section downloads-section" id="descargas" aria-labelledby="download-title">
+  <div class="section-heading"><div><p class="eyebrow">A TU SISTEMA</p><h2 id="download-title">Elige dónde programar.</h2></div><a class="text-link" href="https://github.com/JuanFranG/Penguin-cpp/releases/latest">Última versión publicada</a></div>
+  <div class="tab-list" role="tablist" aria-label="Sistema operativo"><button id="install-linux" role="tab" aria-selected="true" aria-controls="panel-install-linux" tabindex="0">Linux</button><button id="install-mac" role="tab" aria-selected="false" aria-controls="panel-install-mac" tabindex="-1">macOS</button></div>
+  <div id="panel-install-linux" class="install-panel" role="tabpanel" aria-labelledby="install-linux" tabindex="0"><div><h3>Instala una vez.<br>Actualiza con APT.</h3><p>Paquetes amd64 para Ubuntu 24.04 y la base de Linux Mint 22. El paquete incluye LLVM-MinGW/UCRT; APT instala GNU Make y el motor WineHQ 11 privado como dependencias.</p><p>El motor privado no reemplaza el Wine del sistema. Otras distribuciones y arquitecturas necesitan validación propia.</p><a class="button secondary" href="https://github.com/JuanFranG/Penguin-cpp/releases/latest">Descargar los paquetes .deb</a><p class="source-note">Para instalación manual, descarga e instala juntos el DEB del IDE y el del motor privado.</p></div><div class="commands"><p class="code-label">TERMINAL · AGREGAR EL REPOSITORIO</p><pre><code>curl -fsSL https://juanfrang.github.io/Penguin-cpp/penguin-cpp.gpg | sudo tee /usr/share/keyrings/penguin-cpp.gpg &gt; /dev/null
 echo "deb [signed-by=/usr/share/keyrings/penguin-cpp.gpg] https://juanfrang.github.io/Penguin-cpp stable main" | sudo tee /etc/apt/sources.list.d/penguin-cpp.list
-sudo apt update</code></pre>
-  <p>Después se instala como cualquier programa:</p>
-<pre><code>sudo apt install penguin-cpp</code></pre>
-  <p>Las versiones nuevas llegan con <code>sudo apt upgrade</code>.</p>
-
-  <h2>Desinstalar</h2>
-<pre><code>sudo apt remove penguin-cpp
-sudo rm /etc/apt/sources.list.d/penguin-cpp.list /usr/share/keyrings/penguin-cpp.gpg</code></pre>
-
-  <h2>Instalar en macOS (Apple Silicon)</h2>
-  <p>En Terminal, una línea instala la última versión en Aplicaciones (y la actualiza
-  cuando la vuelves a ejecutar); si faltan las Command Line Tools de Apple (clang, make,
-  lldb), macOS pide instalarlas:</p>
-<pre><code>curl -fsSL https://juanfrang.github.io/Penguin-cpp/install-macos.sh | bash</code></pre>
-  <p>O descarga <code>Penguin-cpp-…-arm64.dmg</code> de la
-  <a href="https://github.com/JuanFranG/Penguin-cpp/releases/latest">última versión</a> y
-  arrastra <em>Penguin cpp</em> a Aplicaciones. Así, como la app no está firmada por un
-  desarrollador de Apple, la primera vez hay que abrirla, cerrar el aviso y pulsar
-  <em>Abrir igualmente</em> en <em>Configuración del Sistema &gt; Privacidad y seguridad</em>.</p>
-
-  <h2 id="reportar">Reportar un problema</h2>
-  <p>Escribe a <a href="mailto:jfgonzalez@unimagdalena.edu.co?subject=%5BPenguin%20cpp%5D%20%28resumen%20del%20problema%20en%20una%20l%C3%ADnea%29&amp;body=Hola%2C%0D%0A%0D%0AVersi%C3%B3n%20de%20Penguin%20cpp%3A%20%28Ayuda%20%3E%20Acerca%20de%29%0D%0ASistema%3A%20%28por%20ejemplo%20macOS%2015%20en%20un%20Mac%20M1%2C%20o%20Linux%20Mint%2022%29%0D%0AC%C3%B3mo%20lo%20instal%C3%A9%3A%20%28instalador%20de%20una%20l%C3%ADnea%2C%20.dmg%20o%20apt%29%0D%0A%0D%0AQu%C3%A9%20hice%3A%0D%0A1.%0D%0A2.%0D%0A3.%0D%0A%0D%0AQu%C3%A9%20esperaba%3A%0D%0A%0D%0AQu%C3%A9%20pas%C3%B3%3A%0D%0A%0D%0AAdjunto%3A%20%28captura%20de%20pantalla%2C%20penguin-cpp-errores.txt%20del%20Escritorio%2C%20el%20archivo%20.cpp%29%0D%0A%0D%0AGracias.">jfgonzalez@unimagdalena.edu.co</a>: el enlace abre tu correo con el asunto y el cuerpo listos
-  para completar. Adjunta lo que ayude a ver el problema (desde esta página no se pueden
-  agregar adjuntos; agrégalos en tu correo antes de enviarlo):</p>
-  <ul>
-    <li>una captura de pantalla (en macOS <kbd>⇧⌘4</kbd> o <kbd>⇧⌘5</kbd>; en Linux, la tecla
-    <kbd>Impr Pant</kbd>);</li>
-    <li><code>penguin-cpp-errores.txt</code>, el registro que Penguin cpp deja en tu Escritorio
-    cuando tiene un error (si es corto, también puedes pegarlo al final del cuerpo);</li>
-    <li>el archivo <code>.cpp</code> o el proyecto con el que pasa, si puedes compartirlo.</li>
-  </ul>
-  <p>Un ejemplo. Asunto:</p>
-<pre><code>[Penguin cpp 0.2.0] El depurador no se detiene en el punto de parada (macOS)</code></pre>
-  <p>Cuerpo:</p>
-<pre><code>Hola,
-
-Versión de Penguin cpp: 0.2.0
-Sistema: macOS 15 en un Mac M1
-Cómo lo instalé: instalador de una línea
-
-Qué hice:
-1. Abrí prueba_depurador.cpp
-2. Puse un punto de parada en la línea 20
-3. Ejecutar &gt; Depurar
-
-Qué esperaba: que se detuviera en la línea 20.
-Qué pasó: el programa terminó sin detenerse y el panel de depuración mostró
-&quot;The program ended with exit code 0.&quot;
-
-Adjunto la captura de pantalla, penguin-cpp-errores.txt y prueba_depurador.cpp.
-
-Gracias.</code></pre>
-
-  <h2>Manual</h2>
-  <p>Cómo usar Penguin cpp: <a href="manual/">manual en español</a> ·
-  <a href="manual/en/">manual in English</a>.</p>
-
-  <h2>Más</h2>
-  <p>El código, las versiones y cómo reportar errores están en
-  <a href="https://github.com/JuanFranG/Penguin-cpp">github.com/JuanFranG/Penguin-cpp</a>.</p>
+sudo apt update
+sudo apt install penguin-cpp</code></pre><details><summary>Actualizar una instalación anterior</summary><pre><code>sudo apt update
+sudo apt install --only-upgrade penguin-cpp</code></pre><p><code>apt update</code> solo refresca los índices. El segundo comando actualiza Penguin y APT resuelve sus dependencias. El botón Actualizar del programa realiza ambos pasos.</p></details><details><summary>Desinstalar en Linux</summary><pre><code>sudo apt remove penguin-cpp
+# Opcional: dependencias que ya no se utilizan
+sudo apt autoremove</code></pre><p>Si también quieres retirar el repositorio:</p><pre><code>sudo rm /etc/apt/sources.list.d/penguin-cpp.list /usr/share/keyrings/penguin-cpp.gpg</code></pre><p>Tus preferencias permanecen en <code>~/.config/penguin-cpp</code>.</p></details></div></div>
+  <div id="panel-install-mac" class="install-panel" role="tabpanel" aria-labelledby="install-mac" tabindex="0" hidden><div><h3>Tu Mac.<br>Tu entorno completo.</h3><p>macOS 26 o posterior, con Apple Silicon. El PKG y el DMG completos incluyen LLVM-MinGW, GNU Make y Wine ARM64/FEX. Ese motor no necesita Rosetta.</p><p class="notice">Edición experimental, sin firma Developer ID ni notarización. Revisa las instrucciones de apertura en las notas de la descarga.</p><a class="button secondary" href="https://github.com/JuanFranG/Penguin-cpp/releases/latest">Descargar PKG o DMG</a></div><div class="mac-options"><h4>Completo o solo nativo</h4><p>Elige un archivo <code>COMPLETE-UNSIGNED</code> para incluir las herramientas Windows. El DMG <code>arm64</code> contiene solo el IDE nativo; las herramientas de Apple se instalan aparte cuando hacen falta.</p><h4>Actualizar desde Penguin</h4><p>Ayuda → Buscar actualizaciones conserva la edición completa. Desde la 0.5.5, la aplicación pide autorización de administrador para reemplazar una copia instalada por PKG.</p><details><summary>Instalar el IDE nativo desde Terminal</summary><pre><code>curl -fsSL https://juanfrang.github.io/Penguin-cpp/install-macos.sh | bash</code></pre><p>Este método no instala el entorno Windows completo.</p></details><details><summary>Desinstalar en macOS</summary><p>Retira Penguin cpp de Aplicaciones. Para el entorno completo y la limpieza opcional de preferencias y carpetas privadas, consulta la <a href="https://github.com/JuanFranG/Penguin-cpp#macos-26-o-posterior-apple-silicon">guía de desinstalación</a> antes de borrar datos.</p></details></div></div>
+</section>
+<section class="section releases-section" id="versiones" aria-labelledby="releases-title"><div class="section-intro"><p class="eyebrow">BITÁCORA DEL PROYECTO</p><h2 id="releases-title">Cada versión,<br>con sus cambios.</h2><p>Lo que se añadió, lo que se corrigió y lo que todavía necesita trabajo. Las notas completas acompañan a cada entrega.</p><a class="text-link" href="https://github.com/JuanFranG/Penguin-cpp/releases">Todas las publicaciones</a></div><div class="release-list">
+<article><div class="release-title"><h3>0.5.6</h3><span class="release-status">HOTFIX EN PREPARACIÓN</span></div><p>Recupera los idiomas al abrir configuraciones antiguas con valores entre comillas. Corrige el lector compartido sin exigir borrar tus preferencias.</p><a href="https://github.com/JuanFranG/Penguin-cpp/blob/main/RELEASE_NOTES_0.5.6.md">Notas del hotfix</a></article>
+<article><div class="release-title"><h3>0.5.5</h3><span>FIABILIDAD Y CONSOLA</span></div><p>Guardado atómico, ejecución coherente, recuperación del entorno Windows y perfiles UTF-8, OEM 437 y ANSI 1252. Bienvenida y Acerca de reorganizados.</p><a href="https://github.com/JuanFranG/Penguin-cpp/releases/tag/v0.5.5">Cambios, pruebas y pendientes</a></article>
+<article><div class="release-title"><h3>0.5.0</h3><span>ENTORNO INTEGRADO</span></div><p>PKG completo, preparación automática del entorno y verificación al iniciar, también desde Terminal. Protección frente a actualizaciones incompletas.</p><a href="https://github.com/JuanFranG/Penguin-cpp/releases/tag/v0.5.0">Notas de la versión</a></article>
+<article><div class="release-title"><h3>0.4.0</h3><span>COMPATIBILIDAD Y ESPACIO</span></div><p>Modos Automático, Nativo y Windows. Correcciones de repintado Cocoa y barras que aprovechan el ancho de la ventana.</p><a href="https://github.com/JuanFranG/Penguin-cpp/releases/tag/v0.4.0">Notas de la versión</a></article>
+<article><div class="release-title"><h3>0.3.0</h3><span>ACTUALIZAR DESDE EL IDE</span></div><p>Búsqueda e instalación de actualizaciones, adjuntar a procesos nativos y correcciones en objetos de compilación e instalación.</p><a href="https://github.com/JuanFranG/Penguin-cpp/releases/tag/v0.3.0">Notas de la versión</a></article>
+</div></section>
+<section class="about-section" id="acerca" aria-labelledby="about-title"><img class="about-icon" src="assets/penguin.png" width="160" height="160" loading="lazy" alt="Mascota de Penguin cpp: Tux junto a un editor C++."><div><p class="eyebrow">ACERCA DE PENGUIN CPP</p><h2 id="about-title">Software libre.<br>Trabajo compartido.</h2><p>Creado por <strong>Juan Francisco Gonzalez Pacheco</strong>, Ingeniería de Sistemas, Universidad del Magdalena.</p><p>Un proyecto educativo y de divulgación construido sobre el trabajo de Colin Laplace, Johan Mes, Embarcadero y sus colaboradores. Lazarus, Free Pascal y SynEdit hacen posible su interfaz nativa.</p><details><summary>Créditos y asistencia al desarrollo</summary><p>El desarrollo, las revisiones, las pruebas y la documentación han contado con asistencia de <strong>Claude Opus 5.5</strong> (Anthropic) y <strong>Chat GPT 6.1 Sol</strong> (OpenAI). La autoría y las decisiones del proyecto corresponden a Juan Francisco Gonzalez Pacheco.</p><p>También se reconoce el trabajo de Artistic Style, los autores de los temas y las dependencias del entorno de compatibilidad. Consulta los <a href="https://github.com/JuanFranG/Penguin-cpp#créditos">créditos completos</a> y los <a href="https://github.com/JuanFranG/Penguin-cpp/blob/main/Compat/THIRD_PARTY.md">avisos de terceros</a>.</p></details><div class="about-links"><a href="https://github.com/JuanFranG/Penguin-cpp/blob/main/LICENSE">Licencia GPL-2.0 o posterior</a><a href="https://github.com/JuanFranG/Penguin-cpp/blob/main/ROADMAP.md">Hoja de ruta y pendientes</a></div></div></section>
+<section class="support-section" id="reportar"><div><p class="eyebrow">SIGAMOS MEJORÁNDOLO</p><h2>¿Algo no funciona?</h2><p>Indica la versión, tu sistema, los pasos y lo que esperabas. Una captura, el archivo de ejemplo y <code>penguin-cpp-errores.txt</code> del Escritorio ayudan a reproducirlo.</p></div><div class="support-links"><a class="button secondary" href="https://github.com/JuanFranG/Penguin-cpp/issues/new">Reportar en GitHub</a><a href="mailto:jfgonzalez@unimagdalena.edu.co?subject=%5BPenguin%20cpp%5D%20Reporte%20de%20problema&amp;body=Versi%C3%B3n%3A%0ASistema%3A%0APasos%3A%0AResultado%20esperado%3A%0AResultado%20obtenido%3A">Enviar por correo</a><p>Adjunta los archivos desde tu correo antes de enviarlo.</p></div></section>
 </main>
+<footer><a class="brand footer-brand" href="#inicio"><img src="assets/penguin.png" width="36" height="36" alt=""><span>Penguin cpp</span></a><p>La curiosidad compila en cualquier sistema.</p><div><a href="manual/">Manual ES</a><a href="manual/en/" lang="en">Manual EN</a><a href="https://github.com/JuanFranG/Penguin-cpp">GitHub</a></div></footer>
+</div>
 </body>
 </html>

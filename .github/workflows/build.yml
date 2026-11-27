@@ -16,7 +16,9 @@ jobs:
       - uses: actions/checkout@v5
 
       - name: Versioned release notes
-        run: python3 packaging/check-release.py
+        run: |
+          python3 packaging/check-release.py
+          python3 packaging/check-site.py
 
       - name: Install Lazarus, Free Pascal and the C/C++ tools
         run: |

@@ -17,6 +17,20 @@ begin
   Failed:=False; try S.SaveSelf except on E:EInOutError do Failed:=True end;
   Check(Failed,'saving without a selected configuration fails explicitly');
   S.INIFileName:=Path; S.Number:=1; S.SaveSelf;
+  L.Text := '[Directories]' + LineEnding + 'Lang="%path%\Lang/"' + LineEnding +
+    '[Options]' + LineEnding + 'Language="English.lng"';
+  L.SaveToFile(Path); S.INIFileName:=Path;
+  Check((S.ReadS('Directories','Lang')='%path%\Lang/') and
+    (S.ReadS('Options','Language')='English.lng'),'legacy quoted language paths load without quotes');
+  L.Text := '[Directories]' + LineEnding + 'Lang="""%path%\Lang/"""' + LineEnding +
+    '[Options]' + LineEnding + 'Language="""English.lng"""' + LineEnding +
+    'InterfaceFont=""Arial""' + LineEnding + '[Commands]' + LineEnding + 'Text=""keep quotes""';
+  L.SaveToFile(Path); S.INIFileName:=Path;
+  Check((S.ReadS('Directories','Lang')='%path%\Lang/') and
+    (S.ReadS('Options','Language')='English.lng') and
+    (S.ReadS('Options','InterfaceFont')='Arial'),'repeatedly saved legacy resource quotes are recovered');
+  Check(S.ReadS('Commands','Text')='"keep quotes"','recovery preserves meaningful command quotes');
+  S.SaveSelf;
   L.LoadFromFile(Path); Before:=L.Text;
   fpChmod(Path,&400); S.Number:=42; Failed:=False;
   try S.SaveSelf except on E:Exception do Failed:=True end;

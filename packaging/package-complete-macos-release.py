@@ -122,7 +122,8 @@ try:
     result = subprocess.run([str(wine), 'wineboot', '-u'], env=env, capture_output=True, timeout=180)
     (out / 'macOS-complete-self-test.log').write_bytes(result.stdout + result.stderr)
     assert result.returncode == 0, 'Runtime initialization failed'
-    run(server, '-k', env=env)
+    # As in the app's setup worker, an already stopped server is valid.
+    subprocess.run([str(server), '-k'], env=env, timeout=30)
     subprocess.run([str(server), '-w'], env=env, check=True, timeout=30)
     result = subprocess.run([str(wine), str(probe)], env=env, capture_output=True, timeout=120)
     with (out / 'macOS-complete-self-test.log').open('ab') as log:

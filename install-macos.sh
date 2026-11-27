@@ -41,14 +41,18 @@ WORK=$(mktemp -d "${TMPDIR:-/tmp}/penguin-cpp-install.XXXXXX")
 MOUNT=$WORK/mount
 STAGE=
 KEEP_STAGE=false
+INSTALL_NEEDS_ADMIN=false
+install_command() {
+  if [ "$INSTALL_NEEDS_ADMIN" = true ]; then sudo "$@"; else "$@"; fi
+}
 cleanup() {
   if [ -d "$MOUNT" ]; then hdiutil detach -quiet "$MOUNT" 2>/dev/null || true; fi
   if [ -n "$STAGE" ]; then
     # A signal or failed rename must not remove the only surviving copy.
     if [ -d "$STAGE/previous.app" ] && [ ! -e "$DEST/$TARGET_APP_NAME" ]; then
-      mv "$STAGE/previous.app" "$DEST/$TARGET_APP_NAME" || KEEP_STAGE=true
+      install_command mv "$STAGE/previous.app" "$DEST/$TARGET_APP_NAME" || KEEP_STAGE=true
     fi
-    if [ "$KEEP_STAGE" = false ]; then rm -rf "$STAGE";
+    if [ "$KEEP_STAGE" = false ]; then install_command rm -rf "$STAGE";
     else say "La copia anterior se conserva en $STAGE/previous.app" >&2; fi
   fi
   rm -rf "$WORK"
@@ -66,7 +70,11 @@ TAG=${TAG##*/}
 [[ "$TAG" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]] ||
   fail "no se encontró una versión estable en https://github.com/$REPO/releases"
 
-URL="https://github.com/$REPO/releases/download/$TAG/Penguin-cpp-${TAG#v}-arm64.dmg"
+ASSET="Penguin-cpp-${TAG#v}-arm64.dmg"
+if [ -f "$DEST/$TARGET_APP_NAME/Contents/Resources/Compat/windows/environment.json" ]; then
+  ASSET="Penguin-cpp-${TAG#v}-COMPLETE-UNSIGNED.dmg"
+fi
+URL="https://github.com/$REPO/releases/download/$TAG/$ASSET"
 
 say "Descargando ${URL##*/}..."
 curl --proto '=https' --proto-redir '=https' --max-redirs 5 --connect-timeout 15 --max-time 600 -fL --progress-bar -o "$WORK/penguin-cpp.dmg" "$URL"
@@ -78,16 +86,24 @@ codesign --verify --deep --strict "$MOUNT/$APP_NAME" || fail "la app de la image
 
 say "Instalando en $DEST..."
 # Copy and verify on the destination filesystem before touching the old app.
-STAGE=$(mktemp -d "$DEST/.penguin-cpp-update.XXXXXX")
-ditto "$MOUNT/$APP_NAME" "$STAGE/$APP_NAME"
-codesign --verify --deep --strict "$STAGE/$APP_NAME" || fail "no se pudo verificar la copia nueva"
+# PKG installs are root-owned even when /Applications itself is writable.
+# Authorize the commit before moving the old app; cancellation keeps it intact.
+if [ ! -w "$DEST" ] || { [ -e "$DEST/$TARGET_APP_NAME" ] && [ ! -w "$DEST/$TARGET_APP_NAME" ]; }; then
+  say "La actualización necesita autorización de administrador."
+  sudo -v || fail "no se autorizó la actualización; se conserva la app anterior"
+  INSTALL_NEEDS_ADMIN=true
+fi
+STAGE=$(install_command mktemp -d "$DEST/.penguin-cpp-update.XXXXXX")
+install_command chmod 755 "$STAGE"
+install_command ditto "$MOUNT/$APP_NAME" "$STAGE/$APP_NAME"
+install_command codesign --verify --deep --strict "$STAGE/$APP_NAME" || fail "no se pudo verificar la copia nueva"
 # Never silently replace a complete Windows environment with a native-only DMG.
 if [ -f "$DEST/$TARGET_APP_NAME/Contents/Resources/Compat/windows/environment.json" ] &&
    [ ! -f "$STAGE/$APP_NAME/Contents/Resources/Compat/windows/environment.json" ]; then
   fail "la descarga solo incluye el IDE nativo; conserva el entorno completo. Instala un paquete completo compatible para actualizar esta copia"
 fi
-if [ -e "$DEST/$TARGET_APP_NAME" ]; then mv "$DEST/$TARGET_APP_NAME" "$STAGE/previous.app"; fi
-if ! mv "$STAGE/$APP_NAME" "$DEST/$TARGET_APP_NAME"; then
+if [ -e "$DEST/$TARGET_APP_NAME" ]; then install_command mv "$DEST/$TARGET_APP_NAME" "$STAGE/previous.app"; fi
+if ! install_command mv "$STAGE/$APP_NAME" "$DEST/$TARGET_APP_NAME"; then
   fail "no se pudo reemplazar la app; se restaurará la versión anterior"
 fi
 

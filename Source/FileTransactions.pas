@@ -13,6 +13,8 @@ type
   private
     FDiscarding: Boolean;
   public
+    constructor Create(const AFileName: String; AOptions: TIniFileOptions = []); override;
+    function ReadString(const Section, Ident, Default: String): String; override;
     destructor Destroy; override;
     procedure UpdateFile; override;
   end;
@@ -119,10 +121,28 @@ begin
   end;
 end;
 
+constructor TAtomicIniFile.Create(const AFileName: String; AOptions: TIniFileOptions);
+begin
+  // Match TIniFile when reading quoted settings from older Penguin versions.
+  inherited Create(AFileName, AOptions + [ifoStripQuotes]);
+end;
+
 destructor TAtomicIniFile.Destroy;
 begin
   FDiscarding := True;
   inherited Destroy;
+end;
+
+function TAtomicIniFile.ReadString(const Section, Ident, Default: String): String;
+begin
+  Result := inherited ReadString(Section, Ident, Default);
+  // The old reader could re-save already quoted resource paths with another pair.
+  if SameText(Section, 'Directories') or
+    (SameText(Section, 'Options') and (SameText(Ident, 'Language') or
+     SameText(Ident, 'InterfaceFont') or SameText(Ident, 'Theme'))) then
+    while (Length(Result) >= 2) and (Result[1] = '"') and
+      (Result[Length(Result)] = '"') do
+      Result := Copy(Result, 2, Length(Result) - 2);
 end;
 
 procedure TAtomicIniFile.UpdateFile;

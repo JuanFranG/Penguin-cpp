@@ -52,6 +52,7 @@ gpg --batch --yes --armor --export > penguin-cpp.asc
 # The page people see, the macOS installer it offers, and no Jekyll (it
 # would hide some files)
 cp "$HERE/apt-repo-index.html" index.html
+cp -R "$HERE/site/." ./
 cp "$HERE/install-macos.sh" install-macos.sh
 # The manual (Manual/ of the repository), at /manual/
 rm -rf manual

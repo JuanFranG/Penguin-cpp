@@ -1,0 +1,914 @@
+[
+  {
+    "id": "welcome",
+    "title": "Welcome",
+    "group": "Basics",
+    "open": "Start Penguin cpp with no document open.",
+    "purpose": "Start a new session, reopen recent files, or reach the main preferences.",
+    "controls": [
+      [
+        "New Document",
+        "Create a source file."
+      ],
+      [
+        "Open Document",
+        "Open an existing source file or project."
+      ],
+      [
+        "Options",
+        "Reach the settings categories."
+      ],
+      [
+        "Change Theme / Font / Language",
+        "Adjust appearance and interface language."
+      ]
+    ],
+    "result": "Open a document to switch to the editor.",
+    "note": "",
+    "image": "welcome.png"
+  },
+  {
+    "id": "workspace",
+    "title": "Main window",
+    "group": "Basics",
+    "open": "Open a source file or project.",
+    "purpose": "Write code, navigate a project, build it, and inspect compiler messages.",
+    "controls": [
+      [
+        "Toolbar and compiler list",
+        "Choose the build configuration and compilation actions."
+      ],
+      [
+        "Project / Classes / Debug",
+        "Switch the left panel between files, symbols and debugger watches."
+      ],
+      [
+        "Editor tabs and gutter",
+        "Switch files, fold code and manage breakpoints."
+      ],
+      [
+        "Bottom panel",
+        "Read errors, build output, debugger output and search results."
+      ]
+    ],
+    "result": "Double-click a compiler error to move to its source line.",
+    "note": "On macOS, File, Edit, Search and the other menus are in the system menu bar above the window.",
+    "image": "workspace.png"
+  },
+  {
+    "id": "new-project",
+    "title": "New Project",
+    "group": "Projects",
+    "open": "File → New → Project",
+    "purpose": "Create a project from a template.",
+    "controls": [
+      [
+        "Category and template",
+        "Choose a starting structure suited to the target."
+      ],
+      [
+        "Project name",
+        "Name the project before saving its .dev file."
+      ],
+      [
+        "C / C++",
+        "Choose the source language when the template offers a choice."
+      ]
+    ],
+    "result": "Save the project in its own folder. Templates do not install external SDKs.",
+    "note": "",
+    "image": "new-project.png"
+  },
+  {
+    "id": "project-options",
+    "title": "Project Options",
+    "group": "Projects",
+    "open": "Project → Project Options",
+    "purpose": "Configure the current project rather than the whole IDE.",
+    "controls": [
+      [
+        "General",
+        "Project name and type."
+      ],
+      [
+        "Files",
+        "Per-file compile/link choices and build priority."
+      ],
+      [
+        "Compiler / Parameters",
+        "Compiler options and additional compiler or linker arguments."
+      ],
+      [
+        "Directories / Makefile / Output",
+        "Include and library folders, custom builds and output locations."
+      ]
+    ],
+    "result": "OK applies the working copy. Cancel discards this dialog’s changes.",
+    "note": "Project metadata inherited from Windows does not make a native macOS/Linux build support every Windows resource.",
+    "image": "project-options.png"
+  },
+  {
+    "id": "editor-options",
+    "title": "Editor Options",
+    "group": "Settings",
+    "open": "Tools → Editor Options",
+    "purpose": "Control editing behaviour and code presentation.",
+    "controls": [
+      [
+        "General",
+        "Indentation, tabs, navigation and editing behaviour."
+      ],
+      [
+        "Fonts / Colors",
+        "Code font, line-number gutter and syntax colours."
+      ],
+      [
+        "Snippets / Completion",
+        "Reusable code, completion and symbol insertion."
+      ],
+      [
+        "Autosave",
+        "Configure automatic saving; keep backups for important work."
+      ]
+    ],
+    "result": "OK applies the settings. Cancel leaves your saved preferences unchanged.",
+    "note": "",
+    "image": "editor-options.png"
+  },
+  {
+    "id": "editor-fonts",
+    "title": "Fonts and line numbers",
+    "group": "Settings",
+    "open": "Tools → Editor Options → Fonts",
+    "purpose": "Choose a readable monospaced font and the number gutter.",
+    "controls": [
+      [
+        "Font / Size",
+        "Choose an installed family and a size between 6 and 72 points."
+      ],
+      [
+        "Visible / Line numbers",
+        "Show the margin and its line labels."
+      ],
+      [
+        "Auto size / Gutter width",
+        "Fit the digit count automatically or choose a minimum digit count."
+      ],
+      [
+        "Start at zero / Leading zeros",
+        "Change numbering presentation."
+      ]
+    ],
+    "result": "The line numbers follow the editor font and zoom.",
+    "note": "A separate gutter font is disabled in the native editor. The legacy ligatures switch is not wired to rendering in 0.5.6; do not rely on it.",
+    "image": "editor-fonts.png"
+  },
+  {
+    "id": "environment",
+    "title": "Environment Options",
+    "group": "Settings",
+    "open": "Tools → Environment Options",
+    "purpose": "Set general IDE behaviour, terminal preferences and interface choices.",
+    "controls": [
+      [
+        "General",
+        "Console pause, backups and window behaviour."
+      ],
+      [
+        "Interface font and language",
+        "Change the UI text rather than the code font."
+      ],
+      [
+        "Terminal",
+        "Choose Automatic or an installed terminal for console programs."
+      ],
+      [
+        "Other tabs",
+        "Inspect the available environment categories before applying changes."
+      ]
+    ],
+    "result": "Use Editor Options for the font inside source files.",
+    "note": "",
+    "image": "environment.png"
+  },
+  {
+    "id": "compiler",
+    "title": "Compiler Options",
+    "group": "Settings",
+    "open": "Tools → Compiler Options",
+    "purpose": "Manage compiler configurations and their tools.",
+    "controls": [
+      [
+        "Compiler set",
+        "Select a Release, Debug or Profiling configuration."
+      ],
+      [
+        "Compiler settings",
+        "Choose language, warnings, optimisation and debugging options."
+      ],
+      [
+        "Directories",
+        "Set executable, include and library search paths."
+      ],
+      [
+        "Programs",
+        "Check the compiler, make and debugger executable names."
+      ]
+    ],
+    "result": "Select the intended configuration in the main toolbar before building.",
+    "note": "A library also needs matching headers, binaries, architecture and linker flags; adding an include path alone is not enough.",
+    "image": "compiler.png"
+  },
+  {
+    "id": "find",
+    "title": "Find and replace",
+    "group": "Basics",
+    "open": "Search → Find / Replace / Find in Files",
+    "purpose": "Locate text or replace occurrences with a controlled scope.",
+    "controls": [
+      [
+        "Tabs",
+        "Choose finding, replacing, or searching multiple files."
+      ],
+      [
+        "Text fields",
+        "Enter the search text and, for replacement, the new text."
+      ],
+      [
+        "Options",
+        "Match case or whole words when needed."
+      ],
+      [
+        "Scope / Where",
+        "Limit the operation to a selection, the current file, open files or a project."
+      ]
+    ],
+    "result": "Review multi-file matches before replacing broadly. Save or back up important files.",
+    "note": "",
+    "image": "find.png"
+  },
+  {
+    "id": "go-to-line",
+    "title": "Go to line",
+    "group": "Basics",
+    "open": "Search → Go to line",
+    "purpose": "Jump directly to a line number.",
+    "controls": [
+      [
+        "Line number",
+        "Enter the line reported by the compiler or another person."
+      ],
+      [
+        "OK",
+        "Move the caret to that line."
+      ]
+    ],
+    "result": "The document stays unchanged.",
+    "note": "",
+    "image": "go-to-line.png"
+  },
+  {
+    "id": "file-properties",
+    "title": "File properties",
+    "group": "Basics",
+    "open": "File → Properties",
+    "purpose": "Inspect the selected source file.",
+    "controls": [
+      [
+        "File selection",
+        "Choose a file when more than one is available."
+      ],
+      [
+        "Location and attributes",
+        "Check which file you are inspecting."
+      ],
+      [
+        "Statistics",
+        "Review line and character counts shown by the dialog."
+      ]
+    ],
+    "result": "Use this to confirm a file’s identity before investigating a build problem.",
+    "note": "",
+    "image": "file-properties.png"
+  },
+  {
+    "id": "arguments",
+    "title": "Program parameters",
+    "group": "Tools",
+    "open": "Execute → Parameters",
+    "purpose": "Supply arguments to a program or a host executable for a library project.",
+    "controls": [
+      [
+        "Parameters",
+        "Arguments passed to the launched program."
+      ],
+      [
+        "Host application",
+        "An executable that loads a dynamic library, when applicable."
+      ],
+      [
+        "Browse",
+        "Choose an existing host executable."
+      ]
+    ],
+    "result": "Arguments are not compiler flags or text typed into standard input.",
+    "note": "A normal console program usually needs no host application.",
+    "image": "arguments.png"
+  },
+  {
+    "id": "cpu",
+    "title": "CPU Window",
+    "group": "Tools",
+    "open": "While debugging is paused, use the CPU window button in the Debug panel.",
+    "purpose": "Inspect low-level debugger information.",
+    "controls": [
+      [
+        "Disassembly",
+        "Machine instructions near the paused location."
+      ],
+      [
+        "Registers",
+        "Register names and values reported by the debugger."
+      ],
+      [
+        "Call stack",
+        "Frames leading to the current stop."
+      ],
+      [
+        "Syntax selector",
+        "Choose the assembly syntax supported by the backend."
+      ]
+    ],
+    "result": "Pause at a breakpoint before expecting live data.",
+    "note": "This capture shows an idle view. Windows-target debugging remains a separate limitation of the compatibility environment.",
+    "image": "cpu.png"
+  },
+  {
+    "id": "profiler",
+    "title": "Profile Analysis",
+    "group": "Tools",
+    "open": "Execute → Profile Analysis",
+    "purpose": "Inspect measurements collected from an instrumented native program.",
+    "controls": [
+      [
+        "Function table",
+        "Sort and compare functions reported by the profiler."
+      ],
+      [
+        "Filters",
+        "Hide unused or static functions and change the minimum call count."
+      ],
+      [
+        "Apply",
+        "Recompute the displayed result with the selected filters."
+      ]
+    ],
+    "result": "Use the Profiling configuration, rebuild and execute the program first.",
+    "note": "On macOS the LLVM view counts calls; it does not measure time or show the gprof call graph. The screenshot contains real output from the tutorial program.",
+    "image": "profiler.png"
+  },
+  {
+    "id": "tools",
+    "title": "Tools Configuration",
+    "group": "Tools",
+    "open": "Tools → Configure Tools",
+    "purpose": "Keep shortcuts to external programs.",
+    "controls": [
+      [
+        "List",
+        "Select a configured tool."
+      ],
+      [
+        "Add / Edit / Delete",
+        "Manage the entries."
+      ],
+      [
+        "Up / Down",
+        "Change their order in the menu."
+      ]
+    ],
+    "result": "A tool entry does not install the program it names.",
+    "note": "",
+    "image": "tools.png"
+  },
+  {
+    "id": "edit-tool",
+    "title": "Edit Tool Entry",
+    "group": "Tools",
+    "open": "Tools → Configure Tools → Add or Edit",
+    "purpose": "Describe how an external program should be launched.",
+    "controls": [
+      [
+        "Title",
+        "Label shown in the Tools menu."
+      ],
+      [
+        "Program / Working directory",
+        "Executable and folder in which to run it."
+      ],
+      [
+        "Parameters",
+        "Arguments for the executable."
+      ],
+      [
+        "Macros",
+        "Insert project- or file-dependent values."
+      ]
+    ],
+    "result": "Check paths and arguments before launching a tool that modifies files.",
+    "note": "",
+    "image": "edit-tool.png"
+  },
+  {
+    "id": "windows",
+    "title": "Window List",
+    "group": "Basics",
+    "open": "Window → List",
+    "purpose": "Switch among open editor documents.",
+    "controls": [
+      [
+        "File list",
+        "Select an open document."
+      ],
+      [
+        "Columns",
+        "Use the displayed name and location to distinguish files."
+      ],
+      [
+        "OK",
+        "Activate the selected editor."
+      ]
+    ],
+    "result": "This does not browse unopened files on disk.",
+    "note": "",
+    "image": "windows.png"
+  },
+  {
+    "id": "add-todo",
+    "title": "Add TODO item",
+    "group": "Tools",
+    "open": "Use the editor’s TODO insertion action.",
+    "purpose": "Record a development task in the source.",
+    "controls": [
+      [
+        "Description",
+        "Explain what still needs doing."
+      ],
+      [
+        "Priority",
+        "Assign a relative priority."
+      ],
+      [
+        "User",
+        "Optionally identify the person responsible."
+      ]
+    ],
+    "result": "Confirming inserts a comment; it does not create a GitHub issue.",
+    "note": "",
+    "image": "add-todo.png"
+  },
+  {
+    "id": "todo",
+    "title": "TODO List",
+    "group": "Tools",
+    "open": "View → TODO List",
+    "purpose": "Find task comments in the selected scope.",
+    "controls": [
+      [
+        "Filter",
+        "Choose which task comments to list."
+      ],
+      [
+        "Task list",
+        "Review descriptions, locations and priorities."
+      ],
+      [
+        "Refresh / navigation",
+        "Update the list and jump to a task’s source."
+      ]
+    ],
+    "result": "The sample program includes a TODO comment so the list has a real source to inspect.",
+    "note": "",
+    "image": "todo.png"
+  },
+  {
+    "id": "template",
+    "title": "New Template From Project",
+    "group": "Projects",
+    "open": "File → New → Template, with a project open.",
+    "purpose": "Reuse a project structure for later projects.",
+    "controls": [
+      [
+        "Template Info",
+        "Name, description and category."
+      ],
+      [
+        "Files",
+        "Choose which project files to include."
+      ],
+      [
+        "Extras",
+        "Review template build settings."
+      ],
+      [
+        "Create",
+        "Save the template once the required fields are filled."
+      ]
+    ],
+    "result": "Templates reuse a structure; they do not bundle every external dependency.",
+    "note": "The separate icon-library dialog has a legacy resource-loading problem in 0.5.6. Do not depend on that auxiliary picker.",
+    "image": "template.png"
+  },
+  {
+    "id": "new-class",
+    "title": "New Class",
+    "group": "Projects",
+    "open": "File → New → Class; also available from the Classes pane context menu.",
+    "purpose": "Prepare a C++ class declaration through the class-browser tools.",
+    "controls": [
+      [
+        "Name and base class",
+        "Describe the new class and optional parent."
+      ],
+      [
+        "Scope / target class",
+        "Use the available selection controls for the current project."
+      ],
+      [
+        "Options",
+        "Review the offered generation choices."
+      ]
+    ],
+    "result": "Inspect the generated code and its destination before saving.",
+    "note": "Availability depends on the current project and class-browser selection. This is not a general refactoring engine.",
+    "image": "new-class.png"
+  },
+  {
+    "id": "new-function",
+    "title": "New Function",
+    "group": "Projects",
+    "open": "Classes pane → context menu → function creation action",
+    "purpose": "Prepare a function or class member.",
+    "controls": [
+      [
+        "Return type / Name",
+        "Describe the function signature."
+      ],
+      [
+        "Arguments",
+        "Enter its parameter list."
+      ],
+      [
+        "Class and scope",
+        "Select a target class and access level where available."
+      ]
+    ],
+    "result": "Review the declaration and implementation after insertion.",
+    "note": "",
+    "image": "new-function.png"
+  },
+  {
+    "id": "new-variable",
+    "title": "New Variable",
+    "group": "Projects",
+    "open": "Classes pane → context menu → variable creation action",
+    "purpose": "Prepare a variable or class member.",
+    "controls": [
+      [
+        "Type / Name",
+        "Describe the new variable."
+      ],
+      [
+        "Class / scope",
+        "Choose the declaration context."
+      ],
+      [
+        "Read / write functions",
+        "Request accessors where the tool offers them."
+      ]
+    ],
+    "result": "Review the generated names and code before saving.",
+    "note": "",
+    "image": "new-variable.png"
+  },
+  {
+    "id": "functions",
+    "title": "Go to Function",
+    "group": "Basics",
+    "open": "Search → Go to Function",
+    "purpose": "Navigate functions parsed from the current code.",
+    "controls": [
+      [
+        "Search text",
+        "Narrow the symbol list."
+      ],
+      [
+        "Function list",
+        "Choose a declaration or definition."
+      ],
+      [
+        "Go to",
+        "Move the editor to the selected function."
+      ]
+    ],
+    "result": "Save valid code and let the parser update if a symbol is missing.",
+    "note": "",
+    "image": "functions.png"
+  },
+  {
+    "id": "remove-file",
+    "title": "Remove from project",
+    "group": "Projects",
+    "open": "Project → Remove from project",
+    "purpose": "Remove selected units from the current project.",
+    "controls": [
+      [
+        "File list",
+        "Select the project entries to remove."
+      ],
+      [
+        "Delete / Remove",
+        "Confirm the removal action."
+      ]
+    ],
+    "result": "Check the selected project entries before confirming.",
+    "note": "Keep a backup of files you want to preserve; do not use project removal as a substitute for checking the files on disk.",
+    "image": "remove-file.png"
+  },
+  {
+    "id": "print",
+    "title": "Print File",
+    "group": "Tools",
+    "open": "File → Print",
+    "purpose": "Choose source-code print or PDF settings.",
+    "controls": [
+      [
+        "Colours and syntax highlighting",
+        "Choose the presentation of the output."
+      ],
+      [
+        "Line numbers and margins",
+        "Include or omit source line labels."
+      ],
+      [
+        "Wrap",
+        "Control long source lines."
+      ],
+      [
+        "Output choice",
+        "Continue to the available PDF or printer workflow."
+      ]
+    ],
+    "result": "Inspect the resulting PDF or print preview before sharing it.",
+    "note": "Printer setup depends on the OS and installed printers; the screenshot shows this Mac’s available choices.",
+    "image": "print.png"
+  },
+  {
+    "id": "incremental-find",
+    "title": "Incremental Search",
+    "group": "Basics",
+    "open": "Search → Incremental Search",
+    "purpose": "Search while entering a query in a small floating bar.",
+    "controls": [
+      [
+        "Search text",
+        "Type to move among matching text."
+      ],
+      [
+        "Keyboard",
+        "Use the available navigation keys; close the bar when finished."
+      ]
+    ],
+    "result": "Use the full Find dialog when you need replacement or a multi-file scope.",
+    "note": "",
+    "image": "incremental-find.png"
+  },
+  {
+    "id": "tips",
+    "title": "Tip Of The Day",
+    "group": "Basics",
+    "open": "Help → Tip of the Day",
+    "purpose": "Read short usage hints.",
+    "controls": [
+      [
+        "Next / Previous",
+        "Move through the tips."
+      ],
+      [
+        "Show at startup",
+        "Choose whether to show this dialog automatically."
+      ]
+    ],
+    "result": "Some tips describe inherited editor behaviour; use this manual for the current platform limits.",
+    "note": "",
+    "image": "tips.png"
+  },
+  {
+    "id": "astyle",
+    "title": "Artistic Style options",
+    "group": "Settings",
+    "open": "Formatting → AStyle → Formatting Options",
+    "purpose": "Choose how astyle formats code.",
+    "controls": [
+      [
+        "Style",
+        "Choose a brace and indentation style."
+      ],
+      [
+        "Options",
+        "Adjust spacing, indentation and other formatting rules."
+      ],
+      [
+        "Preview",
+        "Compare the sample before applying the style."
+      ]
+    ],
+    "result": "Use Formatting → Format Current File to format the active source. Undo is available for editor formatting.",
+    "note": "",
+    "image": "astyle.png"
+  },
+  {
+    "id": "clang-format",
+    "title": "ClangFormat options",
+    "group": "Settings",
+    "open": "Formatting → Clang-format → Formatting Options",
+    "purpose": "Configure the optional clang-format formatter.",
+    "controls": [
+      [
+        "Based on style",
+        "Start from a supported formatting style."
+      ],
+      [
+        "Options",
+        "Override indentation, braces, spacing and line-length choices."
+      ],
+      [
+        "Preview",
+        "Available when the formatter executable can be found."
+      ]
+    ],
+    "result": "Install or configure clang-format before expecting a live preview.",
+    "note": "clang-format was not installed in this capture environment. The default bundled macOS formatter is astyle; do not run apt commands on macOS.",
+    "image": "clang-format.png"
+  },
+  {
+    "id": "attach-process",
+    "title": "Attach to process",
+    "group": "Tools",
+    "open": "Execute → Attach to process",
+    "purpose": "Choose an already-running process for a native debugger session.",
+    "controls": [
+      [
+        "Process list",
+        "Select the intended process; verify its name and PID."
+      ],
+      [
+        "Attach",
+        "Ask the configured debugger to attach."
+      ]
+    ],
+    "result": "Use a process you own and compiled with debug information.",
+    "note": "macOS permissions and signing can prevent attachment. This does not enable debugging arbitrary Windows programs through Wine.",
+    "image": "attach-process.png"
+  },
+  {
+    "id": "first-run",
+    "title": "First-time configuration",
+    "group": "Settings",
+    "open": "The initial configuration wizard; also use welcome actions for later changes.",
+    "purpose": "Choose an interface language, appearance and code font.",
+    "controls": [
+      [
+        "Language",
+        "Choose the app’s UI language."
+      ],
+      [
+        "Theme and colours",
+        "Choose the available appearance and syntax scheme."
+      ],
+      [
+        "Font",
+        "Pick an installed monospaced family for code."
+      ]
+    ],
+    "result": "The manual and screenshots use English. Your browser can translate the manual text.",
+    "note": "",
+    "image": "first-run.png"
+  },
+  {
+    "id": "about",
+    "title": "About Penguin cpp",
+    "group": "Basics",
+    "open": "Help → About Penguin cpp; on macOS also check the application menu.",
+    "purpose": "Check the installed version and project credits.",
+    "controls": [
+      [
+        "Version",
+        "Identify which build you are using."
+      ],
+      [
+        "Creator and assistance",
+        "Read the project’s author and development credits."
+      ],
+      [
+        "Links",
+        "Open the project, version notes and licence documentation."
+      ]
+    ],
+    "result": "Include the version when reporting a problem.",
+    "note": "",
+    "image": "about.png"
+  },
+  {
+    "id": "windows-compatibility",
+    "title": "Windows compatibility",
+    "group": "Settings",
+    "open": "Tools → Windows compatibility",
+    "purpose": "Choose when to compile and run Windows-target programs.",
+    "controls": [
+      [
+        "Automatic / Native / Windows",
+        "Let includes guide the target or choose one explicitly."
+      ],
+      [
+        "Verify environment",
+        "Compile and execute the environment’s self-test when tools are available."
+      ],
+      [
+        "Console profile",
+        "Choose Unicode UTF-8, OEM 437, ANSI 1252 or program-controlled output."
+      ],
+      [
+        "Advanced options",
+        "Use custom toolchain, runtime and prefix paths only when needed."
+      ]
+    ],
+    "result": "Save the selection, then use Compile & Run. Rebuild after changing the console profile.",
+    "note": "The complete macOS PKG/DMG includes LLVM-MinGW, Make and Wine ARM64/FEX. Compatibility is experimental; graphics.h/WinBGIm and Windows debugging are not fully covered.",
+    "image": "windows-compatibility.png"
+  },
+  {
+    "id": "setup-working",
+    "title": "Preparing Windows compatibility",
+    "group": "Windows",
+    "open": "The complete environment starts its first-use check automatically.",
+    "purpose": "Prepare a private Windows environment and check the included compiler and runtime before building your program.",
+    "controls": [
+      [
+        "Status and progress",
+        "Show the current check. Prefix creation may take a while on first use."
+      ],
+      [
+        "Cancel",
+        "Stop preparation if you need to return to the editor."
+      ]
+    ],
+    "result": "Wait for Environment ready. If preparation fails, read its details, correct the cause and retry.",
+    "note": "This capture uses the actual included tools and a disposable environment. The setup does not download Apple GPTK or accept its licence.",
+    "image": "setup-working.png"
+  },
+  {
+    "id": "setup-ready",
+    "title": "Environment ready",
+    "group": "Windows",
+    "open": "Shown after the first-use environment check succeeds.",
+    "purpose": "Confirm that the included compiler built the test program and the runtime executed it successfully.",
+    "controls": [
+      [
+        "Environment ready",
+        "The preparation window closes automatically after this confirmation."
+      ]
+    ],
+    "result": "Use Compile & Run for a Windows-target program. Your program uses this prepared private environment.",
+    "note": "A successful smoke test does not guarantee support for every Windows API, graphics library or external SDK.",
+    "image": "setup-ready.png"
+  },
+  {
+    "id": "updates",
+    "title": "Check for updates",
+    "group": "Basics",
+    "open": "Help → Check for updates",
+    "purpose": "Compare the installed version with the latest published GitHub release.",
+    "controls": [
+      [
+        "Status",
+        "Read whether an update is available or the connection failed."
+      ],
+      [
+        "Update / Download",
+        "Install through the supported platform flow or open the release download."
+      ],
+      [
+        "Retry",
+        "Check again after a connection problem."
+      ],
+      [
+        "GitHub / version notes",
+        "Read changes and known limits before updating."
+      ]
+    ],
+    "result": "On Linux the update flow uses APT; on macOS the full channel keeps the complete environment.",
+    "note": "The screenshot shows a real check from 0.5.6. Update controls may be disabled when there is no newer version.",
+    "image": "updates.png"
+  }
+]

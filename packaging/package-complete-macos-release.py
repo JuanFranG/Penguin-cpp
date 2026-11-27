@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Assemble complete macOS assets on a hosted runner from the reviewed dependency profile."""
 import argparse
+import base64
+import gzip
 import hashlib
 import json
 import os
@@ -56,6 +58,29 @@ assert sha(work / base_name) == 'a2f17e5aec2764908824b7162f2b2ecfcaa2242609fee46
 assert sha(work / source_name) == 'f493ab0bc203e3b219e03458e4a863906965527f94bbbada54417e59ab0075fe', 'Corresponding sources mismatch'
 run('pkgutil', '--expand-full', work / base_name, work / 'old')
 old_resources = work / 'old/penguin.pkg/Payload/Penguin cpp.app/Contents/Resources'
+# Recover the exact reviewed pre-packaging bytes; the normal integrity gate stays unchanged.
+patch_name = 'macOS-runtime-signatures-foss-1.json.gz'
+run('gh', 'release', 'download', 'v0.5.5', '--repo', repo, '--pattern', patch_name, '--dir', work)
+assert sha(work / patch_name) == '18e3226e6e9dc365a0bc025bcfda6985c4483351b68831ed68cc2a77408310a6'
+patch = json.loads(gzip.decompress((work / patch_name).read_bytes()))
+assert patch['base_pkg_sha256'] == sha(work / base_name)
+runtime_root = old_resources / 'Compat/windows/runtime'
+runtime_manifest = json.loads((runtime_root / 'penguin-runtime.json').read_text())
+for relative, stamp in patch['files'].items():
+    path = runtime_root / relative
+    assert not path.is_symlink() and runtime_root.resolve() in path.resolve().parents
+    assert sha(path) == stamp['from_sha256']
+    assert runtime_manifest['files'][relative]['sha256'] == stamp['to_sha256']
+    data = bytearray(path.read_bytes()[:stamp['size']])
+    data.extend(b'\0' * (stamp['size'] - len(data)))
+    for offset, encoded in stamp['blocks']:
+        block = base64.b64decode(encoded, validate=True)
+        assert 0 <= offset and offset + len(block) <= len(data)
+        data[offset:offset + len(block)] = block
+    assert hashlib.sha256(data).hexdigest() == stamp['to_sha256']
+    path.write_bytes(data)
+    print('Restored original reviewed signature:', relative, flush=True)
+
 mount = work / 'native'
 mount.mkdir()
 run('hdiutil', 'attach', '-readonly', '-nobrowse', '-mountpoint', mount, out / native_name)

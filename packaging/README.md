@@ -173,3 +173,14 @@ se retiran únicamente las secciones de depuración PE para distribuir el motor
 por APT; código, recursos y datos de desenrollado se conservan. No instala
 alternativas globales. Las dependencias corresponden a Ubuntu 24.04/Mint 22;
 otras distribuciones requieren validación independiente.
+
+## PKG y DMG completos desde Actions
+
+`Complete macOS release` se ejecuta manualmente sobre un borrador existente.
+Descarga su DMG nativo y el PKG/fuentes del perfil revisado 0.5.0, verificados por
+SHA-256. Solo reutiliza LLVM-MinGW, Wine/FEX y Make; el IDE y sus recursos salen
+de la versión nueva. El constructor existente valida el perfil, ensambla el PKG,
+y el flujo extrae esa misma app para el DMG. Verifica firmas, fuentes de consola
+y un self-test real; sube paquetes, fuentes, manifiesto y hashes al borrador.
+No publica el borrador. Si cambia el perfil de dependencias, debe actualizarse
+su base revisada; el archivo de fuentes antiguo no pasa un lock distinto.

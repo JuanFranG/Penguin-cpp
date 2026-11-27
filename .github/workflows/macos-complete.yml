@@ -1,0 +1,29 @@
+name: Complete macOS release
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Existing draft release version (same reviewed dependency profile)
+        required: true
+        default: '0.5.5'
+permissions:
+  contents: write
+jobs:
+  complete:
+    runs-on: macos-26
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+      - name: Assemble, validate and upload the complete artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: python3 packaging/package-complete-macos-release.py --version "$RELEASE_VERSION"
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: complete-macos-validation
+          path: |
+            ${{ runner.temp }}/complete-release/assets/macOS-complete-self-test.log
+            ${{ runner.temp }}/complete-release/assets/macOS-complete-manifest.json
+            ${{ runner.temp }}/complete-release/assets/SHA256SUMS-COMPLETE.txt

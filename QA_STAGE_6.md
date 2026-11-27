@@ -73,7 +73,7 @@ confirmó la versión. Se respaldó la app anterior. Desde la app instalada, un
 arranque directo con HOME/configuración temporales preparó el entorno privado,
 escribió `ready` y ejecutó el self-test `PENGUIN_WINDOWS_READY` con resultado correcto.
 La instalación se realizó en Apple Silicon/macOS 27.2.1. El hash del ejecutable
-instalado coincide con el de la app del PKG final. Ambos DMG pasan `hdiutil verify`
+instalado coincide con el de la app del PKG local validado. Ambos DMG pasan `hdiutil verify`
 y la app completa pasa `codesign --verify --deep --strict` con firma ad hoc.
 Una copia con cuarentena fue rechazada por `spctl`: no hay Developer ID/notarización.
 No se considera una instalación en un Mac limpio ni acredita notarización o
@@ -115,3 +115,14 @@ entrada, atributos, cursor y restauración de la terminal.
 Las acciones de caché y artefactos usan Node.js 24 directamente; la ejecución
 macOS ya no contiene la advertencia de retirada de Node.js 20. La nota sobre
 capacidad de runners ARM64 corresponde a la infraestructura de GitHub.
+
+## Ensamblado público de macOS en CI
+
+La subida local de varios GB resultó demasiado lenta. El flujo manual
+`Complete macOS release` reensambla el PKG y DMG públicos desde el DMG nativo
+0.5.5 ya validado y únicamente los árboles de dependencias del PKG 0.5.0,
+fijado por SHA-256. No reutiliza el ejecutable ni los recursos propios antiguos.
+Comprueba que Source/Compat/Lang/Templates y el constructor coinciden con el tag;
+valida las firmas ad hoc, el contenido del PKG y ejecuta su self-test con un
+prefix temporal. Publica un manifiesto de hashes y el registro. El contenedor
+público se genera en CI; Installer real se probó con el candidato local 0.5.5.

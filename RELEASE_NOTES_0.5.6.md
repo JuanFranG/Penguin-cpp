@@ -8,7 +8,7 @@
 
 ## Validación
 
-La prueba de regresión carga una configuración antigua con `Language="English.lng"` y `Lang="%path%\Lang/"`, comprueba los valores resueltos y conserva las pruebas de guardado atómico. La regresión gráfica carga los 32 idiomas y comprueba todas las cadenas no vacías de referencia y su respaldo al inglés, en Cocoa y Qt5. El tema de la web sigue al sistema/navegador automáticamente. La compilación Cocoa y las pruebas de seguridad se verifican localmente. La comprobación de los paquetes se documenta en `packaging/QA-0.5.6.md`; ese informe distingue ejecución real y validación de contenido.
+La prueba de regresión carga una configuración antigua con `Language="English.lng"` y `Lang="%path%\Lang/"`, comprueba los valores resueltos y conserva las pruebas de guardado atómico. La regresión gráfica carga los 32 idiomas y comprueba todas las cadenas no vacías de referencia y su respaldo al inglés, en Cocoa y Qt5. El tema de la web sigue al sistema/navegador automáticamente. La compilación Cocoa y las pruebas de seguridad se verifican localmente. Se probaron los menús ingleses y españoles de las apps extraídas del DMG y PKG. El PKG se instaló realmente sobre 0.5.5 en este Mac, y los DEB se instalaron con APT en Ubuntu 24.04. Detalles y límites: [QA 0.5.6](packaging/QA-0.5.6.md).
 
 ## Límites y pendientes
 

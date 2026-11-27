@@ -18,11 +18,11 @@ El DMG nativo definitivo se monta en solo lectura. Se arranca **su propio ejecut
 
 ## PKG
 
-Se genera el PKG **completo**, con el perfil de dependencias revisado y sus fuentes correspondientes. Se extrae con `pkgutil --expand-full`, se verifica la firma ad hoc y se ejecuta la app del payload con el mismo respaldo dañado. Los menús vuelven a ser legibles y los 32 archivos de idioma coinciden con el origen. La prueba del payload no sustituye la instalación con administrador; su resultado se registra por separado al terminar.
+Se genera el PKG **completo**, con el perfil de dependencias revisado y sus fuentes correspondientes. Se extrae con `pkgutil --expand-full`, se verifica la firma ad hoc y se ejecuta la app del payload con el mismo respaldo dañado. Los menús vuelven a ser legibles y los 32 archivos de idioma coinciden con el origen. Además se instaló realmente ese PKG sobre la 0.5.5 de este Mac con autorización de administrador. Installer terminó correctamente, el recibo confirma 0.5.6 y la app instalada volvió a abrir con textos legibles. La preparación del entorno Windows privado completó su self-test y generó el estado `ready`. Esto no sustituye un Mac limpio.
 
 ## DEB
 
-Se compila la aplicación Qt5 en Ubuntu 24.04 amd64, en Docker sobre Apple Silicon. Las regresiones de configuración e idiomas se ejecutan como usuario normal. El paquete se construye con sus herramientas LLVM-MinGW/UCRT y el paquete Wine privado, sin modificar el Wine del anfitrión. La prueba del ejecutable extraído y el resultado de instalación se registran por separado.
+Se compila la aplicación Qt5 en Ubuntu 24.04 amd64, en Docker sobre Apple Silicon. Las regresiones de configuración e idiomas se ejecutan como usuario normal. El paquete se construye con sus herramientas LLVM-MinGW/UCRT y el paquete Wine privado, sin modificar el Wine del anfitrión. Los dos paquetes se instalaron con APT y sus dependencias (código de salida 0). Los 32 idiomas extraídos coinciden con el origen y la sección `.text` del ejecutable empaquetado coincide con el binario Qt5 probado. El IDE extraído y el instalado arrancaron con una configuración española antigua; la prueba los detuvo tras 8/10 segundos (salida 124 de `timeout`, no un fallo de arranque). No se inspeccionaron visualmente todos los menús del proceso Linux instalado.
 
 La prueba independiente de cancelación de descendientes falla dentro del contenedor amd64 emulado; no se da por validada por esta ejecución. La prueba de archivos de solo lectura exige usuario sin privilegios: ejecutarla como root invalida esa condición. Los trabajos CI x64 nativos siguen siendo necesarios para ampliar esa evidencia.
 

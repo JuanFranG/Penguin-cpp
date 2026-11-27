@@ -470,8 +470,8 @@ object EditorOptForm: TEditorOptForm
           Top = 96
           Width = 80
           Height = 24
-          MaxValue = 999
-          MinValue = 1
+          MaxValue = 72
+          MinValue = 6
           TabOrder = 7
           Value = 10
           OnChange = edGutterSizeChange
@@ -481,10 +481,10 @@ object EditorOptForm: TEditorOptForm
           Top = 41
           Width = 80
           Height = 24
-          MaxValue = 999
+          MaxValue = 12
           MinValue = 1
           TabOrder = 8
-          Value = 32
+          Value = 2
         end
       end
       object grpEditorFont: TGroupBox
@@ -526,8 +526,8 @@ object EditorOptForm: TEditorOptForm
           Top = 22
           Width = 80
           Height = 24
-          MaxValue = 999
-          MinValue = 1
+          MaxValue = 72
+          MinValue = 6
           TabOrder = 1
           Value = 10
           OnChange = edEditorSizeChange

@@ -134,12 +134,37 @@ begin
 end;
 
 function TAtomicIniFile.ReadString(const Section, Ident, Default: String): String;
+var Reference: String;
 begin
   Result := inherited ReadString(Section, Ident, Default);
+  if SameText(Ident, 'FullCommand') and
+    (SameText(Section, 'FormatterAStyle') or SameText(Section, 'FormatterClang')) then begin
+    // The executable name reveals extra save layers; keep the command's own quotes.
+    if SameText(Section, 'FormatterAStyle') then
+      Reference := inherited ReadString(Section, 'AStyleFile', '')
+    else
+      Reference := inherited ReadString(Section, 'ClangFile', '');
+    while (Length(Reference) >= 2) and (Reference[1] = '"') and
+      (Reference[Length(Reference)] = '"') do begin
+      Reference := Copy(Reference, 2, Length(Reference) - 2);
+      if (Length(Result) >= 2) and (Result[1] = '"') and
+        (Result[Length(Result)] = '"') then
+        Result := Copy(Result, 2, Length(Result) - 2);
+    end;
+  end;
   // The old reader could re-save already quoted resource paths with another pair.
   if SameText(Section, 'Directories') or
+    (SameText(Ident, 'Name') and (SameText(Section, 'Editor.Font') or
+     SameText(Section, 'Editor.Gutterfont'))) or
+    (SameText(Section, 'Editor') and (SameText(Ident, 'NewDocEncoding') or
+     SameText(Ident, 'SyntaxExt'))) or
+    ((SameText(Section, 'FormatterAStyle') or SameText(Section, 'FormatterClang')) and
+     (SameText(Ident, 'AStyleDir') or SameText(Ident, 'AStyleFile') or
+      SameText(Ident, 'ClangDir') or SameText(Ident, 'ClangFile'))) or
     (SameText(Section, 'Options') and (SameText(Ident, 'Language') or
-     SameText(Ident, 'InterfaceFont') or SameText(Ident, 'Theme'))) then
+     SameText(Ident, 'InterfaceFont') or SameText(Ident, 'Theme') or
+     SameText(Ident, 'TerminalProgram') or SameText(Ident, 'Splash') or
+     SameText(Ident, 'FindCols') or SameText(Ident, 'CompCols'))) then
     while (Length(Result) >= 2) and (Result[1] = '"') and
       (Result[Length(Result)] = '"') do
       Result := Copy(Result, 2, Length(Result) - 2);

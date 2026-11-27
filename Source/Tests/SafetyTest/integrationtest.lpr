@@ -2,7 +2,7 @@ program integrationtest;
 {$mode delphi}
 uses cthreads, SafetyInterfaces, Forms, Classes, SysUtils, BaseUnix, Dialogs,
  InterfaceBase, LCLType, Controls, main, Editor, Project, devCFG, FileTransactions,
- MultiLangSupport, Version, Compiler, devExec, ProjectOptionsFrm, ProjectTypes, WindowsGameFrm, Types, WindowsGameCore, devPlatform, Process, LCLIntf, FileUtil, WindowsSetupFrm, ExtCtrls, StdCtrls, IniFiles, AboutFrm, UpdateCheckFrm, Graphics;
+ MultiLangSupport, Version, Compiler, devExec, ProjectOptionsFrm, ProjectTypes, WindowsGameFrm, Types, WindowsGameCore, devPlatform, Process, LCLIntf, FileUtil, WindowsSetupFrm, ExtCtrls, StdCtrls, IniFiles, AboutFrm, UpdateCheckFrm, Graphics, Math, SynGutterLineNumber, SynEditCompat, DataFrm, EditorOptFrm;
 {$R ../../penguin-cpp.res}
 type TProbeCompiler=class(TCompiler)
  procedure BeginCommand(const Command:String);
@@ -196,6 +196,105 @@ begin
    SaveFormImage(MainForm,'welcome-'+IntToStr(I));
   end;
  finally MainForm.Hide end;
+end;
+
+procedure EditorAppearanceTest;
+const Counts:array[0..3] of Integer=(9,99,999,10000);
+ Sizes:array[1..3] of Integer=(6,24,72);
+var Edit:TEditor; Part:TSynGutterLineNumber; I,J,K,Digits,Before,BaseSize,X,Y,Row,Delta:Integer;
+ Image:TBitmap; FoundMark:Boolean; Options:TEditorOptForm;
+begin
+ Check(Pos('"',devEditor.Font.Name)=0,'editor font recovers legacy wrapping quotes');
+ Check(devEditor.Font.Size=15,'nested font settings load even without an Editor parent section');
+ Check(Screen.Fonts.IndexOf(devEditor.Font.Name)>=0,'editor font is available on this platform');
+ Check(MainForm.LeftPageControl.Width<=MainForm.ClientWidth div 3,
+  'oversized saved project sidebar preserves space for the editor');
+ AtomicWriteFile(Dir+'appearance.cpp','#include <iostream>'+LineEnding+'int main() { return 0; }');
+ MainForm.Show;
+ MainForm.OpenFile(Dir+'appearance.cpp');
+ Edit:=MainForm.EditorList.FileIsOpen(Dir+'appearance.cpp');
+ Check(Assigned(Edit) and not MainForm.MainPanel.Visible,'opening C++ shows the editor instead of the welcome overlay');
+ try
+  Application.ProcessMessages;
+  Options:=TEditorOptForm.Create(MainForm);
+  try
+   Check((Options.edEditorSize.MinValue=6) and (Options.edEditorSize.MaxValue=72),
+    'font options use the same size limits as keyboard and wheel zoom');
+   Check(Options.edGutterWidth.MaxValue=12,'gutter width control stays within the supported digit range');
+   Check(not Options.cbGutterFnt.Enabled and not Options.cboGutterFont.Enabled and
+    not Options.edGutterSize.Enabled and (Options.edGutterSize.Value=Options.edEditorSize.Value),
+    'line number font options reflect the native shared editor font');
+  finally Options.Free end;
+  Edit.Text.Canvas.Font.Assign(Edit.Text.Font);
+  Check(Abs(Edit.Text.Canvas.TextWidth('MMMMMMMM')-Edit.Text.Canvas.TextWidth('iiiiiiii'))<=2,
+   'opened C++ file uses monospaced glyph widths');
+  Part:=nil;
+  for I:=0 to Edit.Text.Gutter.Parts.Count-1 do begin
+   WriteLn('Gutter part: ',Edit.Text.Gutter.Parts[I].ClassName,' left=',
+    Edit.Text.Gutter.Parts[I].Left,' width=',Edit.Text.Gutter.Parts[I].Width);
+   if Edit.Text.Gutter.Parts[I] is TSynGutterLineNumber then
+    Part:=TSynGutterLineNumber(Edit.Text.Gutter.Parts[I]);
+  end;
+  Check(Assigned(Part),'line number gutter is present');
+  WriteLn('Gutter minimum digits: saved=',devEditor.GutterSize,' actual=',Part.DigitCount);
+  BaseSize:=devEditor.Font.Size;
+  for I:=Low(Counts) to High(Counts) do begin
+   Edit.Text.Lines.BeginUpdate;
+   try
+    Edit.Text.Lines.Clear;
+    for J:=1 to Counts[I] do Edit.Text.Lines.Add('int value = 0;');
+   finally Edit.Text.Lines.EndUpdate end;
+   Application.ProcessMessages;
+   Digits:=Max(Part.DigitCount,Length(IntToStr(Counts[I])));
+   Before:=Edit.Text.Gutter.Width;
+   for K:=1 to 3 do begin
+    Delta:=(Sizes[K]-BaseSize)*120;
+    MainForm.ZoomEditors(Delta); Application.ProcessMessages;
+    WriteLn('Gutter metrics: lines=',Counts[I],' size=',devEditor.Font.Size,
+     ' char=',Edit.Text.CharWidth,' numbers=',Part.Width,' gutter=',Edit.Text.Gutter.Width);
+    Check(Part.Width<=Digits*Edit.Text.CharWidth+3,'number column fits digit count after zoom');
+    X:=GutterMarkLeft(Edit.Text,dmMain.GutterImages.Width);
+    Check((X>=0) and (X+dmMain.GutterImages.Width<=Part.Left),
+     'breakpoint icons remain outside the number column at every zoom');
+    MainForm.ZoomEditors(-Delta); Application.ProcessMessages;
+    Check((devEditor.Font.Size=BaseSize) and (Abs(Edit.Text.Gutter.Width-Before)<=1),
+     'repeated zoom returns to original gutter width without accumulated growth');
+   end;
+  end;
+  ApplyGutter(Edit.Text,True,False,True,False,False,4);
+  Application.ProcessMessages;
+  Check(Edit.Text.Gutter.AutoSize and not Part.AutoSize,'fixed digit count still allows total gutter width to follow font zoom');
+  Check(Part.Width<=4*Edit.Text.CharWidth+3,'fixed digit count takes effect immediately without a zoom');
+  Before:=Part.Width;
+  MainForm.ZoomEditors(9*120); Application.ProcessMessages;
+  WriteLn('Fixed gutter metrics: before=',Before,' after=',Part.Width,' char=',Edit.Text.CharWidth,' digits=',Part.DigitCount);
+  Check((Part.Width>Before) and (Part.Width<=4*Edit.Text.CharWidth+3),'fixed gutter width follows four digits when zooming');
+  MainForm.ZoomEditors(-9*120); Application.ProcessMessages;
+  ApplyGutter(Edit.Text,True,True,True,False,False,devEditor.GutterSize);
+  Application.ProcessMessages;
+  Check(Part.AutoSize and (Part.Width<=5*Edit.Text.CharWidth+3),'automatic gutter resumes fitting the actual line count');
+  Edit.Text.Lines.Text:='int f() {'+LineEnding+'  int x = 1;'+LineEnding+
+   '  return x;'+LineEnding+'}'+LineEnding+LineEnding+'int value = 0;';
+  Edit.Text.CollapseAll; Application.ProcessMessages;
+  Row:=Edit.Text.TextXYToScreenXY(Point(1,6)).Y;
+  Check(Row<6,'folding changes the visible row of the breakpoint line');
+  Edit.ToggleBreakpoint(6);
+  Image:=TBitmap.Create;
+  try
+   Image.SetSize(Edit.Text.Gutter.Width,Edit.Text.ClientHeight);
+   Image.Canvas.Brush.Color:=clFuchsia; Image.Canvas.FillRect(Rect(0,0,Image.Width,Image.Height));
+   Edit.Text.OnPaint(Edit.Text,Image.Canvas);
+   FoundMark:=False;
+   for Y:=(Row-1)*Edit.Text.LineHeight to Min(Row*Edit.Text.LineHeight-1,Image.Height-1) do
+    for X:=0 to Part.Left-1 do
+     if Image.Canvas.Pixels[X,Y]<>clFuchsia then FoundMark:=True;
+   Check(FoundMark,'breakpoint icon follows its logical line after folding');
+  finally Image.Free; Edit.ToggleBreakpoint(6); Edit.Text.UncollapseAll end;
+  Edit.Text.Lines.Text:='#include <iostream>'+LineEnding+'int main() { return 0; }';
+  SaveFormImage(MainForm,'editor-appearance');
+ finally
+  Edit.Text.Modified:=False; MainForm.EditorList.CloseEditor(Edit); MainForm.Hide;
+ end;
 end;
 
 procedure ReleaseLinksTest;
@@ -617,8 +716,10 @@ begin
  LegacySettings:=TStringList.Create;
  try
   LegacySettings.Text:='[Options]'+LineEnding+'First=0'+LineEnding+
-   'Language=""English.lng""'+LineEnding+'ShowTipsOnStart=0'+LineEnding+
-   '[Directories]'+LineEnding+'Lang=""'+ExpandFileName('Lang')+PathDelim+'""';
+   'Language=""English.lng""'+LineEnding+'ShowTipsOnStart=0'+LineEnding+'ProjectWidth=9000'+LineEnding+
+   '[Directories]'+LineEnding+'Lang=""'+ExpandFileName('Lang')+PathDelim+'""'+LineEnding+
+   '[Editor.Font]'+LineEnding+'Name="""Courier New"""'+LineEnding+'Size=15'+LineEnding+
+   '[Editor.Gutterfont]'+LineEnding+'Name="""Courier New"""'+LineEnding+'Size=15';
   LegacySettings.SaveToFile(Dir+'config.ini');
  finally LegacySettings.Free end;
  devData.INIFileName:=Dir+'config.ini'; devData.ReadSelf; CreateOptions;
@@ -629,9 +730,10 @@ begin
  Application.Initialize;
  Application.ShowMainForm:=False;
  Application.CreateForm(TMainForm,MainForm);
+ MainForm.OnShow:=nil;
  Check(Lang[80026]='About Penguin cpp','real GUI loads translated captions from a legacy configuration');
  AllLanguagesTest;
- MainForm.OnShow:=nil;
+ EditorAppearanceTest;
  Runner:=TRunner.Create;
  Application.QueueAsyncCall(Runner.Run,0);
  Application.Run;

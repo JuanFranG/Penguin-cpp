@@ -2353,8 +2353,23 @@ begin
 end;
 
 procedure TdevEditor.LoadSettings;
+var
+  I, FontIndex: Integer;
+  Fonts: array[0..1] of TFont;
 begin
   devData.ReadObject('Editor', Self);
+  Fonts[0] := fFont;
+  Fonts[1] := fGutterFont;
+  for I := Low(Fonts) to High(Fonts) do begin
+    if Screen.Fonts.IndexOf(Fonts[I].Name) = -1 then begin
+      FontIndex := PreferredMonospaceFont(Screen.Fonts);
+      if FontIndex <> -1 then Fonts[I].Name := Screen.Fonts[FontIndex];
+    end;
+    if Fonts[I].Size <= 0 then
+      Fonts[I].Size := 11
+    else
+      Fonts[I].Size := EnsureRange(Fonts[I].Size, 6, 72);
+  end;
 end;
 
 procedure TdevEditor.SaveSettings;

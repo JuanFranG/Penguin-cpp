@@ -144,9 +144,6 @@ var
   I: integer;
   PropName: string;
 begin
-  if not fini.SectionExists(Section) then
-    Exit;
-
   for I := 0 to GetPropCount(Obj) - 1 do begin
     PropName := string(GetPropName(Obj, I));
 
@@ -167,12 +164,12 @@ begin
         tkBool,
         tkSet,
         tkEnumeration,
-        tkInteger: SetOrdProp(Obj, PropName, fINI.ReadInteger(Section, PropName, 1));
+        tkInteger: SetOrdProp(Obj, PropName, fINI.ReadInteger(Section, PropName, GetOrdProp(Obj, PropName)));
 
       tkInt64,
-        tkQWord: SetInt64Prop(Obj, PropName, StrtoInt(fINI.ReadString(Section, PropName, '0')));
+        tkQWord: SetInt64Prop(Obj, PropName, StrToInt64Def(fINI.ReadString(Section, PropName, ''), GetInt64Prop(Obj, PropName)));
 
-      tkFloat: SetFloatProp(Obj, PropName, StrtoFloat(fINI.ReadString(Section, PropName, '0.0')));
+      tkFloat: SetFloatProp(Obj, PropName, StrToFloatDef(fINI.ReadString(Section, PropName, ''), GetFloatProp(Obj, PropName)));
 
       tkClass: begin
           if TPersistent(GetOrdProp(Obj, PropName)) is TStrings then

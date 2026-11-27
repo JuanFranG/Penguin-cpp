@@ -4,6 +4,10 @@
 
 - **Hotfix de idiomas:** se recupera la lectura de valores entre comillas en configuraciones de versiones anteriores. El lector de guardado atómico conserva ahora el comportamiento de `TIniFile`: `"English.lng"` se interpreta como `English.lng`. También se recuperan parejas de comillas acumuladas en rutas, idioma, tema y fuente de interfaz, conservando las comillas significativas de comandos. Esto evita que toda la interfaz muestre `<ID … translation missing>` por no poder cargar los archivos de idioma.
 - **Preferencias y proyectos antiguos:** la corrección se aplica al lector INI compartido, también utilizado por proyectos y disposición de ventanas. No requiere eliminar las preferencias del usuario.
+- **Fuentes y distribución:** se recuperan las fuentes del editor con comillas acumuladas, se elige una monoespaciada disponible si falta la anterior y se recupera un panel lateral que ocupaba demasiado ancho.
+- **Zoom y depuración:** la numeración no acumula ancho al ampliar y reducir. Las marcas permanecen fuera de los números y siguen su línea al plegar código.
+- **Preferencias tolerantes:** se leen subsecciones sin sección padre y los números inválidos conservan los valores actuales. Se reparan rutas de terminal/formateadores sin destruir las comillas propias de sus argumentos.
+- **Opciones coherentes:** el ajuste de fuente del margen refleja que la numeración comparte la fuente del editor. La [auditoría de interfaz](QA_UI_AUDIT_0.5.6.md) documenta correcciones, restos heredados y pendientes.
 - **Página del proyecto:** presentación con la identidad de Penguin, temas claro y oscuro, capturas reales, historia de Dev-C++, motivación del port, autoría, descargas y versiones.
 
 ## Validación

@@ -626,19 +626,24 @@ end;
 
 procedure TEditor.EditorPaint(Sender: TObject; ACanvas: TCanvas);
 var
-  X, Y, Line, LastLine: integer;
+  X, Y, Row, Line, PreviousLine: integer;
 begin
-  // Draw marks centered in the gutter, one per visible line
-  X := (fText.Gutter.Width - dmMain.GutterImages.Width) div 2;
+  X := GutterMarkLeft(fText, dmMain.GutterImages.Width);
+  if X < 0 then Exit;
   Y := (fText.LineHeight - dmMain.GutterImages.Height) div 2;
-  LastLine := Min(fText.Lines.Count, fText.TopLine + fText.LinesInWindow);
-  for Line := fText.TopLine to LastLine do begin
-    if fActiveLine = Line then // prefer active line over breakpoints
-      dmMain.GutterImages.Draw(ACanvas, X, Y, 1)
-    else if HasBreakpoint(Line) <> -1 then
-      dmMain.GutterImages.Draw(ACanvas, X, Y, 0)
-    else if fErrorLine = Line then
-      dmMain.GutterImages.Draw(ACanvas, X, Y, 2);
+  PreviousLine := -1;
+  for Row := 1 to fText.LinesInWindow + 1 do begin
+    Line := fText.ScreenXYToTextXY(Point(1, Row), False).Y;
+    if (Line < 1) or (Line > fText.Lines.Count) then Break;
+    if Line <> PreviousLine then begin
+      if fActiveLine = Line then
+        dmMain.GutterImages.Draw(ACanvas, X, Y, 1)
+      else if HasBreakpoint(Line) <> -1 then
+        dmMain.GutterImages.Draw(ACanvas, X, Y, 0)
+      else if fErrorLine = Line then
+        dmMain.GutterImages.Draw(ACanvas, X, Y, 2);
+    end;
+    PreviousLine := Line;
     Inc(Y, fText.LineHeight);
   end;
 end;

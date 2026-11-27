@@ -206,6 +206,7 @@ mediante el instalador habitual.
 
 El hotfix [0.5.6](RELEASE_NOTES_0.5.6.md) recupera las rutas y nombres de idioma
 con comillas acumuladas por versiones anteriores, sin borrar preferencias.
+La [auditoría de interfaz](QA_UI_AUDIT_0.5.6.md) incluye fuentes, distribución, zoom y restos heredados.
 La regresión carga los 32 idiomas incluidos y comprueba el respaldo de cada cadena
 al inglés en Cocoa y Qt5. La [página del proyecto](https://juanfrang.github.io/Penguin-cpp/)
 incluye capturas, historia, créditos y versiones; su tema sigue al sistema/navegador.

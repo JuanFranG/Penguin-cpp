@@ -26,10 +26,10 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
-      - name: Validate the English manual and its images
+      - name: Validate both manuals and their shared images
         run: |
           python3 packaging/build-manual.py
-          git diff --exit-code -- Manual/index.html
+          git diff --exit-code -- Manual/index.html Manual/es/index.html
           python3 packaging/check-manual.py
           node --check Manual/manual.js
 
@@ -55,7 +55,7 @@ jobs:
           if git diff --cached --quiet; then
             echo 'The published manual is already current.'
           else
-            git commit -m 'Publish illustrated English user manual'
+            git commit -m 'Publish illustrated user manuals'
             git push origin HEAD:gh-pages
           fi
       # GITHUB_TOKEN pushes do not themselves trigger a branch-based Pages build.

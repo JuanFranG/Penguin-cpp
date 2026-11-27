@@ -71,7 +71,8 @@ las seis etapas; validación de entrega en [etapa 6](QA_STAGE_6.md).
 
 El [manual](https://juanfrang.github.io/Penguin-cpp/manual/) explica cómo
 usarlo con 37 vistas reales de sus ventanas, controles explicados y búsqueda.
-Está en inglés, con las capturas de la aplicación en inglés; para otros idiomas,
+Está disponible en [español](https://juanfrang.github.io/Penguin-cpp/manual/es/)
+y en inglés, con las mismas capturas de la aplicación en inglés; para otros idiomas,
 usa la traducción del navegador. También se abre desde el IDE con F1.
 
 El paquete actual se valida en **Ubuntu 24.04 / base de Linux Mint 22, amd64**.

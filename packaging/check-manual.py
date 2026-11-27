@@ -18,8 +18,9 @@ class Page(HTMLParser):
             if key in a:self.refs.append(a[key])
         if tag=='img':self.images.append(a)
 pages={}
-for f in [manual/'index.html',manual/'en/index.html']:
-    p=Page();p.feed(f.read_text());assert p.lang=='en';pages[f.resolve()]=p
+for relative, language in [('index.html', 'en'), ('en/index.html', 'en'), ('es/index.html', 'es')]:
+    f=manual/relative
+    p=Page();p.feed(f.read_text());assert p.lang==language;pages[f.resolve()]=p
 for f,p in pages.items():
     for ref in p.refs:
         u=urlsplit(ref)
@@ -42,8 +43,18 @@ assert len(rows)>=30 and len({x['id'] for x in rows})==len(rows)
 for row in rows:
     assert 'window-'+row['id'] in p.ids,row['id']
     assert (manual/'assets/windows'/row['image']).is_file(),row['image']
+spanish=json.loads((manual/'windows.es.json').read_text())
+assert set(spanish)=={row['id'] for row in rows}
+es=pages[(manual/'es/index.html').resolve()]
+for row in rows:
+    assert 'window-'+row['id'] in es.ids,row['id']
+    assert len(spanish[row['id']]['controls'])==len(row['controls']),row['id']
+# Both languages reuse the same screenshots, with no translated image copies.
+english_images={(manual/a['src']).resolve() for a in p.images if a.get('src')}
+spanish_images={(manual/'es'/a['src']).resolve() for a in es.images if a.get('src')}
+assert english_images==spanish_images
 css=(manual/'manual.css').read_text();js=(manual/'manual.js').read_text()
 assert 'prefers-color-scheme' in css and 'prefers-reduced-motion' in css and ':focus-visible' in css
 assert 'localStorage' not in js
 assert 'manual.js' in (manual/'index.html').read_text()
-print(f'OK: English manual, {len(rows)} illustrated views, real PNG dimensions, links and automatic theme')
+print(f'OK: English and Spanish manuals, {len(rows)} illustrated views, real PNG dimensions, links and automatic theme')

@@ -304,8 +304,8 @@ y también saber si pasa sin abrir ningún archivo.
   de `devcpp.exe` y de MinGW, y enlazaba a Embarcadero. Lo reemplaza un manual
   de Penguin cpp (`Manual/`), para Linux y macOS. La revisión de 0.5.6 lo
   amplía con 37 vistas reales de macOS, instrucciones, búsqueda y ampliación
-  de capturas. El manual y la interfaz capturada están en inglés; los demás
-  idiomas se consultan con la traducción del navegador. Viene con el IDE
+  de capturas. El manual está en español e inglés, con las mismas capturas de la interfaz
+  en inglés; los demás idiomas se consultan con la traducción del navegador. Viene con el IDE
   (F1, *Ver documentación* y los botones de ayuda) y se publica en
   <https://juanfrang.github.io/Penguin-cpp/manual/>. El tema sigue al sistema.
 

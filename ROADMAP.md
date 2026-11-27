@@ -9,7 +9,7 @@ funciona en Windows.
 Este documento explica de dónde viene, qué se ha hecho hasta ahora y qué
 falta.
 
-*Última actualización: 26 de noviembre de 2026. Publicación vigente: 0.5.0.*
+*Última actualización: 26 de noviembre de 2026. Publicación vigente: 0.5.5.*
 
 ---
 
@@ -26,6 +26,7 @@ el historial del port: los pendientes vigentes se resumen aquí.
 | 0.3.0 | Buscar/instalar actualizaciones, acción Adjuntar a un proceso nativo, objetos sin colisiones en una carpeta de salida común y actualización macOS con preparación y recuperación. | Gatekeeper con cuarentena y recuperación mediante Installer real en un Mac limpio. |
 | 0.4.0 | Clipping de vistas LCL para corregir repintado Cocoa; barras adaptables observadas a 1440/1000 puntos; modos Automático/Nativo/Windows, objetos `.win.o`, LLVM-MinGW y Wine. | El análisis automático es heurístico; no garantiza compatibilidad con todas las APIs Windows. |
 | 0.5.0 | Diálogo compacto con estado del entorno; rutas avanzadas opcionales; `.pkg` completo por defecto; comprobación al arrancar desde Terminal; rechazo de un DMG nativo sobre una instalación completa. | PKG/DMG completos y fuentes publicados; canal completo probado con simulaciones. Instalación real, notarización y actualización futura pendientes. |
+| 0.5.5 | Guardado/ejecución recuperables, perfiles de consola, LLVM-MinGW/UCRT y Wine 11 privado en Linux, Acerca de compacto y adaptable, bienvenida Qt5 ordenada, CI y actualización APT desde 0.3.0; instalación PKG real. | Compatibilidad Windows experimental, WinBGIm y depuración Windows pendientes; Mac limpio y notarización pendientes. |
 
 ### Refuerzo de fiabilidad de la 0.5.5: etapas 1 a 6
 
@@ -50,13 +51,15 @@ el historial del port: los pendientes vigentes se resumen aquí.
   conservan los metadatos; se retiraron importador Code::Blocks, formulario de
   formato antiguo, pruebas internas obsoletas y funciones sin consumidores.
   Los recursos del formato antiguo se cargan sin modificar el archivo original.
-- Pruebas de regresión incorporadas a los workflows Linux/macOS. La validación
-  local se ejecuta en macOS; Linux necesita confirmar su ejecución en CI.
+- Workflows Linux/Qt5 y macOS/Cocoa correctos. Linux comprueba seis casos de
+  consola real con el compilador UCRT incluido/Wine y actualiza por APT desde
+  0.3.0 incorporando las herramientas. macOS añade consola real y PKG instalado
+  localmente, además de las comprobaciones de CI.
 
 Detalle y límites en [etapas 1–2](QA_STAGES_1_2.md),
-[etapas 3–4](QA_STAGES_3_4.md) y [etapa 5](QA_STAGE_5.md). La próxima entrega
-prevista es **0.5.5**; su evidencia de entrega se recoge en [etapa 6](QA_STAGE_6.md). Siguen pendientes la lectura de
-preferencias malformadas y la cobertura general/entrega multiplataforma. El
+[etapas 3–4](QA_STAGES_3_4.md) y [etapa 5](QA_STAGE_5.md). La **0.5.5** reúne
+las seis etapas; su evidencia está en [etapa 6](QA_STAGE_6.md). Siguen pendientes
+la lectura de preferencias malformadas y la cobertura visual general. El
 soporte de recursos Windows y un importador Code::Blocks válido quedan como
 funcionalidades futuras, no como funciones disponibles.
 
@@ -97,7 +100,7 @@ incluidas; borrar su carpeta de soporte es opcional y elimina también los
 programas y datos del prefix.
 
 Notas de versión: [0.4.0](RELEASE_NOTES_0.4.0.md),
-[0.5.0](RELEASE_NOTES_0.5.0.md). Evidencia y límites del instalador en
+[0.5.0](RELEASE_NOTES_0.5.0.md), [0.5.5](RELEASE_NOTES_0.5.5.md). Evidencia y límites del instalador en
 [QA-pkg-macos.md](packaging/QA-pkg-macos.md).
 
 ---
@@ -202,7 +205,7 @@ formularios y funciones y valida el DMG y un `.pkg` nativo explícito.
 
 Cada fase se trabaja en su rama, que parte de la anterior, y se pasa a `main`
 al publicarla. Hoy `main` incluye todas las fases (hasta `fase9/macos`), en la
-versión 0.5.0, y está protegida: no admite force-push ni borrarla, y su
+versión 0.5.5, y está protegida: no admite force-push ni borrarla, y su
 historial es lineal.
 
 | Fase | Rama | Estado |
@@ -216,8 +219,8 @@ historial es lineal.
 | 5 · Editor (SynEdit de Lazarus) | `fase5/editor` | ✅ Hecha, probada en Mint: impresión, exportación a RTF/TeX y plegado |
 | 6 · Compilación con el gcc de Linux | `fase6/compilador` | ✅ Hecha, probada en Mint: gcc, archivos sueltos, proyectos, terminal, errores, instancia única y formateadores |
 | 7 · Depurador (GDB/MI) | `fase7/depurador` | ✅ Hecha, probada en Mint, con la revisión general de errores de rango y de memoria |
-| 8 · Paquete `.deb` y pulido | `fase8/paquete` | ✅ Probado en Mint; las versiones 0.1.0 a 0.5.0 están en Releases y en el repositorio APT |
-| 9 · macOS (Apple Silicon) | `fase9/macos` | 🔄 IDE y DMG nativos disponibles; CI Cocoa implementado. Desde 0.4.0: macOS 26+. Paquete completo y fuentes publicados; pendientes de instalación real indicados arriba. |
+| 8 · Paquete `.deb` y pulido | `fase8/paquete` | ✅ Probado en Mint; las versiones 0.1.0 a 0.5.5 están en Releases y en el repositorio APT |
+| 9 · macOS (Apple Silicon) | `fase9/macos` | 🔄 IDE y DMG nativos disponibles; CI Cocoa implementado. Desde 0.4.0: macOS 26+. Paquete completo y fuentes publicados; Installer real probado; Mac limpio y notarización pendientes. |
 | 10 · Compatibilidad Windows | `main` / `fase9/macos` | 🔄 Modos, compilación cruzada, ejecución y preparación automática integrados. Entorno completo macOS publicado; ampliación de bibliotecas y pruebas reales pendientes. |
 
 ### Registro del ciclo inicial (histórico)
@@ -797,7 +800,7 @@ El producto final del proyecto es un `.deb` que se instala con
 - Responsable del paquete: Juan Francisco Gonzalez Pacheco
   <jfgonzalez@unimagdalena.edu.co>.
 
-**Publicada:** probada en Linux Mint 22; las versiones 0.1.0 a 0.5.0 están en
+**Publicada:** probada en Linux Mint 22; las versiones 0.1.0 a 0.5.5 están en
 Releases y en el repositorio APT (<https://juanfrang.github.io/Penguin-cpp/>),
 firmado con una clave que solo está en los secretos de GitHub (se creó en
 una ejecución desechable de GitHub Actions y nunca estuvo en un equipo).

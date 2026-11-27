@@ -67,7 +67,7 @@ for start in range(0, len(pe_files), 100):
 doc = stage / 'usr/share/doc/penguin-windows-runtime'
 shutil.copytree(extracted / 'usr/share/doc/wine-stable-amd64', doc, symlinks=True)
 (doc / 'PENGUIN-SOURCES.txt').write_text(
-    'WineHQ 11.0, Ubuntu noble build. Binary files are unchanged and relocated.\n'
+    'WineHQ 11.0, Ubuntu noble build. Executable code and resources are preserved; files are relocated.\n'
     'Only unused build tools and PE debug sections are omitted. Original licenses remain installed.\n'
     'Exact upstream source + Debian recipes: WineHQ-11.0.0.0-noble-SOURCES.tar.gz\n'
     'https://github.com/JuanFranG/Penguin-cpp/releases/tag/v0.5.5\n'

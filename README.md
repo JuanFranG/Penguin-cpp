@@ -11,7 +11,7 @@ Conserva su entorno ligero para aprender C y C++, con una interfaz nativa.
 El IDE no necesita Wine; el modo opcional de compatibilidad lo utiliza para
 ejecutar programas compilados para Windows.
 
-> **Estado: 0.5.5 en preparación.** El IDE funciona en Linux Mint (paquete `.deb` y
+> **Versión actual: 0.5.5.** El IDE funciona en Linux Mint (paquete `.deb` y
 > repositorio APT, amd64) y en macOS 26 o posterior con Apple Silicon
 > (en pruebas). Hay `.pkg` y `.dmg` completos con el entorno Windows, además
 > del DMG nativo. Ver [ROADMAP.md](ROADMAP.md).
@@ -62,8 +62,8 @@ con restauración del teclado y el estilo del terminal. Para cuadros construidos
 con bytes como `char(218)`, selecciona DOS/OEM 437 y vuelve a compilar.
 
 Correcciones, pruebas y límites: [etapas 1–2](QA_STAGES_1_2.md),
-[etapas 3–4](QA_STAGES_3_4.md) y [etapa 5](QA_STAGE_5.md). La próxima entrega
-prevista es **0.5.5**; validación de entrega en [etapa 6](QA_STAGE_6.md).
+[etapas 3–4](QA_STAGES_3_4.md) y [etapa 5](QA_STAGE_5.md). La **0.5.5** reúne
+las seis etapas; validación de entrega en [etapa 6](QA_STAGE_6.md).
 
 ---
 

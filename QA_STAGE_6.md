@@ -1,8 +1,7 @@
 # Penguin cpp 0.5.5 — validación de entrega
 
 La fase 6 reúne las correcciones de las etapas 1–5, comprueba su integración y
-prepara los artefactos. Este informe diferencia pruebas realizadas y límites;
-se actualizará con los resultados antes de publicar la 0.5.5.
+prepara los artefactos. Este informe diferencia las pruebas realizadas y sus límites.
 
 ## Mejoras de uso de bibliotecas Windows
 
@@ -56,8 +55,15 @@ compatibilidad general con todas las bibliotecas Windows. Los recursos `.rc` y
 - PKG: extracción completa, verificación de firma de la app y presencia/hash de
   `console-startup.c`, self-test, bits/stdc++.h, licencias y actualizador; manifiesto
   revisado y binarios ARM64 del compilador, Wine y Make.
-- CI Linux/Qt5, consola Linux/MinGW/Wine y actualización APT antigua: en curso;
-  los resultados y enlaces se incorporarán al terminar.
+- [CI Linux/Qt5](https://github.com/JuanFranG/Penguin-cpp/actions/runs/45912623921): Release/Debug, suites, formularios, plegado,
+  empaquetado/lintian, instalación, arranque y retirada del `.deb` correctos.
+  Se comprueban los seis casos reales de consola con LLVM-MinGW/UCRT y Wine.
+- APT firmado con clave desechable: instalada 0.3.0, retiradas sus herramientas
+  Windows; `apt update` conserva 0.3.0 y `apt-get install --only-upgrade`
+  instala 0.5.5, Wine y el compilador incluido sin indicar rutas.
+- [CI macOS 26/Cocoa](https://github.com/JuanFranG/Penguin-cpp/actions/runs/45912624020): compilaciones, suites, integración del IDE,
+  formularios/plegado, DMG y estructura de Installer correctos.
+  El motor completo se valida localmente; el runner no reproduce ese motor.
 
 ## Límites que requieren otro entorno
 
@@ -93,8 +99,19 @@ entre letras antes de enviar la entrada; mantiene las comprobaciones reales de
 texto, teclado, colores y salida. Esto corrige el arnés sin relajar el contrato.
 
 La matriz de Linux con UCRT detectó además pérdida de salida C++ al convertir
-UTF-8 byte a byte en Wine 9. Por ello se prepara y prueba un motor WineHQ 11
+UTF-8 byte a byte en Wine 9. Por ello se incorpora un motor WineHQ 11
 privado, con binarios originales fijados por SHA-256, licencias y fuentes exactas
 junto a sus recetas Debian. El paquete separado permite la distribución APT
 sin superar el límite de tamaño por archivo de GitHub Pages. La prueba exige
 texto C++ completo y el self-test real del entorno; no se omiten esas aserciones.
+
+La [prueba independiente de WineHQ 11](https://github.com/JuanFranG/Penguin-cpp/actions/runs/45912624034)
+pasa los seis casos y el self-test del entorno. La matriz también pasa con el
+runtime reubicado y sin símbolos de depuración instalado desde su `.deb`.
+UTF-8 activa la conversión multibyte del CRT en C y C++; OEM/ANSI conservan sus
+páginas específicas. Ambas pruebas mantienen las aserciones de texto completo,
+entrada, atributos, cursor y restauración de la terminal.
+
+Las acciones de caché y artefactos usan Node.js 24 directamente; la ejecución
+macOS ya no contiene la advertencia de retirada de Node.js 20. La nota sobre
+capacidad de runners ARM64 corresponde a la infraestructura de GitHub.

@@ -70,7 +70,9 @@ las seis etapas; validación de entrega en [etapa 6](QA_STAGE_6.md).
 ## Instalación
 
 El [manual](https://juanfrang.github.io/Penguin-cpp/manual/) explica cómo
-usarlo, en español y en inglés; también se abre desde el IDE con F1.
+usarlo con 37 vistas reales de sus ventanas, controles explicados y búsqueda.
+Está en inglés, con las capturas de la aplicación en inglés; para otros idiomas,
+usa la traducción del navegador. También se abre desde el IDE con F1.
 
 El paquete actual se valida en **Ubuntu 24.04 / base de Linux Mint 22, amd64**.
 Otras versiones de Debian, Ubuntu o derivadas deben satisfacer las dependencias;
@@ -119,7 +121,7 @@ tiene un error, lo anota en `penguin-cpp-errores.txt`, en el Escritorio.
 
 ### macOS 26 o posterior (Apple Silicon)
 
-Para incluir las herramientas Windows, descarga el [PKG completo 0.5.5](https://github.com/JuanFranG/Penguin-cpp/releases/download/v0.5.6/Penguin-cpp-0.5.6-COMPLETE-UNSIGNED.pkg). Incluye LLVM-MinGW, GNU Make y Wine ARM64/FEX dentro de la app. También está disponible el [DMG completo](https://github.com/JuanFranG/Penguin-cpp/releases/download/v0.5.6/Penguin-cpp-0.5.6-COMPLETE-UNSIGNED.dmg). Son experimentales y no tienen firma Developer ID ni notarización.
+Para incluir las herramientas Windows, descarga el [PKG completo 0.5.6](https://github.com/JuanFranG/Penguin-cpp/releases/download/v0.5.6/Penguin-cpp-0.5.6-COMPLETE-UNSIGNED.pkg). Incluye LLVM-MinGW, GNU Make y Wine ARM64/FEX dentro de la app. También está disponible el [DMG completo](https://github.com/JuanFranG/Penguin-cpp/releases/download/v0.5.6/Penguin-cpp-0.5.6-COMPLETE-UNSIGNED.dmg). Son experimentales y no tienen firma Developer ID ni notarización.
 
 Para una instalación nueva **solo del IDE nativo**, esta línea descarga la última versión, la pone en Aplicaciones y,
 si faltan, pide las Command Line Tools de Apple (clang, make y lldb):

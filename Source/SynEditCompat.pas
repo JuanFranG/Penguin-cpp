@@ -29,7 +29,7 @@ unit SynEditCompat;
 interface
 
 uses
-  Types, Graphics, SynEdit, SynGutterBase, SynGutter, SynGutterLineNumber, SynGutterChanges,
+  Types, Graphics, SynEdit, SynGutterBase, SynGutter, SynGutterLineNumber, SynGutterChanges, SynGutterMarks,
   SynGutterCodeFolding, SynEditHighlighterFoldBase;
 
 type
@@ -63,7 +63,18 @@ procedure SetFoldColor(Editor: TCustomSynEdit; LineColor: TColor);
 procedure ApplyGutter(Editor: TCustomSynEdit; AVisible, AAutoSize, AShowLineNumbers, ALeadingZeros,
   AZeroStart: Boolean; ADigitCount: Integer);
 
+function GutterMarkLeft(Editor: TCustomSynEdit; MarkerWidth: Integer): Integer;
+
 implementation
+
+function GutterMarkLeft(Editor: TCustomSynEdit; MarkerWidth: Integer): Integer;
+var Part: TSynGutterMarks;
+begin
+  Result := -1;
+  Part := Editor.Gutter.MarksPart;
+  if Assigned(Part) and Part.Visible and (Part.Width >= MarkerWidth) then
+    Result := Part.Left + (Part.Width - MarkerWidth) div 2;
+end;
 
 procedure ApplyGutter(Editor: TCustomSynEdit; AVisible, AAutoSize, AShowLineNumbers, ALeadingZeros,
   AZeroStart: Boolean; ADigitCount: Integer);
@@ -72,14 +83,20 @@ var
   Part: TSynGutterLineNumber;
 begin
   Editor.Gutter.Visible := AVisible;
-  Editor.Gutter.AutoSize := AAutoSize;
+  // The total width always follows its parts; only the numbers have a fixed/automatic digit count.
+  Editor.Gutter.AutoSize := True;
   for I := 0 to Editor.Gutter.Parts.Count - 1 do
     if Editor.Gutter.Parts[I] is TSynGutterLineNumber then begin
       Part := TSynGutterLineNumber(Editor.Gutter.Parts[I]);
       Part.Visible := AShowLineNumbers;
       Part.LeadingZeros := ALeadingZeros;
       Part.ZeroStart := AZeroStart;
+      // Reset the cached automatic digit count before choosing a fixed count.
+      Part.AutoSize := False;
+      if Part.DigitCount = 2 then Part.DigitCount := 3 else Part.DigitCount := 2;
       Part.DigitCount := ADigitCount;
+      Part.Width := Part.DigitCount * Editor.CharWidth + 1;
+      Part.AutoSize := AAutoSize;
     end else if Editor.Gutter.Parts[I] is TSynGutterCodeFolding then
       // Folding comes from the highlighter (TSynCppFoldSyn for C/C++); plain
       // text and highlighters without it would only get an empty column

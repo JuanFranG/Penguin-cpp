@@ -32,6 +32,7 @@ el historial del port: los pendientes vigentes se resumen aquí.
 
 - Recuperar valores INI antiguos entre comillas, incluidas las parejas acumuladas en idioma, rutas, tema y fuente de interfaz. Conservar comillas significativas de comandos.
 - Regresión de los 32 idiomas y sus cadenas con respaldo al inglés en Cocoa y Qt5.
+- Recuperación de fuente monoespaciada y panel lateral, preferencias numéricas dañadas y margen de números proporcional al zoom (6–72 puntos), con marcas separadas y alineadas al plegar código. [Auditoría de interfaz](QA_UI_AUDIT_0.5.6.md).
 - Validación de la corrección en aplicaciones extraídas de DMG/PKG y en el paquete DEB: [QA 0.5.6](packaging/QA-0.5.6.md).
 - Página con capturas reales, genealogía Bloodshed → Orwell → Embarcadero → Penguin, motivación del port, autoría y notas de versión. Tema claro/oscuro automático mediante `prefers-color-scheme`, sin preferencia fija ni selector.
 

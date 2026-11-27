@@ -320,7 +320,9 @@ begin
     cbLigatures.Checked := ShowLigatures;
 
     edEditorSize.Value := devEditor.Font.Size;
-    cbGutterFnt.Checked := Gutterfnt;
+    // Lazarus draws line numbers with the editor font.
+    cbGutterFnt.Checked := False;
+    cbGutterFnt.Enabled := False;
     FontIndex := cboGutterFont.Items.IndexOf(devEditor.Gutterfont.Name);
     edGutterSize.Value := GutterFont.Size;
 
@@ -328,6 +330,7 @@ begin
     if FontIndex = -1 then
       FontIndex := PreferredMonospaceFont(cboGutterFont.Items);
     cboGutterFont.ItemIndex := FontIndex;
+    cbGutterFntClick(nil);
 
     // Colors
     FillSyntaxSets; // Load color themes
@@ -525,8 +528,8 @@ end;
 
 procedure TEditorOptForm.cbGutterFntClick(Sender: TObject);
 begin
-  cboGutterFont.Enabled := cbGutterFnt.Checked;
-  edGutterSize.Enabled := cbGutterfnt.Checked;
+  cboGutterFont.Enabled := False;
+  edGutterSize.Enabled := False;
   if not cbGutterfnt.Checked then begin
     cboGutterFont.ItemIndex := cboEditorFont.ItemIndex;
     edGutterSize.Value := edEditorSize.Value;
@@ -640,6 +643,12 @@ begin
   cbLeadZero.Caption := Lang[ID_EOPT_LEADZERO];
   cbFirstZero.Caption := Lang[ID_EOPT_FIRSTZERO];
   cbGutterFnt.Caption := Lang[ID_EOPT_GUTTERFNT];
+  cbGutterFnt.Hint := Lang[80238];
+  cboGutterFont.Hint := Lang[80238];
+  edGutterSize.Hint := Lang[80238];
+  cbGutterFnt.ShowHint := True;
+  cboGutterFont.ShowHint := True;
+  edGutterSize.ShowHint := True;
   lblGutterWidth.Caption := Lang[ID_EOPT_GUTTERWIDTH];
   lblGutterFont.Caption := Lang[ID_EOPT_FONT];
   lblGutterFontSize.Caption := Lang[ID_EOPT_SIZE];

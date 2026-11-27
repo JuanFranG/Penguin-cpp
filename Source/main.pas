@@ -6490,6 +6490,10 @@ begin
   else // Remember window placement
     devData.WindowState.SetPlacement(Self);
 
+  // Recover oversized saved sidebars without taking space from the editor.
+  if (not devData.ProjectFloat) and (LeftPageControl.Width > ClientWidth div 3) then
+    LeftPageControl.Width := Max(LeftPageControl.Constraints.MinWidth, ClientWidth div 6);
+
   // We need this variable during the whole startup process
   devData.First := FALSE;
 

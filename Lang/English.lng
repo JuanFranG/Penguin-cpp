@@ -1383,3 +1383,5 @@ Ver=1
 80022=Credits
 80023=Documentation
 80026=About Penguin cpp
+
+80238=Line numbers use the editor font; zoom updates both together.

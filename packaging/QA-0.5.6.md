@@ -8,7 +8,7 @@ La sustitución del lector `TIniFile` por `TMemIniFile` para guardar atómicamen
 
 ## Todos los idiomas
 
-La regresión de interfaz utiliza Cocoa y Qt5 reales. Arranca desde una configuración antigua, carga **los 32 archivos `.lng`**, comprueba cada nombre seleccionado y las **1.231 cadenas de referencia no vacías** con su respaldo al inglés: 39.392 comprobaciones por plataforma. Cocoa y Qt5 completan la prueba. Esto comprueba la carga y el respaldo, no que todas las traducciones estén completas ni la composición visual de cada frase en cada formulario.
+La regresión de interfaz utiliza Cocoa y Qt5 reales. Arranca desde una configuración antigua, carga **los 32 archivos `.lng`**, comprueba cada nombre seleccionado y las **1.232 cadenas de referencia no vacías** con su respaldo al inglés: 39.424 comprobaciones por plataforma. Cocoa y Qt5 completan la prueba. Esto comprueba la carga y el respaldo, no que todas las traducciones estén completas ni la composición visual de cada frase en cada formulario.
 
 Las pruebas de configuración con Free Pascal 3.2.2 comprueban comillas simples y acumuladas, fuente de interfaz, conservación de comandos y los fallos de guardado atómico.
 
@@ -33,3 +33,7 @@ Se mantienen manual, repositorio APT e instalador nativo. Se comprueban recursos
 ## Límites
 
 Los paquetes macOS siguen sin Developer ID ni notarización. Las pruebas de este equipo no acreditan un Mac limpio ni otras versiones de macOS. La compatibilidad Windows conserva los límites documentados en 0.5.5.
+
+## Ampliación tras detectar la regresión del editor
+
+La revisión inicial del paquete solo recuperaba idioma y fuente de interfaz. El usuario reprodujo comillas en `Editor.Font.Name` y una distribución lateral excesiva al abrir C++. Se amplió la corrección a esas fuentes, rutas y opciones tipadas, se corrigió la posición de marcas con zoom/plegado y se añadió tolerancia a INI parciales y números inválidos. Las pruebas locales nuevas y el alcance completo se detallan en [la auditoría](../QA_UI_AUDIT_0.5.6.md). Los instaladores de esta ampliación se regeneran; los paquetes anteriores no se consideran equivalentes.

@@ -423,7 +423,7 @@
     "id": "windows",
     "title": "Window List",
     "group": "Basics",
-    "open": "Window → Window List",
+    "open": "Window → List",
     "purpose": "Switch among open editor documents.",
     "controls": [
       [
@@ -523,7 +523,7 @@
     "id": "new-class",
     "title": "New Class",
     "group": "Projects",
-    "open": "Classes pane → context menu → class creation action",
+    "open": "File → New → Class; also available from the Classes pane context menu.",
     "purpose": "Prepare a C++ class declaration through the class-browser tools.",
     "controls": [
       [
@@ -707,7 +707,7 @@
     "id": "astyle",
     "title": "Artistic Style options",
     "group": "Settings",
-    "open": "Formatting → Artistic Style options",
+    "open": "Formatting → AStyle → Formatting Options",
     "purpose": "Choose how astyle formats code.",
     "controls": [
       [
@@ -731,7 +731,7 @@
     "id": "clang-format",
     "title": "ClangFormat options",
     "group": "Settings",
-    "open": "Formatting → ClangFormat options",
+    "open": "Formatting → Clang-format → Formatting Options",
     "purpose": "Configure the optional clang-format formatter.",
     "controls": [
       [

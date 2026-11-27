@@ -99,7 +99,7 @@ También se puede descargar el `.deb` de
 directamente (sin agregar el repositorio APT), descargando ambos paquetes amd64:
 
 ```bash
-sudo apt install ./penguin-cpp_0.5.5_amd64.deb ./penguin-windows-runtime_11.0.0.0~noble-1+penguin1_amd64.deb
+sudo apt install ./penguin-cpp_0.5.5_amd64.deb ./penguin-windows-runtime_*_amd64.deb
 ```
 
 Después aparece en el menú, en *Programación* y *Educación*. También se abre

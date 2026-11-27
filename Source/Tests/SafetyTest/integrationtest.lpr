@@ -7,16 +7,21 @@ uses cthreads, SafetyInterfaces, Forms, Classes, SysUtils, BaseUnix, Dialogs,
 type TProbeCompiler=class(TCompiler)
  procedure BeginCommand(const Command:String);
 end;
+TSetupReplacementThread=class(TThread)
+ protected procedure Execute; override;
+end;
 TRunner=class
  procedure Run(Data:PtrInt);
 end;
 TCallbacks=class
+ ReplacementThread:TThread;
  LogText,ExpectedRelease:String;
  UpdateLinksValid:Boolean;
  Successes,Ends,SetupTicks,LayoutStage:Integer; SetupFailureShown,LayoutValid:Boolean;
  procedure InspectUpdateDialog(Sender:TObject);
  procedure InspectCompatibilityDialog(Sender:TObject);
  procedure CancelSetupOnError(Sender:TObject);
+ destructor Destroy; override;
  procedure Success;
  procedure Finish;
  procedure Log(const Text:String);
@@ -90,6 +95,19 @@ begin
   Form.ModalResult:=mrCancel; TTimer(Sender).Enabled:=False;
  end;
 end;
+procedure TSetupReplacementThread.Execute;
+var UntilTime:QWord;
+begin
+ UntilTime:=GetTickCount64+5000;
+ while not Terminated and (GetTickCount64<UntilTime) do Sleep(10);
+end;
+destructor TCallbacks.Destroy;
+begin
+ if Assigned(ReplacementThread) then begin
+  ReplacementThread.Terminate; ReplacementThread.WaitFor; ReplacementThread.Free;
+ end;
+ inherited Destroy;
+end;
 procedure TCallbacks.CancelSetupOnError(Sender:TObject);
 var F:TCustomForm; Details:TComponent;
 begin
@@ -97,6 +115,7 @@ begin
  if Assigned(F) and (F.ClassName='TSetupForm') then begin
   Details:=F.FindComponent('SetupErrorDetails');
   if (Details is TMemo) and TMemo(Details).Visible then begin
+   if not Assigned(ReplacementThread) then ReplacementThread:=TSetupReplacementThread.Create(False);
    WriteLn('Setup error details: ',TMemo(Details).Text);
    SetupFailureShown:=TMemo(Details).ReadOnly and (Pos('Compiler unavailable',TMemo(Details).Text)>0) and ControlsFit(F);
    F.ModalResult:=mrCancel; TTimer(Sender).Enabled:=False;
@@ -359,6 +378,8 @@ begin
  try
   Timer.Interval:=50; Timer.OnTimer:=Hook.CancelSetupOnError; Timer.Enabled:=True;
   Check(not EnsureWindowsEnvironment(Config,GetUserDataDir,True),'failed setup remains recoverable and can be cancelled');
+  Check(Assigned(Hook.ReplacementThread) and not Hook.ReplacementThread.Finished,
+   'closing setup does not join another thread that reused the completed worker handle');
   Check(Hook.SetupFailureShown,'setup displays a readable copyable error instead of only a log path');
  finally Timer.Free; Hook.Free end;
 end;

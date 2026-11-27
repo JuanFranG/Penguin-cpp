@@ -31,6 +31,7 @@ el historial del port: los pendientes vigentes se resumen aquí.
 ### Hotfix 0.5.6 y página del proyecto
 
 - Recuperar valores INI antiguos entre comillas, incluidas las parejas acumuladas en idioma, rutas, tema y fuente de interfaz. Conservar comillas significativas de comandos.
+- Preparación del entorno completo sin esperar repetidamente al mismo hilo; protección frente a identificadores nativos reutilizados al cerrar o reintentar.
 - Regresión de los 32 idiomas y sus cadenas con respaldo al inglés en Cocoa y Qt5.
 - Recuperación de fuente monoespaciada y panel lateral, preferencias numéricas dañadas y margen de números proporcional al zoom (6–72 puntos), con marcas separadas y alineadas al plegar código. [Auditoría de interfaz](QA_UI_AUDIT_0.5.6.md).
 - Validación de la corrección en aplicaciones extraídas de DMG/PKG y en el paquete DEB: [QA 0.5.6](packaging/QA-0.5.6.md).

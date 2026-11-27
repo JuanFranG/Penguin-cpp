@@ -37,3 +37,5 @@ Los paquetes macOS siguen sin Developer ID ni notarización. Las pruebas de este
 ## Ampliación tras detectar la regresión del editor
 
 La revisión inicial del paquete solo recuperaba idioma y fuente de interfaz. El usuario reprodujo comillas en `Editor.Font.Name` y una distribución lateral excesiva al abrir C++. Se amplió la corrección a esas fuentes, rutas y opciones tipadas, se corrigió la posición de marcas con zoom/plegado y se añadió tolerancia a INI parciales y números inválidos. Las pruebas locales nuevas y el alcance completo se detallan en [la auditoría](../QA_UI_AUDIT_0.5.6.md). Los instaladores de esta ampliación se regeneran; los paquetes anteriores no se consideran equivalentes.
+
+La reinstalación final reprodujo un bloqueo adicional al cerrar el asistente de preparación, después de un self-test correcto. Se detuvo la publicación y se corrigió la espera repetida al trabajador; la pila mostraba `pthread_join` sobre un identificador reutilizado por el monitor de archivos. Se añade una regresión de cierre con otro hilo vivo y se repiten las pruebas de instalación con los paquetes regenerados.

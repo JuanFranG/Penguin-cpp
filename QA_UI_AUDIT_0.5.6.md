@@ -71,3 +71,7 @@ Penguin cpp es un IDE nativo de C/C++ para un usuario local, con proyectos peque
 **Veredicto:** los fallos reproducidos pertenecen a la lectura de preferencias y a diferencias entre los componentes de Delphi y Lazarus. No se encontró una dependencia activa de VCL/DLL Windows que explique estas capturas. Las correcciones necesitan paquetes regenerados; las pruebas de los paquetes anteriores no se atribuyen automáticamente a esta revisión.
 
 **No comprobado:** todas las combinaciones visuales de 36 formularios × 32 idiomas × fuentes/resoluciones; motores de terceros, todo el analizador de C++, todos los flujos del depurador o un Mac limpio. Esta auditoría se centra en interfaz, persistencia y adaptación de plataforma, no es una certificación de ausencia de errores en todo el repositorio.
+
+## Bloqueo encontrado en la reinstalación final
+
+La app completa instalada terminó correctamente el self-test, pero el hilo principal quedó dentro de `TSetupForm.Destroy → TThread.WaitFor → pthread_join`. El trabajador ya había terminado y el único hilo Pascal activo era el monitor de archivos. El formulario repetía `WaitFor` en cada tick de estado listo y en su destructor. En FPC/Unix, `WaitFor` vuelve a unir el identificador nativo aunque se hubiera recolectado antes; ese identificador puede pertenecer ahora a otro hilo. Se limita la espera a una sola vez por trabajador, también al reintentar y cancelar. La regresión crea otro hilo después de terminar la preparación y comprueba que cerrar el diálogo no espera a ese hilo ajeno.

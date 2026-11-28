@@ -1,6 +1,6 @@
 # Screenshot provenance
 
-The window reference documents Penguin cpp **0.5.6 and subsequent, unreleased interface fixes**, with its interface in **English**, on macOS / Cocoa. These are native window captures, not mockups or AI-generated images. macOS window frames are included; its global menu bar is outside the captured window.
+The window reference documents Penguin cpp **0.5.6 and the interface fixes prepared for 0.5.7**, with its interface in **English**, on macOS / Cocoa. These are native window captures, not mockups or AI-generated images. macOS window frames are included; its global menu bar is outside the captured window.
 
 `windows/captures.tsv` records view name, form class, caption and PNG dimensions. The capture utility is `Source/Tools/ManualCapture/`. It opens the real application forms with disposable preferences and a small `Tutorial` project, then uses the native window capture API. No private projects or recent-file lists are used. The welcome/editor/header views are captured from an isolated instance of the released application using the same sample files. The refreshed dialogs, debugger and CPU views use the patched source; these fixes are not yet in the public 0.5.6 installers.
 

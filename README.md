@@ -11,7 +11,7 @@ Conserva su entorno ligero para aprender C y C++, con una interfaz nativa.
 El IDE no necesita Wine; el modo opcional de compatibilidad lo utiliza para
 ejecutar programas compilados para Windows.
 
-> **Versión actual: 0.5.6.** El IDE funciona en Linux Mint (paquete `.deb` y
+> **Publicada: 0.5.6 · En preparación: [0.5.7](RELEASE_NOTES_0.5.7.md).** El IDE funciona en Linux Mint (paquete `.deb` y
 > repositorio APT, amd64) y en macOS 26 o posterior con Apple Silicon
 > (en pruebas). Hay `.pkg` y `.dmg` completos con el entorno Windows, además
 > del DMG nativo. Ver [ROADMAP.md](ROADMAP.md).
@@ -216,6 +216,7 @@ incluye capturas, historia, créditos y versiones; su tema sigue al sistema/nave
 
 | Versión | Cambios principales |
 |---|---|
+| [0.5.7](RELEASE_NOTES_0.5.7.md) (en preparación) | Correcciones de diálogos y pertenencia al proyecto; manual bilingüe con 47 vistas, headers, banderas y depuración. |
 | [0.5.6](RELEASE_NOTES_0.5.6.md) | Hotfix de preferencias antiguas y rutas de idioma con comillas acumuladas; regresión de los 32 idiomas y nueva página del proyecto. |
 | [0.3.0](https://github.com/JuanFranG/Penguin-cpp/releases/tag/v0.3.0) | Buscar/instalar actualizaciones, adjuntar a procesos nativos, corrección de colisiones de objetos y sustitución de la app con recuperación ante fallos. |
 | [0.4.0](RELEASE_NOTES_0.4.0.md) | Corrección de repintado Cocoa, barras que aprovechan el ancho de la ventana, modos de compatibilidad Windows y herramientas de empaquetado completo. |

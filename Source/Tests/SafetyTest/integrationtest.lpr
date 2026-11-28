@@ -2,7 +2,7 @@ program integrationtest;
 {$mode delphi}
 uses cthreads, SafetyInterfaces, Forms, Classes, SysUtils, BaseUnix, Dialogs,
  InterfaceBase, LCLType, Controls, main, Editor, Project, devCFG, FileTransactions,
- MultiLangSupport, Version, Compiler, devExec, ProjectOptionsFrm, ProjectTypes, WindowsGameFrm, Types, WindowsGameCore, devPlatform, Process, LCLIntf, FileUtil, WindowsSetupFrm, ExtCtrls, StdCtrls, IniFiles, AboutFrm, UpdateCheckFrm, Graphics, Math, SynGutterLineNumber, SynEditCompat, DataFrm, EditorOptFrm;
+ MultiLangSupport, Version, Compiler, devExec, ProjectOptionsFrm, ProjectTypes, WindowsGameFrm, Types, WindowsGameCore, devPlatform, Process, LCLIntf, FileUtil, WindowsSetupFrm, ExtCtrls, StdCtrls, IniFiles, AboutFrm, UpdateCheckFrm, Graphics, Math, SynGutterLineNumber, SynEditCompat, DataFrm, EditorOptFrm, NewProjectFrm, NewTemplateFrm, IncrementalFrm, ClangFormatterOptionsFrm, RemoveUnitFrm;
 {$R ../../penguin-cpp.res}
 type TProbeCompiler=class(TCompiler)
  procedure BeginCommand(const Command:String);
@@ -215,6 +215,58 @@ begin
    SaveFormImage(MainForm,'welcome-'+IntToStr(I));
   end;
  finally MainForm.Hide end;
+end;
+
+procedure DialogRegressionTest;
+var NewProject:TNewProjectForm; Search:TIncrementalForm; Formatter:TClangFormatterOptionsForm;
+ OldTemplates,OldDir,OldFile,Before:String; Edit:TEditor;
+begin
+ MainForm.Show; Application.ProcessMessages;
+ OldTemplates:=devDirs.Templates; devDirs.Templates:=SourceRoot+'/Templates/';
+ NewProject:=nil;
+ try
+  NewProject:=TNewProjectForm.Create(MainForm); NewProject.Show; Application.ProcessMessages;
+  Check((NewProject.ProjView.Columns.Count>0) and (NewProject.ProjView.Items.Count>0),
+   'new project shows named templates in a native list with columns');
+  Check(Assigned(NewProject.ProjView.Selected) and NewProject.btnOK.Enabled and Assigned(NewProject.GetTemplate),
+   'selected project template can be used immediately');
+ finally NewProject.Free; devDirs.Templates:=OldTemplates end;
+ Edit:=MainForm.EditorList.NewEditor(Dir+'search-sample.cpp',False,False);
+ Edit.Text.Text:='int search_token = 1;';
+ Search:=TIncrementalForm.Create(MainForm);
+ try
+  Search.Editor:=Edit.Text; Search.Edit.Text:='search_token';
+  Check(Search.Edit.Color=clWindow,'search text set before Show keeps its normal background');
+  Search.Show; Application.ProcessMessages;
+  Check((Search.ClientHeight>=Search.Edit.Top+Search.Edit.Height) and
+   (Search.Edit.Left+Search.Edit.Width<Search.btnPrev.Left) and
+   (Search.btnPrev.Left+Search.btnPrev.Width<Search.btnNext.Left) and
+   (Search.btnNext.Left+Search.btnNext.Width<=Search.ClientWidth),
+   'incremental search keeps input and both buttons inside a non-overlapping window');
+ finally Search.Free; MainForm.EditorList.ForceCloseEditor(Edit) end;
+ Edit:=MainForm.EditorList.NewEditor(Dir+'formatter-sample.cpp',False,False);
+ Edit.Text.Text:='int format_test = 1;';
+ OldDir:=devFormatterClang.ClangDir; OldFile:=devFormatterClang.ClangFile;
+ ForceDirectories(Dir+'formatter-bin');
+ AtomicWriteFile(Dir+'formatter-bin/clang-format','#!/bin/sh'+LineEnding+'echo FORMATTER_FAILED >&2'+LineEnding+'exit 2'+LineEnding);
+ fpChmod(Dir+'formatter-bin/clang-format',&700);
+ devFormatterClang.ClangDir:=ExtractRelativePath(devDirs.Exec,Dir+'formatter-bin/'); devFormatterClang.ClangFile:='clang-format';
+ Formatter:=nil;
+ try
+  Formatter:=TClangFormatterOptionsForm.Create(MainForm);
+  Before:=ReadText(FormatterTempFile('DummyInput.cpp'));
+  Formatter.CommandChange(nil);
+  Check((devFormatterClang.LastExitCode=2) and not Formatter.btnExecute.Enabled,
+   'failed formatter preview disables execution');
+  Check((Pos('format_test',Formatter.synExample.Text)>0) and
+   (Pos('FORMATTER_FAILED',Formatter.synExample.Text)=0) and
+   (ReadText(FormatterTempFile('DummyInput.cpp'))=Before),
+   'formatter error never replaces the sample source or scratch file');
+ finally
+  Formatter.Free;
+  devFormatterClang.ClangDir:=OldDir; devFormatterClang.ClangFile:=OldFile;
+  MainForm.EditorList.ForceCloseEditor(Edit);
+ end;
 end;
 
 procedure EditorAppearanceTest;
@@ -638,7 +690,12 @@ begin
   Check((E.FileName=SaveName) and not E.Text.Modified,'successful Save As commits identity');
   MainForm.EditorList.ForceCloseEditor(E);
   P:=TProject.Create(Dir+'project.dev','Test'); MainForm.Project:=P;
-  P.AddUnit(Dir+'empty.cpp',P.Node,False); E:=P.OpenUnit(0);
+  P.AddUnit(Dir+'empty.cpp',P.Node,False);
+  MainForm.Show; Application.ProcessMessages;
+  MainForm.OpenFile(Dir+'empty.cpp'); E:=MainForm.EditorList.GetEditor;
+  Check(E.InProject and (MainForm.GetCompileTarget=ctProject),'File Open recognises a project member and builds the whole project');
+  E.InProject:=False; E:=P.OpenUnit(0);
+  Check(E.InProject,'project navigation reclaims an already-open standalone editor');
   OriginalCompile:=P.Units[0].Compile;
   SetLength(P.Options.CompilerOptions,1); P.Options.CompilerOptions[0]:=1;
   OptionsDialog:=TProjectOptionsFrm.Create(MainForm);
@@ -720,6 +777,7 @@ begin
   finally C.Free end;
 
   WelcomeLayoutTest;
+  DialogRegressionTest;
   ReleaseLinksTest;
   CompatibilityLayoutTest;
   SetupErrorTest;

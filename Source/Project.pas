@@ -1159,6 +1159,7 @@ begin
         fEditor := MainForm.EditorList.FileIsOpen(ExpandFileName(FileName));
         if fEditor = nil then
           fEditor := MainForm.EditorList.NewEditor(ExpandFileName(FileName), true, false);
+        fEditor.InProject := True;
         LoadUnitLayout(fEditor, index);
         Result := fEditor;
       except

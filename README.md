@@ -70,7 +70,7 @@ las seis etapas; validación de entrega en [etapa 6](QA_STAGE_6.md).
 ## Instalación
 
 El [manual](https://juanfrang.github.io/Penguin-cpp/manual/) explica cómo
-usarlo con 37 vistas reales de sus ventanas, controles explicados y búsqueda.
+usarlo con 47 vistas reales de sus ventanas, controles explicados y búsqueda.
 Está disponible en [español](https://juanfrang.github.io/Penguin-cpp/manual/es/)
 y en inglés, con las mismas capturas de la aplicación en inglés; para otros idiomas,
 usa la traducción del navegador. También se abre desde el IDE con F1.

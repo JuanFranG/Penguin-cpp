@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Render both window references from descriptions and shared English screenshots."""
-import json, struct, html
+import json, struct, html, zipfile
 from pathlib import Path
 root = Path(__file__).resolve().parent.parent
 manual = root/'Manual'
@@ -28,7 +28,7 @@ for language, page, prefix in [('en', manual/'index.html', ''), ('es', manual/'e
         width, height = struct.unpack('>II', data[16:24])
         controls = ''.join('<dt translate="no">'+e(k)+'</dt><dd>'+e(v)+'</dd>' for k,v in item['controls'])
         src = prefix+'assets/windows/'+item['image']
-        alt = item['title'] + (' en Penguin cpp 0.5.6 para macOS, con la interfaz en inglés.' if language == 'es' else ' in Penguin cpp 0.5.6 on macOS, with the English interface.')
+        alt = item['title'] + (' en una compilación de desarrollo basada en Penguin cpp 0.5.6 para macOS, con la interfaz en inglés.' if language == 'es' else ' in a Penguin cpp development build based on 0.5.6 on macOS, with the English interface.')
         caption = 'Abrir captura a tamaño completo' if language == 'es' else 'Open full-size screenshot'
         interface = 'Interfaz en inglés' if language == 'es' else 'English UI'
         open_label = 'Abrir:' if language == 'es' else 'Open:'
@@ -38,3 +38,11 @@ for language, page, prefix in [('en', manual/'index.html', ''), ('es', manual/'e
     a, tail = text.split(start,1); _, b = tail.split(end,1)
     page.write_text(a+start+'\n'+'\n'.join(cards)+'\n'+end+b)
     print(f'Rendered {len(cards)} illustrated window views ({language})')
+
+# Store the tiny tutorial without compression so the checked-in archive is reproducible.
+with zipfile.ZipFile(manual/'examples/header-project.zip', 'w') as archive:
+    for source in sorted((manual/'examples/header-project').iterdir()):
+        info = zipfile.ZipInfo('header-project/'+source.name, (2026, 1, 1, 0, 0, 0))
+        info.create_system = 3
+        info.external_attr = 0o100644 << 16
+        archive.writestr(info, source.read_bytes())

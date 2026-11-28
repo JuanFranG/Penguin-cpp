@@ -552,7 +552,9 @@ begin
   lblCompiler.Caption := Lang[ID_POPT_CCOMP];
   lblCppCompiler.Caption := Lang[ID_POPT_CPPCOMP];
   lblLinker.Caption := Lang[ID_POPT_LINKER];
-  btnAddLib.Caption := Lang[ID_POPT_ADDLIBRARY];
+  btnAddLib.Caption := Lang[ID_BTN_ADD];
+  btnAddLib.Hint := Lang[ID_POPT_ADDLIBRARY];
+  btnAddLib.ShowHint := True;
 
   // Directories tab
   SubTabs.Tabs.Clear;

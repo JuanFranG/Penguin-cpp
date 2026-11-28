@@ -826,6 +826,7 @@ type
     procedure FindOutputSelectItem(Sender: TObject; Item: TListItem;
       Selected: Boolean);
     procedure FormResize(Sender: TObject);
+    procedure LayoutDebugControls(Sender: TObject);
     procedure ButtonChangeThemeClick(Sender: TObject);
     procedure RecentFileClick(Sender: TObject);
     procedure RecentFileEnter(Sender: TObject);
@@ -847,6 +848,7 @@ type
     procedure actAStyleFormatOptionsExecute(Sender: TObject);
     procedure actClangFormatOptionsExecute(Sender: TObject);
   private
+    fDebugLayoutBusy: Boolean;
     fPreviousHeight: integer; // stores MessageControl height to be able to restore to previous height
     fTools: TToolController; // tool list controller
     fProjectToolWindow: TForm; // floating left tab control
@@ -1693,10 +1695,17 @@ end;
 procedure TMainForm.OpenFile(const FileName: String; AEncoding: TEncoding = nil);
 var
   e: TEditor;
+  UnitIndex: Integer;
 begin
+  UnitIndex := -1;
+  if Assigned(fProject) then UnitIndex := fProject.GetUnitFromString(FileName);
   // Don't bother opening duplicates
   e := fEditorList.FileIsOpen(FileName);
   if Assigned(e) then begin
+    if UnitIndex >= 0 then begin
+      e.InProject := True;
+      fProject.Units[UnitIndex].Editor := e;
+    end;
     e.Activate;
     Exit;
   end;
@@ -1709,7 +1718,8 @@ begin
   end;
 
   // Open the file in an editor
-  e := fEditorList.NewEditor(FileName, False, False, nil, AEncoding);
+  e := fEditorList.NewEditor(FileName, UnitIndex >= 0, False, nil, AEncoding);
+  if UnitIndex >= 0 then fProject.Units[UnitIndex].Editor := e;
   if Assigned(fProject) then begin
     if (not SameFileName(fProject.FileName, FileName)) and (fProject.GetUnitFromString(FileName) = -1) then
       dmMain.RemoveFromHistory(FileName);
@@ -3309,6 +3319,7 @@ begin
 
   // Reset watch vars
   fDebugger.DeleteWatchVars(false);
+  LayoutDebugControls(nil);
 end;
 
 procedure TMainForm.actDebugExecute(Sender: TObject);
@@ -6154,9 +6165,37 @@ begin
   ZoomEditors(Round(Magnification * 600));
 end;
 
+procedure TMainForm.LayoutDebugControls(Sender: TObject);
+var Buttons:array[0..9] of TControl; I,Columns,Rows,ButtonWidth,EvalTop:Integer;
+begin
+  if fDebugLayoutBusy or not Assigned(IntoInsBtn) or not Assigned(EvalOutput) or
+    (MessageControl.ActivePage<>DebugSheet) or (DebugSheet.ClientWidth<600) then Exit;
+  fDebugLayoutBusy:=True;
+  try
+    DebugStartPanel.Width:=DebugSheet.ClientWidth*2 div 3;
+    Columns:=Max(2,Min(5,(DebugStartPanel.ClientWidth-8) div 156));
+    Rows:=(10+Columns-1) div Columns;
+    ButtonWidth:=(DebugStartPanel.ClientWidth-24-(Columns-1)*16) div Columns;
+    Buttons[0]:=DDebugBtn; Buttons[1]:=StepOverBtn; Buttons[2]:=StopExecBtn;
+    Buttons[3]:=AddWatchBtn; Buttons[4]:=NextLineBtn; Buttons[5]:=IntoLineBtn;
+    Buttons[6]:=SkipFuncBtn; Buttons[7]:=ViewCPUBtn; Buttons[8]:=NextInsBtn; Buttons[9]:=IntoInsBtn;
+    EvalTop:=Rows*44+16;
+    if MessageControl.Height<EvalTop+124 then MessageControl.Height:=EvalTop+124;
+    for I:=0 to High(Buttons) do
+      Buttons[I].SetBounds(12+(I mod Columns)*(ButtonWidth+16),8+(I div Columns)*44,ButtonWidth,32);
+    lblEvaluate.SetBounds(12,EvalTop,92,24);
+    EvaluateInput.SetBounds(112,EvalTop-2,DebugStartPanel.ClientWidth-124,28);
+    EvalOutput.SetBounds(12,EvalTop+36,DebugStartPanel.ClientWidth-24,Max(32,DebugStartPanel.ClientHeight-EvalTop-48));
+    lblSendCommandGdb.SetBounds(12,8,DebugSendPanel.ClientWidth-24,24);
+    edGdbCommand.SetBounds(12,36,DebugSendPanel.ClientWidth-24,28);
+    DebugOutput.SetBounds(12,76,DebugSendPanel.ClientWidth-24,Max(32,DebugSendPanel.ClientHeight-88));
+  finally fDebugLayoutBusy:=False end;
+end;
+
 procedure TMainForm.FormResize(Sender: TObject);
 begin
   ResizeWelcomeComponent;
+  LayoutDebugControls(nil);
   Application.QueueAsyncCall(FitToolbarDock, 0); // rows change with the width
 end;
 

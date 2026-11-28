@@ -41,7 +41,7 @@
       <Filename Value="build/manualcapture" />
     </Target>
     <SearchPaths>
-      <OtherUnitFiles Value="../../Tests/SafetyTest;../..;../../VCL/ClassBrowsing;../../VCL/devFileMonitor;../../VCL/devShortcuts;../../VCL/CompOptionsList" />
+      <OtherUnitFiles Value="../..;../../VCL/ClassBrowsing;../../VCL/devFileMonitor;../../VCL/devShortcuts;../../VCL/CompOptionsList" />
       <UnitOutputDirectory Value="build/manualcapture-units/$(TargetCPU)-$(TargetOS)-$(LCLWidgetType)" />
     </SearchPaths>
     <Parsing>

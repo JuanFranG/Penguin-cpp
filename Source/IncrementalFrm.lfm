@@ -1,20 +1,20 @@
 object IncrementalForm: TIncrementalForm
   Left = 861
   Top = 494
-  Anchors = []
-  AutoSize = True
+  Anchors = [akLeft, akTop]
+  AutoSize = False
   BorderIcons = [biSystemMenu]
-  BorderStyle = bsToolWindow
+  BorderStyle = bsDialog
   Caption = 'Incremental Search'
-  ClientHeight = 25
-  ClientWidth = 282
+  ClientHeight = 48
+  ClientWidth = 480
   Color = clWindow
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'default'
   Font.Style = []
-  FormStyle = fsStayOnTop
+  FormStyle = fsNormal
   KeyPreview = True
   PopupMenu = IncrementalPop
   Position = poMainFormCenter

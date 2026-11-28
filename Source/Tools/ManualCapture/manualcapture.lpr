@@ -1,7 +1,7 @@
 program manualcapture;
 {$mode delphi}
 {$modeswitch objectivec1}
-uses cthreads, SafetyInterfaces, Forms, Classes, SysUtils, Graphics, Controls,
+uses cthreads, Interfaces, Forms, Classes, SysUtils, Graphics, Controls,
  StdCtrls, ComCtrls, Process, main, devCFG, FileTransactions, MultiLangSupport, Editor,
  Project, AboutFrm, NewProjectFrm, ProjectOptionsFrm, EditorOptFrm, EnviroFrm,
  CompOptionsFrm, FindFrm, GotoLineFrm, FilePropertiesFrm, ParamsFrm, CPUFrm,
@@ -9,7 +9,7 @@ uses cthreads, SafetyInterfaces, Forms, Classes, SysUtils, Graphics, Controls,
  NewClassFrm, NewFunctionFrm, NewVarFrm, FunctionSearchFrm, RemoveUnitFrm,
  PrintFrm, IconFrm, IncrementalFrm, TipOfTheDayFrm, AStyleFormatterOptionsFrm,
  ClangFormatterOptionsFrm, ProcessListFrm, LangFrm, WindowsGameCore,
- WindowsGameFrm, WindowsSetupFrm, UpdateCheckFrm, ExtCtrls, ProfileAnalysisFrm, MacSupport, CocoaAll, CocoaUtils, PenguinPalette, PenguinTheme;
+ WindowsGameFrm, WindowsSetupFrm, UpdateCheckFrm, ExtCtrls, ProfileAnalysisFrm, MacSupport, CocoaAll, CocoaUtils, PenguinPalette, PenguinTheme, devPlatform;
 {$R ../../penguin-cpp.res}
 type
  TCapture=class
@@ -19,11 +19,17 @@ type
   procedure Tick(Sender:TObject);
   procedure Run(Data:PtrInt);
  end;
-var Root,Work,OutDir:String; Catalog:TStringList; Runner:TCapture;
+var Root,Work,OutDir:String; Catalog:TStringList; Runner:TCapture; CaptureFailed:Boolean=False;
 procedure Save(F:TCustomForm; const Name:String);
-var P:TPortableNetworkGraphic; Output:String; W:NSWindow;
+var P:TPortableNetworkGraphic; Output:String; W:NSWindow; I:Integer;
 begin
+ if (GetEnvironmentVariable('PENGUIN_MANUAL_VIEWS')<>'') and
+  (Pos(','+Name+',',','+GetEnvironmentVariable('PENGUIN_MANUAL_VIEWS')+',')=0) then Exit;
  NSApp.activateIgnoringOtherApps(True); F.BringToFront; Application.ProcessMessages; Application.ProcessMessages;
+ for I:=0 to F.ComponentCount-1 do begin
+  if F.Components[I] is TCustomEdit then TCustomEdit(F.Components[I]).SelLength:=0;
+  if F.Components[I] is TComboBox then TComboBox(F.Components[I]).SelLength:=0;
+ end;
  W:=GetNSObjectWindow(NSObject(F.Handle)); W.makeKeyAndOrderFront(nil); Application.ProcessMessages; W.displayIfNeeded;
  if not RunCommand('/usr/sbin/screencapture',['-x','-o','-l',IntToStr(W.windowNumber),OutDir+Name+'.png'],Output) then
   raise Exception.Create('Native window capture failed: '+Output);
@@ -36,7 +42,7 @@ begin
  finally P.Free end;
 end;
 procedure CaptureForm(C:TFormClass; const Name:String);
-var F:TForm;
+var F:TForm; Deadline:QWord; I:Integer;
 begin
  F:=nil;
  try
@@ -49,15 +55,43 @@ begin
    with TWindowListForm(F).UnitList.Items.Add do begin Caption:='main.cpp'; SubItems.Add(Work+'main.cpp') end;
   end;
   if F is TToolForm then TToolForm(F).Controller:=TToolController.Create;
+  if F is TIncrementalForm then begin
+   TIncrementalForm(F).Editor:=MainForm.EditorList.GetEditor.Text;
+   TIncrementalForm(F).Edit.Text:='add';
+  end;
+  if F is TNewProjectForm then with TNewProjectForm(F) do begin
+   edProjectName.Text:='Tutorial';
+   for I:=0 to ProjView.Items.Count-1 do
+    if Pos('Console Application',ProjView.Items[I].Caption)>0 then ProjView.ItemIndex:=I;
+  end;
   F.Position:=poScreenCenter;
-  F.Show; Application.ProcessMessages; Save(F,Name);
+  F.Show; Application.ProcessMessages;
+  if (F is TCPUForm) and MainForm.Debugger.Paused then begin
+   Deadline:=GetTickCount64+3000;
+   while (TCPUForm(F).RegisterListbox.Items.Count=0) and (GetTickCount64<Deadline) do begin Application.ProcessMessages; Sleep(10) end;
+  end;
+  Save(F,Name);
   if F is TEditorOptForm then begin
    TEditorOptForm(F).PagesMain.ActivePageIndex:=1;
    Save(F,'editor-fonts');
   end;
+  if F is TProjectOptionsFrm then with TProjectOptionsFrm(F) do begin
+   PageControl.ActivePage:=tabFiles; Application.ProcessMessages; Save(F,'project-files');
+   PageControl.ActivePage:=tabCompiler; Application.ProcessMessages; Save(F,'project-compiler');
+   PageControl.ActivePage:=tabCompOpts; Application.ProcessMessages; Save(F,'project-flags');
+   PageControl.ActivePage:=tabFilesDir; Application.ProcessMessages; Save(F,'project-directories');
+   PageControl.ActivePage:=tabOutputDir; Application.ProcessMessages; Save(F,'project-output');
+  end;
+  if F is TCompOptForm then with TCompOptForm(F) do begin
+   MainPages.ActivePage:=tabCompiler; Application.ProcessMessages; Save(F,'compiler-flags');
+   MainPages.ActivePage:=tabCodeGen; Application.ProcessMessages; Save(F,'compiler-settings');
+  end;
   F.Hide;
- except on E:Exception do WriteLn('SKIP ',Name,': ',E.Message) end;
- if Assigned(F) then F.Free;
+ except on E:Exception do begin CaptureFailed:=True; WriteLn('SKIP ',Name,': ',E.Message) end end;
+ if Assigned(F) then begin
+  if F is TCPUForm then MainForm.Debugger.CancelHandlers(F);
+  F.Free;
+ end;
 end;
 procedure TCapture.Tick(Sender:TObject);
 var F:TCustomForm; C:TComponent;
@@ -80,12 +114,14 @@ begin
  end;
 end;
 procedure TCapture.Run(Data:PtrInt);
-var Config:TWindowsGameConfig; Output:String;
+var Config:TWindowsGameConfig; Output:String; Deadline:QWord;
 begin
  try
  MainForm.SetBounds(0,0,1200,760); MainForm.Show; Save(MainForm,'welcome');
  MainForm.OpenProject(Work+'Tutorial.dev'); MainForm.OpenFile(Work+'main.cpp');
  Application.ProcessMessages; Save(MainForm,'workspace');
+ MainForm.Project.OpenUnit(2).Activate; Application.ProcessMessages; Save(MainForm,'header');
+ MainForm.Project.OpenUnit(0).Activate;
  CaptureForm(TNewProjectForm,'new-project');
  CaptureForm(TProjectOptionsFrm,'project-options');
  CaptureForm(TEditorOptForm,'editor-options');
@@ -96,7 +132,7 @@ begin
  CaptureForm(TFilePropertiesForm,'file-properties');
  CaptureForm(TParamsForm,'arguments');
  CaptureForm(TCPUForm,'cpu');
- RunCommand('/usr/bin/xcrun',['clang++','-fprofile-instr-generate',Work+'main.cpp','-o',Work+'Tutorial'],Output);
+ RunCommand('/usr/bin/xcrun',['clang++','-fprofile-instr-generate',Work+'main.cpp',Work+'calculator.cpp','-o',Work+'Tutorial'],Output);
  RunCommand('/usr/bin/env',['LLVM_PROFILE_FILE='+Work+'default.profraw',Work+'Tutorial'],Output);
  CaptureForm(TProfileAnalysisForm,'profiler');
  CaptureForm(TToolForm,'tools');
@@ -123,13 +159,36 @@ begin
  try
   DiscoverWindowsGameConfig('/Applications/Penguin cpp.app/Contents/Resources/',Config); ModalName:='windows-compatibility';
   Timer.Enabled:=True; ConfigureWindowsGame(Config);
+  if GetEnvironmentVariable('PENGUIN_MANUAL_SKIP_SETUP')<>'1' then begin
   SetupWorking:=False; SetupReady:=False; Timer.Enabled:=True;
   if not EnsureWindowsEnvironment(Config,Work+'environment',True) then raise Exception.Create('Could not prepare the isolated sample environment');
   Timer.Enabled:=False;
+  end;
   ModalName:='updates'; Timer.Enabled:=True; ShowUpdateCheck;
  finally Timer.Free end;
+ if not RunCommand('/usr/bin/xcrun',['clang++','-g','-O0',Work+'main.cpp',Work+'calculator.cpp','-o',MainForm.Project.Executable],Output) then
+  raise Exception.Create('Debug example compilation failed: '+Output);
+ devCompilerSets.CompilationSet.gdbName:=FindDeveloperTool('lldb-dap');
+ MainForm.Project.Options.CompilerOptions:=Copy(devCompilerSets.CompilationSet.INIOptions);
+ MainForm.Project.SetCompilerOption('-g3',1); MainForm.Project.SetCompilerOption('-s',0);
+ MainForm.Project.OpenUnit(1).Activate;
+ MainForm.EditorList.GetEditor.ToggleBreakpoint(5);
+ if not MainForm.Project.SaveAll then raise Exception.Create('Could not save the disposable debug project');
+ MainForm.actDebugExecute(nil);
+ Deadline:=GetTickCount64+15000;
+ while not MainForm.Debugger.Paused and (GetTickCount64<Deadline) do begin Application.ProcessMessages; Sleep(10) end;
+ if not MainForm.Debugger.Paused then raise Exception.Create('Native debugger did not pause at main');
+ MainForm.Debugger.Continue;
+ Deadline:=GetTickCount64+10000;
+ repeat Application.ProcessMessages; Sleep(10) until (MainForm.Debugger.Paused and (MainForm.Debugger.BreakPointFile=Work+'calculator.cpp')) or (GetTickCount64>Deadline);
+ if not MainForm.Debugger.Paused or (Pos('calculator.cpp',MainForm.Debugger.BreakPointFile)=0) then raise Exception.Create('Native debugger did not pause in calculator.cpp');
+ MainForm.Debugger.AddWatchVar('left'); MainForm.Debugger.AddWatchVar('right'); MainForm.Debugger.AddWatchVar('total');
+ Deadline:=GetTickCount64+1000;
+ while GetTickCount64<Deadline do begin Application.ProcessMessages; Sleep(10) end;
+ Save(MainForm,'debugger'); CaptureForm(TCPUForm,'cpu-active');
+ MainForm.Debugger.Stop;
  MainForm.Close;
- except on E:Exception do WriteLn('FATAL ',E.ClassName,': ',E.Message) end;
+ except on E:Exception do begin CaptureFailed:=True; MainForm.Debugger.Stop; WriteLn('FATAL ',E.ClassName,': ',E.Message) end end;
  Application.Terminate;
 end;
 var S:TStringList;
@@ -148,16 +207,14 @@ begin
    '[FormatterAStyle]'+LineEnding+'AStyleDir=/Applications/Penguin cpp.app/Contents/MacOS/'+LineEnding+'AStyleFile=astyle'+LineEnding+
    '[FormatterClang]'+LineEnding+'ClangDir=/opt/homebrew/bin/'+LineEnding+'ClangFile=clang-format';
   S.SaveToFile(Work+'config.ini');
-  S.Text:='#include <iostream>'+LineEnding+LineEnding+'int add(int a, int b) {'+LineEnding+'    return a + b;'+LineEnding+'}'+LineEnding+LineEnding+
-   'int main() {'+LineEnding+'    // TODO: try other values'+LineEnding+'    int result = add(2, 3);'+LineEnding+'    std::cout << "Result: " << result << std::endl;'+LineEnding+'    return 0;'+LineEnding+'}';
-  S.SaveToFile(Work+'main.cpp');
-  S.Text:='[Project]'+LineEnding+'Name=Tutorial'+LineEnding+'FileName=Tutorial.dev'+LineEnding+'Type=1'+LineEnding+'Ver=2'+LineEnding+'IsCpp=1'+LineEnding+'UnitCount=1'+LineEnding+'CompilerSet=0'+LineEnding+
-   '[Unit1]'+LineEnding+'FileName=main.cpp'+LineEnding+'CompileCpp=1'+LineEnding+'Compile=1'+LineEnding+'Link=1'+LineEnding+'Priority=1000';
-  S.SaveToFile(Work+'Tutorial.dev');
+  S.LoadFromFile(Root+'/Manual/examples/header-project/main.cpp'); S.SaveToFile(Work+'main.cpp');
+  S.LoadFromFile(Root+'/Manual/examples/header-project/calculator.cpp'); S.SaveToFile(Work+'calculator.cpp');
+  S.LoadFromFile(Root+'/Manual/examples/header-project/calculator.h'); S.SaveToFile(Work+'calculator.h');
+  S.LoadFromFile(Root+'/Manual/examples/header-project/Tutorial.dev'); S.SaveToFile(Work+'Tutorial.dev');
  finally S.Free end;
  devData.INIFileName:=Work+'config.ini'; devData.ReadSelf; CreateOptions;
- RequireDerivedFormResource:=True; Application.Scaled:=True; Application.Initialize; InstallMacViewCompatibility; ApplyApplicationPalette(False); Application.Title:='Penguin cpp'; Application.ShowMainForm:=False;
- Application.CreateForm(TMainForm,MainForm); MainForm.OnShow:=nil;
+ RequireDerivedFormResource:=True; Application.Scaled:=True; Application.Initialize; NSApp.setActivationPolicy(NSApplicationActivationPolicyRegular); InstallMacViewCompatibility; ApplyApplicationPalette(False); Application.Title:='Penguin cpp'; Application.ShowMainForm:=False;
+ Application.CreateForm(TMainForm,MainForm);
  Runner:=TCapture.Create; Application.QueueAsyncCall(Runner.Run,0); Application.Run;
- Runner.Free; Catalog.Free;
+ Runner.Free; Catalog.Free; if CaptureFailed then Halt(1);
 end.

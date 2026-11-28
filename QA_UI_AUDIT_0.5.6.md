@@ -75,3 +75,16 @@ Penguin cpp es un IDE nativo de C/C++ para un usuario local, con proyectos peque
 ## Bloqueo encontrado en la reinstalación final
 
 La app completa instalada terminó correctamente el self-test, pero el hilo principal quedó dentro de `TSetupForm.Destroy → TThread.WaitFor → pthread_join`. El trabajador ya había terminado y el único hilo Pascal activo era el monitor de archivos. El formulario repetía `WaitFor` en cada tick de estado listo y en su destructor. En FPC/Unix, `WaitFor` vuelve a unir el identificador nativo aunque se hubiera recolectado antes; ese identificador puede pertenecer ahora a otro hilo. Se limita la espera a una sola vez por trabajador, también al reintentar y cancelar. La regresión crea otro hilo después de terminar la preparación y comprueba que cerrar el diálogo no espera a ese hilo ajeno.
+
+
+## Follow-up fixes after the 0.5.6 release (not yet in its installers)
+
+The illustrated manual exposed further native Cocoa problems. This follow-up fixes truncated check/radio labels, the blank project-template view (a native table needs columns and must not read absent icons), overlapping template/footer controls, incremental-search sizing and initial background, and formatter errors displayed as source. Optional missing clang-format is now reported inline with execution disabled; a failed formatter cannot replace the sample or its scratch file.
+
+The debugger's controls now reflow with spacing. ARM64 CPU views omit the irrelevant Intel/AT&T syntax selectors. Project flags use a short translated Add button with the full purpose in its hint. Existing Help handlers in project/editor/environment dialogs are enabled.
+
+Opening a project member through File → Open now preserves project membership and its editor association. Project navigation also repairs an already-open standalone editor. This prevents an unintended single-file build when the other implementation belongs to the project.
+
+The English/Spanish manual adds a downloadable, compiled three-file C++ project, include guards, declarations/implementations, project file participation, include/library/output directories, compiler/linker flags, and an actual LLDB session with left=2, right=3, total=5, registers and call frames. The expanded reference contains 47 views with English screenshots. Refreshed patched-source views are explicitly distinguished from public 0.5.6 installer behaviour.
+
+Native Cocoa regression coverage checks template selection, search geometry and pre-show colour, project membership, and failing formatter isolation. The existing Linux/Qt5 CI runs the same integration tests. Screenshot coverage does not imply every feature, translation, font size or resolution was tested. The legacy icon-library picker remains a separately documented limitation.

@@ -11,7 +11,7 @@ Conserva su entorno ligero para aprender C y C++, con una interfaz nativa.
 El IDE no necesita Wine; el modo opcional de compatibilidad lo utiliza para
 ejecutar programas compilados para Windows.
 
-> **Publicada: 0.5.6 · En preparación: [0.5.7](RELEASE_NOTES_0.5.7.md).** El IDE funciona en Linux Mint (paquete `.deb` y
+> **Versión actual: [0.5.7](RELEASE_NOTES_0.5.7.md).** El IDE funciona en Linux Mint (paquete `.deb` y
 > repositorio APT, amd64) y en macOS 26 o posterior con Apple Silicon
 > (en pruebas). Hay `.pkg` y `.dmg` completos con el entorno Windows, además
 > del DMG nativo. Ver [ROADMAP.md](ROADMAP.md).
@@ -122,7 +122,7 @@ tiene un error, lo anota en `penguin-cpp-errores.txt`, en el Escritorio.
 
 ### macOS 26 o posterior (Apple Silicon)
 
-Para incluir las herramientas Windows, descarga el [PKG completo 0.5.6](https://github.com/JuanFranG/Penguin-cpp/releases/download/v0.5.6/Penguin-cpp-0.5.6-COMPLETE-UNSIGNED.pkg). Incluye LLVM-MinGW, GNU Make y Wine ARM64/FEX dentro de la app. También está disponible el [DMG completo](https://github.com/JuanFranG/Penguin-cpp/releases/download/v0.5.6/Penguin-cpp-0.5.6-COMPLETE-UNSIGNED.dmg). Son experimentales y no tienen firma Developer ID ni notarización.
+Para incluir las herramientas Windows, descarga el [PKG completo 0.5.7](https://github.com/JuanFranG/Penguin-cpp/releases/download/v0.5.7/Penguin-cpp-0.5.7-COMPLETE-UNSIGNED.pkg). Incluye LLVM-MinGW, GNU Make y Wine ARM64/FEX dentro de la app. También está disponible el [DMG completo](https://github.com/JuanFranG/Penguin-cpp/releases/download/v0.5.7/Penguin-cpp-0.5.7-COMPLETE-UNSIGNED.dmg). Son experimentales y no tienen firma Developer ID ni notarización.
 
 Para una instalación nueva **solo del IDE nativo**, esta línea descarga la última versión, la pone en Aplicaciones y,
 si faltan, pide las Command Line Tools de Apple (clang, make y lldb):
@@ -131,7 +131,7 @@ si faltan, pide las Command Line Tools de Apple (clang, make y lldb):
 curl -fsSL https://juanfrang.github.io/Penguin-cpp/install-macos.sh | bash
 ```
 
-También se puede descargar el DMG nativo `Penguin-cpp-0.5.6-arm64.dmg` de
+También se puede descargar el DMG nativo `Penguin-cpp-0.5.7-arm64.dmg` de
 [Releases](https://github.com/JuanFranG/Penguin-cpp/releases/latest) y
 arrastrar *Penguin cpp* a Aplicaciones; como la app no está firmada por un
 desarrollador de Apple, la primera vez hay que abrirla, cerrar el aviso y
@@ -152,9 +152,9 @@ Ver [validación y límites](packaging/QA-pkg-macos.md).
 
 | Archivo | Herramientas Windows incluidas | Disponibilidad |
 |---|---|---|
-| `Penguin-cpp-0.5.6-arm64.dmg` | No; IDE nativo | GitHub Releases |
-| `Penguin-cpp-0.5.6-COMPLETE-UNSIGNED.pkg` | Sí: LLVM-MinGW, GNU Make y Wine ARM64/FEX | GitHub Releases (experimental) |
-| `Penguin-cpp-0.5.6-COMPLETE-UNSIGNED.dmg` | Sí: el mismo entorno del PKG completo | GitHub Releases (experimental) |
+| `Penguin-cpp-0.5.7-arm64.dmg` | No; IDE nativo | GitHub Releases |
+| `Penguin-cpp-0.5.7-COMPLETE-UNSIGNED.pkg` | Sí: LLVM-MinGW, GNU Make y Wine ARM64/FEX | GitHub Releases (experimental) |
+| `Penguin-cpp-0.5.7-COMPLETE-UNSIGNED.dmg` | Sí: el mismo entorno del PKG completo | GitHub Releases (experimental) |
 
 
 Con el `.pkg` completo descargado, la instalación desde Terminal es:
@@ -216,7 +216,7 @@ incluye capturas, historia, créditos y versiones; su tema sigue al sistema/nave
 
 | Versión | Cambios principales |
 |---|---|
-| [0.5.7](RELEASE_NOTES_0.5.7.md) (en preparación) | Correcciones de diálogos y pertenencia al proyecto; manual bilingüe con 47 vistas, headers, banderas y depuración. |
+| [0.5.7](RELEASE_NOTES_0.5.7.md) | Correcciones de diálogos y pertenencia al proyecto; manual bilingüe con 47 vistas, headers, banderas y depuración. |
 | [0.5.6](RELEASE_NOTES_0.5.6.md) | Hotfix de preferencias antiguas y rutas de idioma con comillas acumuladas; regresión de los 32 idiomas y nueva página del proyecto. |
 | [0.3.0](https://github.com/JuanFranG/Penguin-cpp/releases/tag/v0.3.0) | Buscar/instalar actualizaciones, adjuntar a procesos nativos, corrección de colisiones de objetos y sustitución de la app con recuperación ante fallos. |
 | [0.4.0](RELEASE_NOTES_0.4.0.md) | Corrección de repintado Cocoa, barras que aprovechan el ancho de la ventana, modos de compatibilidad Windows y herramientas de empaquetado completo. |

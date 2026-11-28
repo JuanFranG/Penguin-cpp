@@ -9,7 +9,7 @@ funciona en Windows.
 Este documento explica de dónde viene, qué se ha hecho hasta ahora y qué
 falta.
 
-*Última actualización: 27 de noviembre de 2026. Publicación vigente: 0.5.6. Próxima versión: 0.5.7.*
+*Última actualización: 27 de noviembre de 2026. Publicación vigente: 0.5.7.*
 
 ---
 
@@ -28,13 +28,13 @@ el historial del port: los pendientes vigentes se resumen aquí.
 | 0.5.0 | Diálogo compacto con estado del entorno; rutas avanzadas opcionales; `.pkg` completo por defecto; comprobación al arrancar desde Terminal; rechazo de un DMG nativo sobre una instalación completa. | PKG/DMG completos y fuentes publicados; canal completo probado con simulaciones. Instalación real, notarización y actualización futura pendientes. |
 | 0.5.5 | Guardado/ejecución recuperables, perfiles de consola, LLVM-MinGW/UCRT y Wine 11 privado en Linux, Acerca de compacto y adaptable, bienvenida Qt5 ordenada, CI y actualización APT desde 0.3.0; instalación PKG real. | Compatibilidad Windows experimental, WinBGIm y depuración Windows pendientes; Mac limpio y notarización pendientes. |
 
-### Versión 0.5.7 en preparación
+### Versión 0.5.7
 
 - Diálogos Cocoa con plantillas visibles, etiquetas completas y controles separados.
 - Archivos del proyecto abiertos desde Archivo conservan la construcción conjunta.
 - Errores del formateador separados del código y controles del depurador adaptables.
 - Manual bilingüe con 47 vistas en inglés, proyecto descargable con headers, banderas y una sesión LLDB real.
-- [Cambios, validación y pendientes de 0.5.7](RELEASE_NOTES_0.5.7.md). Publicar los instaladores y el canal de actualización después de completar la CI; los paquetes 0.5.6 siguen siendo los publicados.
+- [Cambios, validación y pendientes de 0.5.7](RELEASE_NOTES_0.5.7.md). La publicación reúne los instaladores y el canal de actualización después de superar la CI.
 
 ### Hotfix 0.5.6 y página del proyecto
 

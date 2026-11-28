@@ -141,7 +141,7 @@
       "Instrucciones de máquina cercanas a la posición detenida.",
       "Nombres y valores de registros informados por el depurador.",
       "Marcos de llamadas que conducen a la detención actual.",
-      "Elige una sintaxis de ensamblador admitida por el motor."
+      "En x86, elige sintaxis Intel o AT&T. Estas opciones de x86 se ocultan en ARM64."
     ],
     "result": "Detén el programa en un punto de interrupción para obtener datos reales.",
     "note": "La captura muestra la vista inactiva. La depuración de ejecutables Windows sigue siendo una limitación independiente del entorno de compatibilidad."
@@ -479,7 +479,8 @@
       "Continúa o avanza por el programa.",
       "Inspecciona variables, expresiones y el estado de bajo nivel."
     ],
-    "result": "La captura procede de una sesión real de LLDB, no de valores escritos manualmente."
+    "result": "La captura procede de una sesión real de LLDB, no de valores escritos manualmente.",
+    "open": "Execute → Debug; después, pulsa Continue para llegar al punto de interrupción en calculator.cpp."
   },
   "cpu-active": {
     "title": "Registros y pila de llamadas con el programa detenido",
@@ -489,7 +490,8 @@
       "Lee los nombres de registros y sus valores numéricos.",
       "La pila del ejemplo incluye add y main."
     ],
-    "result": "Los valores de los registros y las direcciones cambian entre ejecuciones."
+    "result": "Los valores de los registros y las direcciones cambian entre ejecuciones.",
+    "open": "Panel Debug → CPU, con la ejecución detenida en calculator.cpp."
   },
   "header": {
     "title": "Una cabecera en un proyecto de varios archivos",
@@ -499,6 +501,7 @@
       "La guarda evita procesar la cabecera repetidamente dentro de una misma unidad de compilación.",
       "La firma debe coincidir con la implementación de calculator.cpp."
     ],
-    "result": "Incluye la cabecera desde ambos .cpp y compila las dos implementaciones."
+    "result": "Incluye la cabecera desde ambos .cpp y compila las dos implementaciones.",
+    "open": "Haz doble clic en calculator.h en el árbol del proyecto."
   }
 }

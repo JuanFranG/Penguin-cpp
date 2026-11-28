@@ -1,3 +1,14 @@
+penguin-cpp (0.5.7) unstable; urgency=medium
+
+  * Fix Cocoa template lists, clipped labels and overlapping dialog controls.
+  * Keep reopened project members in the project compilation target.
+  * Preserve formatter sample code on tool failure and separate diagnostics.
+  * Reflow debugger controls and hide x86 disassembly choices on ARM64.
+  * Expand the bilingual manual to 47 real English-interface window views.
+  * Add a downloadable multi-file C++ header project and flags/debugging guides.
+
+ -- Juan Francisco Gonzalez Pacheco <jfgonzalez@unimagdalena.edu.co>  Fri, 27 Nov 2026 20:00:00 -0500
+
 penguin-cpp (0.5.6) unstable; urgency=high
 
   * Read legacy quoted INI strings consistently with the previous TIniFile reader.

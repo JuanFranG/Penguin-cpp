@@ -28,7 +28,7 @@ const
   // exe properties
   DEVCPP = 'Penguin cpp';
   // Penguin cpp's own version (semantic versioning); it continues Dev-C++ 6.3
-  DEVCPP_VERSION = '0.5.6';
+  DEVCPP_VERSION = '0.5.7';
   DEVCPP_CREATOR = 'Juan Francisco Gonzalez Pacheco';
   DEVCPP_REPOSITORY_URL = 'https://github.com/JuanFranG/Penguin-cpp';
   DEVCPP_RELEASE_URL = DEVCPP_REPOSITORY_URL + '/releases/tag/v' + DEVCPP_VERSION;
@@ -55,8 +55,8 @@ const
   LANGUAGE_DIR = 'Lang' + pd;
   ICON_DIR = 'Icons' + pd;
   HELP_DIR = 'Help' + pd;
-  // Penguin cpp's manual: installed with the IDE (MANUAL_DIR, its English
-  // version in en/), and the same online
+  // Penguin cpp's manual: installed with the IDE (English at MANUAL_DIR,
+  // Spanish in es/), and the same online
   MANUAL_DIR = 'Manual' + pd;
   MANUAL_URL = 'https://juanfrang.github.io/Penguin-cpp/manual/';
   TEMPLATE_DIR = 'Templates' + pd;

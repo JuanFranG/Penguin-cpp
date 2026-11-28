@@ -77,7 +77,7 @@ Penguin cpp es un IDE nativo de C/C++ para un usuario local, con proyectos peque
 La app completa instalada terminó correctamente el self-test, pero el hilo principal quedó dentro de `TSetupForm.Destroy → TThread.WaitFor → pthread_join`. El trabajador ya había terminado y el único hilo Pascal activo era el monitor de archivos. El formulario repetía `WaitFor` en cada tick de estado listo y en su destructor. En FPC/Unix, `WaitFor` vuelve a unir el identificador nativo aunque se hubiera recolectado antes; ese identificador puede pertenecer ahora a otro hilo. Se limita la espera a una sola vez por trabajador, también al reintentar y cancelar. La regresión crea otro hilo después de terminar la preparación y comprueba que cerrar el diálogo no espera a ese hilo ajeno.
 
 
-## Follow-up fixes after the 0.5.6 release (not yet in its installers)
+## Follow-up fixes for 0.5.7 (not in the 0.5.6 installers)
 
 The illustrated manual exposed further native Cocoa problems. This follow-up fixes truncated check/radio labels, the blank project-template view (a native table needs columns and must not read absent icons), overlapping template/footer controls, incremental-search sizing and initial background, and formatter errors displayed as source. Optional missing clang-format is now reported inline with execution disabled; a failed formatter cannot replace the sample or its scratch file.
 

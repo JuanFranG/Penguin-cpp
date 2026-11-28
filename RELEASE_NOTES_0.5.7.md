@@ -12,10 +12,10 @@
 
 ## Validación
 
-La compilación nativa Cocoa y las regresiones de interfaz pasan localmente. La comprobación de recursos realiza 9.390 verificaciones sin problemas. Se prueban la selección de plantillas, la búsqueda inicializada antes de mostrarla, los errores del formateador y la pertenencia de archivos al proyecto. El ejemplo compila con -std=c++17 -Wall -Wextra -Werror y muestra Result: 5. Los validadores del manual comprueban las dos versiones, imágenes, enlaces y tema automático; la vista móvil se revisó a 390 puntos. La PR ejecuta también las comprobaciones de Linux/Qt5, Cocoa y empaquetado en GitHub Actions; su resultado debe revisarse antes de publicar los instaladores.
+La compilación nativa Cocoa y las regresiones de interfaz pasan localmente. La comprobación de recursos realiza 9.390 verificaciones sin problemas. Se prueban la selección de plantillas, la búsqueda inicializada antes de mostrarla, los errores del formateador y la pertenencia de archivos al proyecto. El ejemplo compila con -std=c++17 -Wall -Wextra -Werror y muestra Result: 5. Los validadores del manual comprueban las dos versiones, imágenes, enlaces y tema automático; la vista móvil se revisó a 390 puntos. GitHub Actions supera las comprobaciones de Linux/Qt5, Cocoa, consola Windows, empaquetado y actualización APT desde una versión antigua.
 
 ## Límites y pendientes
 
-Estas notas corresponden a la preparación de 0.5.7. Los instaladores públicos de 0.5.6 no contienen las nuevas correcciones; una actualización solo las entregará cuando se publiquen los artefactos de 0.5.7. Algunas capturas proceden de 0.5.6 y otras del código corregido; su procedencia está documentada. El selector auxiliar de biblioteca de iconos conserva un problema de recursos heredados. No se afirma cobertura de todas las traducciones, resoluciones o diálogos nativos del sistema.
+Los instaladores de 0.5.7 incluyen estas correcciones. Las copias anteriores de 0.5.6 deben actualizarse; no es necesario borrar las preferencias. Algunas capturas proceden de 0.5.6 y otras del código corregido; su procedencia está documentada. El selector auxiliar de biblioteca de iconos conserva un problema de recursos heredados. No se afirma cobertura de todas las traducciones, resoluciones o diálogos nativos del sistema.
 
 La compatibilidad Windows continúa experimental: esta versión no amplía el soporte de WinBGIm, SDK externos ni depuración Windows. macOS requiere 26+ y Apple Silicon. Firma Developer ID, notarización y una instalación en Mac limpio siguen pendientes.

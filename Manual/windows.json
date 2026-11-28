@@ -336,7 +336,7 @@
       ],
       [
         "Syntax selector",
-        "Choose the assembly syntax supported by the backend."
+        "On x86, choose Intel or AT&T assembly syntax. These x86 choices are hidden on ARM64."
       ]
     ],
     "result": "Pause at a breakpoint before expecting live data.",

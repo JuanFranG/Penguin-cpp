@@ -24,13 +24,14 @@ unit MacSupport;
 interface
 
 uses
-  Classes, SysUtils, Controls, LCLType, LCLProc, Menus, ActnList, StdCtrls, Forms, SynEditKeyCmds;
+  Classes, SysUtils, Controls, LCLType, LCLProc, Menus, ActnList, StdCtrls, ExtCtrls, Forms, SynEditKeyCmds;
 
 // Restore the clipping expected by Lazarus Cocoa views when linked with modern SDKs.
 procedure InstallMacViewCompatibility;
 
 // Enlarge legacy fixed-coordinate dialogs without enlarging their text.
 // Native Cocoa controls need more room than the original Delphi metrics.
+procedure FitMacCheckBoxes(Parent: TWinControl);
 procedure ExpandMacDialog(Form: TCustomForm; WidthPercent, HeightPercent: Integer);
 
 // On macOS, owner-drawn font pickers become plain native dropdowns.
@@ -72,6 +73,35 @@ type
 procedure SetPinchHandler(Form: TCustomForm; Handler: TPinchEvent);
 
 implementation
+
+
+procedure FitMacCheckBoxes(Parent: TWinControl);
+{$IFDEF DARWIN}
+var I,J,RightEdge:Integer; C,Other:TControl;
+begin
+  if Parent is TRadioGroup then Parent.ChildSizing.Layout:=cclNone;
+  for I:=0 to Parent.ControlCount-1 do begin
+    C:=Parent.Controls[I];
+    if not C.Visible then Continue;
+    if C is TCustomCheckBox then begin
+      RightEdge:=Parent.ClientWidth-12;
+      for J:=0 to Parent.ControlCount-1 do begin
+        Other:=Parent.Controls[J];
+        if (Other<>C) and Other.Visible and (Other.Left>C.Left) and
+          (Other.Top<C.Top+C.Height) and (C.Top<Other.Top+Other.Height) then
+          if Other.Left-12 < RightEdge then RightEdge:=Other.Left-12;
+      end;
+      C.AutoSize:=False;
+      if C is TRadioButton then C.BorderSpacing.CellAlignHorizontal:=ccaFill;
+      if RightEdge>C.Left then C.Width:=RightEdge-C.Left;
+    end;
+    if C is TWinControl then FitMacCheckBoxes(TWinControl(C));
+  end;
+end;
+{$ELSE}
+begin
+end;
+{$ENDIF}
 
 procedure ExpandMacDialog(Form: TCustomForm; WidthPercent, HeightPercent: Integer);
 {$IFDEF DARWIN}
@@ -116,6 +146,7 @@ begin
         TWinControl(Items[I].Control).EnableAlign;
     Form.EnableAlign;
   end;
+  FitMacCheckBoxes(Form);
 end;
 {$ELSE}
 begin

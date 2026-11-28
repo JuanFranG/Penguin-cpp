@@ -910,5 +910,233 @@
     "result": "On Linux the update flow uses APT; on macOS the full channel keeps the complete environment.",
     "note": "The screenshot shows a real check from 0.5.6. Update controls may be disabled when there is no newer version.",
     "image": "updates.png"
+  },
+  {
+    "id": "project-files",
+    "title": "Project files and build participation",
+    "group": "Projects",
+    "open": "Project → Project Options → Files",
+    "purpose": "Choose which project files are compiled and linked.",
+    "controls": [
+      [
+        "Files",
+        "Select main.cpp, calculator.cpp or calculator.h."
+      ],
+      [
+        "Compile / Link",
+        "Enable both for the two implementation files; the header is not a standalone compilation unit."
+      ],
+      [
+        "Compile as C++",
+        "Use C++ for this example."
+      ]
+    ],
+    "result": "Check both .cpp files participate before building.",
+    "note": "",
+    "image": "project-files.png"
+  },
+  {
+    "id": "project-compiler",
+    "title": "Project compiler configuration",
+    "group": "Projects",
+    "open": "Project → Project Options → Compiler",
+    "purpose": "Select the toolchain and structured build options for this project.",
+    "controls": [
+      [
+        "Compiler set",
+        "Choose the installed native or Windows configuration required by the project."
+      ],
+      [
+        "Options",
+        "Review language, warning, optimisation and debugging choices."
+      ]
+    ],
+    "result": "Select Debug and rebuild before a debugging session.",
+    "note": "",
+    "image": "project-compiler.png"
+  },
+  {
+    "id": "project-flags",
+    "title": "Project compiler and linker flags",
+    "group": "Projects",
+    "open": "Project → Project Options → Parameters",
+    "purpose": "Add arguments specific to this project.",
+    "controls": [
+      [
+        "C compiler",
+        "Additional flags for C sources."
+      ],
+      [
+        "C++ compiler",
+        "The example uses -std=c++17 -Wall -Wextra."
+      ],
+      [
+        "Linker / Add",
+        "Add library or object files and linker arguments here."
+      ]
+    ],
+    "result": "Rebuild and confirm the final commands in Compile Log.",
+    "note": "",
+    "image": "project-flags.png"
+  },
+  {
+    "id": "project-directories",
+    "title": "Project include and library folders",
+    "group": "Projects",
+    "open": "Project → Project Options → Directories",
+    "purpose": "Configure where this project finds external headers and libraries.",
+    "controls": [
+      [
+        "Category",
+        "Select the include or library directory list."
+      ],
+      [
+        "Directory list",
+        "Add folders rather than individual header filenames."
+      ]
+    ],
+    "result": "Prefer relative paths when sharing a project.",
+    "note": "",
+    "image": "project-directories.png"
+  },
+  {
+    "id": "project-output",
+    "title": "Project output folders",
+    "group": "Projects",
+    "open": "Project → Project Options → Output",
+    "purpose": "Keep generated executables and object files organised.",
+    "controls": [
+      [
+        "Output directories",
+        "Choose the locations of generated files."
+      ],
+      [
+        "Output name",
+        "Review a custom executable name when needed."
+      ]
+    ],
+    "result": "Rebuild after changing output locations.",
+    "note": "",
+    "image": "project-output.png"
+  },
+  {
+    "id": "compiler-flags",
+    "title": "Global compiler and linker arguments",
+    "group": "Settings",
+    "open": "Tools → Compiler Options → General",
+    "purpose": "Add arguments to the selected compiler configuration.",
+    "controls": [
+      [
+        "Compiler set",
+        "Check which configuration you are modifying."
+      ],
+      [
+        "Compiler checkbox and field",
+        "Enable the checkbox before entering compiler flags."
+      ],
+      [
+        "Linker checkbox and field",
+        "Enable it for additional linker arguments."
+      ]
+    ],
+    "result": "Use Project Options → Parameters when the change belongs only to one project.",
+    "note": "",
+    "image": "compiler-flags.png"
+  },
+  {
+    "id": "compiler-settings",
+    "title": "Structured compiler settings",
+    "group": "Settings",
+    "open": "Tools → Compiler Options → Settings",
+    "purpose": "Choose compiler options without typing every flag.",
+    "controls": [
+      [
+        "Categories",
+        "Choose a category such as language, warnings or optimisation."
+      ],
+      [
+        "Options and values",
+        "Set only options supported by the selected toolchain and target."
+      ]
+    ],
+    "result": "A flag intended for Windows may not be valid for a native macOS or Linux compiler.",
+    "note": "",
+    "image": "compiler-settings.png"
+  },
+  {
+    "id": "debugger",
+    "title": "Debugger paused inside a function",
+    "group": "Tools",
+    "open": "Execute → Debug; then Continue to the breakpoint in calculator.cpp.",
+    "purpose": "Inspect the actual state of the three-file tutorial program.",
+    "controls": [
+      [
+        "Debug watches",
+        "left = 2, right = 3 and total = 5 at return total."
+      ],
+      [
+        "Active source line",
+        "The highlighted line and arrow show where execution is paused."
+      ],
+      [
+        "Continue / Next line / Into function",
+        "Resume or advance through the program."
+      ],
+      [
+        "Add watch / Evaluate / CPU",
+        "Inspect variables, expressions and low-level state."
+      ]
+    ],
+    "result": "This capture is a real LLDB session, not manually entered watch values.",
+    "note": "",
+    "image": "debugger.png"
+  },
+  {
+    "id": "cpu-active",
+    "title": "CPU registers and call stack while paused",
+    "group": "Tools",
+    "open": "Debug panel → CPU, while stopped in calculator.cpp.",
+    "purpose": "Inspect actual disassembly, ARM64 registers and the call stack.",
+    "controls": [
+      [
+        "Disassemble",
+        "Inspect the add function at the current instruction."
+      ],
+      [
+        "Register / Hex / Dec",
+        "Read register names and numeric values."
+      ],
+      [
+        "Backtrace",
+        "The example stack includes add and main."
+      ]
+    ],
+    "result": "Register values and instruction addresses vary between runs.",
+    "note": "",
+    "image": "cpu-active.png"
+  },
+  {
+    "id": "header",
+    "title": "A header in a multi-file project",
+    "group": "Projects",
+    "open": "Double-click calculator.h in the project tree.",
+    "purpose": "Inspect the declaration shared by main.cpp and calculator.cpp.",
+    "controls": [
+      [
+        "Project tree",
+        "Keep main.cpp, calculator.cpp and calculator.h in the same project."
+      ],
+      [
+        "Header guard",
+        "The preprocessor guard prevents repeated processing within one translation unit."
+      ],
+      [
+        "Function declaration",
+        "The signature must match the implementation in calculator.cpp."
+      ]
+    ],
+    "result": "Include the header in both .cpp files and compile both implementations.",
+    "note": "",
+    "image": "header.png"
   }
 ]

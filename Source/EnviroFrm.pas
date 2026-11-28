@@ -248,6 +248,7 @@ begin
   btnOk.Caption := Lang[ID_BTN_OK];
   btnCancel.Caption := Lang[ID_BTN_CANCEL];
   btnHelp.Caption := Lang[ID_BTN_HELP];
+  btnHelp.Enabled := True;
 
   //Controls
   cbDefCpp.Caption := Lang[ID_ENV_DEFCPP];

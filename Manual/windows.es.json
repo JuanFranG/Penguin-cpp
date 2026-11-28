@@ -1,39 +1,504 @@
 {
-  "welcome": {"title":"Bienvenida","open":"Inicia Penguin cpp sin documentos abiertos.","purpose":"Empieza una sesión, vuelve a abrir archivos recientes o accede a las preferencias principales.","controls":["Crea un archivo de código.","Abre un archivo o proyecto existente.","Accede a las categorías de configuración.","Ajusta el aspecto y el idioma de la interfaz."],"result":"Abre un documento para pasar al editor."},
-  "workspace": {"title":"Ventana principal","open":"Abre un archivo de código o un proyecto.","purpose":"Escribe código, navega por un proyecto, compílalo y consulta los mensajes del compilador.","controls":["Selecciona la configuración y las acciones de compilación.","Cambia el panel izquierdo entre archivos, símbolos y variables vigiladas.","Cambia de archivo, pliega bloques y gestiona puntos de interrupción.","Consulta errores, salida de compilación, depuración y resultados de búsqueda."],"result":"Haz doble clic en un error del compilador para ir a su línea de código.","note":"En macOS, File, Edit, Search y los demás menús están en la barra del sistema, por encima de la ventana."},
-  "new-project": {"title":"Nuevo proyecto","purpose":"Crea un proyecto a partir de una plantilla.","controls":["Elige una estructura inicial adecuada para el destino.","Asigna un nombre antes de guardar el archivo .dev.","Elige el lenguaje cuando la plantilla ofrezca esa posibilidad."],"result":"Guarda el proyecto en su propia carpeta. Las plantillas no instalan SDK externos."},
-  "project-options": {"title":"Opciones del proyecto","purpose":"Configura el proyecto actual, en lugar de todo el IDE.","controls":["Nombre y tipo de proyecto.","Opciones de compilación y enlazado por archivo, y prioridad de construcción.","Opciones del compilador y argumentos adicionales de compilación o enlazado.","Carpetas de inclusión y bibliotecas, construcción personalizada y ubicaciones de salida."],"result":"OK aplica la copia de trabajo. Cancel descarta los cambios de este diálogo.","note":"Los metadatos heredados de Windows no hacen que una compilación nativa de macOS/Linux admita todos sus recursos."},
-  "editor-options": {"title":"Opciones del editor","purpose":"Controla el comportamiento de edición y la presentación del código.","controls":["Sangría, tabulaciones, navegación y comportamiento de edición.","Fuente del código, margen de números y colores de sintaxis.","Código reutilizable, autocompletado e inserción de símbolos.","Configura el guardado automático; conserva copias de tus trabajos importantes."],"result":"OK aplica las opciones. Cancel mantiene tus preferencias guardadas."},
-  "editor-fonts": {"title":"Fuentes y números de línea","purpose":"Elige una fuente monoespaciada legible y configura el margen de números.","controls":["Selecciona una familia instalada y un tamaño de entre 6 y 72 puntos.","Muestra el margen y los números de línea.","Ajusta el espacio a los dígitos automáticamente o establece un mínimo.","Cambia la presentación de la numeración."],"result":"Los números siguen la fuente y el zoom del editor.","note":"El editor nativo desactiva una fuente independiente para el margen. El interruptor de ligaduras heredado no está conectado al renderizado en 0.5.6; no dependas de él."},
-  "environment": {"title":"Opciones del entorno","purpose":"Ajusta el comportamiento general del IDE, la terminal y la interfaz.","controls":["Pausa de la consola, copias de seguridad y comportamiento de las ventanas.","Cambia el texto de la interfaz, no la fuente del código.","Elige Automatic o una terminal instalada para los programas de consola.","Revisa las categorías disponibles antes de aplicar cambios."],"result":"Usa Editor Options para cambiar la fuente de los archivos de código."},
-  "compiler": {"title":"Opciones del compilador","purpose":"Gestiona las configuraciones de compilación y sus herramientas.","controls":["Selecciona una configuración Release, Debug o Profiling.","Elige opciones de lenguaje, advertencias, optimización y depuración.","Define las rutas de búsqueda de ejecutables, cabeceras y bibliotecas.","Comprueba los nombres de los ejecutables del compilador, make y depurador."],"result":"Selecciona la configuración deseada en la barra principal antes de compilar.","note":"Una biblioteca también necesita cabeceras, binarios, arquitectura y argumentos de enlazado compatibles; añadir una ruta de inclusión no basta."},
-  "find": {"title":"Buscar y reemplazar","purpose":"Localiza texto o reemplaza coincidencias dentro de un ámbito controlado.","controls":["Elige búsqueda, reemplazo o búsqueda en varios archivos.","Introduce el texto buscado y, al reemplazar, el texto nuevo.","Distingue mayúsculas o busca palabras completas cuando lo necesites.","Limita la operación a una selección, al archivo actual, a los abiertos o al proyecto."],"result":"Revisa las coincidencias antes de reemplazar en varios archivos. Guarda o respalda los archivos importantes."},
-  "go-to-line": {"title":"Ir a una línea","purpose":"Salta directamente a un número de línea.","controls":["Introduce la línea indicada por el compilador u otra persona.","Mueve el cursor a esa línea."],"result":"El documento no se modifica."},
-  "file-properties": {"title":"Propiedades del archivo","purpose":"Consulta información del archivo de código seleccionado.","controls":["Elige un archivo si hay varios disponibles.","Comprueba qué archivo estás consultando.","Consulta los recuentos de líneas y caracteres que muestra el diálogo."],"result":"Confirma la identidad del archivo antes de investigar un problema de compilación."},
-  "arguments": {"title":"Parámetros del programa","purpose":"Proporciona argumentos al programa o una aplicación anfitriona para un proyecto de biblioteca.","controls":["Argumentos que recibe el programa al ejecutarse.","Ejecutable que carga una biblioteca dinámica, cuando corresponda.","Selecciona un ejecutable anfitrión existente."],"result":"Los argumentos no son opciones del compilador ni texto introducido por la entrada estándar.","note":"Un programa de consola normal no suele necesitar una aplicación anfitriona."},
-  "cpu": {"title":"Ventana CPU","open":"Con la depuración pausada, usa el botón de la ventana CPU en el panel Debug.","purpose":"Consulta información de bajo nivel del depurador.","controls":["Instrucciones de máquina cercanas a la posición detenida.","Nombres y valores de registros informados por el depurador.","Marcos de llamadas que conducen a la detención actual.","Elige una sintaxis de ensamblador admitida por el motor."],"result":"Detén el programa en un punto de interrupción para obtener datos reales.","note":"La captura muestra la vista inactiva. La depuración de ejecutables Windows sigue siendo una limitación independiente del entorno de compatibilidad."},
-  "profiler": {"title":"Análisis de ejecución","purpose":"Consulta las mediciones de un programa nativo instrumentado.","controls":["Ordena y compara las funciones registradas por el analizador.","Oculta funciones sin uso o estáticas y cambia el mínimo de llamadas.","Actualiza los resultados con los filtros seleccionados."],"result":"Selecciona Profiling, reconstruye y ejecuta el programa primero.","note":"En macOS la vista LLVM cuenta llamadas; no mide tiempos ni muestra el grafo de gprof. La captura contiene resultados reales del programa de ejemplo."},
-  "tools": {"title":"Configuración de herramientas","purpose":"Guarda accesos a programas externos.","controls":["Selecciona una herramienta configurada.","Añade, edita o elimina entradas.","Cambia su orden en el menú."],"result":"Crear una entrada no instala el programa al que apunta."},
-  "edit-tool": {"title":"Editar una herramienta","purpose":"Define cómo se debe iniciar un programa externo.","controls":["Etiqueta que aparece en el menú Tools.","Ejecutable y carpeta en la que se iniciará.","Argumentos del ejecutable.","Inserta valores dependientes del proyecto o archivo."],"result":"Comprueba las rutas y los argumentos antes de iniciar una herramienta que modifique archivos."},
-  "windows": {"title":"Lista de ventanas","purpose":"Cambia entre los documentos abiertos en el editor.","controls":["Selecciona un documento abierto.","Usa el nombre y la ubicación para distinguir los archivos.","Activa el editor seleccionado."],"result":"Esta lista no explora archivos del disco que aún no estén abiertos."},
-  "add-todo": {"title":"Añadir una tarea TODO","open":"Usa la acción de inserción de TODO del editor.","purpose":"Anota una tarea pendiente en el código.","controls":["Explica qué queda por hacer.","Asigna una prioridad relativa.","Indica una persona responsable si lo deseas."],"result":"Al confirmar se inserta un comentario; no se crea una incidencia en GitHub."},
-  "todo": {"title":"Lista de tareas TODO","purpose":"Localiza comentarios de tareas dentro del ámbito seleccionado.","controls":["Elige qué comentarios de tareas mostrar.","Consulta descripciones, ubicaciones y prioridades.","Actualiza la lista y salta al código de una tarea."],"result":"El programa de ejemplo incluye un comentario TODO para que la lista tenga código real que consultar."},
-  "template": {"title":"Crear una plantilla desde un proyecto","open":"File → New → Template, con un proyecto abierto.","purpose":"Reutiliza la estructura de un proyecto en otros futuros.","controls":["Nombre, descripción y categoría.","Elige los archivos del proyecto que incluirás.","Revisa las opciones de compilación de la plantilla.","Guarda la plantilla cuando los campos obligatorios estén completos."],"result":"Las plantillas reutilizan una estructura; no incluyen todas las dependencias externas.","note":"El diálogo independiente de biblioteca de iconos tiene un problema heredado de carga de recursos en 0.5.6. No dependas de ese selector auxiliar."},
-  "new-class": {"title":"Nueva clase","open":"File → New → Class; también disponible en el menú contextual del panel Classes.","purpose":"Prepara una declaración de clase C++ mediante las herramientas del explorador de clases.","controls":["Define la clase nueva y una clase base opcional.","Usa los selectores disponibles para el proyecto actual.","Revisa las opciones de generación que ofrece la herramienta."],"result":"Revisa el código generado y su destino antes de guardar.","note":"La disponibilidad depende del proyecto y la selección del explorador de clases. No es una herramienta general de refactorización."},
-  "new-function": {"title":"Nueva función","open":"Panel Classes → menú contextual → acción de creación de funciones.","purpose":"Prepara una función o un miembro de clase.","controls":["Define la firma de la función.","Introduce su lista de parámetros.","Selecciona una clase y un nivel de acceso cuando estén disponibles."],"result":"Revisa la declaración y la implementación tras insertarlas."},
-  "new-variable": {"title":"Nueva variable","open":"Panel Classes → menú contextual → acción de creación de variables.","purpose":"Prepara una variable o un miembro de clase.","controls":["Define la variable nueva.","Elige el contexto de la declaración.","Solicita funciones de acceso cuando la herramienta las ofrezca."],"result":"Revisa los nombres y el código generados antes de guardar."},
-  "functions": {"title":"Ir a una función","purpose":"Navega por las funciones analizadas en el código actual.","controls":["Reduce la lista de símbolos.","Elige una declaración o definición.","Lleva el editor a la función seleccionada."],"result":"Guarda código válido y deja que el analizador se actualice si falta un símbolo."},
-  "remove-file": {"title":"Quitar archivos del proyecto","purpose":"Quita las unidades seleccionadas del proyecto actual.","controls":["Selecciona las entradas del proyecto que quieras quitar.","Confirma la acción de eliminación."],"result":"Comprueba las entradas seleccionadas antes de confirmar.","note":"Conserva una copia de los archivos que quieras mantener; quitar entradas del proyecto no sustituye la comprobación de los archivos del disco."},
-  "print": {"title":"Imprimir un archivo","purpose":"Configura la impresión o exportación PDF del código.","controls":["Elige la presentación de la salida.","Incluye u omite los números de línea.","Controla el ajuste de las líneas largas.","Continúa al flujo disponible de PDF o impresora."],"result":"Revisa el PDF o la vista previa antes de compartirlos.","note":"La configuración depende del sistema operativo y las impresoras instaladas; la captura muestra las opciones disponibles en este Mac."},
-  "incremental-find": {"title":"Búsqueda incremental","purpose":"Busca mientras escribes en una pequeña barra flotante.","controls":["Escribe para desplazarte a coincidencias.","Usa las teclas de navegación disponibles y cierra la barra al terminar."],"result":"Usa el diálogo completo de búsqueda para reemplazar texto o buscar en varios archivos."},
-  "tips": {"title":"Consejo del día","purpose":"Lee consejos breves de uso.","controls":["Recorre los consejos.","Elige si este diálogo aparece automáticamente al iniciar."],"result":"Algunos consejos describen comportamientos heredados del editor; consulta este manual para los límites actuales de cada plataforma."},
-  "astyle": {"title":"Opciones de Artistic Style","purpose":"Elige cómo astyle da formato al código.","controls":["Selecciona un estilo de llaves y sangría.","Ajusta espacios, sangría y otras reglas.","Compara el ejemplo antes de aplicar el estilo."],"result":"Usa Formatting → AStyle → Format Current File para dar formato al archivo activo. Puedes deshacer el formato aplicado en el editor."},
-  "clang-format": {"title":"Opciones de ClangFormat","purpose":"Configura el formateador opcional clang-format.","controls":["Parte de un estilo de formato admitido.","Ajusta sangría, llaves, espacios y longitud de línea.","Disponible cuando se encuentra el ejecutable del formateador."],"result":"Instala o configura clang-format para obtener una vista previa real.","note":"clang-format no estaba instalado en el entorno de captura. El formateador predeterminado incluido en macOS es astyle; no ejecutes órdenes apt en macOS."},
-  "attach-process": {"title":"Adjuntar a un proceso","purpose":"Selecciona un proceso que ya se esté ejecutando para depurarlo de forma nativa.","controls":["Comprueba el nombre y el PID antes de seleccionar el proceso.","Solicita al depurador configurado que se adjunte."],"result":"Usa un proceso propio compilado con información de depuración.","note":"Los permisos y la firma de macOS pueden impedir la conexión. Esto no permite depurar cualquier programa Windows mediante Wine."},
-  "first-run": {"title":"Configuración inicial","open":"Asistente de configuración inicial; para cambios posteriores también puedes usar las acciones de bienvenida.","purpose":"Elige el idioma de la interfaz, el aspecto y la fuente del código.","controls":["Selecciona el idioma de la aplicación.","Elige entre el aspecto y los esquemas de sintaxis disponibles.","Selecciona una familia monoespaciada instalada."],"result":"Este manual está en español y mantiene las capturas de la aplicación en inglés."},
-  "about": {"title":"Acerca de Penguin cpp","open":"Help → About Penguin cpp; en macOS, consulta también el menú de la aplicación.","purpose":"Consulta la versión instalada y los créditos del proyecto.","controls":["Identifica la compilación que utilizas.","Consulta la autoría del proyecto y los créditos de desarrollo.","Abre el proyecto, las notas de versión y la documentación de la licencia."],"result":"Incluye la versión al informar de un problema."},
-  "windows-compatibility": {"title":"Compatibilidad con Windows","purpose":"Elige cuándo compilar y ejecutar programas para Windows.","controls":["Permite que las cabeceras orienten la selección del destino o elígelo explícitamente.","Compila y ejecuta la prueba del entorno cuando las herramientas estén disponibles.","Elige salida Unicode UTF-8, OEM 437, ANSI 1252 o controlada por el programa.","Personaliza las rutas del compilador, motor y entorno privado solo cuando lo necesites."],"result":"Guarda la selección y usa Compile & Run. Reconstruye después de cambiar el perfil de consola.","note":"El PKG/DMG completo de macOS incluye LLVM-MinGW, Make y Wine ARM64/FEX. La compatibilidad es experimental; graphics.h/WinBGIm y la depuración Windows no están totalmente cubiertos."},
-  "setup-working": {"title":"Preparación de la compatibilidad Windows","open":"El entorno completo inicia automáticamente su comprobación en el primer uso.","purpose":"Prepara un entorno Windows privado y comprueba el compilador y el motor incluidos antes de compilar tu programa.","controls":["Muestran la comprobación actual. Crear el entorno privado puede tardar la primera vez.","Detiene la preparación si necesitas volver al editor."],"result":"Espera a Environment ready. Si la preparación falla, lee los detalles, corrige la causa y reintenta.","note":"La captura utiliza las herramientas incluidas reales y un entorno desechable. La preparación no descarga Apple GPTK ni acepta su licencia."},
-  "setup-ready": {"title":"Entorno listo","open":"Aparece cuando la comprobación inicial del entorno termina correctamente.","purpose":"Confirma que el compilador incluido generó el programa de prueba y el motor lo ejecutó correctamente.","controls":["La ventana de preparación se cierra automáticamente después de confirmar este estado."],"result":"Usa Compile & Run para un programa destinado a Windows. Se utilizará este entorno privado ya preparado.","note":"Superar la prueba inicial no garantiza que se admitan todas las API de Windows, bibliotecas gráficas o SDK externos."},
-  "updates": {"title":"Buscar actualizaciones","purpose":"Compara la versión instalada con la última versión publicada en GitHub.","controls":["Indica si hay una actualización o si falló la conexión.","Instala mediante el flujo admitido por la plataforma o abre la descarga de la versión.","Vuelve a comprobar después de un problema de conexión.","Consulta los cambios y límites conocidos antes de actualizar."],"result":"En Linux se actualiza mediante APT; en macOS el canal completo conserva el entorno de compatibilidad.","note":"La captura muestra una comprobación real desde 0.5.6. Los controles de actualización pueden estar desactivados si no hay una versión posterior."}
+  "welcome": {
+    "title": "Bienvenida",
+    "open": "Inicia Penguin cpp sin documentos abiertos.",
+    "purpose": "Empieza una sesión, vuelve a abrir archivos recientes o accede a las preferencias principales.",
+    "controls": [
+      "Crea un archivo de código.",
+      "Abre un archivo o proyecto existente.",
+      "Accede a las categorías de configuración.",
+      "Ajusta el aspecto y el idioma de la interfaz."
+    ],
+    "result": "Abre un documento para pasar al editor."
+  },
+  "workspace": {
+    "title": "Ventana principal",
+    "open": "Abre un archivo de código o un proyecto.",
+    "purpose": "Escribe código, navega por un proyecto, compílalo y consulta los mensajes del compilador.",
+    "controls": [
+      "Selecciona la configuración y las acciones de compilación.",
+      "Cambia el panel izquierdo entre archivos, símbolos y variables vigiladas.",
+      "Cambia de archivo, pliega bloques y gestiona puntos de interrupción.",
+      "Consulta errores, salida de compilación, depuración y resultados de búsqueda."
+    ],
+    "result": "Haz doble clic en un error del compilador para ir a su línea de código.",
+    "note": "En macOS, File, Edit, Search y los demás menús están en la barra del sistema, por encima de la ventana."
+  },
+  "new-project": {
+    "title": "Nuevo proyecto",
+    "purpose": "Crea un proyecto a partir de una plantilla.",
+    "controls": [
+      "Elige una estructura inicial adecuada para el destino.",
+      "Asigna un nombre antes de guardar el archivo .dev.",
+      "Elige el lenguaje cuando la plantilla ofrezca esa posibilidad."
+    ],
+    "result": "Guarda el proyecto en su propia carpeta. Las plantillas no instalan SDK externos."
+  },
+  "project-options": {
+    "title": "Opciones del proyecto",
+    "purpose": "Configura el proyecto actual, en lugar de todo el IDE.",
+    "controls": [
+      "Nombre y tipo de proyecto.",
+      "Opciones de compilación y enlazado por archivo, y prioridad de construcción.",
+      "Opciones del compilador y argumentos adicionales de compilación o enlazado.",
+      "Carpetas de inclusión y bibliotecas, construcción personalizada y ubicaciones de salida."
+    ],
+    "result": "OK aplica la copia de trabajo. Cancel descarta los cambios de este diálogo.",
+    "note": "Los metadatos heredados de Windows no hacen que una compilación nativa de macOS/Linux admita todos sus recursos."
+  },
+  "editor-options": {
+    "title": "Opciones del editor",
+    "purpose": "Controla el comportamiento de edición y la presentación del código.",
+    "controls": [
+      "Sangría, tabulaciones, navegación y comportamiento de edición.",
+      "Fuente del código, margen de números y colores de sintaxis.",
+      "Código reutilizable, autocompletado e inserción de símbolos.",
+      "Configura el guardado automático; conserva copias de tus trabajos importantes."
+    ],
+    "result": "OK aplica las opciones. Cancel mantiene tus preferencias guardadas."
+  },
+  "editor-fonts": {
+    "title": "Fuentes y números de línea",
+    "purpose": "Elige una fuente monoespaciada legible y configura el margen de números.",
+    "controls": [
+      "Selecciona una familia instalada y un tamaño de entre 6 y 72 puntos.",
+      "Muestra el margen y los números de línea.",
+      "Ajusta el espacio a los dígitos automáticamente o establece un mínimo.",
+      "Cambia la presentación de la numeración."
+    ],
+    "result": "Los números siguen la fuente y el zoom del editor.",
+    "note": "El editor nativo desactiva una fuente independiente para el margen. El interruptor de ligaduras heredado no está conectado al renderizado en 0.5.6; no dependas de él."
+  },
+  "environment": {
+    "title": "Opciones del entorno",
+    "purpose": "Ajusta el comportamiento general del IDE, la terminal y la interfaz.",
+    "controls": [
+      "Pausa de la consola, copias de seguridad y comportamiento de las ventanas.",
+      "Cambia el texto de la interfaz, no la fuente del código.",
+      "Elige Automatic o una terminal instalada para los programas de consola.",
+      "Revisa las categorías disponibles antes de aplicar cambios."
+    ],
+    "result": "Usa Editor Options para cambiar la fuente de los archivos de código."
+  },
+  "compiler": {
+    "title": "Opciones del compilador",
+    "purpose": "Gestiona las configuraciones de compilación y sus herramientas.",
+    "controls": [
+      "Selecciona una configuración Release, Debug o Profiling.",
+      "Elige opciones de lenguaje, advertencias, optimización y depuración.",
+      "Define las rutas de búsqueda de ejecutables, cabeceras y bibliotecas.",
+      "Comprueba los nombres de los ejecutables del compilador, make y depurador."
+    ],
+    "result": "Selecciona la configuración deseada en la barra principal antes de compilar.",
+    "note": "Una biblioteca también necesita cabeceras, binarios, arquitectura y argumentos de enlazado compatibles; añadir una ruta de inclusión no basta."
+  },
+  "find": {
+    "title": "Buscar y reemplazar",
+    "purpose": "Localiza texto o reemplaza coincidencias dentro de un ámbito controlado.",
+    "controls": [
+      "Elige búsqueda, reemplazo o búsqueda en varios archivos.",
+      "Introduce el texto buscado y, al reemplazar, el texto nuevo.",
+      "Distingue mayúsculas o busca palabras completas cuando lo necesites.",
+      "Limita la operación a una selección, al archivo actual, a los abiertos o al proyecto."
+    ],
+    "result": "Revisa las coincidencias antes de reemplazar en varios archivos. Guarda o respalda los archivos importantes."
+  },
+  "go-to-line": {
+    "title": "Ir a una línea",
+    "purpose": "Salta directamente a un número de línea.",
+    "controls": [
+      "Introduce la línea indicada por el compilador u otra persona.",
+      "Mueve el cursor a esa línea."
+    ],
+    "result": "El documento no se modifica."
+  },
+  "file-properties": {
+    "title": "Propiedades del archivo",
+    "purpose": "Consulta información del archivo de código seleccionado.",
+    "controls": [
+      "Elige un archivo si hay varios disponibles.",
+      "Comprueba qué archivo estás consultando.",
+      "Consulta los recuentos de líneas y caracteres que muestra el diálogo."
+    ],
+    "result": "Confirma la identidad del archivo antes de investigar un problema de compilación."
+  },
+  "arguments": {
+    "title": "Parámetros del programa",
+    "purpose": "Proporciona argumentos al programa o una aplicación anfitriona para un proyecto de biblioteca.",
+    "controls": [
+      "Argumentos que recibe el programa al ejecutarse.",
+      "Ejecutable que carga una biblioteca dinámica, cuando corresponda.",
+      "Selecciona un ejecutable anfitrión existente."
+    ],
+    "result": "Los argumentos no son opciones del compilador ni texto introducido por la entrada estándar.",
+    "note": "Un programa de consola normal no suele necesitar una aplicación anfitriona."
+  },
+  "cpu": {
+    "title": "Ventana CPU",
+    "open": "Con la depuración pausada, usa el botón de la ventana CPU en el panel Debug.",
+    "purpose": "Consulta información de bajo nivel del depurador.",
+    "controls": [
+      "Instrucciones de máquina cercanas a la posición detenida.",
+      "Nombres y valores de registros informados por el depurador.",
+      "Marcos de llamadas que conducen a la detención actual.",
+      "Elige una sintaxis de ensamblador admitida por el motor."
+    ],
+    "result": "Detén el programa en un punto de interrupción para obtener datos reales.",
+    "note": "La captura muestra la vista inactiva. La depuración de ejecutables Windows sigue siendo una limitación independiente del entorno de compatibilidad."
+  },
+  "profiler": {
+    "title": "Análisis de ejecución",
+    "purpose": "Consulta las mediciones de un programa nativo instrumentado.",
+    "controls": [
+      "Ordena y compara las funciones registradas por el analizador.",
+      "Oculta funciones sin uso o estáticas y cambia el mínimo de llamadas.",
+      "Actualiza los resultados con los filtros seleccionados."
+    ],
+    "result": "Selecciona Profiling, reconstruye y ejecuta el programa primero.",
+    "note": "En macOS la vista LLVM cuenta llamadas; no mide tiempos ni muestra el grafo de gprof. La captura contiene resultados reales del programa de ejemplo."
+  },
+  "tools": {
+    "title": "Configuración de herramientas",
+    "purpose": "Guarda accesos a programas externos.",
+    "controls": [
+      "Selecciona una herramienta configurada.",
+      "Añade, edita o elimina entradas.",
+      "Cambia su orden en el menú."
+    ],
+    "result": "Crear una entrada no instala el programa al que apunta."
+  },
+  "edit-tool": {
+    "title": "Editar una herramienta",
+    "purpose": "Define cómo se debe iniciar un programa externo.",
+    "controls": [
+      "Etiqueta que aparece en el menú Tools.",
+      "Ejecutable y carpeta en la que se iniciará.",
+      "Argumentos del ejecutable.",
+      "Inserta valores dependientes del proyecto o archivo."
+    ],
+    "result": "Comprueba las rutas y los argumentos antes de iniciar una herramienta que modifique archivos."
+  },
+  "windows": {
+    "title": "Lista de ventanas",
+    "purpose": "Cambia entre los documentos abiertos en el editor.",
+    "controls": [
+      "Selecciona un documento abierto.",
+      "Usa el nombre y la ubicación para distinguir los archivos.",
+      "Activa el editor seleccionado."
+    ],
+    "result": "Esta lista no explora archivos del disco que aún no estén abiertos."
+  },
+  "add-todo": {
+    "title": "Añadir una tarea TODO",
+    "open": "Usa la acción de inserción de TODO del editor.",
+    "purpose": "Anota una tarea pendiente en el código.",
+    "controls": [
+      "Explica qué queda por hacer.",
+      "Asigna una prioridad relativa.",
+      "Indica una persona responsable si lo deseas."
+    ],
+    "result": "Al confirmar se inserta un comentario; no se crea una incidencia en GitHub."
+  },
+  "todo": {
+    "title": "Lista de tareas TODO",
+    "purpose": "Localiza comentarios de tareas dentro del ámbito seleccionado.",
+    "controls": [
+      "Elige qué comentarios de tareas mostrar.",
+      "Consulta descripciones, ubicaciones y prioridades.",
+      "Actualiza la lista y salta al código de una tarea."
+    ],
+    "result": "El programa de ejemplo incluye un comentario TODO para que la lista tenga código real que consultar."
+  },
+  "template": {
+    "title": "Crear una plantilla desde un proyecto",
+    "open": "File → New → Template, con un proyecto abierto.",
+    "purpose": "Reutiliza la estructura de un proyecto en otros futuros.",
+    "controls": [
+      "Nombre, descripción y categoría.",
+      "Elige los archivos del proyecto que incluirás.",
+      "Revisa las opciones de compilación de la plantilla.",
+      "Guarda la plantilla cuando los campos obligatorios estén completos."
+    ],
+    "result": "Las plantillas reutilizan una estructura; no incluyen todas las dependencias externas.",
+    "note": "El diálogo independiente de biblioteca de iconos tiene un problema heredado de carga de recursos en 0.5.6. No dependas de ese selector auxiliar."
+  },
+  "new-class": {
+    "title": "Nueva clase",
+    "open": "File → New → Class; también disponible en el menú contextual del panel Classes.",
+    "purpose": "Prepara una declaración de clase C++ mediante las herramientas del explorador de clases.",
+    "controls": [
+      "Define la clase nueva y una clase base opcional.",
+      "Usa los selectores disponibles para el proyecto actual.",
+      "Revisa las opciones de generación que ofrece la herramienta."
+    ],
+    "result": "Revisa el código generado y su destino antes de guardar.",
+    "note": "La disponibilidad depende del proyecto y la selección del explorador de clases. No es una herramienta general de refactorización."
+  },
+  "new-function": {
+    "title": "Nueva función",
+    "open": "Panel Classes → menú contextual → acción de creación de funciones.",
+    "purpose": "Prepara una función o un miembro de clase.",
+    "controls": [
+      "Define la firma de la función.",
+      "Introduce su lista de parámetros.",
+      "Selecciona una clase y un nivel de acceso cuando estén disponibles."
+    ],
+    "result": "Revisa la declaración y la implementación tras insertarlas."
+  },
+  "new-variable": {
+    "title": "Nueva variable",
+    "open": "Panel Classes → menú contextual → acción de creación de variables.",
+    "purpose": "Prepara una variable o un miembro de clase.",
+    "controls": [
+      "Define la variable nueva.",
+      "Elige el contexto de la declaración.",
+      "Solicita funciones de acceso cuando la herramienta las ofrezca."
+    ],
+    "result": "Revisa los nombres y el código generados antes de guardar."
+  },
+  "functions": {
+    "title": "Ir a una función",
+    "purpose": "Navega por las funciones analizadas en el código actual.",
+    "controls": [
+      "Reduce la lista de símbolos.",
+      "Elige una declaración o definición.",
+      "Lleva el editor a la función seleccionada."
+    ],
+    "result": "Guarda código válido y deja que el analizador se actualice si falta un símbolo."
+  },
+  "remove-file": {
+    "title": "Quitar archivos del proyecto",
+    "purpose": "Quita las unidades seleccionadas del proyecto actual.",
+    "controls": [
+      "Selecciona las entradas del proyecto que quieras quitar.",
+      "Confirma la acción de eliminación."
+    ],
+    "result": "Comprueba las entradas seleccionadas antes de confirmar.",
+    "note": "Conserva una copia de los archivos que quieras mantener; quitar entradas del proyecto no sustituye la comprobación de los archivos del disco."
+  },
+  "print": {
+    "title": "Imprimir un archivo",
+    "purpose": "Configura la impresión o exportación PDF del código.",
+    "controls": [
+      "Elige la presentación de la salida.",
+      "Incluye u omite los números de línea.",
+      "Controla el ajuste de las líneas largas.",
+      "Continúa al flujo disponible de PDF o impresora."
+    ],
+    "result": "Revisa el PDF o la vista previa antes de compartirlos.",
+    "note": "La configuración depende del sistema operativo y las impresoras instaladas; la captura muestra las opciones disponibles en este Mac."
+  },
+  "incremental-find": {
+    "title": "Búsqueda incremental",
+    "purpose": "Busca mientras escribes en una pequeña barra flotante.",
+    "controls": [
+      "Escribe para desplazarte a coincidencias.",
+      "Usa las teclas de navegación disponibles y cierra la barra al terminar."
+    ],
+    "result": "Usa el diálogo completo de búsqueda para reemplazar texto o buscar en varios archivos."
+  },
+  "tips": {
+    "title": "Consejo del día",
+    "purpose": "Lee consejos breves de uso.",
+    "controls": [
+      "Recorre los consejos.",
+      "Elige si este diálogo aparece automáticamente al iniciar."
+    ],
+    "result": "Algunos consejos describen comportamientos heredados del editor; consulta este manual para los límites actuales de cada plataforma."
+  },
+  "astyle": {
+    "title": "Opciones de Artistic Style",
+    "purpose": "Elige cómo astyle da formato al código.",
+    "controls": [
+      "Selecciona un estilo de llaves y sangría.",
+      "Ajusta espacios, sangría y otras reglas.",
+      "Compara el ejemplo antes de aplicar el estilo."
+    ],
+    "result": "Usa Formatting → AStyle → Format Current File para dar formato al archivo activo. Puedes deshacer el formato aplicado en el editor."
+  },
+  "clang-format": {
+    "title": "Opciones de ClangFormat",
+    "purpose": "Configura el formateador opcional clang-format.",
+    "controls": [
+      "Parte de un estilo de formato admitido.",
+      "Ajusta sangría, llaves, espacios y longitud de línea.",
+      "Disponible cuando se encuentra el ejecutable del formateador."
+    ],
+    "result": "Instala o configura clang-format para obtener una vista previa real.",
+    "note": "clang-format no estaba instalado en el entorno de captura. El formateador predeterminado incluido en macOS es astyle; no ejecutes órdenes apt en macOS."
+  },
+  "attach-process": {
+    "title": "Adjuntar a un proceso",
+    "purpose": "Selecciona un proceso que ya se esté ejecutando para depurarlo de forma nativa.",
+    "controls": [
+      "Comprueba el nombre y el PID antes de seleccionar el proceso.",
+      "Solicita al depurador configurado que se adjunte."
+    ],
+    "result": "Usa un proceso propio compilado con información de depuración.",
+    "note": "Los permisos y la firma de macOS pueden impedir la conexión. Esto no permite depurar cualquier programa Windows mediante Wine."
+  },
+  "first-run": {
+    "title": "Configuración inicial",
+    "open": "Asistente de configuración inicial; para cambios posteriores también puedes usar las acciones de bienvenida.",
+    "purpose": "Elige el idioma de la interfaz, el aspecto y la fuente del código.",
+    "controls": [
+      "Selecciona el idioma de la aplicación.",
+      "Elige entre el aspecto y los esquemas de sintaxis disponibles.",
+      "Selecciona una familia monoespaciada instalada."
+    ],
+    "result": "Este manual está en español y mantiene las capturas de la aplicación en inglés."
+  },
+  "about": {
+    "title": "Acerca de Penguin cpp",
+    "open": "Help → About Penguin cpp; en macOS, consulta también el menú de la aplicación.",
+    "purpose": "Consulta la versión instalada y los créditos del proyecto.",
+    "controls": [
+      "Identifica la compilación que utilizas.",
+      "Consulta la autoría del proyecto y los créditos de desarrollo.",
+      "Abre el proyecto, las notas de versión y la documentación de la licencia."
+    ],
+    "result": "Incluye la versión al informar de un problema."
+  },
+  "windows-compatibility": {
+    "title": "Compatibilidad con Windows",
+    "purpose": "Elige cuándo compilar y ejecutar programas para Windows.",
+    "controls": [
+      "Permite que las cabeceras orienten la selección del destino o elígelo explícitamente.",
+      "Compila y ejecuta la prueba del entorno cuando las herramientas estén disponibles.",
+      "Elige salida Unicode UTF-8, OEM 437, ANSI 1252 o controlada por el programa.",
+      "Personaliza las rutas del compilador, motor y entorno privado solo cuando lo necesites."
+    ],
+    "result": "Guarda la selección y usa Compile & Run. Reconstruye después de cambiar el perfil de consola.",
+    "note": "El PKG/DMG completo de macOS incluye LLVM-MinGW, Make y Wine ARM64/FEX. La compatibilidad es experimental; graphics.h/WinBGIm y la depuración Windows no están totalmente cubiertos."
+  },
+  "setup-working": {
+    "title": "Preparación de la compatibilidad Windows",
+    "open": "El entorno completo inicia automáticamente su comprobación en el primer uso.",
+    "purpose": "Prepara un entorno Windows privado y comprueba el compilador y el motor incluidos antes de compilar tu programa.",
+    "controls": [
+      "Muestran la comprobación actual. Crear el entorno privado puede tardar la primera vez.",
+      "Detiene la preparación si necesitas volver al editor."
+    ],
+    "result": "Espera a Environment ready. Si la preparación falla, lee los detalles, corrige la causa y reintenta.",
+    "note": "La captura utiliza las herramientas incluidas reales y un entorno desechable. La preparación no descarga Apple GPTK ni acepta su licencia."
+  },
+  "setup-ready": {
+    "title": "Entorno listo",
+    "open": "Aparece cuando la comprobación inicial del entorno termina correctamente.",
+    "purpose": "Confirma que el compilador incluido generó el programa de prueba y el motor lo ejecutó correctamente.",
+    "controls": [
+      "La ventana de preparación se cierra automáticamente después de confirmar este estado."
+    ],
+    "result": "Usa Compile & Run para un programa destinado a Windows. Se utilizará este entorno privado ya preparado.",
+    "note": "Superar la prueba inicial no garantiza que se admitan todas las API de Windows, bibliotecas gráficas o SDK externos."
+  },
+  "updates": {
+    "title": "Buscar actualizaciones",
+    "purpose": "Compara la versión instalada con la última versión publicada en GitHub.",
+    "controls": [
+      "Indica si hay una actualización o si falló la conexión.",
+      "Instala mediante el flujo admitido por la plataforma o abre la descarga de la versión.",
+      "Vuelve a comprobar después de un problema de conexión.",
+      "Consulta los cambios y límites conocidos antes de actualizar."
+    ],
+    "result": "En Linux se actualiza mediante APT; en macOS el canal completo conserva el entorno de compatibilidad.",
+    "note": "La captura muestra una comprobación real desde 0.5.6. Los controles de actualización pueden estar desactivados si no hay una versión posterior."
+  },
+  "project-files": {
+    "title": "Archivos y participación en la compilación",
+    "purpose": "Elige qué archivos del proyecto se compilan y enlazan.",
+    "controls": [
+      "Selecciona main.cpp, calculator.cpp o calculator.h.",
+      "Activa ambas opciones para los dos archivos de implementación; la cabecera no es una unidad independiente.",
+      "Usa C++ para este ejemplo."
+    ],
+    "result": "Comprueba que participan los dos .cpp antes de compilar."
+  },
+  "project-compiler": {
+    "title": "Compilador del proyecto",
+    "purpose": "Selecciona las herramientas y opciones estructuradas para este proyecto.",
+    "controls": [
+      "Elige una configuración nativa o Windows instalada según el destino del proyecto.",
+      "Revisa las opciones de lenguaje, advertencias, optimización y depuración."
+    ],
+    "result": "Selecciona Debug y reconstruye antes de depurar."
+  },
+  "project-flags": {
+    "title": "Banderas del compilador y del enlazador del proyecto",
+    "purpose": "Añade argumentos específicos de este proyecto.",
+    "controls": [
+      "Banderas adicionales de las fuentes C.",
+      "El ejemplo usa -std=c++17 -Wall -Wextra.",
+      "Añade archivos de bibliotecas u objetos y argumentos del enlazador aquí."
+    ],
+    "result": "Reconstruye y confirma las órdenes finales en Compile Log."
+  },
+  "project-directories": {
+    "title": "Carpetas de inclusión y bibliotecas del proyecto",
+    "purpose": "Configura dónde se encuentran las cabeceras y bibliotecas externas del proyecto.",
+    "controls": [
+      "Selecciona la lista de carpetas de inclusión o bibliotecas.",
+      "Añade carpetas, no nombres de cabeceras individuales."
+    ],
+    "result": "Prefiere rutas relativas para compartir el proyecto."
+  },
+  "project-output": {
+    "title": "Carpetas de salida del proyecto",
+    "purpose": "Organiza los ejecutables y objetos generados.",
+    "controls": [
+      "Elige las ubicaciones de los archivos generados.",
+      "Revisa el nombre personalizado del ejecutable si lo necesitas."
+    ],
+    "result": "Reconstruye después de cambiar las ubicaciones de salida."
+  },
+  "compiler-flags": {
+    "title": "Argumentos globales de compilación y enlazado",
+    "purpose": "Añade argumentos a la configuración de compilación seleccionada.",
+    "controls": [
+      "Comprueba qué configuración estás modificando.",
+      "Activa la casilla antes de introducir las banderas del compilador.",
+      "Actívala para añadir argumentos al enlazador."
+    ],
+    "result": "Usa Project Options → Parameters si el cambio corresponde solo a un proyecto."
+  },
+  "compiler-settings": {
+    "title": "Opciones estructuradas del compilador",
+    "purpose": "Selecciona opciones sin escribir cada bandera.",
+    "controls": [
+      "Elige una categoría de lenguaje, advertencias u optimización.",
+      "Usa opciones admitidas por las herramientas y el destino elegidos."
+    ],
+    "result": "Una bandera de Windows puede no ser válida para un compilador nativo de macOS o Linux."
+  },
+  "debugger": {
+    "title": "Depurador detenido dentro de una función",
+    "purpose": "Consulta el estado real del programa de ejemplo con tres archivos.",
+    "controls": [
+      "left = 2, right = 3 y total = 5 en return total.",
+      "La línea resaltada y la flecha indican dónde está detenida la ejecución.",
+      "Continúa o avanza por el programa.",
+      "Inspecciona variables, expresiones y el estado de bajo nivel."
+    ],
+    "result": "La captura procede de una sesión real de LLDB, no de valores escritos manualmente."
+  },
+  "cpu-active": {
+    "title": "Registros y pila de llamadas con el programa detenido",
+    "purpose": "Consulta el desensamblado real, los registros ARM64 y la pila de llamadas.",
+    "controls": [
+      "Inspecciona la función add en la instrucción actual.",
+      "Lee los nombres de registros y sus valores numéricos.",
+      "La pila del ejemplo incluye add y main."
+    ],
+    "result": "Los valores de los registros y las direcciones cambian entre ejecuciones."
+  },
+  "header": {
+    "title": "Una cabecera en un proyecto de varios archivos",
+    "purpose": "Consulta la declaración compartida por main.cpp y calculator.cpp.",
+    "controls": [
+      "Mantén main.cpp, calculator.cpp y calculator.h en el mismo proyecto.",
+      "La guarda evita procesar la cabecera repetidamente dentro de una misma unidad de compilación.",
+      "La firma debe coincidir con la implementación de calculator.cpp."
+    ],
+    "result": "Incluye la cabecera desde ambos .cpp y compila las dos implementaciones."
+  }
 }

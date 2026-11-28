@@ -71,7 +71,7 @@ implementation
 {$R *.lfm}
 
 uses
-  main, MultiLangSupport;
+  main, MultiLangSupport, devCFG, Math;
 
 procedure TIncrementalForm.SetEditor(value: TSynEditEx);
 begin
@@ -97,6 +97,7 @@ end;
 
 procedure TIncrementalForm.EditChange(Sender: TObject);
 begin
+  if not Assigned(Editor) then Exit;
   if Length(Edit.Text) > 0 then begin
 
     // Stick with the same word when query changes
@@ -146,7 +147,24 @@ begin
 end;
 
 procedure TIncrementalForm.FormCreate(Sender: TObject);
+var RowHeight:Integer;
 begin
+  Font.Name := devData.InterfaceFont;
+  Font.Size := devData.InterfaceFontSize;
+  Canvas.Font.Assign(Font);
+  RowHeight := Max(32, Canvas.TextHeight('Ag') + 12);
+  AutoSize := False;
+  Constraints.MinWidth := 520;
+  Constraints.MinHeight := RowHeight + 16;
+  Edit.ParentFont := True;
+  Edit.Font.Color := clWindowText;
+  Edit.Color := clWindow;
+  fOriginalColor := Edit.Color;
+  Edit.SetBounds(8, 8, 272, RowHeight);
+  btnPrev.Font.Assign(Font);
+  btnNext.Font.Assign(Font);
+  btnPrev.SetBounds(304, 8, 88, RowHeight);
+  btnNext.SetBounds(416, 8, 88, RowHeight);
   IncrementalUndo.Caption := Lang[ID_ITEM_UNDO];
   IncrementalCut.Caption := Lang[ID_ITEM_CUT];
   IncrementalCopy.Caption := Lang[ID_ITEM_COPY];
@@ -156,8 +174,8 @@ end;
 
 procedure TIncrementalForm.FormShow(Sender: TObject);
 begin
+  SetBounds(Left, Top, 520, Max(Constraints.MinHeight, Edit.Top + Edit.Height + 8));
   ActiveControl := Edit;
-  fOriginalColor := Edit.Color;
 end;
 
 procedure TIncrementalForm.FormKeyPress(Sender: TObject; var Key: Char);

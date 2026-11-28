@@ -299,6 +299,7 @@ type
     procedure SaveSettings;
     procedure LoadSettings;
     function Validate: Boolean; // check if clang-format can be found
+    property LastExitCode: Integer read fLastExitCode;
     function ProgramFile: String; // '' when there is none
     procedure FormatMemory(Editor: TEditor; const OverrideCommand: String); // apply formatting
     function FormatFile(const FileName, OverrideCommand: String): String; // apply formatting

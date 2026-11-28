@@ -59,9 +59,11 @@ type
     procedure CommandChange(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormActivate(Sender: TObject);
+    procedure FitLayout(Sender: TObject);
   private
     fCreating: Boolean;
     fValid: Boolean;
+    fPreviewError: TMemo;
     procedure LoadText;
     procedure LoadSettings;
     procedure LoadSampleText;
@@ -127,13 +129,10 @@ procedure TClangFormatterOptionsForm.FormCreate(Sender: TObject);
 begin
   fCreating := True; // prevents spamming of astyle commands when initializing UI
   try
-    // If we cannot find AStyle, only issue a warning
-    if not devFormatterClang.Validate then begin
-      fValid := False;
-      MessageDlg(Lang[ID_FORMATTER_CLANG_NOTVALID], mtWarning, [mbOK], 0);
-    end else
-      fValid := True;
+    // Missing optional tools are reported inline; their preview is not executed.
+    fValid := devFormatterClang.Validate;
 
+    btnExecute.Enabled := fValid;
     // Translate
     LoadText;
 
@@ -245,13 +244,34 @@ procedure TClangFormatterOptionsForm.CommandChange(Sender: TObject);
 var
   ClangOutput, DummyFileName: String;
 begin
-  if fCreating then
+  if fCreating then Exit;
+  if not fValid then begin
+    lblPreview.Caption := Lang[ID_FORMATTER_PREVIEW] + ' ' + Lang[ID_FORMATTER_CLANG_POWEREDBYFAIL];
     Exit;
+  end;
   // Apply to dummy file
   DummyFileName := FormatterTempFile('DummyInput.cpp');
   ClangOutput := devFormatterClang.FormatFile(DummyFileName, memFullCommand.Text);
 
-  // Check if formatting finished correctly
+  // Errors are separate from source code and must never replace the sample file.
+  if devFormatterClang.LastExitCode <> 0 then begin
+    if not Assigned(fPreviewError) then begin
+      fPreviewError := TMemo.Create(Self);
+      fPreviewError.Parent := Self;
+      fPreviewError.ReadOnly := True;
+      fPreviewError.ScrollBars := ssAutoBoth;
+      fPreviewError.Font.Assign(Font);
+    end;
+    fPreviewError.BoundsRect := synExample.BoundsRect;
+    fPreviewError.Text := ClangOutput;
+    fPreviewError.Visible := True;
+    synExample.Visible := False;
+    btnExecute.Enabled := False;
+    Exit;
+  end;
+  if Assigned(fPreviewError) then fPreviewError.Visible := False;
+  synExample.Visible := True;
+  btnExecute.Enabled := True;
   if FileExists(DummyFileName) then begin
     synExample.Lines.Text := ClangOutput;
     synExample.Lines.SaveToFile(DummyFileName);
@@ -306,6 +326,31 @@ procedure TClangFormatterOptionsForm.FormClose(Sender: TObject;
   var Action: TCloseAction);
 begin
   Action := caFree;
+end;
+
+procedure TClangFormatterOptionsForm.FitLayout(Sender: TObject);
+var ColumnWidth,RightColumn:Integer;
+begin
+  ColumnWidth := (grpOptions.ClientWidth - 48) div 2;
+  RightColumn := ColumnWidth + 32;
+  lblBasedOnStyle.SetBounds(16, 8, ColumnWidth, 20);
+  lblBracketAlignmentStyle.SetBounds(RightColumn, 8, ColumnWidth, 20);
+  coBasedOnStyle.SetBounds(16, 30, ColumnWidth, 26);
+  cmbBracketAlignmentStyle.SetBounds(RightColumn, 30, ColumnWidth, 26);
+  chkIndentWidth.AutoSize := False;
+  chkTabWidth.AutoSize := False;
+  chkColumnLimit.AutoSize := False;
+  chkBracedListStyle.AutoSize := False;
+  chkIndentWidth.SetBounds(16, 68, ColumnWidth - 76, 24);
+  spIndentWidth.SetBounds(16 + ColumnWidth - 64, 64, 64, 28);
+  chkBracedListStyle.SetBounds(RightColumn, 68, ColumnWidth, 24);
+  chkTabWidth.SetBounds(16, 102, ColumnWidth - 76, 24);
+  spTabWidth.SetBounds(16 + ColumnWidth - 64, 98, 64, 28);
+  chkColumnLimit.SetBounds(RightColumn, 102, ColumnWidth - 76, 24);
+  spColumnLimit.SetBounds(RightColumn + ColumnWidth - 64, 98, 64, 28);
+  bvCustom.Top := 134;
+  lblCommand.Top := 142;
+  memFullCommand.SetBounds(16, 164, grpOptions.ClientWidth - 32, 70);
 end;
 
 procedure TClangFormatterOptionsForm.FormActivate(Sender: TObject);

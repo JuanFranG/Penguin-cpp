@@ -219,6 +219,21 @@ end;
 procedure TCPUForm.FormCreate(Sender: TObject);
 begin
   LoadText;
+  lblFunc.AutoSize := False;
+  lblFunc.Width := 112;
+  edFunc.Left := 128;
+{$IFDEF CPUAARCH64}
+  // Intel/AT&T are x86 syntax choices, not ARM64 disassembly modes.
+  RadioATT.Visible := False;
+  RadioIntel.Visible := False;
+  edFunc.Width := DisasPanel.ClientWidth - edFunc.Left - 12;
+{$ELSE}
+  RadioATT.AutoSize := False;
+  RadioIntel.AutoSize := False;
+  RadioATT.SetBounds(DisasPanel.ClientWidth - 180, 8, 80, 24);
+  RadioIntel.SetBounds(DisasPanel.ClientWidth - 92, 8, 80, 24);
+  edFunc.Width := RadioATT.Left - edFunc.Left - 12;
+{$ENDIF}
 
   // Make it look a bit like a regular editor
   devEditor.AssignEditor(CodeList,'main.cpp');

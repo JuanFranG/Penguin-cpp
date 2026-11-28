@@ -65,33 +65,39 @@ object NewProjectForm: TNewProjectForm
     Left = 0
     Top = 0
     Width = 540
-    Height = 175
+    Height = 32
     TabOrder = 2
     OnChange = TabsMainChange
-    object ProjView: TListView
-      Left = 4
-      Top = 6
-      Width = 532
-      Height = 165
-      Align = alClient
-      BorderStyle = bsNone
-      Color = clWhite
-      Columns = <>
-      ColumnClick = False
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'default'
-      Font.Style = []
-      HideSelection = False
-      IconOptions.AutoArrange = True
-      LargeImages = SVGIconImageList
-      ReadOnly = True
-      ParentFont = False
-      TabOrder = 0
-      OnChange = ProjViewChange
-      OnDblClick = ProjViewDblClick
-    end
+  end
+  object ProjView: TListView
+    Left = 8
+    Top = 40
+    Width = 524
+    Height = 135
+    BorderStyle = bsNone
+    Color = clWhite
+    Columns = <
+      item
+        Caption = 'Project template'
+        Width = 516
+      end>
+    ColumnClick = False
+    ShowColumnHeaders = False
+    RowSelect = True
+    ViewStyle = vsReport
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlack
+    Font.Height = -11
+    Font.Name = 'default'
+    Font.Style = []
+    HideSelection = False
+    IconOptions.AutoArrange = True
+    LargeImages = SVGIconImageList
+    ReadOnly = True
+    ParentFont = False
+    TabOrder = 0
+    OnChange = ProjViewChange
+    OnDblClick = ProjViewDblClick
   end
   object btnHelp: TBitBtn
     Left = 458

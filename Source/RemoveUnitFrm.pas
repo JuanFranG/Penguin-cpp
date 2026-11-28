@@ -48,6 +48,11 @@ begin
   // Set interface font
   Font.Name := devData.InterfaceFont;
   Font.Size := devData.InterfaceFontSize;
+  Constraints.MinWidth := 342;
+  Constraints.MinHeight := 180;
+  paBottom.Height := 48;
+  DelBtn.SetBounds(paBottom.ClientWidth - 122, 8, 110, 32);
+  DelBtn.Anchors := [akRight, akBottom];
 
   Caption := Lang[ID_RU];
   DelBtn.Caption := Lang[ID_ITEM_DELETE];

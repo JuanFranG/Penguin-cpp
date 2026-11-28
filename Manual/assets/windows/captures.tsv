@@ -1,14 +1,14 @@
 welcome	TMainForm	Penguin cpp 0.5.6	2400	1584
 workspace	TMainForm	Tutorial - [Tutorial.dev] - Penguin cpp 0.5.6	2400	1584
-new-project	TNewProjectForm	New Project	1076	670
-project-options	TProjectOptionsFrm	Project Options	1068	828
-editor-options	TEditorOptForm	Editor Options	1448	1342
+new-project	TNewProjectForm	New Project	1080	670
+project-options	TProjectOptionsFrm	Project Options	1072	832
+editor-options	TEditorOptForm	Editor Options	1456	1346
 editor-fonts	TEditorOptForm	Editor Options	1452	1342
 environment	TEnviroForm	Environment Options	1452	1264
 compiler	TCompOptForm	Compiler Options	1354	1344
 find	TFindForm	Find	1240	984
 go-to-line	TGotoLineForm	Go to line...	492	222
-file-properties	TFilePropertiesForm	Properties	872	730
+file-properties	TFilePropertiesForm	Properties	876	730
 arguments	TParamsForm	Parameters	594	404
 cpu	TCPUForm	CPU Window	1820	1100
 profiler	TProfileAnalysisForm	Profile Analysis	1266	1048
@@ -19,19 +19,29 @@ add-todo	TAddToDoForm	Add TODO item...	586	474
 todo	TViewToDoForm	TODO List...	1176	550
 template	TNewTemplateForm	New Template From Project	716	706
 new-class	TNewClassForm	New Class	888	740
-new-function	TNewFunctionForm	New Function	888	604
+new-function	TNewFunctionForm	New Function	892	604
 new-variable	TNewVarForm	New Variable	888	812
 functions	TFunctionSearchForm	Goto Function...	938	818
-remove-file	TRemoveUnitForm	Remove from project	684	456
+remove-file	TRemoveUnitForm	Remove from project	688	456
 print	TPrintForm	Print File	744	508
-incremental-find	TIncrementalForm	Incremental Search	564	116
+incremental-find	TIncrementalForm	Incremental Search	1044	160
 tips	TTipOfTheDayForm	Tip Of The Day	848	590
 astyle	TAStyleFormatterOptionsForm	Formatting Options	1200	1264
 clang-format	TClangFormatterOptionsForm	Formatting Options	1200	1202
-attach-process	TProcessListForm	Attach to process...	1148	338
+attach-process	TProcessListForm	Attach to process...	1144	338
 first-run	TLangForm	Penguin cpp first time configuration	1120	704
-about	TAboutForm	About Penguin cpp	960	816
+about	TAboutForm	About Penguin cpp	964	816
 windows-compatibility	TGameForm	Windows compatibility...	1320	664
 setup-working	TSetupForm	Preparing Windows compatibility	1084	464
 setup-ready	TSetupForm	Preparing Windows compatibility	1080	464
 updates	TUpdateForm	Check for updates	1200	664
+project-files	TProjectOptionsFrm	Project Options	1068	828
+project-compiler	TProjectOptionsFrm	Project Options	1068	828
+project-flags	TProjectOptionsFrm	Project Options	1068	828
+project-directories	TProjectOptionsFrm	Project Options	1068	828
+project-output	TProjectOptionsFrm	Project Options	1068	828
+compiler-flags	TCompOptForm	Compiler Options	1354	1344
+compiler-settings	TCompOptForm	Compiler Options	1354	1344
+debugger	TMainForm	Tutorial - [Tutorial.dev] - [Debugging] - Penguin cpp 0.5.6	2400	1584
+cpu-active	TCPUForm	CPU Window	1820	1100
+header	TMainForm	Tutorial - [Tutorial.dev] - Penguin cpp 0.5.6	2400	1584

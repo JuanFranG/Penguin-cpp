@@ -29,9 +29,13 @@ jobs:
       - name: Validate both manuals and their shared images
         run: |
           python3 packaging/build-manual.py
-          git diff --exit-code -- Manual/index.html Manual/es/index.html
+          git diff --exit-code -- Manual/index.html Manual/es/index.html Manual/examples/header-project.zip
           python3 packaging/check-manual.py
           node --check Manual/manual.js
+      - name: Compile and run the documented header project
+        run: |
+          c++ -std=c++17 -Wall -Wextra -Werror Manual/examples/header-project/main.cpp Manual/examples/header-project/calculator.cpp -o "$RUNNER_TEMP/header-example"
+          test "$("$RUNNER_TEMP/header-example")" = 'Result: 5'
 
   publish:
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'

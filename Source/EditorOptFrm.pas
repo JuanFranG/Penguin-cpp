@@ -559,6 +559,7 @@ begin
   btnOk.Caption := Lang[ID_BTN_OK];
   btnCancel.Caption := Lang[ID_BTN_CANCEL];
   btnHelp.Caption := Lang[ID_BTN_HELP];
+  btnHelp.Enabled := True;
 
   // Top level tabs
   Caption := Lang[ID_EOPT];

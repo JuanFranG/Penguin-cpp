@@ -109,6 +109,8 @@ begin
   devPages1.ActivePageIndex := 0;
 
   cmbNameChange(nil);
+  btnCreate.SetBounds(ClientWidth - 228, ClientHeight - 40, 96, 32);
+  btnCancel.SetBounds(ClientWidth - 108, ClientHeight - 40, 96, 32);
 end;
 
 procedure TNewTemplateForm.btnLibClick(Sender: TObject);
@@ -178,7 +180,6 @@ begin
     end
     else begin
       Rectangle(Rect.Left + XOffset, Rect.Top + XOffset, Rect.Left + 32 + XOffset, Rect.Top + 32 + XOffset);
-      TextOut(Rect.Left + XOffset + 1, Rect.Top + YOffset, 'Empty');
       XOffset := 32 + 6;
     end;
     TextOut(Rect.Left + XOffset, Rect.Top + YOffset, (Control as TListBox).Items[Index])

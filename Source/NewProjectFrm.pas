@@ -68,6 +68,7 @@ procedure TNewProjectForm.FormCreate(Sender: TObject);
 begin
   fTemplates := TList.Create;
   LoadText;
+  TemplateLabel.Caption := '';
   ReadTemplateDir;
 end;
 
@@ -166,6 +167,7 @@ begin
   btnOk.Caption := Lang[ID_BTN_OK];
   btnCancel.Caption := Lang[ID_BTN_CANCEL];
   btnHelp.Caption := Lang[ID_BTN_HELP];
+  btnHelp.Enabled := True;
 
   edProjectName.Text := format(Lang[ID_NEWPROJECT], [dmMain.GetNewFileNumber]);
 end;
@@ -189,7 +191,11 @@ var
   IconItem: TIcon;
   IconFileName: String;
 begin
-  ProjView.LargeImages :=  ImageList;
+{$IFDEF DARWIN}
+  ProjView.LargeImages := nil;
+{$ELSE}
+  ProjView.LargeImages := ImageList;
+{$ENDIF}
   // Keep each icon in a separate image list
   ImageList.Clear;
   ProjView.Items.BeginUpdate;
@@ -200,13 +206,11 @@ begin
     for I := 0 to pred(fTemplates.Count) do begin
       TemplateItem := TTemplate(fTemplates[I]);
 
-      // Add a page for each unique category
-      if not HasPage(TemplateItem.Category) then
-        TabsMain.Tabs.Append(TemplateItem.Category);
-
-      // Select a category
       if TemplateItem.Category = '' then
         TemplateItem.Category := Lang[ID_NP_PRJSHEET];
+      if not HasPage(TemplateItem.Category) then
+        TabsMain.Tabs.Append(TemplateItem.Category);
+      if TabsMain.TabIndex < 0 then TabsMain.TabIndex := 0;
 
       // Only add if we're viewing this category
       if SameText(TemplateItem.Category, TabsMain.Tabs[TabsMain.TabIndex]) then begin
@@ -226,12 +230,14 @@ begin
             IconItem.Free;
           end;
         end else
-          ListItem.ImageIndex := 0; // don't use an icon
+          ListItem.ImageIndex := -1; // don't use an icon
       end;
     end;
   finally
     ProjView.Items.EndUpdate;
   end;
+  if ProjView.Items.Count > 0 then ProjView.ItemIndex := 0;
+  ProjViewChange(ProjView, ProjView.Selected, ctState);
 end;
 
 procedure TNewProjectForm.TabsMainChange(Sender: TObject);

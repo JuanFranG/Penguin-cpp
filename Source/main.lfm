@@ -162,6 +162,7 @@ object MainForm: TMainForm
       Caption = 'Debugging'
       ImageIndex = 3
       object DebugSendPanel: TPanel
+        OnResize = LayoutDebugControls
         Left = 589
         Top = 0
         Width = 688
@@ -197,6 +198,7 @@ object MainForm: TMainForm
         end
       end
       object DebugStartPanel: TPanel
+        OnResize = LayoutDebugControls
         Left = 0
         Top = 0
         Width = 589

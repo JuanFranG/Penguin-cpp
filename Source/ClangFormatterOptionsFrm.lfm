@@ -16,6 +16,7 @@ object ClangFormatterOptionsForm: TClangFormatterOptionsForm
   OnActivate = FormActivate
   OnClose = FormClose
   OnCreate = FormCreate
+  OnShow = FitLayout
   PixelsPerInch = 96
   object lblPoweredBy: TLabel
     Left = 0

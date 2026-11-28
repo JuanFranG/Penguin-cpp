@@ -24,3 +24,7 @@ python3 packaging/check-manual.py
 `capture-main.py` must run last: it replaces the helper's welcome/editor images with captures of the released executable, whose custom tab strips are fully initialised. It starts and closes only its own process. Its separate preferences and sample project are written to a temporary directory. Neither tool saves to the normal user configuration.
 
 The first-use setup screenshots run a real Windows compiler/runtime smoke test against a **private disposable prefix** below the work directory. Keep the included runtime available and allow time for prefix creation. These tools require macOS screen capture permissions; the main capture also uses System Events to bring its own window forward. They are not run by Linux CI. The checked-in images let CI validate the manual without screen access or a GUI.
+
+The expanded fixture comes from `Manual/examples/header-project/`. It compiles both source files, records a real LLDB breakpoint with watches, and captures the CPU registers/call stack. The helper uses the production Cocoa widgetset, not mocked window controls. Unexpected form or debugger failures return a nonzero exit code.
+
+For a targeted refresh, `PENGUIN_MANUAL_VIEWS=incremental-find,project-flags` limits which images are saved. `PENGUIN_MANUAL_SKIP_SETUP=1` skips the separate Windows-prefix smoke test; retain its existing provenance records when merging such a capture. Refresh all views for the default complete inventory.

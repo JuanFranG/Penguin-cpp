@@ -232,6 +232,32 @@ Description: simple C and C++ IDE for learning, a Linux port of Dev-C++
  it) to Lazarus and Free Pascal. The interface is available in English,
  Spanish and other languages.
 
+Package: penguin-cpp
+Architecture: amd64
+Version: 0.5.7
+Priority: optional
+Section: devel
+Maintainer: Juan Francisco Gonzalez Pacheco <jfgonzalez@unimagdalena.edu.co>
+Installed-Size: 648633
+Depends: libc6 (>= 2.34), libgcc-s1 (>= 3.3), liblzma5 (>= 5.1.1alpha+20110809), libncurses6 (>= 6), libqt5pas1 (>= 2.6~beta-1), libstdc++6 (>= 12), libtinfo6 (>= 6), libx11-6, libxml2 (>= 2.7.4), libzstd1 (>= 1.5.5), zlib1g (>= 1:1.2.2), g++-mingw-w64-x86-64-posix, penguin-windows-runtime (= 11.0.0.0~noble-1+penguin1), python3:any, gcc, g++, make, gdb, curl, astyle, clang-format, cups-client, fonts-dejavu-core, gnome-terminal | mate-terminal | xfce4-terminal | konsole | xterm | x-terminal-emulator
+Filename: pool/main/p/penguin-cpp/penguin-cpp_0.5.7_amd64.deb
+Size: 100150092
+MD5sum: 715c92908e26f2109db2972e91d97ee3
+SHA1: 3ea2551ca8f768298d3577fe1b0f0862932483d5
+SHA256: c1f4fd0b492aee426dd1ffd6ce8a7aad0af073396902aeeb3eab4dba547fbb95
+SHA512: 6e9acf5a4eedb460cc64bab2dcdbba2c313c38871bfb18573c0eaa9d6547648d6ad4314075329a40e257b063a2a7099ad6021644070c030b02f64a95c7f02450
+Homepage: https://github.com/JuanFranG/Penguin-cpp
+Description: simple C and C++ IDE for learning, a Linux port of Dev-C++
+ Penguin cpp is an integrated development environment for C and C++ meant
+ for teaching: a code editor with completion and folding, single files and
+ projects built with gcc and make, programs run in a terminal, and a
+ debugger on top of gdb with breakpoints, watches and step by step
+ execution.
+ .
+ It is a port of Embarcadero Dev-C++ (Orwell and Bloodshed Dev-C++ before
+ it) to Lazarus and Free Pascal. The interface is available in English,
+ Spanish and other languages.
+
 Package: penguin-windows-runtime
 Architecture: amd64
 Version: 11.0.0.0~noble-1+penguin1
@@ -242,11 +268,11 @@ Installed-Size: 273519
 Depends: libasound2t64 (>= 1.0.16), libc6 (>= 2.38), libglib2.0-0t64 (>= 2.79.0), libgphoto2-6t64 (>= 2.5.10), libgphoto2-port12t64 (>= 2.5.10), libgstreamer-plugins-base1.0-0 (>= 1.8.0), libgstreamer1.0-0 (>= 1.14.0), libpcap0.8t64 (>= 1.10.0), libpulse0 (>= 0.99.1), libsane1 (>= 1.0.27), libudev1 (>= 183), libunwind8, libusb-1.0-0 (>= 2:1.0.21), libwayland-client0 (>= 1.20.0), libwayland-egl1 (>= 1.15.0), libx11-6, libxext6, libxkbcommon0 (>= 0.5.0), libxkbregistry0 (>= 1.0.0), ocl-icd-libopencl1 | libopencl1, ocl-icd-libopencl1 (>= 1.0) | libopencl-1.2-1, libasound2-plugins, libncurses6 | libncurses5 | libncurses
 Recommends: libcapi20-3, libcups2, libdbus-1-3, libfontconfig1, libfreetype6, libglu1-mesa | libglu1, libgnutls30 | libgnutls28 | libgnutls26, libgsm1, libgssapi-krb5-2, libjpeg62-turbo | libjpeg8, libkrb5-3, libodbc2 | libodbc1, libpng16-16 | libpng12-0, libsdl2-2.0-0, libtiff5, libv4l-0, libxcomposite1, libxcursor1, libxfixes3, libxi6, libxinerama1, libxrandr2, libxrender1, libxslt1.1, libxxf86vm1
 Filename: pool/main/p/penguin-cpp/penguin-windows-runtime_11.0.0.0~noble-1+penguin1_amd64.deb
-Size: 33127572
-MD5sum: 17df5d7e728a5de5b14626d67ce52527
-SHA1: b5215cfa16f2c27f36e73598f990eb825693386c
-SHA256: 876521d24e29bb3e4c99faac8770f2978eb4ed421469e4ca441e38850cbbbb32
-SHA512: 27c2ea09f958c8e5b94ad314f64e05ac4827d0fe29f19f7d37c29b0dc4024571dcf06f75c74f323ae8a63a43035fdc7d51c1bc22bc93aa3588f6eaae7a8b86f8
+Size: 33130852
+MD5sum: 2e9d7e5d022b60931db4514bc385fa19
+SHA1: 95a2fb51842e9363c0f3c90dd3bd401b562a0f15
+SHA256: 5771ba3f78e9ed72e42e430fe91f1f26929b2b177c53c5f620dc0567858acbf7
+SHA512: 1bd3eb79c72eb494e5364f95db0cf1ac44ef0cbf42027e6b03916b41b2b7413a08d1c547bfa9c85ad364c186a759c80ebf01a75b99ee3304a24c6f06c16cc413
 Homepage: https://www.winehq.org/
 Description: private Wine 11 x64 runtime for Penguin cpp
  Pinned WineHQ binaries and notices, relocated for Penguin compatibility.
